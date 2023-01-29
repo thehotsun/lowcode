@@ -1,0 +1,85 @@
+/* 基础样式 */
+@import "./mixin";
+
+.pull-left {
+  @include float;
+}
+
+.pull-right {
+  @include float(right);
+}
+
+.clearfix {
+  @extend %clearfix;
+}
+
+.inline-block {
+  display: inline-block !important;
+}
+img{
+  -webkit-user-drag: none;-moz-user-select: none;-ms-user-select:none;-khtml-user-select:none;user-select:none;
+}
+
+.pointer {
+  cursor: pointer;
+}
+
+// 单独 样式
+@for $i from 0 through 10 {
+  $m: (m: margin,
+      p: padding);
+  $df: (l: left,
+      t: top,
+      r: right,
+      b: bottom);
+  $d: 4;
+
+  @each $j,
+  $jv in $m {
+    .#{$j}-#{$i *$d} {
+      #{$jv}: $i * $d * 1px;
+    }
+
+    @each $k,
+    $kv in $df {
+      .#{$j}#{$k}-#{$i*$d} {
+        #{$jv}-#{$kv}: $i * $d * 1px !important;
+      }
+    }
+  }
+}
+
+.text {
+  &-center {
+    text-align: center;
+  }
+
+  &-right {
+    text-align: right;
+  }
+
+  &-left {
+    text-align: left;
+  }
+}
+
+.m-auto {
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.circle {
+  border-radius: 50%;
+}
+
+.bold {
+  font-weight: bold;
+}
+
+.height100 {
+  height: 100%;
+}
+
+.bg-fff {
+  background-color: #fff;
+}

@@ -1,0 +1,98 @@
+.noticeEditialog h1 {
+  font-size: 2em;
+}
+.noticeEditialog h2 {
+  font-size: 1.5em;
+}
+.noticeEditialog h3 {
+  font-size: 1.17em;
+}
+.noticeEditialog h4 {
+  font-size: 1em;
+}
+.noticeEditialog h5 {
+  font-size: 0.83em;
+}
+.noticeEditialog .ql-syntax {
+  background-color: #23241f;
+  color: #f8f8f2;
+  overflow: visible;
+  white-space: pre-wrap;
+  margin-bottom: 5px;
+  margin-top: 5px;
+  padding: 5px 10px;
+  border-radius: 3px;
+}
+.noticeEditialog ul {
+  margin: unset;
+  padding: revert;
+}
+.noticeEditialog ol {
+  margin: unset;
+  padding: revert;
+}
+.noticeEditialog ol > li{
+  list-style-type: decimal;
+}
+.noticeEditialog ul > li {
+  list-style-type: disc;
+}
+.noticeEditialog .ql-font-serif {
+  font-family: Georgia, Times New Roman, serif;
+}
+.noticeEditialog .ql-font-monospace {
+  font-family: Monaco, Courier New, monospace;
+}
+em {
+  font-style: italic;
+}
+.noticeEditialog blockquote {
+  border-left: 4px solid #ccc;
+  margin-bottom: 5px;
+  margin-top: 5px;
+  padding-left: 16px;
+}
+sub{
+  vertical-align: sub;
+  font-size: smaller;
+}
+sup{
+  vertical-align: super;
+  font-size: smaller;
+}
+.noticeEditialog .ql-size-large{
+  font-size: 1.5em;
+}
+.noticeEditialog .ql-size-huge{
+  font-size: 2.5em;
+}
+.noticeEditialog .ql-align-center {
+  text-align: center;
+}
+.noticeEditialog .ql-align-right {
+  text-align: right;
+}
+.noticeEditialog .ql-indent-1{
+  padding-left: 3em;
+}
+.noticeEditialog .ql-indent-2{
+  padding-left: 6em;
+}
+.noticeEditialog .ql-indent-3{
+  padding-left: 9em;
+}
+.noticeEditialog .ql-indent-4{
+  padding-left: 12em;
+}
+.noticeEditialog .ql-indent-5{
+  padding-left: 15em;
+}
+.noticeEditialog .ql-indent-6{
+  padding-left: 18em;
+}
+.noticeEditialog .ql-indent-7{
+  padding-left: 21em;
+}
+.noticeEditialog .ql-indent-8{
+  padding-left: 22em;
+}
