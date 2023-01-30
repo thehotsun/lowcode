@@ -26,11 +26,12 @@
             :current-page.sync="page.pageNum" @current-change="handleCurrentChange"
             :page-size="page.pageSize"></el-pagination>
         </el-footer>
-
       </el-container>
 
     </el-main>
-
+    <div class="edit">
+      <codemirror ref="jsonEditor" v-model="jsCode" :options="cmOptions" />
+    </div>
     <el-button style="position:fixed;right:0;top:0;" @click="handleSubmit">提交</el-button>
   </el-container>
 </template>
@@ -62,10 +63,18 @@ import { getElDatePickerConfig, getElDatePickerRangeConfig, getElInputConfig, ge
 import { setPlaceholder } from '../utils'
 import _ from "lodash"
 
+import { codemirror } from 'vue-codemirror'
+import 'codemirror/lib/codemirror.css'
+import 'codemirror/keymap/sublime' //sublime编辑器效果
+import "codemirror/theme/dracula.css"// 配置里面也需要theme设置为monokai
+import "codemirror/mode/vue/vue.js" // 配置里面也需要mode设置为vue
+import 'codemirror/addon/selection/active-line' //光标行背景高亮，配置里面也需要styleActiveLine设置为true
+
 export default {
   components: {
     BaseRenderTable,
-    BaseRenderForm
+    BaseRenderForm,
+    codemirror
   },
   data () {
     return {
@@ -85,6 +94,17 @@ export default {
         pageNum: 1,
         pageSize: 10,
         totalCount: 20,
+      },
+      jsCode: '',
+      cmOptions: {
+        tabSize: 4,// tab的空格个数
+        theme: 'dracula',//主题样式
+        lineNumbers: true,//是否显示行数
+        lineWrapping: true, //是否自动换行
+        styleActiveLine: true,//line选择是是否加亮
+        matchBrackets: true,//括号匹配
+        mode: "vue", //实现javascript代码高亮
+        readOnly: false//只读
       }
     }
   },
@@ -226,7 +246,7 @@ export default {
       this.queryTableData()
     },
 
-
+    //TODO 
     queryTableData () {
       const params = {
         ...this.searchFrom,
@@ -234,6 +254,13 @@ export default {
       }
       console.log('queryTableData', JSON.parse(JSON.stringify(params)));
       // this.tableData.push(this.tableData[0])
+    },
+
+    inputChange (content) {
+      this.$nextTick(() => {
+        console.log("code:" + this.code);
+        console.log("content:" + content)
+      });
     },
   }
 }
@@ -243,5 +270,13 @@ export default {
 <style lang="less" scoped>
 .wrap {
   width: 100%;
+}
+
+.edit {
+  position: fixed;
+  top: 20%;
+  left: 0;
+  right: 0;
+  z-index: 999;
 }
 </style>
