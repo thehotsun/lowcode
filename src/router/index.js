@@ -31,5 +31,10 @@ export default new VueRouter({
       component: () => import('@/CommonDP/lowCode/listEngine'),
       name: 'listEngine',
     },
+    {
+      path: '/business',
+      component: () => import('@/CommonDP/lowCode/business'),
+      name: 'business',
+    },
   ],
 });
