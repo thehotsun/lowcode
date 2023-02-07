@@ -1,0 +1,135 @@
+<template>
+  <div class="bottom_tree_table">
+    <div class="bottom_left">
+      <tree @orgcurrent="currentOrgChangeHandler" ref="tree"></tree>
+    </div>
+    <div class="bottom_right">
+      <div class="right_table">
+        <custom-table ref="table" @handleChange="handleChange"></custom-table>
+      </div>
+    </div>
+  </div>
+</template>
+<script>
+import tree from './components/tree.vue';
+import table from './components/table.vue';
+import service from '@/CommonDP/service/listEngine-service';
+import { mapState } from 'vuex';
+export default {
+  components: { tree, customTable: table, },
+  data () {
+    return {
+      page: {
+        pageNum: 1,
+        pageSize: 10,
+        totalCount: 0,
+      },
+      icon: require('@/CommonDP/assets/doc/folder_icon.png'),
+      searchQuery: {
+        keyword: '',
+      },
+
+    };
+  },
+  computed: {
+    ...mapState({
+      enterpriseId: (state) => state.enterprise.enterpriseId,
+    }),
+  },
+
+  methods: {
+    // TODO
+    getParams () {
+      const cur = this.$refs.tree.currentRow || {}
+      const params = {
+        ...this.page,
+        id: cur.val,
+        keyword: this.searchQuery.keyword
+      }
+      return params
+    },
+    currentOrgChangeHandler () {
+      const params = this.getParams()
+      this.$refs.table.getTableData(params);
+    },
+    handleCurrentChange () {
+      const params = this.getParams()
+      this.$refs.table.getTableData(params);
+    },
+    handleSizeChange (val) {
+      this.page.pageSize = val;
+      const params = this.getParams()
+      this.$refs.table.getTableData(params);
+    },
+
+    handleChange (val) {
+
+    },
+
+    addList () {
+      this.$refs.editTableDialog.expose_showDialog()
+    },
+    updateList () { },
+    deleteList () { },
+
+  },
+};
+</script>
+<style lang="scss" scoped>
+$top-button-height: 52px;
+$middle-height: 30px;
+$left-width: 360px;
+
+.bottom_tree_table {
+  width: 100%;
+  height: 100%;
+  background-color: #fff;
+  min-width: 1080px;
+  display: flex;
+
+  .bottom_left {
+    height: 100%;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    width: $left-width;
+    padding-left: 12px;
+    border-right: 1px solid #ebefff;
+
+    .left_tree {
+      overflow: auto;
+      margin-bottom: 10px;
+      margin-right: 0;
+      display: flex;
+      flex-direction: column;
+    }
+  }
+
+  .bottom_right {
+    flex: 1;
+    height: 100%;
+    margin-left: 20px;
+
+    .right_button {
+      // height: $top-button-height;
+      padding: 10px 0;
+    }
+
+    .right_table {
+
+      margin-top: $top-button-height + 10px;
+      margin-left: 10px;
+      margin-bottom: 40px;
+      margin-right: 10px;
+    }
+  }
+}
+
+.page-2 {
+  position: absolute;
+  bottom: 0;
+  right: 20px;
+  height: 34px;
+  padding: 2px;
+}
+</style>
