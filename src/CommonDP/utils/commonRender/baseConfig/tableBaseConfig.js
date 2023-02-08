@@ -94,9 +94,72 @@ export const eidtConf = [
     slotName: "operator"
   }
 ];
-
-export const showConf = [];
+export const editBtnConf = [
+  {
+    type: "selection"
+  },
+  {
+    label: "按钮ID",
+    prop: "btnID",
+    ...baseAttr
+  },
+  {
+    label: "按钮名称",
+    prop: "btnName",
+    ...baseAttr
+  },
+  {
+    label: "英文名称",
+    prop: "englishName",
+    ...baseAttr
+  },
+  {
+    label: "URL",
+    prop: "URL",
+    ...baseAttr,
+    "min-width": "150px"
+  },
+  {
+    label: "图标",
+    prop: "icon",
+    ...baseAttr
+  },
+  {
+    label: "是否可用",
+    prop: "isUse",
+    ...baseAttr,
+    "min-width": "50",
+    tagName: "el-checkbox"
+  },
+  {
+    label: "是否显示",
+    prop: "isShow",
+    ...baseAttr,
+    "min-width": "50",
+    tagName: "el-checkbox",
+    tagAttrs: {}
+  },
+  {
+    label: "按钮授权",
+    prop: "isAuth",
+    ...baseAttr,
+    "min-width": "50",
+    tagName: "el-checkbox",
+    tagAttrs: {}
+  },
+  // 如需使用slot功能，请添加slotName属性，并在template中使用相同的slot名称
+  {
+    label: "操作",
+    prop: "",
+    align: "center",
+    slotName: "operator"
+  }
+];
 
 export function getSingleTableData() {
   return { fieldCode: "", fieldName: "", englishName: "", columnWidth: "", align: 1, show: true, sort: false, searchWidget: "", searchWidgetConfig: {} };
+}
+
+export function getSingleBtnData() {
+  return { btnID: "", btnName: "", englishName: "", URL: "", icon: "", isUse: true, isShow: false, isAuth: "", searchWidgetConfig: {} };
 }

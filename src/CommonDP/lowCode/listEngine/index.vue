@@ -10,7 +10,12 @@
         <el-form inline @submit.native.prevent>
           <el-form-item>
             <el-button type="primary" size="mini" @click="addList">
-              新增
+              新增表格
+            </el-button>
+          </el-form-item>
+          <el-form-item>
+            <el-button type="primary" size="mini" @click="addBtn">
+              新增功能按钮
             </el-button>
           </el-form-item>
           <el-form-item>
@@ -39,6 +44,7 @@
       <page :page="page" @handleSizeChange="handleSizeChange" @handleCurrentChange="handleCurrentChange" class="page-2">
       </page>
       <editTableDialog ref="editTableDialog" @refreshList="handleCurrentChange"></editTableDialog>
+      <editBtnDialog ref="editBtnDialog" @refreshList="handleCurrentChange"></editBtnDialog>
     </div>
   </div>
 </template>
@@ -47,10 +53,11 @@ import tree from './components/tree.vue';
 import page from '@/CommonDP/components/paging';
 import table from './components/table.vue';
 import editTableDialog from './components/editTableDialog.vue';
+import editBtnDialog from './components/editBtnDialog.vue';
 import service from '@/CommonDP/service/listEngine-service';
 import { mapState } from 'vuex';
 export default {
-  components: { tree, customTable: table, page, editTableDialog },
+  components: { tree, customTable: table, page, editTableDialog, editBtnDialog },
   data () {
     return {
       page: {
@@ -102,6 +109,9 @@ export default {
 
     addList () {
       this.$refs.editTableDialog.expose_showDialog()
+    },
+    addBtn() {
+      this.$refs.editBtnDialog.expose_showDialog()
     },
     updateList () { },
     deleteList () { },

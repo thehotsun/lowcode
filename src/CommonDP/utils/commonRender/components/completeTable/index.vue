@@ -7,6 +7,10 @@
 
     <el-main>
       <el-container style="height: 100%">
+        <el-header>
+          <base-render-form ref="btnForm" :form-options="btnFormOptions" :use-dialog="false">
+          </base-render-form>
+        </el-header>
         <el-main>
           <base-render-table ref="table" :table-data="tableData" :table-options="tableOptions"
             @selection-change="selectListHandler">
@@ -26,27 +30,10 @@
         </el-footer>
       </el-container>
     </el-main>
-    <div class="edit">
-      <codemirror v-if="showCodemirror" ref="jsonEditor" v-model="jsCode" :options="cmOptions" />
-    </div>
   </el-container>
 </template>
 
 <script>
-// BaseRenderTable组件内置了expose_getElTableInstance方法，可以通过调用此组件的这个方法获取el-table的实例，例如
-// const elTableInstance = this.$refs.table.expose_getElTableInstance()
-
-// BaseRenderTable组件内置了expose_getSelectionList方法，可以通过调用此组件的这个方法获取当前table多选时被选中的列表数据
-
-// BaseRenderTable组件内置了expose_getCurRow方法，可以通过调用此组件的这个方法获取当前table被点击高亮行的数据
-
-// 此三个方法都可以通过传入attrs的方式进行覆盖例如
-// @row-click="onRowClick"
-// @selection-change="selectListHandler"
-
-// 其他非内置方法则也通过此方式进行事件监听
-// @current-change="handleCurrentChange
-
 // 为何将pagination放在这个组件？首先因为baseTable仅仅是作为table的渲染器存在的，不应涉及网络请求，而pagination最重要的功能就是通过网络请求更新数据，因此在哪里使用到了获取table数据的网络请求，在哪就应该将pagination放进去
 
 import BaseRenderTable from '../../BaseRenderTable/index';
@@ -56,18 +43,10 @@ import { getElBtnConfig } from '../../baseConfig/widgetBaseConfig';
 import { setPlaceholder, getWidgetOptions, setColSpan } from '../../utils';
 import _ from "lodash";
 
-import { codemirror } from 'vue-codemirror';
-import 'codemirror/lib/codemirror.css';
-import 'codemirror/keymap/sublime'; // sublime编辑器效果
-import "codemirror/theme/dracula.css";// 配置里面也需要theme设置为monokai
-import "codemirror/mode/vue/vue.js"; // 配置里面也需要mode设置为vue
-import 'codemirror/addon/selection/active-line'; // 光标行背景高亮，配置里面也需要styleActiveLine设置为true
-
 export default {
   components: {
     BaseRenderTable,
     BaseRenderForm,
-    codemirror
   },
   props: {
     showPagination: Boolean
@@ -75,7 +54,7 @@ export default {
   data () {
     return {
       // tabledata 属性值要做到和tableOptions中的prop相对应
-      tableConfig: [{ "fieldCode": "xxx", "fieldName": "我问问", "englishName": "ccc", "columnWidth": 90, "align": 1, "show": true, "sort": false, "searchWidget": 0, "searchWidgetConfig": { "formItemAttrs": { "label": "34" }, "tagAttrs": { "placeholder": "55" } }, "$edit": false }, { "fieldCode": "yyy", "fieldName": "我看看", "englishName": "fff", "columnWidth": 100, "align": 1, "show": true, "sort": false, "searchWidget": 1, "searchWidgetConfig": { "formItemAttrs": { "label": "我" }, "tagAttrs": { "placeholder": "请输入我" }, "extraOption": { "options": [{ "id": "123", "cnName": "hi好" }, { "id": "1", "cnName": "好" }] } }, "$edit": false }],
+      tableConfigJSON: [{ "fieldCode": "xxx", "fieldName": "我问问", "englishName": "ccc", "columnWidth": 90, "align": 1, "show": true, "sort": false, "searchWidget": 0, "searchWidgetConfig": { "formItemAttrs": { "label": "34" }, "tagAttrs": { "placeholder": "55" } }, "$edit": false }, { "fieldCode": "yyy", "fieldName": "我看看", "englishName": "fff", "columnWidth": 100, "align": 1, "show": true, "sort": false, "searchWidget": 1, "searchWidgetConfig": { "formItemAttrs": { "label": "我" }, "tagAttrs": { "placeholder": "请输入我" }, "extraOption": { "options": [{ "id": "123", "cnName": "hi好" }, { "id": "1", "cnName": "好" }] } }, "$edit": false }],
       tableOptions: [],
       tableData: [
         {
@@ -92,23 +71,13 @@ export default {
         pageSize: 10,
         totalCount: 20
       },
-      jsCode: '',
-      cmOptions: {
-        tabSize: 4, // tab的空格个数
-        theme: 'dracula', // 主题样式
-        lineNumbers: true, // 是否显示行数
-        lineWrapping: true, // 是否自动换行
-        styleActiveLine: true, // line选择是是否加亮
-        matchBrackets: true, // 括号匹配
-        mode: "vue", // 实现javascript代码高亮
-        readOnly: false// 只读
-      },
-      showCodemirror: false
+      btnFormOptions: [],
+      btnConfigJSON: [{ "btnID": "add", "btnName": "添加", "englishName": "add", "URL": "ssss", "icon": "ss", "isUse": true, "isShow": true, "isAuth": "", "searchWidgetConfig": {}, "$edit": true }],
     };
   },
 
   // watch: {
-  //   tableConfig: {
+  //   tableConfigJSON: {
   //     deep: true,
   //     handler: function (val) {
   //       this.formOptions = this.composeFromOptions(val);
@@ -117,9 +86,9 @@ export default {
   // },
 
   mounted () {
-    this.formOptions = this.composeFromOptions(this.tableConfig);
+    this.formOptions = this.composeFromOptions(this.tableConfigJSON);
     // const sample = tableOptions[0]
-    this.tableOptions = this.tableConfig.filter(item => item.show).map(item => {
+    this.tableOptions = this.tableConfigJSON.filter(item => item.show).map(item => {
       const obj = {}
       obj.prop = item.fieldCode
       obj.label = item.fieldName
@@ -128,6 +97,7 @@ export default {
       obj.sortable = !!item.sort
       return obj
     })
+    this.btnFormOptions = this.composeBtnFromOptions(this.btnConfigJSON.filter(item => item.isShow && item.isUse))
     // this.exec("console.warn(this.formOptions)");
   },
 
@@ -185,6 +155,22 @@ export default {
         resetConfig];
     },
 
+    composeBtnFromOptions (config) {
+      const formOptions = config.map(item => {
+        return getElBtnConfig('primary', this.handleFilter, item.btnName, {
+          formItemAttrs: {
+            'label-width': '0px'
+          }
+        });
+      })
+      return [{
+        elRowAttrs: {
+          gutter: 10
+        },
+        formItem: formOptions
+      }]
+    },
+
     handleFilter () {
       this.queryTableData();
     },
@@ -229,13 +215,6 @@ export default {
       console.log('queryTableData', JSON.parse(JSON.stringify(params)));
       // this.tableData.push(this.tableData[0])
     },
-
-    inputChange (content) {
-      this.$nextTick(() => {
-        console.log("code:" + this.code);
-        console.log("content:" + content);
-      });
-    }
   }
 };
 </script>
