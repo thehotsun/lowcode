@@ -111,10 +111,7 @@ export default {
     // },
 
     init () {
-
     },
-
-
 
     // 由数据组成searchFrom
     setFromField (source, field) {
@@ -189,18 +186,13 @@ export default {
       // this.$refs.table.expose_clearCurCellPro();
     },
 
-    handleSubmit () {
-      console.log(JSON.parse(JSON.stringify(this.tableData)));
-      this.$router.push({
-        name: 'test1'
-      });
-    },
-
     rowClick (val) {
+      this.$emit(rowClick, val);
       console.log(val);
     },
 
     selectListHandler (val) {
+      this.$emit(selectListHandler, val);
       console.log(val);
     },
 
