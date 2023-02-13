@@ -50,7 +50,9 @@ export default {
     BaseRenderForm,
   },
   props: {
-    showPagination: Boolean
+    showPagination: Boolean,
+    requestTableData: Function,
+    requestTableConfig: Function
   },
   data () {
     return {
@@ -86,9 +88,10 @@ export default {
   //   }
   // },
 
-  mounted () {
+  async mounted () {
+    this.queryTableData();
+    await this.queryTableConfig();
     this.formOptions = this.composeFromOptions(this.tableConfigJSON);
-    // const sample = tableOptions[0]
     this.tableOptions = this.tableConfigJSON.filter(item => item.show).map(item => {
       const obj = {}
       obj.prop = item.fieldCode
@@ -207,14 +210,33 @@ export default {
       this.queryTableData();
     },
 
-    // TODO
     queryTableData () {
       const params = {
         ...this.searchFrom,
         ...this.page
       };
-      console.log('queryTableData', JSON.parse(JSON.stringify(params)));
-      // this.tableData.push(this.tableData[0])
+      return this.requestTableData(params).then(res => {
+        if (res.result === '0') {
+          this.tableData = data
+        } else {
+          console.error(`queryTableData message: ${res}`);
+        }
+      }).catch(e => {
+        console.error(`queryTableData error: ${e}`);
+      });
+    },
+
+
+    queryTableConfig () {
+      return this.requestTableConfig().then(res => {
+        if (res.result === '0') {
+          this.tableConfigJSON = data
+        } else {
+          console.error(`queryTableConfig message: ${res}`);
+        }
+      }).catch(e => {
+        console.error(`queryTableConfig error: ${e}`);
+      });
     },
   }
 };

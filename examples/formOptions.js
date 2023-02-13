@@ -1,17 +1,14 @@
-## formOptions 配置参考
-
-```javascript
 // 如果想一行展示多个formitem，则formitem要设置为数组
 const multipleCol = {
   // el-row的属性值
   elRowAttrs: {
-    gutter: 10,
+    gutter: 10
   },
   formItem: [
     {
       // el-col的对应属性
       elColAttrs: {
-        span: 16,
+        span: 16
       },
       // 赋值给formitem组件的class和style
       className: 'select',
@@ -19,7 +16,7 @@ const multipleCol = {
       // formitem的对应属性
       formItemAttrs: {
         label: '册数：',
-        prop: 'pageNum',
+        prop: 'pageNum'
       },
       // 一个formItem的content也允许渲染多个组件，方式为添加child属性，必须为数组
       child: [
@@ -37,8 +34,8 @@ const multipleCol = {
           // 最终使用tagName渲染的标签或者组件的对应属性
           tagAttrs: {
             placeholder: '请输入册数',
-            maxlength: '',
-          },
+            maxlength: ''
+          }
         },
         {
           style: 'width: 100px; ',
@@ -56,10 +53,10 @@ const multipleCol = {
             maxlength: '',
             value: '',
             // 注意不要写为驼峰形式
-            'show-password': true,
-          },
-        },
-      ],
+            'show-password': true
+          }
+        }
+      ]
     },
     {
       // tagName必须是eleui提供的已有组件或HTML已有标签
@@ -69,16 +66,16 @@ const multipleCol = {
       contentText: 44,
       // formitem的对应属性
       formItemAttrs: {
-        label: '格式：',
+        label: '格式：'
       },
       // el-col的对应属性
       elColAttrs: {
-        span: 8,
+        span: 8
       },
       // 最终使用tagName渲染的标签或者组件的对应属性
-      tagAttrs: {},
-    },
-  ],
+      tagAttrs: {}
+    }
+  ]
 };
 
 // 如果想一行展示一个formitem，则formitem要设置为对象
@@ -91,7 +88,7 @@ const singleRow = {
     formItemAttrs: {
       prop: 'coverId',
       label: '选择封面：',
-      required: true,
+      required: true
     },
     // tagName必须是eleui提供的已有组件或HTML已有标签
     tagName: 'el-select',
@@ -101,7 +98,7 @@ const singleRow = {
     // attrs主要包含直接赋值给当前组件的属性值
     tagAttrs: {
       placeholder: '请选择封面',
-      clearable: true,
+      clearable: true
     },
     // 对应formData中的属性值
     formField: 'coverId',
@@ -118,9 +115,9 @@ const singleRow = {
       // 事件命名保持和ele官网一致，如'current-change', 'sort-change'等，如果是原生事件，则去掉on使用on后面的名字作为方法名 参考nativeTag
       change: (s) => {
         console.log(s, 'listeners');
-      },
-    },
-  },
+      }
+    }
+  }
 };
 
 // 原生标签所需配置
@@ -129,21 +126,21 @@ const nativeTag = {
     className: 'input',
     formItemAttrs: {
       prop: 'input',
-      label: '原生input标签',
+      label: '原生input标签'
     },
     tagName: 'input',
     // 原生标签使用v-model会失效，请直接使用原生提供的属性值进行赋值
     tagAttrs: {
-      placeholder: '请选择input',
+      placeholder: '请选择input'
     },
     formField: 'input',
     listeners: {
       // 原生事件命名，去掉on使用on后面的名字作为方法名
       focus: (s) => {
         console.log(s, 'input onfocus');
-      },
-    },
-  },
+      }
+    }
+  }
 };
 
 // 如需使用自定义插槽，则只需以下配置，且在模板中使用#operator="{ formData }"来插入和正确获取数据
@@ -151,81 +148,10 @@ const slotOption = {
   formItem: {
     formItemAttrs: {
       label: '自定义插槽',
-      required: true,
+      required: true
     },
-    slotName: 'operator',
-  },
-};
-```
-
-## tableOptions 配置参考
-
-```javascript
-// tableOptions中的item，可以理解为传给el-table-column中的attrs，要注意区分书写格式，例如min-width不要写成驼峰格式
-const baseAttr = {
-  tagName: 'el-input',
-  align: 'center',
-  'min-width': '50px',
-  tagAttrs: {
-    placeholder: '请输入',
-    maxlength: '',
-  },
-  style: {
-    width: '100%',
-  },
+    slotName: 'operator'
+  }
 };
 
-const eidtConf = [
-  {
-    // 如需多选，则添加此item
-    type: 'selection',
-  },
-  // {
-  //   // 如需展示索引，则添加此item
-  //   type: 'index',
-  // },
-  {
-    label: '字段编号',
-    prop: 'fieldCode',
-    ...baseAttr,
-  },
-  {
-    label: '列宽',
-    prop: 'columnWidth',
-    ...baseAttr,
-    'min-width': '50',
-    tagName: 'el-input-number',
-  },
-  {
-    label: '对齐',
-    prop: 'align',
-    ...baseAttr,
-    'min-width': '50',
-    tagName: 'el-select',
-    // 特殊组件的额外属性值例如select组件下的option组件所需的options
-    extraOption: {
-      options: align,
-    },
-  },
-  {
-    ...baseAttr,
-    label: '查询控件',
-    prop: 'searchWidget',
-    tagName: 'el-select',
-    tagAttrs: {
-      clearable: true,
-    },
-    // 特殊组件的额外属性值例如select组件下的option组件所需的options
-    extraOption: {
-      options: searchWidget,
-    },
-  },
-  // 如需使用slot功能，请添加slotName属性，并在template中使用相同的slot名称
-  {
-    label: '操作',
-    prop: '',
-    align: 'center',
-    slotName: 'operator',
-  },
-];
-```
+export default [multipleCol, singleRow, nativeTag, slotOption];

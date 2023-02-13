@@ -7,7 +7,7 @@ import setupTable from '../packages/setupTable/main.js';
 
 const components = [baseRenderFrom, baseRenderTable, completeTable, setupTable];
 
-const install = function(Vue, opts = {}) {
+const install = function(Vue) {
   components.forEach((component) => {
     Vue.component(component.name, component);
   });
