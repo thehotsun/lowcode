@@ -50,43 +50,44 @@ export default {
     BaseRenderForm,
   },
   props: {
+    requestTableData: {
+      type: Function,
+      require: true
+    },
+    requestTableConfig: {
+      type: Function,
+      require: true
+    },
+    requestBtnConfig: {
+      type: Function,
+      require: true
+    },
     showPagination: Boolean,
-    requestTableData: Function,
-    requestTableConfig: Function
+    pageLayout: {
+      type: Object,
+      default: function () {
+        ' ->, total,sizes, prev, pager, next,jumper'
+      }
+    }
   },
   data () {
     return {
       // tabledata 属性值要做到和tableOptions中的prop相对应
-      tableConfigJSON: [{ "fieldCode": "xxx", "fieldName": "我问问", "englishName": "ccc", "columnWidth": 90, "align": 1, "show": true, "sort": false, "searchWidget": 0, "searchWidgetConfig": { "formItemAttrs": { "label": "34" }, "tagAttrs": { "placeholder": "55" } }, "$edit": false }, { "fieldCode": "yyy", "fieldName": "我看看", "englishName": "fff", "columnWidth": 100, "align": 1, "show": true, "sort": false, "searchWidget": 1, "searchWidgetConfig": { "formItemAttrs": { "label": "我" }, "tagAttrs": { "placeholder": "请输入我" }, "extraOption": { "options": [{ "id": "123", "cnName": "hi好" }, { "id": "1", "cnName": "好" }] } }, "$edit": false }],
+      tableConfigJSON: [],
       tableOptions: [],
-      tableData: [
-        {
-          xxx: 22,
-          yyy: 33
-        }
-      ],
+      tableData: [],
       formOptions: [],
       searchFrom: {},
       rawSearchFrom: {},
-      pageLayout: ' ->, total,sizes, prev, pager, next,jumper', // 分页组件
       page: {
         pageNum: 1,
         pageSize: 10,
         totalCount: 20
       },
       btnFormOptions: [],
-      btnConfigJSON: [{ "btnID": "add", "btnName": "添加", "englishName": "add", "URL": "ssss", "icon": "ss", "isUse": true, "isShow": true, "isAuth": "", "searchWidgetConfig": {}, "$edit": true }],
+      btnConfigJSON: [],
     };
   },
-
-  // watch: {
-  //   tableConfigJSON: {
-  //     deep: true,
-  //     handler: function (val) {
-  //       this.formOptions = this.composeFromOptions(val);
-  //     }
-  //   }
-  // },
 
   async mounted () {
     this.queryTableData();
@@ -101,6 +102,7 @@ export default {
       obj.sortable = !!item.sort
       return obj
     })
+    await this.queryBtnConfig();
     this.btnFormOptions = this.composeBtnFromOptions(this.btnConfigJSON.filter(item => item.isShow && item.isUse))
     // this.exec("console.warn(this.formOptions)");
   },
@@ -209,7 +211,7 @@ export default {
       };
       return this.requestTableData(params).then(res => {
         if (res.result === '0') {
-          this.tableData = data
+          this.tableData = res.data
         } else {
           console.error(`queryTableData message: ${res}`);
         }
@@ -222,12 +224,24 @@ export default {
     queryTableConfig () {
       return this.requestTableConfig().then(res => {
         if (res.result === '0') {
-          this.tableConfigJSON = data
+          this.tableConfigJSON = res.data
         } else {
           console.error(`queryTableConfig message: ${res}`);
         }
       }).catch(e => {
         console.error(`queryTableConfig error: ${e}`);
+      });
+    },
+
+    queryBtnConfig () {
+      return this.requestTableConfig().then(res => {
+        if (res.result === '0') {
+          this.btnConfigJSON = res.data
+        } else {
+          console.error(`queryBtnConfig message: ${res}`);
+        }
+      }).catch(e => {
+        console.error(`queryBtnConfig error: ${e}`);
       });
     },
   }
