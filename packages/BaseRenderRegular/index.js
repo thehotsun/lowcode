@@ -1,35 +1,16 @@
 import { getter, getHandleInput } from '../../utils';
 
 export default {
-  name: 'BaseRenderForm',
+  name: 'BaseRenderRegular',
   props: {
-    rules: {
-      type: Object,
-    },
-    formOptions: {
+    renderOptions: {
       type: Array,
     },
-    formData: {
-      type: Object,
-    },
-    useDialog: {
-      type: Boolean,
-      default() {
-        return true;
-      },
-    },
-    dialogTitle: String,
-    dialogOptions: {
-      type: Object,
-    },
     onlyShow: Boolean,
+    formData: Object
   },
   data() {
-    return {
-      formRef: 'elForm',
-      dialogRef: 'elDialog',
-      showDialog: true,
-    };
+    return {};
   },
   computed: {},
   watch: {},
@@ -37,38 +18,6 @@ export default {
     // this.init();
   },
   methods: {
-    // 可以通过调用此组件的这个方法获取el-table的实例
-    expose_getElFormInstance() {
-      return this.$refs[this.formRef];
-    },
-
-    // 可以通过调用此组件的这个方法获取el-dialog的实例
-    expose_getElDialogInstance() {
-      if (this.useDialog) return this.$refs[this.dialogRef];
-      else console.error('请将porps useDialog设置为true');
-    },
-
-    // 设置showDialog
-    expose_setShowDialog(bool) {
-      this.showDialog = bool;
-    },
-
-    handleClose() {
-      this.showDialog = false;
-      this.$emit('onClose');
-    },
-
-    async handleSubmit() {
-      this.expose_getElFormInstance().validate((valid) => {
-        if (valid) {
-          this.$emit('onSubmit');
-        } else {
-          console.log('error submit!!');
-          return false;
-        }
-      });
-    },
-
     getCooperateComp(tagName, attrs, listeners, formField, extraOption) {
       // TODO 待添加，
       const renderFn = {
@@ -96,7 +45,6 @@ export default {
       let model = getter(formData, formField);
       return (
         <el-select
-          // v-model={1 ? model : ""}
           value={model}
           {...{
             attrs,
@@ -118,7 +66,6 @@ export default {
       );
     },
 
-    //
     getSingleCompVNode(item) {
       const { formData, isCooperateComp, getCooperateComp, onlyShow } = this;
       const {
@@ -186,22 +133,6 @@ export default {
       );
     },
 
-    getFormItemVNode(allItemInfo = {}) {
-      // 一个formItem的content也允许渲染多个组件
-      const { formItemAttrs, ...item } = allItemInfo;
-      return (
-        <el-form-item
-          {...{
-            attrs: formItemAttrs,
-          }}
-        >
-          {item.child && Array.isArray(item.child)
-            ? item.child.map((item) => this.getSingleCompVNode(item))
-            : this.getSingleCompVNode(item)}
-        </el-form-item>
-      );
-    },
-
     customLayoutRender(data) {
       // 由于此处的data为formOptions，已在props中声明为数组，因此不对data进行再次校验
       // 当前布局组件不提供 Bootstrap式的响应式布局属性
@@ -230,13 +161,13 @@ export default {
                         attrs: elColAttrs,
                       }}
                     >
-                      {this.getFormItemVNode(formItemAttrs)}
+                      {this.getSingleCompVNode(formItemAttrs)}
                     </el-col>
                   ) : (
-                    this.getFormItemVNode(formItemAttrs)
+                    this.getSingleCompVNode(formItemAttrs)
                   );
                 })
-              : this.getFormItemVNode(formItem)}
+              : this.getSingleCompVNode(formItem)}
           </el-row>
         );
       });
@@ -245,82 +176,28 @@ export default {
 
   render() {
     const {
-      handleClose,
       formData,
-      handleSubmit,
       customLayoutRender,
       rules,
-      formOptions,
-      useDialog,
-      dialogTitle,
-      showDialog,
+      renderOptions,
       formRef,
-      dialogRef,
-      dialogOptions,
       $attrs,
       $listeners,
     } = this;
 
-    const defaultFormAttrs = {
-      rules,
-      model: formData,
-      size: 'mini',
-      'label-width': '100px',
-    };
-
-    const defaultDialogAttrs = {
-      beforeClose: handleClose,
-      title: dialogTitle || '弹窗',
-      visible: showDialog,
-      width: '800px',
-    };
-
     return (
-      <div>
-        {useDialog ? (
-          <el-dialog
-            ref={dialogRef}
-            {...{
-              attrs: { ...defaultDialogAttrs, ...dialogOptions },
-            }}
-          >
-            <el-form
-              ref={formRef}
-              {...{
-                attrs: {
-                  ...defaultFormAttrs,
-                  ...$attrs,
-                },
-                on: {
-                  ...$listeners,
-                },
-              }}
-            >
-              {customLayoutRender(formOptions)}
-            </el-form>
-            <div slot="footer">
-              <el-button on-click={handleClose}>取消</el-button>
-              <el-button type="primary" on-click={handleSubmit}>
-                确定
-              </el-button>
-            </div>
-          </el-dialog>
-        ) : (
-          <el-form
-            ref={formRef}
-            {...{
-              attrs: {
-                ...defaultFormAttrs,
-                ...$attrs,
-              },
-              on: {
-                ...$listeners,
-              },
-            }}
-          >
-            {customLayoutRender(formOptions)}
-          </el-form>
-        )}
+      <div
+        ref={formRef}
+        {...{
+          attrs: {
+            ...$attrs,
+          },
+          on: {
+            ...$listeners,
+          },
+        }}
+      >
+        {customLayoutRender(renderOptions)}
       </div>
     );
   },

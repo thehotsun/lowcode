@@ -2,10 +2,17 @@
 
 import baseRenderFrom from '../packages/BaseRenderForm/main.js';
 import baseRenderTable from '../packages/BaseRenderTable/main.js';
+import BaseRenderRegular from '../packages/BaseRenderRegular/main.js';
 import completeTable from '../packages/completeTable/main.js';
 import setupTable from '../packages/setupTable/main.js';
 
-const components = [baseRenderFrom, baseRenderTable, completeTable, setupTable];
+const components = [
+  baseRenderFrom,
+  baseRenderTable,
+  BaseRenderRegular,
+  completeTable,
+  setupTable,
+];
 
 const install = function(Vue) {
   components.forEach((component) => {
@@ -22,6 +29,7 @@ export default {
   install,
   baseRenderFrom,
   baseRenderTable,
+  BaseRenderRegular,
   completeTable,
   setupTable,
 };

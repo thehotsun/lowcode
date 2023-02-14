@@ -44,7 +44,7 @@ export function completeFromItemOptions(data, tableItem) {
   data.formField = tableItem.fieldCode;
   data.formItemAttrs.label = tableItem.fieldName;
   data.tagAttrs.placeholder = setPlaceholder(data.tagName, tableItem.fieldName);
-  setColSpan(data, 8);
+  // setColSpan(data, 8);
   return data;
 }
 
@@ -127,8 +127,12 @@ export function setter(obj = {}, field = "", value) {
 
 export function getHandleInput(formData, formField, fn) {
   return function(e) {
-    // e可能是原生事件对象
-    setter(formData, formField, e?.target?.value ?? e);
-    fn && fn(e);
+    try {
+      // e可能是原生事件对象
+      setter(formData, formField, e?.target?.value ?? e);
+      fn && fn(e);
+    } catch (error) {
+      console.error(error)
+    }
   };
 }

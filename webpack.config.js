@@ -4,6 +4,7 @@ const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 const { VueLoaderPlugin } = require('vue-loader');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 module.exports = {
+  
   mode: 'none',
   entry: {
     index: './src/index.js',
@@ -16,6 +17,8 @@ module.exports = {
     'baseRenderForm.min': './packages/baseRenderForm/main.js',
     baseRenderTable: './packages/baseRenderTable/main.js',
     'baseRenderTable.min': './packages/baseRenderTable/main.js',
+    baseRenderRegular: './packages/baseRenderRegular/main.js',
+    'baseRenderRegular.min': './packages/baseRenderRegular/main.js',
   },
   output: {
     path: path.join(__dirname, '/lib'),

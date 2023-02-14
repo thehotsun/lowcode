@@ -7,9 +7,9 @@
 
     <el-main>
       <el-container style="height: 100%">
-        <el-header>
-          <base-render-form ref="btnForm" :form-options="btnFormOptions" :use-dialog="false">
-          </base-render-form>
+        <el-header class="flex">
+          <base-render-regular ref="btnForm" :render-options="btnRegularOptions">
+          </base-render-regular>
         </el-header>
         <el-main>
           <base-render-table ref="table" :table-data="tableData" :table-options="tableOptions"
@@ -38,6 +38,7 @@
 
 import BaseRenderTable from '../BaseRenderTable/index';
 import BaseRenderForm from '../BaseRenderForm/index';
+import BaseRenderRegular from '../BaseRenderRegular/index';
 import { align, searchWidget } from '../../baseConfig/tableSelectConfigs';
 import { getElBtnConfig } from '../../baseConfig/widgetBaseConfig';
 import { setPlaceholder, getWidgetOptions, setColSpan } from '../../utils';
@@ -48,6 +49,7 @@ export default {
   components: {
     BaseRenderTable,
     BaseRenderForm,
+    BaseRenderRegular
   },
   props: {
     requestTableData: {
@@ -84,7 +86,7 @@ export default {
         pageSize: 10,
         totalCount: 20
       },
-      btnFormOptions: [],
+      btnRegularOptions: [],
       btnConfigJSON: [],
     };
   },
@@ -103,7 +105,7 @@ export default {
       return obj
     })
     await this.queryBtnConfig();
-    this.btnFormOptions = this.composeBtnFromOptions(this.btnConfigJSON.filter(item => item.isShow && item.isUse))
+    this.btnRegularOptions = this.composeBtnRegularOptions(this.btnConfigJSON.filter(item => item.isShow && item.isUse))
     // this.exec("console.warn(this.formOptions)");
   },
 
@@ -143,8 +145,12 @@ export default {
       });
       return [{
         elRowAttrs: {
-          gutter: 10
+          gutter: 10,
+          type: "flex",
+          align: 'middle',
+          justify: 'start',
         },
+        style: "flex-wrap: wrap",
         formItem: formOptions
       }];
     },
@@ -159,19 +165,19 @@ export default {
         resetConfig];
     },
 
-    composeBtnFromOptions (config) {
-      const formOptions = config.map(item => {
-        return getElBtnConfig('primary', this.handleFilter, item.btnName, {
-          formItemAttrs: {
-            'label-width': '0px'
-          }
-        });
+    composeBtnRegularOptions (config) {
+      const options = config.map(item => {
+        return getElBtnConfig('primary', this.handleFilter, item.btnName);
       })
       return [{
         elRowAttrs: {
-          gutter: 10
+          gutter: 10,
+          type: "flex",
+          align: 'middle',
+          justify: 'start',
         },
-        formItem: formOptions
+        style: "padding-left: 5px",
+        formItem: options
       }]
     },
 
@@ -260,5 +266,10 @@ export default {
   left: 0;
   right: 0;
   z-index: 999;
+}
+
+.flex {
+  display: flex;
+  align-items: center;
 }
 </style>
