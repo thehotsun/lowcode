@@ -58,9 +58,9 @@ export default {
       type: Function,
       require: true
     },
+    // 有可能页面比较简单不需要功能按钮，因此并不是必穿
     requestBtnConfig: {
       type: Function,
-      require: true
     },
     showPagination: Boolean,
     pageLayout: {
@@ -122,6 +122,7 @@ export default {
 
     // 设置searchFrom和装配fromOptions
     composeFromOptions (tableData) {
+      if (!tableData.length) return [];
       const { setFromField } = this;
       const formOptions = [];
       const length = tableData.length;
@@ -234,7 +235,7 @@ export default {
     },
 
     queryBtnConfig () {
-      return this.requestTableConfig().then(res => {
+      return this.requestBtnConfig()?.then(res => {
         if (res.result === '0') {
           this.btnConfigJSON = res.data
         } else {
@@ -246,7 +247,7 @@ export default {
     },
   }
 };
-</script>
+</script>  
 
 <style lang="scss" scoped>
 .wrap {

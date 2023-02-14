@@ -8,6 +8,14 @@ module.exports = {
   entry: {
     index: './src/index.js',
     'index.min': './src/index.js',
+    completeTable: './packages/completeTable/main.js',
+    'completeTable.min': './packages/completeTable/main.js',
+    setupTable: './packages/setupTable/main.js',
+    'setupTable.min': './packages/setupTable/main.js',
+    baseRenderForm: './packages/baseRenderForm/main.js',
+    'baseRenderForm.min': './packages/baseRenderForm/main.js',
+    baseRenderTable: './packages/baseRenderTable/main.js',
+    'baseRenderTable.min': './packages/baseRenderTable/main.js',
   },
   output: {
     path: path.join(__dirname, '/lib'),
@@ -31,10 +39,10 @@ module.exports = {
   },
   module: {
     rules: [
-			{
-				test:/.(jpg|png)$/,
-				use:'file-loader'
-			},
+      {
+        test: /.(jpg|png)$/,
+        use: 'file-loader',
+      },
       {
         test: /\.vue$/,
         use: ['vue-loader'],
