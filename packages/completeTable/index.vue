@@ -42,7 +42,7 @@ import BaseRenderRegular from '../BaseRenderRegular/index';
 import { align, searchWidget } from '../../baseConfig/tableSelectConfigs';
 import { getElBtnConfig } from '../../baseConfig/widgetBaseConfig';
 import { setPlaceholder, getWidgetOptions, setColSpan } from '../../utils';
-import _ from "lodash";
+import {cloneDeep, merge} from "lodash";
 
 export default {
   name: 'completeTable',
@@ -134,11 +134,11 @@ export default {
         if (searchWidgetName) {
           setFromField(this.searchFrom, item.fieldCode);
           const options = getWidgetOptions(searchWidgetName, item)
-          formOptions.push(_.merge(options, item.searchWidgetConfig));
+          formOptions.push(merge(options, item.searchWidgetConfig));
         }
         // 如果循环到最后一个，则复制一份最原始的form
         if (length - 1 === index) {
-          this.rawSearchFrom = _.cloneDeep(this.searchFrom);
+          this.rawSearchFrom = cloneDeep(this.searchFrom);
           // 添加筛选和重置按钮
           formOptions.push(...this.getBtnConfig());
         }
@@ -185,7 +185,7 @@ export default {
       this.queryTableData();
     },
     handleReset () {
-      this.searchFrom = _.cloneDeep(this.rawSearchFrom);
+      this.searchFrom = cloneDeep(this.rawSearchFrom);
       this.queryTableData();
     },
 

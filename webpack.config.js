@@ -1,10 +1,12 @@
-const path = require('path')
+const path = require('path');
 const TerserPlugin = require('terser-webpack-plugin');
 const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 const { VueLoaderPlugin } = require('vue-loader');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
+const LodashModuleReplacementPlugin = require('lodash-webpack-plugin');
+const BundleAnalyzerPlugin = require('webpack-bundle-analyzer')
+  .BundleAnalyzerPlugin;
 module.exports = {
-  
   mode: 'none',
   entry: {
     index: './src/index.js',
@@ -43,6 +45,17 @@ module.exports = {
   module: {
     rules: [
       {
+        use: {
+          loader: 'babel-loader',
+          options: {
+            plugins: ['lodash'],
+            presets: ['@babel/preset-env'],
+          },
+        },
+        test: /\.js$/,
+        exclude: /node_modules/,
+      },
+      {
         test: /.(jpg|png)$/,
         use: 'file-loader',
       },
@@ -76,10 +89,12 @@ module.exports = {
     ],
   },
   plugins: [
+    new BundleAnalyzerPlugin(),
     new VueLoaderPlugin(),
     new CleanWebpackPlugin(),
     new MiniCssExtractPlugin({
       filename: 'lib-style/[name].css',
     }),
+    new LodashModuleReplacementPlugin(),
   ],
 };
