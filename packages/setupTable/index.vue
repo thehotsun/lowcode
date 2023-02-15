@@ -28,7 +28,6 @@
         </el-main>
       </el-container>
     </el-main>
-
   </el-container>
 </template>
 
@@ -39,7 +38,6 @@ import BaseRenderForm from '../BaseRenderForm/index';
 import { getSingleTableData } from '../../baseConfig/tableBaseConfig'
 import { align, searchWidget } from '../../baseConfig/tableSelectConfigs';
 import { setPlaceholder, getWidgetOptions, getFormItemEmptyConfig, str2obj } from '../../utils';
-import _ from "lodash";
 
 
 export default {

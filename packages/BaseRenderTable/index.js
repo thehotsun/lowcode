@@ -1,5 +1,4 @@
 import "./table.scss";
-import { mapState } from "vuex";
 
 export default {
   name: 'BaseRenderTable',
@@ -38,12 +37,6 @@ export default {
     //     };
     //   },
     // },
-  },
-
-  computed: {
-    ...mapState({
-      enterpriseId: (state) => state.enterprise.enterpriseId,
-    }),
   },
 
   methods: {

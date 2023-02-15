@@ -1,13 +1,11 @@
 import { getElDatePickerConfig, getElDatePickerRangeConfig, getElInputConfig, getElSelectConfig, getElBtnConfig } from "../baseConfig/widgetBaseConfig";
 
 export function setPlaceholder(tagName, fieldName) {
-  console.log(tagName);
   const inputs = ["el-input", "el-input-number"];
   return `请${inputs.includes(tagName) ? "输入" : "选择"}${fieldName}`;
 }
 
 export function setFilterAndResetBtnConfig(handleFilter, handleReset) {
-  console.log(tagName);
   const inputs = ["el-input", "el-input-number"];
   return `请${inputs.includes(tagName) ? "输入" : "选择"}${fieldName}`;
 }
@@ -64,7 +62,6 @@ export function getWidgetOptions(searchWidgetName, item) {
   }
 }
 
-// TODO 每个formitem所占据的宽度如何更好的自定义？
 export function setColSpan(data, span) {
   if (data.elColAttrs) {
     data.elColAttrs.span = span;
