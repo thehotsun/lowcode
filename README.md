@@ -1,3 +1,27 @@
+# @viva3la3vida/base-render
+
+## 安装
+
+
+```bash
+$ npm install @viva3la3vida/base-render
+```
+
+## 使用
+
+
+<h6> 按需引入 
+```bash
+import { completeTable } from "@viva3la3vida/base-render"; 
+Vue.use(completeTable);
+```
+
+<h6> 全部引入 
+```bash
+import BaseRender from "@viva3la3vida/base-render";
+Vue.use(BaseRender);
+```
+
 ## formOptions 配置参考
 
 ```javascript
