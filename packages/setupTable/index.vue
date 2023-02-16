@@ -7,6 +7,9 @@
         <el-button size='small' type="danger" :disabled="!selected.length" @click="handleDelete">删除</el-button>
         <el-button size='small' type="" :disabled="checkUpBtnDisabled()" @click="handleUpAndDwon(-1)">上移</el-button>
         <el-button size='small' type="" :disabled="checkDwonBtnDisabled()" @click="handleUpAndDwon(1)">下移</el-button>
+        <el-button size='small' type="primary" @click.stop.prevent="handleOpenFormDesign()">
+          新增功能按钮
+        </el-button>
         <slot name="btn"></slot>
       </div>
     </el-header>
@@ -28,10 +31,19 @@
         </el-main>
       </el-container>
     </el-main>
-  </el-container>
+    <el-dialog title="表单设计器" :visible.sync="designerDialog" :close-on-click-modal="false"
+      :close-on-press-escape="false"  width="92%" top="8vh" :before-close="handleClose" append-to-body>
+      <fc-designer ref="fcdesigner" @saveData="onFromDesignSave"></fc-designer>
+    </el-dialog>
+</el-container>
 </template>
 
 <script>
+
+
+
+
+
 
 import BaseRenderTable from '../BaseRenderTable/index';
 import BaseRenderForm from '../BaseRenderForm/index';
@@ -49,10 +61,16 @@ export default {
   props: {
     tableOptions: Array,
     tableData: Array,
+    parseJson: {
+      type: Function,
+      require: true
+    },
   },
   data () {
     return {
       selected: [],
+      formDesignData: {},
+      designerDialog: false
     };
   },
 
@@ -61,6 +79,10 @@ export default {
   },
 
   methods: {
+
+    expose_getFormDesignData () {
+      return this.formDesignData
+    },
 
     init () {
       this.tableData = [getSingleTableData(), getSingleTableData()]
@@ -111,7 +133,29 @@ export default {
       this.selected = val;
       console.log(val);
     },
-  
+
+    handleOpenFormDesign () {
+      this.designerDialog = true;
+      // this.setDesigner()
+    },
+    // TODO 有参数，参数为编辑状态下之前得数据
+    // 打开设计器
+    setDesigner () {
+      this.$refs.fcdesigner.setRule(this.parseJson(JSON.stringify(FcDesignerRule)));
+      this.$refs.fcdesigner.setOption(this.parseJson(JSON.stringify(FcDesignerOptions)));
+    },
+
+    handleClose () {
+      this.designerDialog = false;
+    },
+
+    onFromDesignSave (FcDesignerRule, FcDesignerOptions) {
+      this.formDesignData = {
+        FcDesignerRule,
+        FcDesignerOptions,
+      }
+      this.handleClose()
+    }
   }
 };
 </script>

@@ -8,8 +8,10 @@
     <el-main>
       <el-container style="height: 100%">
         <el-header class="flex">
-          <base-render-regular ref="btnForm" :render-options="btnRegularOptions">
-          </base-render-regular>
+          <form-create style="width: 100%" v-model="formData" :rule="rule" :option="option"
+            @submit="onFromSubmit"></form-create>
+          <!-- <base-render-regular ref="btnForm" :render-options="btnRegularOptions">
+                  </base-render-regular> -->
         </el-header>
         <el-main>
           <base-render-table ref="table" :table-data="tableData" :table-options="tableOptions"
@@ -30,10 +32,19 @@
         </el-footer>
       </el-container>
     </el-main>
-  </el-container>
+</el-container>
 </template>
 
 <script>
+
+
+
+
+
+
+
+
+
 // 为何将pagination放在这个组件？首先因为baseTable仅仅是作为table的渲染器存在的，不应涉及网络请求，而pagination最重要的功能就是通过网络请求更新数据，因此在哪里使用到了获取table数据的网络请求，在哪就应该将pagination放进去
 
 import BaseRenderTable from '../BaseRenderTable/index';
@@ -42,7 +53,7 @@ import BaseRenderRegular from '../BaseRenderRegular/index';
 import { align, searchWidget } from '../../baseConfig/tableSelectConfigs';
 import { getElBtnConfig } from '../../baseConfig/widgetBaseConfig';
 import { setPlaceholder, getWidgetOptions, setColSpan } from '../../utils';
-import {cloneDeep, merge} from "lodash";
+import { cloneDeep, merge } from "lodash";
 
 export default {
   name: 'completeTable',
@@ -56,14 +67,15 @@ export default {
       type: Function,
       require: true
     },
+    parseJson: {
+      type: Function,
+      require: true
+    },
     requestTableConfig: {
       type: Function,
       require: true
     },
-    // 有可能页面比较简单不需要功能按钮，因此并不是必穿
-    requestBtnConfig: {
-      type: Function,
-    },
+
     showPagination: Boolean,
     pageLayout: {
       type: Object,
@@ -86,8 +98,12 @@ export default {
         pageSize: 10,
         totalCount: 20
       },
-      btnRegularOptions: [],
-      btnConfigJSON: [],
+      // btnRegularOptions: [],
+      // btnConfigJSON: [],
+      rule: [],
+      option: [],
+      // TODO 这个是否应由外部传入，如果传入空对象会存在数据变为非响应式得嘛
+      formData: {}
     };
   },
 
@@ -104,8 +120,8 @@ export default {
       obj.sortable = !!item.sort
       return obj
     })
-    await this.queryBtnConfig();
-    this.btnRegularOptions = this.composeBtnRegularOptions(this.btnConfigJSON.filter(item => item.isShow && item.isUse))
+    // await this.queryBtnConfig();
+    // this.btnRegularOptions = this.composeBtnRegularOptions(this.btnConfigJSON.filter(item => item.isShow && item.isUse))
     // this.exec("console.warn(this.formOptions)");
   },
 
@@ -165,21 +181,6 @@ export default {
         resetConfig];
     },
 
-    composeBtnRegularOptions (config) {
-      const options = config.map(item => {
-        return getElBtnConfig('primary', this.handleFilter, item.btnName);
-      })
-      return [{
-        elRowAttrs: {
-          gutter: 10,
-          type: "flex",
-          align: 'middle',
-          justify: 'start',
-        },
-        style: "padding-left: 5px",
-        formItem: options
-      }]
-    },
 
     handleFilter () {
       this.queryTableData();
@@ -231,7 +232,12 @@ export default {
     queryTableConfig () {
       return this.requestTableConfig().then(res => {
         if (res.result === '0') {
-          this.tableConfigJSON = res.data
+          const { tableOptions, formOptions: {
+            FcDesignerRule, FcDesignerOptions
+          } } = res.data
+          this.tableConfigJSON = tableOptions;
+          this.rule = this.parseJson(JSON.stringify(FcDesignerRule) || "")
+          this.option = this.parseJson(JSON.stringify(FcDesignerOptions) || "")
         } else {
           console.error(`queryTableConfig message: ${res}`);
         }
@@ -240,17 +246,38 @@ export default {
       });
     },
 
-    queryBtnConfig () {
-      return this.requestBtnConfig()?.then(res => {
-        if (res.result === '0') {
-          this.btnConfigJSON = res.data
-        } else {
-          console.error(`queryBtnConfig message: ${res}`);
-        }
-      }).catch(e => {
-        console.error(`queryBtnConfig error: ${e}`);
-      });
+    // TODO 提交表单事件这个是否应由外部传入，
+    onFromSubmit () {
+
     },
+
+    // queryBtnConfig () {
+    //   return this.requestBtnConfig()?.then(res => {
+    //     if (res.result === '0') {
+    //       this.btnConfigJSON = res.data
+    //     } else {
+    //       console.error(`queryBtnConfig message: ${res}`);
+    //     }
+    //   }).catch(e => {
+    //     console.error(`queryBtnConfig error: ${e}`);
+    //   });
+    // },
+
+    // composeBtnRegularOptions (config) {
+    //   const options = config.map(item => {
+    //     return getElBtnConfig('primary', this.handleFilter, item.btnName);
+    //   })
+    //   return [{
+    //     elRowAttrs: {
+    //       gutter: 10,
+    //       type: "flex",
+    //       align: 'middle',
+    //       justify: 'start',
+    //     },
+    //     style: "padding-left: 5px",
+    //     formItem: options
+    //   }]
+    // },
   }
 };
 </script>  
