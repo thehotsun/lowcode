@@ -11,7 +11,7 @@
           <form-create style="width: 100%" v-model="formData" :rule="rule" :option="option"
             @submit="onFromSubmit"></form-create>
           <!-- <base-render-regular ref="btnForm" :render-options="btnRegularOptions">
-                              </base-render-regular> -->
+                                </base-render-regular> -->
         </el-header>
         <el-main>
           <base-render-table ref="table" :table-data="tableData" :table-options="tableOptions"
@@ -223,7 +223,18 @@ export default {
       });
     },
 
-
+    //  {
+    //   formOptions: {
+    //     "FcDesignerRule": [{ "type": "FcRow", "_fc_drag_tag": "row", "hidden": false, "display": true }, { "type": "FcRow", "children": [{ "type": "col", "props": { "span": 2 }, "children": [{ "type": "el-button", "children": ["按钮"], "_fc_drag_tag": "el-button", "hidden": false, "display": true }], "_fc_drag_tag": "col", "hidden": false, "display": true }, { "type": "col", "props": { "span": 2 }, "children": [{ "type": "el-button", "children": ["按钮"], "_fc_drag_tag": "el-button", "hidden": false, "display": true }], "_fc_drag_tag": "col", "hidden": false, "display": true }, { "type": "col", "props": { "span": 2 }, "children": [{ "type": "el-button", "children": ["按钮"], "_fc_drag_tag": "el-button", "hidden": false, "display": true }], "_fc_drag_tag": "col", "hidden": false, "display": true }, { "type": "col", "props": { "span": 2 }, "children": [{ "type": "el-button", "children": ["按钮"], "_fc_drag_tag": "el-button", "hidden": false, "display": true }], "_fc_drag_tag": "col", "hidden": false, "display": true }], "_fc_drag_tag": "row", "hidden": false, "display": true }],
+    //       "FcDesignerOptions": { "form": { "inline": false, "labelPosition": "right", "size": "mini", "labelWidth": "125px", "hideRequiredAsterisk": false, "showMessage": true, "inlineMessage": false }, "submitBtn": false, "resetBtn": false },
+    //   },
+    //   tableOptions: [
+    //     { fieldCode: 'name', fieldName: '姓名', englishName: '', columnWidth: '', align: 2, show: true, sort: false, searchWidget: 0 },
+    //     { fieldCode: 'age', fieldName: '年龄', englishName: '', columnWidth: '', align: 1, show: true, sort: false, searchWidget: 1 }, { fieldCode: 'gender', fieldName: '性别', englishName: '', columnWidth: '', align: 0, show: true, sort: true, searchWidget: 2 },
+    //     { fieldCode: 'phone', fieldName: '手机号', englishName: '', columnWidth: '', align: 0, show: true, sort: false, searchWidget: 3 },
+    //     { fieldCode: 'education', fieldName: '学历', englishName: '', columnWidth: '', align: 0, show: true, sort: false, searchWidget: 0 }
+    //   ]
+    // }
     queryTableConfig () {
       return this.requestTableConfig().then(res => {
         if (res.result === '0') {
