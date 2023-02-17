@@ -1,6 +1,6 @@
 <template>
   <el-container>
-    <el-header>
+    <el-header v-if="showSearchFrom">
       <base-render-form ref="form" :form-data="searchFrom" :form-options="formOptions" :use-dialog="false">
       </base-render-form>
     </el-header>
@@ -11,7 +11,7 @@
           <form-create style="width: 100%" v-model="formData" :rule="rule" :option="option"
             @submit="onFromSubmit"></form-create>
           <!-- <base-render-regular ref="btnForm" :render-options="btnRegularOptions">
-                  </base-render-regular> -->
+                              </base-render-regular> -->
         </el-header>
         <el-main>
           <base-render-table ref="table" :table-data="tableData" :table-options="tableOptions"
@@ -32,19 +32,10 @@
         </el-footer>
       </el-container>
     </el-main>
-</el-container>
+  </el-container>
 </template>
 
 <script>
-
-
-
-
-
-
-
-
-
 // 为何将pagination放在这个组件？首先因为baseTable仅仅是作为table的渲染器存在的，不应涉及网络请求，而pagination最重要的功能就是通过网络请求更新数据，因此在哪里使用到了获取table数据的网络请求，在哪就应该将pagination放进去
 
 import BaseRenderTable from '../BaseRenderTable/index';
@@ -101,28 +92,15 @@ export default {
       // btnRegularOptions: [],
       // btnConfigJSON: [],
       rule: [],
-      option: [],
+      option: {},
       // TODO 这个是否应由外部传入，如果传入空对象会存在数据变为非响应式得嘛
-      formData: {}
+      formData: {},
+      showSearchFrom: false
     };
   },
 
-  async mounted () {
-    this.queryTableData();
-    await this.queryTableConfig();
-    this.formOptions = this.composeFromOptions(this.tableConfigJSON);
-    this.tableOptions = this.tableConfigJSON.filter(item => item.show).map(item => {
-      const obj = {}
-      obj.prop = item.fieldCode
-      obj.label = item.fieldName
-      obj.align = align.find(alignitem => alignitem.id === item.align).value
-      obj['min-width'] = item.width
-      obj.sortable = !!item.sort
-      return obj
-    })
-    // await this.queryBtnConfig();
-    // this.btnRegularOptions = this.composeBtnRegularOptions(this.btnConfigJSON.filter(item => item.isShow && item.isUse))
-    // this.exec("console.warn(this.formOptions)");
+  mounted () {
+    this.init()
   },
 
   methods: {
@@ -130,7 +108,22 @@ export default {
     //   eval(fn);
     // },
 
-    init () {
+    async init () {
+      this.queryTableData();
+      await this.queryTableConfig();
+      this.formOptions = this.composeFromOptions(this.tableConfigJSON);
+      this.tableOptions = this.tableConfigJSON.filter(item => item.show).map(item => {
+        const obj = {}
+        obj.prop = item.fieldCode
+        obj.label = item.fieldName
+        obj.align = align.find(alignitem => alignitem.id === item.align).value
+        obj['min-width'] = item.width
+        obj.sortable = !!item.sort
+        return obj
+      })
+      // await this.queryBtnConfig();
+      // this.btnRegularOptions = this.composeBtnRegularOptions(this.btnConfigJSON.filter(item => item.isShow && item.isUse))
+      // this.exec("console.warn(this.formOptions)");
     },
 
     // 由数据组成searchFrom
@@ -140,6 +133,7 @@ export default {
 
     // 设置searchFrom和装配fromOptions
     composeFromOptions (tableData) {
+      this.showSearchFrom = false
       if (!tableData.length) return [];
       const { setFromField } = this;
       const formOptions = [];
@@ -152,11 +146,12 @@ export default {
           const options = getWidgetOptions(searchWidgetName, item)
           formOptions.push(merge(options, item.searchWidgetConfig));
         }
-        // 如果循环到最后一个，则复制一份最原始的form
-        if (length - 1 === index) {
+        // 如果循环到最后一个且存在其他筛选项，则复制一份最原始的form
+        if (length - 1 === index && formOptions.length) {
           this.rawSearchFrom = cloneDeep(this.searchFrom);
           // 添加筛选和重置按钮
           formOptions.push(...this.getBtnConfig());
+          this.showSearchFrom = true
         }
       });
       return [{
@@ -233,11 +228,11 @@ export default {
       return this.requestTableConfig().then(res => {
         if (res.result === '0') {
           const { tableOptions, formOptions: {
-            FcDesignerRule, FcDesignerOptions
-          } } = res.data
+            FcDesignerRule = [], FcDesignerOptions = {}
+          } } = JSON.parse(res.data)
           this.tableConfigJSON = tableOptions;
-          this.rule = this.parseJson(JSON.stringify(FcDesignerRule) || "")
-          this.option = this.parseJson(JSON.stringify(FcDesignerOptions) || "")
+          this.rule = FcDesignerRule
+          this.option = FcDesignerOptions
         } else {
           console.error(`queryTableConfig message: ${res}`);
         }
