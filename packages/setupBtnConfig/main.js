@@ -1,4 +1,4 @@
-import completeTable from './index.vue';
+import setupBtnConfig from './index.vue';
 
 /* istanbul ignore next */
 setupBtnConfig.install = function(Vue) {

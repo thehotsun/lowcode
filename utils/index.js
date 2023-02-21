@@ -1,21 +1,29 @@
-import { getElDatePickerConfig, getElDatePickerRangeConfig, getElInputConfig, getElSelectConfig, getElBtnConfig } from "../baseConfig/widgetBaseConfig";
+import {
+  getElDatePickerConfig,
+  getElDatePickerRangeConfig,
+  getElInputConfig,
+  getElSelectConfig,
+  getElBtnConfig,
+} from '../baseConfig/widgetBaseConfig';
 
 export function setPlaceholder(tagName, fieldName) {
-  const inputs = ["el-input", "el-input-number"];
-  return `请${inputs.includes(tagName) ? "输入" : "选择"}${fieldName}`;
+  const inputs = ['el-input', 'el-input-number'];
+  return `请${inputs.includes(tagName) ? '输入' : '选择'}${fieldName}`;
 }
 
 export function setFilterAndResetBtnConfig(handleFilter, handleReset) {
-  const inputs = ["el-input", "el-input-number"];
-  return `请${inputs.includes(tagName) ? "输入" : "选择"}${fieldName}`;
+  const inputs = ['el-input', 'el-input-number'];
+  return `请${inputs.includes(tagName) ? '输入' : '选择'}${fieldName}`;
 }
 
 // 设置searchFrom和装配fromOptions
 export function composeFromOptions(searchFrom, rawSearchFrom) {
   const formOptions = [];
   const source = {};
-  tableData.map(item => {
-    const searchWidgetName = searchWidget.find(widgetitem => widgetitem.id === item.searchWidget)?.tagName;
+  tableData.map((item) => {
+    const searchWidgetName = searchWidget.find(
+      (widgetitem) => widgetitem.id === item.searchWidget
+    )?.tagName;
     // 只有搜索控件有值，才会添加到options中
     if (searchWidgetName) {
       setFromField(source, item.fieldCode);
@@ -26,15 +34,15 @@ export function composeFromOptions(searchFrom, rawSearchFrom) {
   return [
     {
       elRowAttrs: {
-        gutter: 10
+        gutter: 10,
       },
-      formItem: formOptions
-    }
+      formItem: formOptions,
+    },
   ];
 }
 
 export function setFromField(source, field) {
-  source[field] = "";
+  source[field] = '';
 }
 
 export function completeFromItemOptions(data, tableItem) {
@@ -48,13 +56,13 @@ export function completeFromItemOptions(data, tableItem) {
 
 export function getWidgetOptions(searchWidgetName, item) {
   switch (searchWidgetName) {
-    case "el-input":
+    case 'el-input':
       return completeFromItemOptions(getElInputConfig(), item);
-    case "el-select":
+    case 'el-select':
       return completeFromItemOptions(getElSelectConfig(), item);
-    case "el-date-picker":
+    case 'el-date-picker':
       return completeFromItemOptions(getElDatePickerConfig(), item);
-    case "el-date-picker-range":
+    case 'el-date-picker-range':
       return completeFromItemOptions(getElDatePickerRangeConfig(), item);
     default:
       console.warn(`您输入的标签 ${searchWidgetName} 暂不支持！`);
@@ -67,52 +75,52 @@ export function setColSpan(data, span) {
     data.elColAttrs.span = span;
   } else {
     data.elColAttrs = {
-      span: span
+      span: span,
     };
   }
 }
 
 export function getFormItemEmptyConfig() {
   return {
-    className: "",
-    style: "",
+    className: '',
+    style: '',
     formItemAttrs: {
-      prop: "",
-      label: "",
-      required: false
+      prop: '',
+      label: '',
+      required: false,
     },
-    tagName: "",
-    behindText: "",
-    frontText: "",
+    tagName: '',
+    behindText: '',
+    frontText: '',
     tagAttrs: {
-      placeholder: "",
-      clearable: true
+      placeholder: '',
+      clearable: true,
     },
-    formField: "",
+    formField: '',
     extraOption: {
       options: [],
       props: {
-        key: "id",
-        label: "cnName"
-      }
+        key: 'id',
+        label: 'cnName',
+      },
     },
-    listeners: {}
+    listeners: {},
   };
 }
 
 export function str2obj(str) {
-  return new Function("return" + str)();
+  return new Function('return' + str)();
 }
 
-export function getter(obj = {}, field = "") {
-  const arr = field.split(".");
+export function getter(obj = {}, field = '') {
+  const arr = field.split('.');
   return arr.reduce((prev, item) => {
     return prev[item];
   }, obj);
 }
 
-export function setter(obj = {}, field = "", value) {
-  const arr = field.split(".");
+export function setter(obj = {}, field = '', value) {
+  const arr = field.split('.');
   let len = arr.length;
   return arr.reduce((prev, item, index) => {
     if (index === len - 1) {
@@ -129,7 +137,22 @@ export function getHandleInput(formData, formField, fn) {
       setter(formData, formField, e?.target?.value ?? e);
       fn && fn(e);
     } catch (error) {
-      console.error(error)
+      console.error(error);
     }
   };
 }
+
+export default {
+  setPlaceholder,
+  setFilterAndResetBtnConfig,
+  composeFromOptions,
+  setFromField,
+  completeFromItemOptions,
+  getWidgetOptions,
+  setColSpan,
+  getFormItemEmptyConfig,
+  str2obj,
+  getter,
+  setter,
+  getHandleInput,
+};

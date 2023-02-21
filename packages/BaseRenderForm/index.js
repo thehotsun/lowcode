@@ -1,4 +1,5 @@
-import { getter, getHandleInput } from '../../utils';
+import { getter, getHandleInput, setPlaceholder } from '../../utils';
+
 
 export default {
   name: 'BaseRenderForm',
@@ -37,7 +38,7 @@ export default {
     // this.init();
   },
   methods: {
-    // 可以通过调用此组件的这个方法获取el-table的实例
+    // 可以通过调用此组件的这个方法获取el-form的实例
     expose_getElFormInstance() {
       return this.$refs[this.formRef];
     },
@@ -61,7 +62,8 @@ export default {
     async handleSubmit() {
       this.expose_getElFormInstance().validate((valid) => {
         if (valid) {
-          this.$emit('onSubmit');
+          this.$emit('onSubmit', this.formData);
+          this.handleClose();
         } else {
           console.log('error submit!!');
           return false;

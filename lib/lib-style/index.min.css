@@ -56,3 +56,18 @@
   z-index: 999;
 }
 
+.wrap[data-v-2c65d248] {
+  width: 100%;
+}
+.edit[data-v-2c65d248] {
+  position: fixed;
+  top: 20%;
+  left: 0;
+  right: 0;
+  z-index: 999;
+}
+.flex[data-v-2c65d248] {
+  display: flex;
+  align-items: center;
+}
+

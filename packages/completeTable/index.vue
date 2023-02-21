@@ -221,7 +221,7 @@ export default {
         if (res.result === '0') {
           const { tableOptions, formOptions } = JSON.parse(res.data)
           this.tableConfigJSON = tableOptions;
-          this.btnRegularOptions = this.composeBtnRegularOptions(formOptions.filter(item => item.isShow && item.isUse))
+          this.btnRegularOptions = this.composeBtnRegularOptions(formOptions)
         } else {
           console.error(`queryTableConfig message: ${res}`);
         }
