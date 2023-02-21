@@ -45,7 +45,7 @@ import { setPlaceholder, getWidgetOptions, setColSpan } from '../../utils';
 import { cloneDeep, merge } from "lodash";
 
 export default {
-  name: 'completeTable',
+  name: 'setupBtnConfig',
   components: {
     BaseRenderTable,
     BaseRenderForm,

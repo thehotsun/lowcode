@@ -1,18 +1,18 @@
 <template>
   <el-container>
-    <el-header>
-      <div class="operate">
-        <el-button size='small' type="primary" @click="handleAdd(1)">新增一条</el-button>
-        <el-button size='small' type="primary" @click="handleAdd(5)">新增五条</el-button>
-        <el-button size='small' type="danger" :disabled="!selected.length" @click="handleDelete">删除</el-button>
-        <el-button size='small' type="" :disabled="checkUpBtnDisabled()" @click="handleUpAndDwon(-1)">上移</el-button>
-        <el-button size='small' type="" :disabled="checkDwonBtnDisabled()" @click="handleUpAndDwon(1)">下移</el-button>
-        <el-button size='small' type="primary" @click.stop.prevent="handleOpenFormDesign()">
-          新增功能按钮
-        </el-button>
-        <slot name="btn"></slot>
-      </div>
-    </el-header>
+    <!-- <el-header>
+              <div class="operate">
+                <el-button size='small' type="primary" @click="handleAdd(1)">新增一条</el-button>
+                <el-button size='small' type="primary" @click="handleAdd(5)">新增五条</el-button>
+                <el-button size='small' type="danger" :disabled="!selected.length" @click="handleDelete">删除</el-button>
+                <el-button size='small' type="" :disabled="checkUpBtnDisabled()" @click="handleUpAndDwon(-1)">上移</el-button>
+                <el-button size='small' type="" :disabled="checkDwonBtnDisabled()" @click="handleUpAndDwon(1)">下移</el-button>
+                <el-button size='small' type="primary" @click.stop.prevent="handleOpenFormDesign()">
+                  新增功能按钮
+                </el-button>
+                <slot name="btn"></slot>
+              </div>
+            </el-header> -->
 
     <el-main>
       <el-container style="height: 100%">
@@ -21,6 +21,9 @@
             @selection-change="selectListHandler" style="height: 450px;overflow:auto">
             <!-- 注意这里的slot值要和tableOptions中配置的slotName一致 -->
             <!-- #operator是简写，详细请查阅vue文档 -->
+            <template #setupWidget="{ row }">
+              <slot name="setupWidget" :row="row"></slot>
+            </template>
             <template #operator="{ row }">
               <el-button v-if="row.$edit" @click.stop.prevent="onSave(row)">
                 保存
@@ -31,23 +34,18 @@
         </el-main>
       </el-container>
     </el-main>
-    <el-dialog title="表单设计器" :visible.sync="designerDialog" :close-on-click-modal="false"
-      :close-on-press-escape="false"  width="92%" top="8vh" :before-close="handleClose" append-to-body>
-      <fc-designer ref="fcdesigner" @saveData="onFromDesignSave"></fc-designer>
-    </el-dialog>
-</el-container>
+    <!-- <el-dialog title="表单设计器" :visible.sync="designerDialog" :close-on-click-modal="false"
+              :close-on-press-escape="false"  width="92%" top="8vh" :before-close="handleClose" append-to-body>
+              <fc-designer ref="fcdesigner" @saveData="onFromDesignSave"></fc-designer>
+            </el-dialog> -->
+  </el-container>
 </template>
 
 <script>
 
-
-
-
-
-
 import BaseRenderTable from '../BaseRenderTable/index';
 import BaseRenderForm from '../BaseRenderForm/index';
-import { getSingleTableData } from '../../baseConfig/tableBaseConfig'
+import { getSingleTableData ,  eidtConf as tableOptions } from '../../baseConfig/tableBaseConfig'
 import { align, searchWidget } from '../../baseConfig/tableSelectConfigs';
 import { setPlaceholder, getWidgetOptions, getFormItemEmptyConfig, str2obj } from '../../utils';
 
@@ -59,7 +57,6 @@ export default {
     BaseRenderForm,
   },
   props: {
-    tableOptions: Array,
     tableData: Array,
     parseJson: {
       type: Function,
@@ -68,6 +65,7 @@ export default {
   },
   data () {
     return {
+      tableOptions,
       selected: [],
       formDesignData: {},
       designerDialog: false
@@ -134,28 +132,27 @@ export default {
       console.log(val);
     },
 
-    handleOpenFormDesign () {
-      this.designerDialog = true;
-      // this.setDesigner()
-    },
-    // TODO 有参数，参数为编辑状态下之前得数据
-    // 打开设计器
-    setDesigner () {
-      this.$refs.fcdesigner.setRule(this.parseJson(JSON.stringify(FcDesignerRule)));
-      this.$refs.fcdesigner.setOption(this.parseJson(JSON.stringify(FcDesignerOptions)));
-    },
+    // handleOpenFormDesign () {
+    //   this.designerDialog = true;
+    //   // this.setDesigner()
+    // },
+    // // 打开设计器
+    // setDesigner () {
+    //   this.$refs.fcdesigner.setRule(this.parseJson(JSON.stringify(FcDesignerRule)));
+    //   this.$refs.fcdesigner.setOption(this.parseJson(JSON.stringify(FcDesignerOptions)));
+    // },
 
-    handleClose () {
-      this.designerDialog = false;
-    },
+    // handleClose () {
+    //   this.designerDialog = false;
+    // },
 
-    onFromDesignSave (FcDesignerRule, FcDesignerOptions) {
-      this.formDesignData = {
-        FcDesignerRule,
-        FcDesignerOptions,
-      }
-      this.handleClose()
-    }
+    // onFromDesignSave (FcDesignerRule, FcDesignerOptions) {
+    //   this.formDesignData = {
+    //     FcDesignerRule,
+    //     FcDesignerOptions,
+    //   }
+    //   this.handleClose()
+    // }
   }
 };
 </script>

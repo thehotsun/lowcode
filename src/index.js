@@ -5,6 +5,7 @@ import baseRenderTable from '../packages/BaseRenderTable/main.js';
 import BaseRenderRegular from '../packages/BaseRenderRegular/main.js';
 import completeTable from '../packages/completeTable/main.js';
 import setupTable from '../packages/setupTable/main.js';
+import setupBtnConfig from '../packages/setupBtnConfig/main.js';
 
 const components = [
   baseRenderFrom,
@@ -12,6 +13,7 @@ const components = [
   BaseRenderRegular,
   completeTable,
   setupTable,
+  setupBtnConfig,
 ];
 
 const install = function(Vue) {
@@ -32,4 +34,5 @@ export default {
   BaseRenderRegular,
   completeTable,
   setupTable,
+  setupBtnConfig,
 };

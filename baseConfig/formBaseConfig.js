@@ -154,8 +154,6 @@ const slotOption = {
   }
 };
 
-export default [multipleCol, singleRow, nativeTag, slotOption];
-
 export function getSingleFromData() {
   return { fieldCode: "", fieldName: "", englishName: "", columnWidth: "", align: 1, show: true, sort: false, searchWidget: "" };
 }
