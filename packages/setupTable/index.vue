@@ -22,6 +22,9 @@
             <!-- 注意这里的slot值要和tableOptions中配置的slotName一致 -->
             <!-- #operator是简写，详细请查阅vue文档 -->
             <template #setupWidget="{ row }">
+              <el-button :disabled="row.searchWidget === ''" @click.stop.prevent="handleWidgetAttr(row)">
+                设置
+              </el-button>
               <slot name="setupWidget" :row="row"></slot>
             </template>
             <template #operator="{ row }">
@@ -34,10 +37,16 @@
         </el-main>
       </el-container>
     </el-main>
-    <!-- <el-dialog title="表单设计器" :visible.sync="designerDialog" :close-on-click-modal="false"
-              :close-on-press-escape="false"  width="92%" top="8vh" :before-close="handleClose" append-to-body>
-              <fc-designer ref="fcdesigner" @saveData="onFromDesignSave"></fc-designer>
-            </el-dialog> -->
+    <el-dialog title="设置搜索控件属性" :visible.sync="dialogVisibleFrom" :close-on-click-modal="false"
+      :close-on-press-escape="false" width="900px" :before-close="handleCloseFrom" append-to-body>
+      <base-render-form ref="setupForm" :form-data="setupForm" :form-options="setupFormOptions" :use-dialog="false"
+        :showFooter="false">
+      </base-render-form>
+      <span slot="footer" class="dialog-footer">
+        <el-button @click="handleCloseFrom">取消</el-button>
+        <el-button type="primary" @click="confirmFrom">确定</el-button>
+      </span>
+    </el-dialog>
   </el-container>
 </template>
 
@@ -45,10 +54,10 @@
 
 import BaseRenderTable from '../BaseRenderTable/index';
 import BaseRenderForm from '../BaseRenderForm/index';
-import { getSingleTableData ,  eidtConf as tableOptions } from '../../baseConfig/tableBaseConfig'
+import { getSingleTableData, eidtConf as tableOptions } from '../../baseConfig/tableBaseConfig'
 import { align, searchWidget } from '../../baseConfig/tableSelectConfigs';
 import { setPlaceholder, getWidgetOptions, getFormItemEmptyConfig, str2obj } from '../../utils';
-
+import { merge } from "lodash"
 
 export default {
   name: 'setupTable',
@@ -68,7 +77,11 @@ export default {
       tableOptions,
       selected: [],
       formDesignData: {},
-      designerDialog: false
+      dialogVisibleFrom: false,
+      setupForm: {
+      },
+      setupFormOptions: [],
+      curRowData: {},
     };
   },
 
@@ -85,6 +98,91 @@ export default {
     init () {
       this.tableData = [getSingleTableData(), getSingleTableData()]
     },
+
+    handleWidgetAttr (row) {
+      if (row.searchWidget === '') {
+        return this.$warning('请先选择控件')
+      }
+      this.curRowData = row;
+      this.dialogVisibleFrom = true;
+      const searchWidgetName = searchWidget.find((widgetitem) => widgetitem.id === row.searchWidget)?.tagName;
+      this.setupFormOptions = this.composeFormOptions(searchWidgetName);
+      this.setupForm = this.getSetupForm(searchWidgetName)
+    },
+    // 设置searchForm和装配fromOptions
+    composeFormOptions (searchWidgetName) {
+      let formOptions = [];
+      // 只有搜索控件有值，才会添加到options中
+      if (searchWidgetName) {
+        formOptions = this.getFormOptions(searchWidgetName)
+      }
+      return [{
+        elRowAttrs: {
+          gutter: 10
+        },
+        formItem: formOptions
+      }];
+    },
+
+    getSingleConfig (label, placeholder, formField, customAttr = {}, tagName = 'el-input') {
+      const baseConfig = getFormItemEmptyConfig();
+      baseConfig.formField = formField
+      baseConfig.tagName = tagName
+      baseConfig.formItemAttrs.label = label;
+      baseConfig.tagAttrs.placeholder = placeholder;
+      return merge(baseConfig, customAttr)
+    },
+
+    getFormOptions (searchWidgetName) {
+      const { getSingleConfig } = this
+      switch (searchWidgetName) {
+        case "el-input": case "el-date-picker": case "el-date-picker-range":
+          return [
+            getSingleConfig('标签名：', '请输入标签名', 'formItemAttrs.label'), getSingleConfig('提示语：', '请输入提示语', 'tagAttrs.placeholder')]
+
+        case "el-select":
+          return [
+            getSingleConfig('标签名：', '请输入标签名', 'formItemAttrs.label'), getSingleConfig('提示语：', '请输入提示语', 'tagAttrs.placeholder'), getSingleConfig('下拉选择列表', '请输入下拉选择列表', 'extraOption', {
+              tagAttrs: {
+                autosize: true,
+                type: 'textarea',
+                placeholder: '请输入类似{options: [],props: {key: "id",label: "cnName"}}的结构'
+              },
+            }),]
+
+        default:
+          console.warn(`您输入的标签 ${searchWidgetName} 暂不支持！`);
+          break;
+      }
+    },
+
+    getSetupForm (searchWidgetName) {
+      switch (searchWidgetName) {
+        case "el-input": case "el-date-picker": case "el-date-picker-range":
+          return {
+            formItemAttrs: {
+              label: ''
+            },
+            tagAttrs: {
+              placeholder: '',
+            },
+          }
+        case "el-select":
+          return {
+            formItemAttrs: {
+              label: ''
+            },
+            tagAttrs: {
+              placeholder: '',
+            },
+            extraOption: '',
+          }
+        default:
+          console.warn(`您输入的标签 ${searchWidgetName} 暂不支持！`);
+          break;
+      }
+    },
+
 
     checkUpBtnDisabled () {
       return this.selected.length === 0 || this.selected.some(item => this.tableData.indexOf(item) === 0)
@@ -132,27 +230,19 @@ export default {
       console.log(val);
     },
 
-    // handleOpenFormDesign () {
-    //   this.designerDialog = true;
-    //   // this.setDesigner()
-    // },
-    // // 打开设计器
-    // setDesigner () {
-    //   this.$refs.fcdesigner.setRule(this.parseJson(JSON.stringify(FcDesignerRule)));
-    //   this.$refs.fcdesigner.setOption(this.parseJson(JSON.stringify(FcDesignerOptions)));
-    // },
+    handleCloseFrom () {
+      this.dialogVisibleFrom = false;
+      this.setupFormOptions = [];
+      this.setupForm = {}
+    },
 
-    // handleClose () {
-    //   this.designerDialog = false;
-    // },
-
-    // onFromDesignSave (FcDesignerRule, FcDesignerOptions) {
-    //   this.formDesignData = {
-    //     FcDesignerRule,
-    //     FcDesignerOptions,
-    //   }
-    //   this.handleClose()
-    // }
+    confirmFrom () {
+      if (this.setupForm.extraOption) {
+        this.setupForm.extraOption = str2obj(this.setupForm.extraOption)
+      }
+      this.curRowData.searchWidgetConfig = this.setupForm
+      this.handleCloseFrom();
+    },
   }
 };
 </script>

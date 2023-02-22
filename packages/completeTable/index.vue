@@ -1,14 +1,15 @@
 <template>
   <el-container>
     <el-header v-if="showSearchFrom">
-      <base-render-form ref="form" :form-data="searchFrom" :form-options="formOptions" :use-dialog="false">
+      <base-render-form ref="form" :form-data="searchFrom" :form-options="formOptions" :showFooter="false"
+        :use-dialog="false">
       </base-render-form>
     </el-header>
 
     <el-main>
       <el-container style="height: 100%">
         <el-header class="flex">
-          <base-render-regular ref="btnForm" :render-options="a" @btnClick="handleBtnClick">
+          <base-render-regular ref="btnForm" :render-options="btnRegularOptions" @btnClick="handleBtnClick">
           </base-render-regular>
         </el-header>
         <el-main>
@@ -56,7 +57,6 @@ export default {
     BaseRenderRegular
   },
   props: {
-    a: Array,
     requestTableData: {
       type: Function,
       require: true
@@ -398,9 +398,6 @@ export default {
 
 
     composeBtnRegularOptions (config) {
-      const options = config.map(item => {
-        return getElBtnConfig('primary', this.handleFilter, item.btnName);
-      })
       return [{
         elRowAttrs: {
           gutter: 10,
@@ -409,7 +406,7 @@ export default {
           justify: 'start',
         },
         style: "padding-left: 5px",
-        formItem: options
+        formItem: config
       }]
     },
 

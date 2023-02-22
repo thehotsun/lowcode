@@ -23,6 +23,12 @@ export default {
       type: Object,
     },
     onlyShow: Boolean,
+    showFooter: {
+      type: Boolean,
+      default() {
+        return true;
+      },
+    },
   },
   data() {
     return {
@@ -38,9 +44,7 @@ export default {
   },
   methods: {
     // TODO 怎样找到更好的方法塞进去？
-    expose_setOptions() {
-
-    },
+    expose_setOptions() {},
     // 可以通过调用此组件的这个方法获取el-form的实例
     expose_getElFormInstance() {
       return this.$refs[this.formRef];
@@ -282,6 +286,7 @@ export default {
 
   render() {
     const {
+      showFooter,
       handleClose,
       formData,
       handleSubmit,
@@ -343,20 +348,31 @@ export default {
             </div>
           </el-dialog>
         ) : (
-          <el-form
-            ref={formRef}
-            {...{
-              attrs: {
-                ...defaultFormAttrs,
-                ...$attrs,
-              },
-              on: {
-                ...$listeners,
-              },
-            }}
-          >
-            {customLayoutRender(formOptions)}
-          </el-form>
+          <div>
+            <el-form
+              ref={formRef}
+              {...{
+                attrs: {
+                  ...defaultFormAttrs,
+                  ...$attrs,
+                },
+                on: {
+                  ...$listeners,
+                },
+              }}
+            >
+              {customLayoutRender(formOptions)}
+            </el-form>
+            {showFooter ? (
+              <div>
+                <el-button type="primary" on-click={handleSubmit}>
+                  确定
+                </el-button>
+              </div>
+            ) : (
+              ''
+            )}
+          </div>
         )}
       </div>
     );
