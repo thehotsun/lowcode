@@ -7,7 +7,7 @@ export default {
       type: Array,
     },
     onlyShow: Boolean,
-    formData: Object
+    formData: Object,
   },
   data() {
     return {};
@@ -18,6 +18,20 @@ export default {
     // this.init();
   },
   methods: {
+    btnClick({ relateFrom = '', openType = 0, openUrl = '', fn = '' }) {
+      return (e) => {
+        try {
+          this.$emit('btnClick', {
+            fn,
+            relateFrom,
+            openType,
+            openUrl,
+          });
+        } catch (error) {
+          console.error(error);
+        }
+      };
+    },
     getCooperateComp(tagName, attrs, listeners, formField, extraOption) {
       // TODO 待添加，
       const renderFn = {
@@ -67,7 +81,13 @@ export default {
     },
 
     getSingleCompVNode(item) {
-      const { formData, isCooperateComp, getCooperateComp, onlyShow } = this;
+      const {
+        formData,
+        isCooperateComp,
+        getCooperateComp,
+        onlyShow,
+        btnClick,
+      } = this;
       const {
         // class和style不会被组件的attr所处理，会直接赋值到组件的根节点因此需要单独拿出来赋值
         className,
@@ -93,6 +113,8 @@ export default {
       } = item;
       // 取代v-model语法糖，因为它不能实现多个点深层级取值赋值操作,例如fromData['a.b']
       listeners.input = getHandleInput(formData, formField, listeners.input);
+      // 暂时只针对按钮的点击事件
+      listeners.click = btnClick(extraOption);
       let model = getter(formData, formField);
       // tagName必须是eleui提供的已有组件或HTML已有标签,如果是只读标签，则固定使用span标签
       // Tag必须开头大写，否则会被识别为字符串

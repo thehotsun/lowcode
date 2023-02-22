@@ -1,6 +1,5 @@
 import { getter, getHandleInput, setPlaceholder } from '../../utils';
 
-
 export default {
   name: 'BaseRenderForm',
   props: {
@@ -38,6 +37,10 @@ export default {
     // this.init();
   },
   methods: {
+    // TODO 怎样找到更好的方法塞进去？
+    expose_setOptions() {
+
+    },
     // 可以通过调用此组件的这个方法获取el-form的实例
     expose_getElFormInstance() {
       return this.$refs[this.formRef];
@@ -75,6 +78,7 @@ export default {
       // TODO 待添加，
       const renderFn = {
         'el-select': this.getSelectCompVNode,
+        'el-radio-group': this.getRadioGroupCompVNode,
       };
       return renderFn[tagName](attrs, listeners, formField, extraOption);
     },
@@ -86,7 +90,7 @@ export default {
         return false;
       }
       // TODO 待添加，
-      const cooperateComp = ['el-select'];
+      const cooperateComp = ['el-select', 'el-radio-group'];
       return cooperateComp.indexOf(tagName) !== -1;
     },
 
@@ -117,6 +121,33 @@ export default {
             );
           })}
         </el-select>
+      );
+    },
+
+    getRadioGroupCompVNode(attrs, listeners, formField, extraOption) {
+      const { options = [], props = {} } = extraOption;
+      const { formData, onlyShow } = this;
+      // 基础版有个添加维护字典的功能，里面返回的字段为id和cnName，因此以此字段为默认取值
+      const { key = 'id', label = 'cnName' } = props;
+      let model = getter(formData, formField);
+      return (
+        <el-radio-group
+          // v-model={1 ? model : ""}
+          value={model}
+          {...{
+            attrs,
+            on: listeners,
+          }}
+          disabled={onlyShow}
+        >
+          {options.map((item) => {
+            return (
+              <el-radio label={item[key]} disabled={item.disabled}>
+                {item[label]}
+              </el-radio>
+            );
+          })}
+        </el-radio-group>
       );
     },
 
@@ -156,9 +187,13 @@ export default {
       return (
         <div style="display: inline-block">
           {slotName ? (
-            this.$scopedSlots[item.slotName]({
-              formData: formData,
-            })
+            this.$scopedSlots[slotName] ? (
+              this.$scopedSlots[slotName]({
+                formData: formData,
+              })
+            ) : (
+              ''
+            )
           ) : isCooperateComp(tagName) ? (
             getCooperateComp(
               tagName,

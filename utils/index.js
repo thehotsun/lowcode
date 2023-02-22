@@ -142,6 +142,31 @@ export function getHandleInput(formData, formField, fn) {
   };
 }
 
+export function btnClick(extraOption, emit) {
+  return function(e) {
+    try {
+      const {
+        relateFrom = '',
+        openType = 0,
+        openUrl = '',
+        fn = '',
+      } = extraOption;
+      emit('btnClick', {
+        fn,
+        relateFrom,
+        openType,
+        openUrl,
+      });
+    } catch (error) {
+      console.error(error);
+    }
+  };
+}
+
+export function exec(fn) {
+  eval(fn);
+}
+
 export default {
   setPlaceholder,
   setFilterAndResetBtnConfig,
@@ -155,4 +180,5 @@ export default {
   getter,
   setter,
   getHandleInput,
+  exec,
 };

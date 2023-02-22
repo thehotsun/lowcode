@@ -8,7 +8,7 @@
     <el-main>
       <el-container style="height: 100%">
         <el-header class="flex">
-          <base-render-regular ref="btnForm" :render-options="btnRegularOptions">
+          <base-render-regular ref="btnForm" :render-options="a" @btnClick="handleBtnClick">
           </base-render-regular>
         </el-header>
         <el-main>
@@ -30,6 +30,10 @@
         </el-footer>
       </el-container>
     </el-main>
+    <el-dialog title="预览" :visible.sync="dialogVisibleForm" :close-on-click-modal="false" :close-on-press-escape="false"
+      width="900px" :before-close="expose_hideDialog" append-to-body>
+      <form-create :rule="rule" :option="option"></form-create>
+    </el-dialog>
   </el-container>
 </template>
 
@@ -41,7 +45,7 @@ import BaseRenderForm from '../BaseRenderForm/index';
 import BaseRenderRegular from '../BaseRenderRegular/index';
 import { align, searchWidget } from '../../baseConfig/tableSelectConfigs';
 import { getElBtnConfig } from '../../baseConfig/widgetBaseConfig';
-import { setPlaceholder, getWidgetOptions, setColSpan } from '../../utils';
+import { setPlaceholder, getWidgetOptions, setColSpan, exec } from '../../utils';
 import { cloneDeep, merge } from "lodash";
 
 export default {
@@ -52,9 +56,13 @@ export default {
     BaseRenderRegular
   },
   props: {
+    a: Array,
     requestTableData: {
       type: Function,
       require: true
+    },
+    requestFormData: {
+      type: Function,
     },
     parseJson: {
       type: Function,
@@ -64,7 +72,9 @@ export default {
       type: Function,
       require: true
     },
-
+    requestFormConfig: {
+      type: Function,
+    },
     pageLayout: {
       type: Object,
       default: function () {
@@ -74,6 +84,9 @@ export default {
   },
   data () {
     return {
+      dialogVisibleForm: false,
+      rule: [],
+      option: [],
       // tabledata 属性值要做到和tableOptions中的prop相对应
       tableConfigJSON: [],
       tableOptions: [],
@@ -99,9 +112,163 @@ export default {
   },
 
   methods: {
-    // exec (fn) {
-    //   eval(fn);
-    // },
+    expose_showDialog (formid) {
+      this.dialogVisibleForm = true
+      this.rule = [
+        {
+          "type": "input",
+          "field": "QueTest",
+          "title": "文件ID",
+          "_fc_drag_tag": "input",
+          "hidden": false,
+          "display": true
+        },
+        {
+          "type": "input",
+          "field": "6z25y096d003",
+          "title": "文件名称",
+          "_fc_drag_tag": "input",
+          "hidden": false,
+          "display": true
+        },
+        {
+          "type": "input",
+          "field": "j395y096d00g",
+          "title": "问题状态ID",
+          "_fc_drag_tag": "input",
+          "hidden": false,
+          "display": true
+        },
+        {
+          "type": "input",
+          "field": "g721ng2jrm02j",
+          "title": "问题状态名称",
+          "_fc_drag_tag": "input",
+          "hidden": false,
+          "display": true
+        },
+        {
+          "type": "input",
+          "field": "gwz1ng2jrm0dq",
+          "title": "问题描述",
+          "_fc_drag_tag": "input",
+          "hidden": false,
+          "display": true
+        },
+        {
+          "type": "input",
+          "field": "w761ng2jrm0rp",
+          "title": "修改人ID",
+          "_fc_drag_tag": "input",
+          "hidden": false,
+          "display": true
+        },
+        {
+          "type": "input",
+          "field": "pfh1ng2jrm0uk",
+          "title": "修改人",
+          "_fc_drag_tag": "input",
+          "hidden": false,
+          "display": true
+        },
+        {
+          "type": "InputNumber",
+          "field": "QueTest",
+          "title": "客户端类型",
+          "hidden": false,
+          "display": true
+        },
+        {
+          "type": "input",
+          "field": "r8b1ng2jrm0xf",
+          "title": "操作人ID",
+          "_fc_drag_tag": "input",
+          "hidden": false,
+          "display": true
+        },
+        {
+          "type": "input",
+          "field": "p0u1ng2jrm10a",
+          "title": "创建人ID",
+          "_fc_drag_tag": "input",
+          "hidden": false,
+          "display": true
+        },
+        {
+          "type": "InputNumber",
+          "field": "QueTest",
+          "title": "是否删除",
+          "hidden": false,
+          "display": true
+        },
+        {
+          "type": "DatePicker",
+          "field": "QueTest",
+          "title": "完成时间",
+          "hidden": false,
+          "display": true
+        },
+        {
+          "type": "InputNumber",
+          "field": "QueTest",
+          "title": "金额",
+          "hidden": false,
+          "display": true
+        },
+        {
+          "type": "InputNumber",
+          "field": "QueTest",
+          "title": "天数",
+          "hidden": false,
+          "display": true
+        },
+        {
+          "type": "DatePicker",
+          "field": "QueTest",
+          "title": "createTime",
+          "hidden": false,
+          "display": true
+        },
+        {
+          "type": "DatePicker",
+          "field": "QueTest",
+          "title": "ModifyTime",
+          "hidden": false,
+          "display": true
+        }
+      ];
+      this.option = {
+        "form": {
+          "inline": false,
+          "labelPosition": "right",
+          "size": "mini",
+          "labelWidth": "125px",
+          "hideRequiredAsterisk": false,
+          "showMessage": true,
+          "inlineMessage": false
+        },
+        "row": {
+          "gutter": 0,
+          "tag": "div"
+        },
+        "submitBtn": true,
+        "info": {
+          "type": "popover"
+        },
+        "wrap": {},
+        "resetBtn": true
+      }
+    },
+
+    expose_hideDialog () {
+      this.dialogVisibleForm = false
+    },
+
+    // 保存表单
+    onSubmit (data) {
+      this.$emit('onSubmit', data);
+      this.expose_hideDialog()
+    },
 
     async init () {
       this.queryTableData();
@@ -116,7 +283,6 @@ export default {
         obj.sortable = !!item.sort
         return obj
       })
-      // this.exec("console.warn(this.formOptions)");
     },
 
     // 由数据组成searchFrom
@@ -246,6 +412,23 @@ export default {
         formItem: options
       }]
     },
+
+    exec,
+
+    handleBtnClick ({ relateFrom,
+      openType,
+      openUrl,
+      fn, }) {
+      if (fn) {
+        this.exec(fn)
+      } else {
+        if (openType === 0) {
+          this.expose_showDialog(relateFrom)
+        } else {
+          this.$router.push(openUrl, relateFrom)
+        }
+      }
+    }
   }
 };
 </script>  
