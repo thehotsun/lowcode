@@ -368,6 +368,9 @@ export default {
                 <el-button type="primary" on-click={handleSubmit}>
                   确定
                 </el-button>
+                <el-button type="" on-click={handleClose}>
+                  重置
+                </el-button>
               </div>
             ) : (
               ''

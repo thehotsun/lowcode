@@ -14,14 +14,14 @@ export const showType = [
     value: 0,
     label: '纯文字',
   },
-  {
-    value: 1,
-    label: '纯图标',
-  },
-  {
-    value: 2,
-    label: '图标+文字',
-  },
+  // {
+  //   value: 1,
+  //   label: '纯图标',
+  // },
+  // {
+  //   value: 2,
+  //   label: '图标+文字',
+  // },
 ];
 
 export const size = [
@@ -176,7 +176,6 @@ export const btnConfigFormOptions = [
     formItem: {
       formItemAttrs: {
         label: '颜色',
-        required: true,
       },
       slotName: 'color',
     },
@@ -189,7 +188,6 @@ export const btnConfigFormOptions = [
       formItemAttrs: {
         prop: 'tagAttrs.size',
         label: '大小：',
-        required: true,
       },
       tagName: 'el-radio-group',
       tagAttrs: {
@@ -214,7 +212,6 @@ export const btnConfigFormOptions = [
       formItemAttrs: {
         prop: 'tagAttrs.plain',
         label: '朴素：',
-        required: true,
       },
       tagName: 'el-radio-group',
       tagAttrs: {
@@ -239,7 +236,6 @@ export const btnConfigFormOptions = [
       formItemAttrs: {
         prop: 'tagAttrs.round',
         label: '圆角：',
-        required: true,
       },
       tagName: 'el-radio-group',
       tagAttrs: {
@@ -303,6 +299,7 @@ export function BtnConfigFrom() {
       size: '',
       plain: true,
       round: false,
+      showType: 0,
     },
     extraOption: {
       relateFrom: '',

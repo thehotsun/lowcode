@@ -31,7 +31,7 @@
         </el-footer>
       </el-container>
     </el-main>
-    <el-dialog title="预览" :visible.sync="dialogVisibleForm" :close-on-click-modal="false" :close-on-press-escape="false"
+    <el-dialog title="表单" :visible.sync="dialogVisibleForm" :close-on-click-modal="false" :close-on-press-escape="false"
       width="900px" :before-close="expose_hideDialog" append-to-body>
       <form-create :rule="rule" :option="option"></form-create>
     </el-dialog>
@@ -264,19 +264,36 @@ export default {
       this.dialogVisibleForm = false
     },
 
+    expose_preview ({ tableOptions, formOptions }) {
+      this.tableConfigJSON = tableOptions;
+      this.btnRegularOptions = this.composeBtnRegularOptions(formOptions);
+      const tableData = {}
+      this.composeData(tableData)
+      this.tableData = [tableData];
+    },
+
     // 保存表单
     onSubmit (data) {
       this.$emit('onSubmit', data);
       this.expose_hideDialog()
     },
+    // 预览的时候用，创建一个全为空字符串的对象
+    setEmptyTableData (emptyData = {}, fieldCode) {
+      emptyData[fieldCode] = ''
+    },
 
     async init () {
       this.queryTableData();
       await this.queryTableConfig();
+      this.composeData()
+    },
+
+    composeData (emptyData) {
       this.formOptions = this.composeFromOptions(this.tableConfigJSON);
       this.tableOptions = this.tableConfigJSON.filter(item => item.show).map(item => {
         const obj = {}
         obj.prop = item.fieldCode
+        emptyData && this.setEmptyTableData(emptyData, item.fieldCode)
         obj.label = item.fieldName
         obj.align = align.find(alignitem => alignitem.id === item.align).value
         obj['min-width'] = item.width

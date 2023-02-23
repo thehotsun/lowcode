@@ -1,11 +1,11 @@
 <template>
   <base-render-form ref="form" :form-data="btnConfigFrom" :form-options="btnConfigFormOptions" @onSubmit="onSubmit"
-    label-position="top" :useDialog="useDialog">
+    @onClose="onClose" label-position="top" :useDialog="useDialog" style="background: #fff;padding:30px 20px">
     <template #color>
       <el-row>
         <span v-for="item in colorList" :key="item">
-          <el-button :type="item" @click="setBtnType(item)"></el-button> <el-button
-            v-if="btnConfigFrom.tagAttrs.type === item" type="success" icon="el-icon-check" circle></el-button>
+          <el-button :type="item" @click="setBtnType(item)"></el-button> <i v-if="btnConfigFrom.tagAttrs.type === item"
+            class="el-icon-check middle"></i>
         </span>
       </el-row>
     </template>
@@ -44,8 +44,17 @@ export default {
     expose_getBtnConfigFromArr () {
       return this.btnConfigFromArr
     },
+    expose_delBtnConfigFromArr (index) {
+      this.btnConfigFromArr.splice(index, 1)
+    },
     onSubmit (data) {
       this.btnConfigFromArr.push(data)
+      this.$emit('onSubmit')
+      this.btnConfigFrom = new BtnConfigFrom()
+    },
+    onClose () {
+      this.$emit('onClose');
+      this.btnConfigFrom = new BtnConfigFrom()
     },
     setBtnType (type) {
       this.btnConfigFrom.tagAttrs.type = type
@@ -57,6 +66,10 @@ export default {
 <style lang="scss" scoped>
 .wrap {
   width: 100%;
+}
+
+.middle {
+  vertical-align: -webkit-baseline-middle;
 }
 
 .edit {
