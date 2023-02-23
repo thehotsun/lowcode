@@ -59,6 +59,9 @@
 .wrap[data-v-2c65d248] {
   width: 100%;
 }
+.middle[data-v-2c65d248] {
+  vertical-align: -webkit-baseline-middle;
+}
 .edit[data-v-2c65d248] {
   position: fixed;
   top: 20%;
