@@ -101,7 +101,7 @@ export default {
       },
       btnRegularOptions: [],
       btnConfigJSON: [],
-      showSearchFrom: false,
+      showSearchFrom: true,
       // 初始化是否显示分页
       showPagination: false,
     };

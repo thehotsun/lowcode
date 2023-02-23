@@ -1,19 +1,15 @@
 <template>
-  <el-container>
-    <el-main>
-      <base-render-form ref="form" :form-data="btnConfigFrom" :form-options="btnConfigFormOptions" @onSubmit="onSubmit"
-        label-position="top">
-        <template #color>
-          <el-row>
-            <span v-for="item in colorList" :key="item">
-              <el-button :type="item" @click="setBtnType(item)"></el-button> <el-button
-                v-if="btnConfigFrom.tagAttrs.type === item" type="success" icon="el-icon-check" circle></el-button>
-            </span>
-          </el-row>
-        </template>
-      </base-render-form>
-    </el-main>
-  </el-container>
+  <base-render-form ref="form" :form-data="btnConfigFrom" :form-options="btnConfigFormOptions" @onSubmit="onSubmit"
+    label-position="top" :useDialog="useDialog">
+    <template #color>
+      <el-row>
+        <span v-for="item in colorList" :key="item">
+          <el-button :type="item" @click="setBtnType(item)"></el-button> <el-button
+            v-if="btnConfigFrom.tagAttrs.type === item" type="success" icon="el-icon-check" circle></el-button>
+        </span>
+      </el-row>
+    </template>
+  </base-render-form>
 </template>
 
 <script>
@@ -30,6 +26,7 @@ export default {
     BaseRenderForm,
   },
   props: {
+    useDialog: Boolean,
   },
   data () {
     return {

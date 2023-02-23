@@ -264,7 +264,6 @@ export const btnConfigFormOptions = [
       formItemAttrs: {
         prop: 'style',
         label: '自定义样式：',
-        required: true,
       },
       tagName: 'el-input',
       tagAttrs: {
@@ -281,7 +280,6 @@ export const btnConfigFormOptions = [
     formItem: {
       formItemAttrs: {
         label: '可执行函数：',
-        required: true,
         prop: 'extraOption.fn',
       },
       tagName: 'el-input',
