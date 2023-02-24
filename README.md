@@ -13,19 +13,17 @@ $ npm install @viva3la3vida/base-render
 import elementUI from "element-ui";
 import "./styles/element-variables.scss";
 Vue.use(elementUI);
-
 import formCreate from "@form-create/element-ui";
 Vue.use(formCreate);
 import FcDesigner from "form-create-designer";
 Vue.use(FcDesigner);
-
-````
+```
 
 <h6> 按需引入
 ```javascript
 import { completeTable } from "@viva3la3vida/base-render";
 Vue.use(completeTable);
-````
+```
 
 <h6> 全部引入 
 ```javascript

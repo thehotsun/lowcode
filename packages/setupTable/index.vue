@@ -96,7 +96,7 @@ export default {
     },
 
     init () {
-      this.tableData = [getSingleTableData(), getSingleTableData()]
+      this.tableData = []
     },
 
     handleWidgetAttr (row) {

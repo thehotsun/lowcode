@@ -44,6 +44,16 @@ export default {
     expose_getBtnConfigFromArr () {
       return this.btnConfigFromArr
     },
+    // TODO应该怎么设计接受外部接口获取来的数据
+    expose_setOptions (list) {
+      // this.$set()
+      this.btnConfigFormOptions[1].formItem.extraOption.options = list
+    },
+    
+    expose_setExtraOption (options) {
+      this.btnConfigFormOptions[1].formItem.extraOption = options
+
+    },
     expose_delBtnConfigFromArr (index) {
       this.btnConfigFromArr.splice(index, 1)
     },

@@ -42,7 +42,6 @@ export function getElInputConfig() {
   const tagAttrs = {
     placeholder: '请输入',
     maxlength: '',
-    value: '',
     // 注意不要写为驼峰形式
     // 'show-password': true,
   };

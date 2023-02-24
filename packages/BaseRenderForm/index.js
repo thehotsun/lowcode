@@ -246,7 +246,6 @@ export default {
     customLayoutRender(data) {
       // 由于此处的data为formOptions，已在props中声明为数组，因此不对data进行再次校验
       // 当前布局组件不提供 Bootstrap式的响应式布局属性
-      console.log(data);
       return data.map((rowItem) => {
         const {
           elRowAttrs = {},

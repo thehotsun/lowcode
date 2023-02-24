@@ -33,7 +33,7 @@
     </el-main>
     <el-dialog title="表单" :visible.sync="dialogVisibleForm" :close-on-click-modal="false" :close-on-press-escape="false"
       width="900px" :before-close="expose_hideDialog" append-to-body>
-      <form-create :rule="rule" :option="option"></form-create>
+      <form-create :rule="rule" :option="option" @submit="onSubmit"></form-create>
     </el-dialog>
   </el-container>
 </template>
@@ -75,6 +75,10 @@ export default {
     requestFormConfig: {
       type: Function,
     },
+    // TODO暂时这么用，以后不能处理来自表单的请求
+    requestFormConfirm: {
+      type: Function,
+    },
     pageLayout: {
       type: Object,
       default: function () {
@@ -86,7 +90,7 @@ export default {
     return {
       dialogVisibleForm: false,
       rule: [],
-      option: [],
+      option: {},
       // tabledata 属性值要做到和tableOptions中的prop相对应
       tableConfigJSON: [],
       tableOptions: [],
@@ -112,156 +116,14 @@ export default {
   },
 
   methods: {
-    expose_showDialog (formid) {
+    expose_showDialog (formId) {
       this.dialogVisibleForm = true
-      this.rule = [
-        {
-          "type": "input",
-          "field": "QueTest",
-          "title": "文件ID",
-          "_fc_drag_tag": "input",
-          "hidden": false,
-          "display": true
-        },
-        {
-          "type": "input",
-          "field": "6z25y096d003",
-          "title": "文件名称",
-          "_fc_drag_tag": "input",
-          "hidden": false,
-          "display": true
-        },
-        {
-          "type": "input",
-          "field": "j395y096d00g",
-          "title": "问题状态ID",
-          "_fc_drag_tag": "input",
-          "hidden": false,
-          "display": true
-        },
-        {
-          "type": "input",
-          "field": "g721ng2jrm02j",
-          "title": "问题状态名称",
-          "_fc_drag_tag": "input",
-          "hidden": false,
-          "display": true
-        },
-        {
-          "type": "input",
-          "field": "gwz1ng2jrm0dq",
-          "title": "问题描述",
-          "_fc_drag_tag": "input",
-          "hidden": false,
-          "display": true
-        },
-        {
-          "type": "input",
-          "field": "w761ng2jrm0rp",
-          "title": "修改人ID",
-          "_fc_drag_tag": "input",
-          "hidden": false,
-          "display": true
-        },
-        {
-          "type": "input",
-          "field": "pfh1ng2jrm0uk",
-          "title": "修改人",
-          "_fc_drag_tag": "input",
-          "hidden": false,
-          "display": true
-        },
-        {
-          "type": "InputNumber",
-          "field": "QueTest",
-          "title": "客户端类型",
-          "hidden": false,
-          "display": true
-        },
-        {
-          "type": "input",
-          "field": "r8b1ng2jrm0xf",
-          "title": "操作人ID",
-          "_fc_drag_tag": "input",
-          "hidden": false,
-          "display": true
-        },
-        {
-          "type": "input",
-          "field": "p0u1ng2jrm10a",
-          "title": "创建人ID",
-          "_fc_drag_tag": "input",
-          "hidden": false,
-          "display": true
-        },
-        {
-          "type": "InputNumber",
-          "field": "QueTest",
-          "title": "是否删除",
-          "hidden": false,
-          "display": true
-        },
-        {
-          "type": "DatePicker",
-          "field": "QueTest",
-          "title": "完成时间",
-          "hidden": false,
-          "display": true
-        },
-        {
-          "type": "InputNumber",
-          "field": "QueTest",
-          "title": "金额",
-          "hidden": false,
-          "display": true
-        },
-        {
-          "type": "InputNumber",
-          "field": "QueTest",
-          "title": "天数",
-          "hidden": false,
-          "display": true
-        },
-        {
-          "type": "DatePicker",
-          "field": "QueTest",
-          "title": "createTime",
-          "hidden": false,
-          "display": true
-        },
-        {
-          "type": "DatePicker",
-          "field": "QueTest",
-          "title": "ModifyTime",
-          "hidden": false,
-          "display": true
-        }
-      ];
-      this.option = {
-        "form": {
-          "inline": false,
-          "labelPosition": "right",
-          "size": "mini",
-          "labelWidth": "125px",
-          "hideRequiredAsterisk": false,
-          "showMessage": true,
-          "inlineMessage": false
-        },
-        "row": {
-          "gutter": 0,
-          "tag": "div"
-        },
-        "submitBtn": true,
-        "info": {
-          "type": "popover"
-        },
-        "wrap": {},
-        "resetBtn": true
-      }
+      this.queryFormConfig(formId)
     },
 
     expose_hideDialog () {
-      this.dialogVisibleForm = false
+      this.dialogVisibleForm = false;
+      this.resetFromData()
     },
 
     expose_preview ({ tableOptions, formOptions }) {
@@ -271,11 +133,25 @@ export default {
       this.composeData(tableData)
       this.tableData = [tableData];
     },
+    resetFromData () {
+      this.rule = []
+      this.option = {}
+    },
+
+    queryFormConfig (formId) {
+      this.requestFormConfig(formId).then(res => {
+        const { rule, option } = JSON.parse(res.data);
+        this.rule = rule;
+        this.option = option;
+      })
+    },
 
     // 保存表单
-    onSubmit (data) {
+    async onSubmit (data) {
       this.$emit('onSubmit', data);
       this.expose_hideDialog()
+      await this.requestFormConfirm(this.formid, data)
+      this.queryTableData();
     },
     // 预览的时候用，创建一个全为空字符串的对象
     setEmptyTableData (emptyData = {}, fieldCode) {
@@ -318,7 +194,8 @@ export default {
         const searchWidgetName = searchWidget.find((widgetitem) => widgetitem.id === item.searchWidget)?.tagName;
         // 只有搜索控件有值，才会添加到options中
         if (searchWidgetName) {
-          setFromField(this.searchFrom, item.fieldCode);
+          this.$set(this.searchFrom, item.fieldCode, '');
+          // setFromField(this.searchFrom, item.fieldCode);
           const options = getWidgetOptions(searchWidgetName, item)
           formOptions.push(merge(options, item.searchWidgetConfig));
         }
@@ -356,6 +233,7 @@ export default {
     handleFilter () {
       this.queryTableData();
     },
+
     handleReset () {
       this.searchFrom = cloneDeep(this.rawSearchFrom);
       this.queryTableData();
@@ -388,7 +266,7 @@ export default {
         ...this.searchFrom,
         ...this.page
       };
-      return this.requestTableData(params).then(res => {
+      return this.requestTableData(this.showPagination ? params : this.searchFrom).then(res => {
         if (res.result === '0') {
           this.tableData = res.data
         } else {
@@ -412,7 +290,6 @@ export default {
         console.error(`queryTableConfig error: ${e}`);
       });
     },
-
 
     composeBtnRegularOptions (config) {
       return [{
@@ -438,6 +315,7 @@ export default {
       } else {
         if (openType === 0) {
           this.expose_showDialog(relateFrom)
+          this.formid = relateFrom
         } else {
           this.$router.push(openUrl, relateFrom)
         }
