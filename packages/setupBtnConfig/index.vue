@@ -17,7 +17,7 @@
 
 import BaseRenderForm from '../BaseRenderForm/index';
 import { btnConfigFormOptions, BtnConfigFrom } from "../../baseConfig/btnBaseConfig"
-import { setPlaceholder, getWidgetOptions, setColSpan } from '../../utils';
+import { setPlaceholder, getWidgetOptions, setColSpan } from '../../utils'; 
 import { cloneDeep, merge } from "lodash";
 
 export default {
@@ -44,12 +44,21 @@ export default {
     expose_getBtnConfigFromArr () {
       return this.btnConfigFromArr
     },
+
+    expose_setBtnConfigFromArr (arr) {
+      this.btnConfigFromArr = arr
+    },
+
+    expose_setBtnConfigFrom (obj) {
+      this.btnConfigFrom = obj
+    },
+
     // TODO应该怎么设计接受外部接口获取来的数据
     expose_setOptions (list) {
       // this.$set()
       this.btnConfigFormOptions[1].formItem.extraOption.options = list
     },
-    
+
     expose_setExtraOption (options) {
       this.btnConfigFormOptions[1].formItem.extraOption = options
 
@@ -58,7 +67,10 @@ export default {
       this.btnConfigFromArr.splice(index, 1)
     },
     onSubmit (data) {
-      this.btnConfigFromArr.push(data)
+      // 如果相同则说明是编辑，不同则是新增
+      if (!this.btnConfigFromArr.some(item => item === data)) {
+        this.btnConfigFromArr.push(data)
+      }
       this.$emit('onSubmit')
       this.btnConfigFrom = new BtnConfigFrom()
     },
