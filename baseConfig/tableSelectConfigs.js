@@ -38,4 +38,9 @@ export const searchWidget = [
     cnName: '日期选择范围框',
     tagName: 'el-date-picker-range',
   },
+  {
+    id: 4,
+    cnName: '级联选择器',
+    tagName: 'el-cascader',
+  },
 ];

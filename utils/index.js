@@ -3,6 +3,7 @@ import {
   getElDatePickerRangeConfig,
   getElInputConfig,
   getElSelectConfig,
+  getElCascaderConfig,
   getElBtnConfig,
 } from '../baseConfig/widgetBaseConfig';
 
@@ -64,6 +65,8 @@ export function getWidgetOptions(searchWidgetName, item) {
       return completeFromItemOptions(getElDatePickerConfig(), item);
     case 'el-date-picker-range':
       return completeFromItemOptions(getElDatePickerRangeConfig(), item);
+    case 'el-cascader':
+      return completeFromItemOptions(getElCascaderConfig(), item);
     default:
       console.warn(`您输入的标签 ${searchWidgetName} 暂不支持！`);
       break;

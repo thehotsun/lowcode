@@ -109,3 +109,23 @@ export function getElBtnConfig(type = 'primary', fn, text, extraOption = {}) {
     extraOption,
   });
 }
+
+export function getElCascaderConfig() {
+  const tagAttrs = {
+    placeholder: '请选择',
+    props: { expandTrigger: 'hover' },
+    options: [],
+  };
+  const extraOption = {
+    options: [],
+    props: {
+      key: 'id',
+      label: 'cnName',
+    },
+  };
+  return composeConfig({
+    tagName: 'el-cascader',
+    tagAttrs,
+    extraOption,
+  });
+}
