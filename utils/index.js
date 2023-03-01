@@ -4,6 +4,7 @@ import {
   getElInputConfig,
   getElSelectConfig,
   getElCascaderConfig,
+  getElInputNumberConfig,
   getElBtnConfig,
 } from '../baseConfig/widgetBaseConfig';
 
@@ -59,6 +60,8 @@ export function getWidgetOptions(searchWidgetName, item) {
   switch (searchWidgetName) {
     case 'el-input':
       return completeFromItemOptions(getElInputConfig(), item);
+    case 'el-input-number':
+      return completeFromItemOptions(getElInputNumberConfig(), item);
     case 'el-select':
       return completeFromItemOptions(getElSelectConfig(), item);
     case 'el-date-picker':

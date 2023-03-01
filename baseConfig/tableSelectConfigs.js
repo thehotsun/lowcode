@@ -25,21 +25,26 @@ export const searchWidget = [
   },
   {
     id: 1,
+    cnName: '计数器',
+    tagName: 'el-input-number',
+  },
+  {
+    id: 2,
     cnName: '组合下拉框',
     tagName: 'el-select',
   },
   {
-    id: 2,
+    id: 3,
     cnName: '日期选择框',
     tagName: 'el-date-picker',
   },
   {
-    id: 3,
+    id: 4,
     cnName: '日期选择范围框',
     tagName: 'el-date-picker-range',
   },
   {
-    id: 4,
+    id: 5,
     cnName: '级联选择器',
     tagName: 'el-cascader',
   },

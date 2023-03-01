@@ -51,6 +51,18 @@ export function getElInputConfig() {
   });
 }
 
+export function getElInputNumberConfig() {
+  const tagAttrs = {
+    label: '请输入',
+    // 注意不要写为驼峰形式
+    // 'show-password': true,
+  };
+  return composeConfig({
+    tagName: 'el-input-number',
+    tagAttrs,
+  });
+}
+
 export function getElSelectConfig() {
   const tagAttrs = {
     placeholder: '请选择',
