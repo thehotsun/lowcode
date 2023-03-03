@@ -33,7 +33,8 @@
     </el-main>
     <el-dialog title="表单" :visible.sync="dialogVisibleForm" :close-on-click-modal="false" :close-on-press-escape="false"
       width="900px" :before-close="expose_hideDialog" append-to-body>
-      <form-create :rule="rule" :option="option" @submit="onSubmit"></form-create>
+      <FcView v-if="formId" :primaryKeyValue="primaryKeyValue" :formId="formId" @submit="onSubmit"></FcView>
+      <importFile v-else></importFile>
     </el-dialog>
   </el-container>
 </template>
@@ -44,6 +45,7 @@
 import BaseRenderTable from '../BaseRenderTable/index';
 import BaseRenderForm from '../BaseRenderForm/index';
 import BaseRenderRegular from '../BaseRenderRegular/index';
+import importFile from './component/importFile.vue';
 import { align, searchWidget } from '../../baseConfig/tableSelectConfigs';
 import { getElBtnConfig } from '../../baseConfig/widgetBaseConfig';
 import { setPlaceholder, getWidgetOptions, setColSpan, exec } from '../../utils';
@@ -54,7 +56,8 @@ export default {
   components: {
     BaseRenderTable,
     BaseRenderForm,
-    BaseRenderRegular
+    BaseRenderRegular,
+    importFile
   },
   props: {
     requestTableData: {
@@ -75,10 +78,7 @@ export default {
     requestFormConfig: {
       type: Function,
     },
-    // TODO暂时这么用，以后不能处理来自表单的请求
-    requestFormConfirm: {
-      type: Function,
-    },
+
     pageLayout: {
       type: Object,
       default: function () {
@@ -108,6 +108,10 @@ export default {
       showSearchFrom: true,
       // 初始化是否显示分页
       showPagination: false,
+      formId: '',
+      primaryKeyValue: '',
+      // 按钮代表的一系列事件完毕以后是否刷新列表
+      isRefresh: false
     };
   },
 
@@ -118,7 +122,8 @@ export default {
   methods: {
     expose_showDialog (formId) {
       this.dialogVisibleForm = true
-      this.queryFormConfig(formId)
+      this.formId = formId
+      // this.queryFormConfig(formId)
     },
 
     expose_hideDialog () {
@@ -133,25 +138,27 @@ export default {
       this.composeData(tableData)
       this.tableData = [tableData];
     },
+
     resetFromData () {
-      this.rule = []
-      this.option = {}
+      // this.rule = []
+      // this.option = {}
+      this.formId = ''
     },
 
-    queryFormConfig (formId) {
-      this.requestFormConfig(formId).then(res => {
-        const { rule, option } = JSON.parse(res.data);
-        this.rule = rule;
-        this.option = option;
-      })
-    },
+    // queryFormConfig (formId) {
+    //   this.requestFormConfig(formId).then(res => {
+    //     const { rule, option } = JSON.parse(res.data);
+    //     this.rule = rule;
+    //     this.option = option;
+    //   })
+    // },
 
     // 保存表单
     async onSubmit (data) {
       this.$emit('onSubmit', data);
       this.expose_hideDialog()
-      await this.requestFormConfirm(this.formid, data)
-      this.queryTableData();
+      // await this.requestFormConfirm(this.formid, data)
+      this.isRefresh && this.queryTableData();
     },
     // 预览的时候用，创建一个全为空字符串的对象
     setEmptyTableData (emptyData = {}, fieldCode) {
@@ -280,7 +287,8 @@ export default {
     queryTableConfig () {
       return this.requestTableConfig().then(res => {
         if (res.result === '0') {
-          const { tableOptions, formOptions } = JSON.parse(res.data)
+          const { tableOptions, formOptions, isPage } = JSON.parse(res.data);
+          this.showPagination = !!isPage;
           this.tableConfigJSON = tableOptions;
           this.btnRegularOptions = this.composeBtnRegularOptions(formOptions)
         } else {
@@ -309,13 +317,13 @@ export default {
     handleBtnClick ({ relateFrom,
       openType,
       openUrl,
-      fn, }) {
+      fn, isRefresh }) {
+      this.isRefresh = isRefresh;
       if (fn) {
         this.exec(fn)
       } else {
         if (openType === 0) {
           this.expose_showDialog(relateFrom)
-          this.formid = relateFrom
         } else {
           this.$router.push(openUrl, relateFrom)
         }

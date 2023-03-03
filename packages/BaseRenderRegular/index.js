@@ -18,7 +18,13 @@ export default {
     // this.init();
   },
   methods: {
-    btnClick({ relateFrom = '', openType = 0, openUrl = '', fn = '' }) {
+    btnClick({
+      relateFrom = '',
+      openType = 0,
+      openUrl = '',
+      fn = '',
+      isRefresh = false,
+    }) {
       return (e) => {
         try {
           this.$emit('btnClick', {
@@ -26,6 +32,8 @@ export default {
             relateFrom,
             openType,
             openUrl,
+            isRefresh,
+            e,
           });
         } catch (error) {
           console.error(error);

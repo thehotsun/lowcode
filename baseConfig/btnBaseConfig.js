@@ -81,7 +81,7 @@ export const btnConfigFormOptions = [
       formItemAttrs: {
         prop: 'extraOption.relateFrom',
         label: '选择表单：',
-        required: true,
+        required: false,
       },
       tagName: 'el-select',
       tagAttrs: {
@@ -143,6 +143,30 @@ export const btnConfigFormOptions = [
       },
       // 对应formData中的属性值
       formField: 'extraOption.openUrl',
+    },
+  },
+  {
+    elRowAttrs: {
+      gutter: 10,
+    },
+    formItem: {
+      formItemAttrs: {
+        prop: 'extraOption.isRefresh',
+        label: '是否刷新列表：',
+      },
+      tagName: 'el-radio-group',
+      tagAttrs: {
+        placeholder: '',
+      },
+      // 对应formData中的属性值
+      formField: 'tagAttrs.round',
+      extraOption: {
+        options: yesOrNo,
+        props: {
+          key: 'value',
+          label: 'label',
+        },
+      },
     },
   },
   {
@@ -289,7 +313,7 @@ export const btnConfigFormOptions = [
   },
 ];
 
-export function BtnConfigFrom() {
+export function BtnConfigFrom(custom = {}) {
   return {
     style: '',
     tagName: 'el-button',
@@ -306,7 +330,9 @@ export function BtnConfigFrom() {
       openType: 0,
       openUrl: '',
       fn: '',
+      isRefresh: true,
     },
+    ...custom,
   };
 }
 
