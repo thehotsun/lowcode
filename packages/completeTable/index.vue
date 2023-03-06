@@ -78,13 +78,16 @@ export default {
     requestFormConfig: {
       type: Function,
     },
-
+    requestDownload: {
+      type: Function,
+    },
     pageLayout: {
       type: Object,
       default: function () {
         ' ->, total,sizes, prev, pager, next,jumper'
       }
-    }
+    },
+    listPageId: String
   },
   data () {
     return {
@@ -111,7 +114,12 @@ export default {
       formId: '',
       primaryKeyValue: '',
       // 按钮代表的一系列事件完毕以后是否刷新列表
-      isRefresh: false
+      isRefresh: false,
+      // 选中的table数据
+      selectList: [],
+      keyField: '',
+      isShowCheckbox: false,
+      isShowIndex: false,
     };
   },
 
@@ -131,7 +139,10 @@ export default {
       this.resetFromData()
     },
 
-    expose_preview ({ tableOptions, formOptions }) {
+    expose_preview ({ tableOptions, formOptions, isPage, isShowIndex, isShowCheckbox }) {
+      this.showPagination = !!isPage;
+      this.isShowCheckbox = !!isShowCheckbox;
+      this.isShowIndex = !!isShowIndex;
       this.tableConfigJSON = tableOptions;
       this.btnRegularOptions = this.composeBtnRegularOptions(formOptions);
       const tableData = {}
@@ -183,6 +194,21 @@ export default {
         obj.sortable = !!item.sort
         return obj
       })
+      if (this.isShowIndex) {
+        this.tableOptions.unshift({
+          type: "index",
+          width: "50",
+          label: "序号",
+          align: "center"
+        })
+      }
+      if (this.isShowCheckbox) {
+        this.tableOptions.unshift({
+          type: "selection",
+          width: "55",
+          align: "center"
+        })
+      }
     },
 
     // 由数据组成searchFrom
@@ -260,6 +286,7 @@ export default {
     selectListHandler (val) {
       this.$emit(selectListHandler, val);
       console.log(val);
+      this.selectList = val;
     },
 
 
@@ -287,8 +314,12 @@ export default {
     queryTableConfig () {
       return this.requestTableConfig().then(res => {
         if (res.result === '0') {
-          const { tableOptions, formOptions, isPage } = JSON.parse(res.data);
+          const { tableOptions, formOptions, isPage,
+            keyField, isShowIndex, isShowCheckbox } = JSON.parse(res.data);
           this.showPagination = !!isPage;
+          this.isShowCheckbox = !!isShowCheckbox;
+          this.isShowIndex = !!isShowIndex;
+          this.keyField = keyField;
           this.tableConfigJSON = tableOptions;
           this.btnRegularOptions = this.composeBtnRegularOptions(formOptions)
         } else {
@@ -328,7 +359,20 @@ export default {
           this.$router.push(openUrl, relateFrom)
         }
       }
-    }
+    },
+
+    download (list = []) {
+      this.requestDownload({ json: list.length ? JSON.stringify(list) : '', listPageId: this.listPageId }).then(response => {
+        const link = document.createElement('a');
+        const blob = response;
+        link.style.display = 'none';
+        link.href = URL.createObjectURL(blob);
+        link.setAttribute('download', '导出表格');
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      })
+    },
   }
 };
 </script>  

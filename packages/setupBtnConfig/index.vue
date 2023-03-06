@@ -17,7 +17,7 @@
 
 import BaseRenderForm from '../BaseRenderForm/index';
 import { btnConfigFormOptions, BtnConfigFrom } from "../../baseConfig/btnBaseConfig"
-import { setPlaceholder, getWidgetOptions, setColSpan } from '../../utils'; 
+import { setPlaceholder, getWidgetOptions, setColSpan, findFromOptionsIndexByfieldName } from '../../utils';
 import { cloneDeep, merge } from "lodash";
 
 export default {
@@ -32,6 +32,7 @@ export default {
     return {
       colorList: ['', 'primary', 'success', 'info', 'warning', 'danger'],
       btnConfigFormOptions,
+      rawBtnConfigFormOptions: cloneDeep(btnConfigFormOptions),
       btnConfigFromArr: [],
       btnConfigFrom: new BtnConfigFrom(),
     };
@@ -41,6 +42,28 @@ export default {
     // this.init()
   },
   methods: {
+    expose_reductionFromOptions () {
+      this.btnConfigFormOptions = cloneDeep(this.rawBtnConfigFormOptions);
+    },
+
+    expose_hideSomeFieldOptions (fieldName) {
+      const index = findFromOptionsIndexByfieldName(this.btnConfigFormOptions, fieldName);
+      console.log(index, 'index');
+      this.btnConfigFormOptions.splice(index, 1)
+    },
+
+    expose_setBtnConfigFormOptions (options) {
+      this.btnConfigFormOptions = options
+    },
+
+    expose_getBtnConfigFormOptions () {
+      return this.btnConfigFormOptions
+    },
+
+    expose_getRawBtnConfigFormOptions () {
+      return this.rawBtnConfigFormOptions
+    },
+
     expose_getBtnConfigFromArr () {
       return this.btnConfigFromArr
     },
@@ -51,6 +74,10 @@ export default {
 
     expose_setBtnConfigFrom (obj) {
       this.btnConfigFrom = obj
+    },
+
+    expose_getBtnConfigFrom () {
+      return this.btnConfigFrom
     },
 
     // TODO应该怎么设计接受外部接口获取来的数据

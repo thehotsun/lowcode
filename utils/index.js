@@ -173,6 +173,12 @@ export function exec(fn) {
   eval(fn);
 }
 
+export function findFromOptionsIndexByfieldName(options = [], fieldName = '') {
+  return options.findIndex((item) => {
+    item.formItem.formField === fieldName;
+  });
+}
+
 export default {
   setPlaceholder,
   setFilterAndResetBtnConfig,
@@ -187,4 +193,5 @@ export default {
   setter,
   getHandleInput,
   exec,
+  findFromOptionsIndexByfieldName,
 };
