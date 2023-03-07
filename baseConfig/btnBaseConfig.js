@@ -159,7 +159,7 @@ export const btnConfigFormOptions = [
         placeholder: '',
       },
       // 对应formData中的属性值
-      formField: 'tagAttrs.round',
+      formField: 'extraOption.isRefresh',
       extraOption: {
         options: yesOrNo,
         props: {
@@ -175,7 +175,7 @@ export const btnConfigFormOptions = [
     },
     formItem: {
       formItemAttrs: {
-        prop: 'showType',
+        prop: 'tagAttrs.showType',
         label: '显示形式：',
       },
       tagName: 'el-radio-group',
@@ -183,7 +183,7 @@ export const btnConfigFormOptions = [
         placeholder: '',
       },
       // TODO 没想好怎么做
-      formField: 'showType',
+      formField: 'tagAttrs.showType',
       extraOption: {
         options: showType,
         props: {
@@ -315,12 +315,12 @@ export const btnConfigFormOptions = [
 
 export function BtnConfigFrom(custom = {}) {
   return {
-    style: '',
+    style: 'margin-right: 20px;',
     tagName: 'el-button',
     tagAttrs: {
       value: '',
-      type: '',
-      size: '',
+      type: 'primary',
+      size: 'small',
       plain: true,
       round: false,
       showType: 0,

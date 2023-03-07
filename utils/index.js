@@ -174,9 +174,7 @@ export function exec(fn) {
 }
 
 export function findFromOptionsIndexByfieldName(options = [], fieldName = '') {
-  return options.findIndex((item) => {
-    item.formItem.formField === fieldName;
-  });
+  return options.findIndex((item) => item.formItem.formField === fieldName);
 }
 
 export default {

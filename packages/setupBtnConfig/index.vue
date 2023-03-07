@@ -42,14 +42,24 @@ export default {
     // this.init()
   },
   methods: {
-    expose_reductionFromOptions () {
+    expose_reductionAll () {
       this.btnConfigFormOptions = cloneDeep(this.rawBtnConfigFormOptions);
+      this.btnConfigFrom = new BtnConfigFrom()
     },
 
-    expose_hideSomeFieldOptions (fieldName) {
-      const index = findFromOptionsIndexByfieldName(this.btnConfigFormOptions, fieldName);
-      console.log(index, 'index');
-      this.btnConfigFormOptions.splice(index, 1)
+    expose_hideSomeFieldOptions (fieldName) { 
+      if (typeof fieldName === 'string') {
+        fieldName = [fieldName]
+      }
+      if (Array.isArray(fieldName)) {
+        fieldName.map(item => {
+          const index = findFromOptionsIndexByfieldName(this.btnConfigFormOptions, item);
+          console.log(index, 'index');
+          index !== -1 && this.btnConfigFormOptions.splice(index, 1)
+        })
+      } else {
+        console.error('expose_hideSomeFieldOptions只能接受字符串或者数组');
+      }
     },
 
     expose_setBtnConfigFormOptions (options) {
