@@ -1,6 +1,6 @@
 <template>
-  <el-container>
-    <el-header v-if="showSearchFrom">
+  <el-container style="height: 100%">
+    <el-header style="margin: 20px 0" v-if="showSearchFrom">
       <base-render-form ref="form" :form-data="searchFrom" :form-options="formOptions" :showFooter="false"
         :use-dialog="false">
       </base-render-form>

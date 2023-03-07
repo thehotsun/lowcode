@@ -1,5 +1,5 @@
 <template>
-  <el-container>
+  <el-container style="height: 100%">
     <!-- <el-header>
               <div class="operate">
                 <el-button size='small' type="primary" @click="handleAdd(1)">新增一条</el-button>
@@ -18,7 +18,7 @@
       <el-container style="height: 100%">
         <el-main>
           <base-render-table ref="table" :table-data="tableData" :table-options="tableOptions" edit-mode
-            @selection-change="selectListHandler" style="height: 450px;overflow:auto">
+            @selection-change="selectListHandler" style="height: 100%;overflow:auto">
             <!-- 注意这里的slot值要和tableOptions中配置的slotName一致 -->
             <!-- #operator是简写，详细请查阅vue文档 -->
             <template #setupWidget="{ row }">
