@@ -99,6 +99,6 @@ module.exports = {
     new MiniCssExtractPlugin({
       filename: 'lib-style/[name].css',
     }),
-    new LodashModuleReplacementPlugin(),
+    new LodashModuleReplacementPlugin({ shorthands: true }),
   ],
 };

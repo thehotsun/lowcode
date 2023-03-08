@@ -56,7 +56,7 @@ import BaseRenderTable from '../BaseRenderTable/index';
 import BaseRenderForm from '../BaseRenderForm/index';
 import { getSingleTableData, eidtConf as tableOptions } from '../../baseConfig/tableBaseConfig'
 import { align, searchWidget } from '../../baseConfig/tableSelectConfigs';
-import { setPlaceholder, getWidgetOptions, getFormItemEmptyConfig, str2obj } from '../../utils';
+import { setPlaceholder, getWidgetOptions, getFormItemEmptyConfig, str2obj, depthFirstSearchWithRecursive } from '../../utils';
 import { merge } from "lodash"
 
 export default {
@@ -101,7 +101,7 @@ export default {
 
     handleWidgetAttr (row) {
       if (row.searchWidget === '') {
-        return this.$warning('请先选择控件')
+        return this.$warn('请先选择控件')
       }
       this.curRowData = row;
       this.dialogVisibleFrom = true;
@@ -240,7 +240,7 @@ export default {
       if (this.setupForm.extraOption) {
         this.setupForm.extraOption = str2obj(this.setupForm.extraOption)
       }
-      this.curRowData.searchWidgetConfig = this.setupForm
+      this.curRowData.searchWidgetConfig = depthFirstSearchWithRecursive(this.setupForm);
       this.handleCloseFrom();
     },
   }

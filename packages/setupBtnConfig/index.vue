@@ -97,6 +97,8 @@ export default {
     },
 
     expose_setExtraOption (options) {
+      // this.$set(this.btnConfigFormOptions[1].formItem, 'extraOption', options )
+      // console.log(options, 'expose_setExtraOption', btnConfigFormOptions);
       this.btnConfigFormOptions[1].formItem.extraOption = options
 
     },

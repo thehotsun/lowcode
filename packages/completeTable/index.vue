@@ -33,7 +33,8 @@
     </el-main>
     <el-dialog title="表单" :visible.sync="dialogVisibleForm" :close-on-click-modal="false" :close-on-press-escape="false"
       width="900px" :before-close="expose_hideDialog" append-to-body>
-      <FcView v-if="formId" :primaryKeyValue="primaryKeyValue" :formId="formId" @submit="onSubmit"></FcView>
+      <FcView v-if="formId" :primaryKeyValue="primaryKeyValue" :isDisabled="onlyRead" :formId="formId" @submit="onSubmit">
+      </FcView>
       <importFile v-else></importFile>
     </el-dialog>
   </el-container>
@@ -49,7 +50,7 @@ import importFile from './component/importFile.vue';
 import { align, searchWidget } from '../../baseConfig/tableSelectConfigs';
 import { getElBtnConfig } from '../../baseConfig/widgetBaseConfig';
 import { setPlaceholder, getWidgetOptions, setColSpan, exec } from '../../utils';
-import { cloneDeep, merge } from "lodash";
+import { cloneDeep, merge, pickBy } from "lodash";
 
 export default {
   name: 'completeTable',
@@ -62,7 +63,9 @@ export default {
   props: {
     requestTableData: {
       type: Function,
-      require: true
+    },
+    requestTablePaginationData: {
+      type: Function,
     },
     requestFormData: {
       type: Function,
@@ -79,6 +82,9 @@ export default {
       type: Function,
     },
     requestDownload: {
+      type: Function,
+    },
+    requestBatchDel: {
       type: Function,
     },
     pageLayout: {
@@ -120,6 +126,7 @@ export default {
       keyField: '',
       isShowCheckbox: false,
       isShowIndex: false,
+      onlyRead: false
     };
   },
 
@@ -230,6 +237,8 @@ export default {
           this.$set(this.searchFrom, item.fieldCode, '');
           // setFromField(this.searchFrom, item.fieldCode);
           const options = getWidgetOptions(searchWidgetName, item)
+          // const vaildVal = pickBy(item.searchWidgetConfig);
+          // console.log(vaildVal, 'vaildVal');
           formOptions.push(merge(options, item.searchWidgetConfig));
         }
         // 如果循环到最后一个且存在其他筛选项，则复制一份最原始的form
@@ -284,7 +293,7 @@ export default {
     },
 
     selectListHandler (val) {
-      this.$emit(selectListHandler, val);
+      this.$emit('selectListHandler', val);
       console.log(val);
       this.selectList = val;
     },
@@ -300,7 +309,8 @@ export default {
         ...this.searchFrom,
         ...this.page
       };
-      return this.requestTableData(this.showPagination ? params : this.searchFrom).then(res => {
+
+      return (this.showPagination ? this.requestTablePaginationData(params) : this.requestTableData(this.searchFrom)).then(res => {
         if (res.result === '0') {
           this.tableData = res.data
         } else {
@@ -345,19 +355,47 @@ export default {
 
     exec,
 
-    handleBtnClick ({ relateFrom,
-      openType,
-      openUrl,
-      fn, isRefresh }) {
+    handleBtnClick ({ relateFrom = '',
+      openType = '',
+      openUrl = '',
+      fn = '', isRefresh = false, defaultFn = '', btnType = '' }) {
+      console.log(defaultFn, 'defaultFn');
       this.isRefresh = isRefresh;
       if (fn) {
         this.exec(fn)
       } else {
-        if (openType === 0) {
-          this.expose_showDialog(relateFrom)
-        } else {
-          this.$router.push(openUrl, relateFrom)
+        switch (btnType) {
+          case 'add':
+            if (openType === 0) {
+              this.expose_showDialog(relateFrom)
+              this.onlyRead = false;
+              this.primaryKeyValue = ''
+            } else {
+              this.$router.push(openUrl, relateFrom)
+            }
+            break;
+          case 'check':
+          case 'edit':
+            if (this.selectList.length === 1) {
+              this.primaryKeyValue = this.selectList[0][this.keyField];
+              if (openType === 0) {
+                this.expose_showDialog(relateFrom)
+                this.onlyRead = btnType === 'check'
+              } else {
+                this.$router.push(openUrl, relateFrom)
+              }
+            } else { this.$warn("请确认只选中了一个值") }
+            break;
+          case 'download':
+            this.download(this.selectList.map(item => item[this.keyField]))
+            break;
+          case 'batchDel':
+            this.batchDel(this.selectList.map(item => item[this.keyField]))
+            break;
+          default:
+            break;
         }
+
       }
     },
 
@@ -373,7 +411,20 @@ export default {
         document.body.removeChild(link);
       })
     },
-  }
+    batchDel (list = []) {
+      this.requestBatchDel({ primaryKeyValueList: list, listPageId: this.listPageId }).then(response => {
+        const link = document.createElement('a');
+        const blob = response;
+        link.style.display = 'none';
+        link.href = URL.createObjectURL(blob);
+        link.setAttribute('download', '导出表格');
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      })
+    },
+  },
+
 };
 </script>  
 

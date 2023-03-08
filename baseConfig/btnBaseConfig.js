@@ -90,12 +90,7 @@ export const btnConfigFormOptions = [
       // 对应formData中的属性值
       formField: 'extraOption.relateFrom',
       extraOption: {
-        options: [
-          {
-            id: 1,
-            label: 's',
-          },
-        ],
+        options: [],
         props: {
           key: 'id',
           label: 'cnName',

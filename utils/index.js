@@ -8,6 +8,8 @@ import {
   getElBtnConfig,
 } from '../baseConfig/widgetBaseConfig';
 
+import { pickBy } from 'lodash';
+
 export function setPlaceholder(tagName, fieldName) {
   const inputs = ['el-input', 'el-input-number'];
   return `请${inputs.includes(tagName) ? '输入' : '选择'}${fieldName}`;
@@ -151,18 +153,7 @@ export function getHandleInput(formData, formField, fn) {
 export function btnClick(extraOption, emit) {
   return function(e) {
     try {
-      const {
-        relateFrom = '',
-        openType = 0,
-        openUrl = '',
-        fn = '',
-      } = extraOption;
-      emit('btnClick', {
-        fn,
-        relateFrom,
-        openType,
-        openUrl,
-      });
+      emit('btnClick', extraOption);
     } catch (error) {
       console.error(error);
     }
@@ -176,6 +167,45 @@ export function exec(fn) {
 export function findFromOptionsIndexByfieldName(options = [], fieldName = '') {
   return options.findIndex((item) => item.formItem.formField === fieldName);
 }
+
+export function filterObj(obj) {
+  pickBy(obj);
+}
+
+// 用递归实现深度优先遍历
+export const depthFirstSearchWithRecursive = (source) => {
+  // function del(source, key) {
+  //   if (Array.isArray(source)) {
+  //     source.splice(key, 1);
+  //   } else {
+  //     delete source[key];
+  //   }
+  // }
+  // 递归方法
+
+  const dfs = (source, key) => {
+    const val = source[key];
+    if (Object.prototype.toString.call(val) === '[object Object]') {
+      // const keys = Object.keys(obj);
+      // keys.map((key) => {});
+      depthFirstSearchWithRecursive(val);
+    } else if (Array.isArray(val)) {
+      // if (val.length === 0) del(source, key);
+      // else {
+      //   source[key] = val.filter((item, index) => dfs(val, index));
+      // }
+    } else {
+      if (val === '' || val === undefined || val === null) delete source[key];
+    }
+  };
+  const keys = Object.keys(source);
+  keys.map((key, index) => {
+    dfs(source, key);
+  });
+  // 开始搜索
+  // dfs(source);
+  return source;
+};
 
 export default {
   setPlaceholder,
@@ -192,4 +222,5 @@ export default {
   getHandleInput,
   exec,
   findFromOptionsIndexByfieldName,
+  depthFirstSearchWithRecursive,
 };
