@@ -25,9 +25,9 @@
           </base-render-table>
         </el-main>
         <el-footer v-if="showPagination">
-          <el-pagination class="el-pagination" :layout="pageLayout" :total="page.totalCount"
-            :current-page.sync="page.pageNum" :page-size="page.pageSize"
-            @current-change="handleCurrentChange"></el-pagination>
+          <el-pagination class="el-pagination" :layout="pageLayout" :current-page.sync="page.pageNo"
+            :page-size="page.pageSize" :total="page.totalCount" :page-sizes="[10, 20, 50, 100]"
+            @size-change="handleSizeChange" @current-change="handleCurrentChange"></el-pagination>
         </el-footer>
       </el-container>
     </el-main>
@@ -87,16 +87,18 @@ export default {
     requestBatchDel: {
       type: Function,
     },
-    pageLayout: {
-      type: Object,
-      default: function () {
-        ' ->, total,sizes, prev, pager, next,jumper'
-      }
-    },
+    // pageLayout: {
+    //   type: String,
+    //   default: function () {
+    //     'total,sizes, prev, pager, next,jumper'
+    //   }
+    // },
+
     listPageId: String
   },
   data () {
     return {
+      pageLayout: '->, total,sizes, prev, pager, next,jumper',
       dialogVisibleForm: false,
       rule: [],
       option: {},
@@ -108,9 +110,9 @@ export default {
       searchFrom: {},
       rawSearchFrom: {},
       page: {
-        pageNum: 1,
+        pageNo: 1,
         pageSize: 10,
-        totalCount: 20
+        totalCount: 0
       },
       btnRegularOptions: [],
       btnConfigJSON: [],
@@ -184,8 +186,8 @@ export default {
     },
 
     async init () {
-      this.queryTableData();
       await this.queryTableConfig();
+      this.queryTableData();
       this.composeData()
     },
 
@@ -273,11 +275,13 @@ export default {
 
 
     handleFilter () {
+      this.page.pageNo = 1;
       this.queryTableData();
     },
 
     handleReset () {
       this.searchFrom = cloneDeep(this.rawSearchFrom);
+      this.page.pageNo = 1;
       this.queryTableData();
     },
 
@@ -304,15 +308,19 @@ export default {
       this.queryTableData();
     },
 
-    queryTableData () {
-      const params = {
-        ...this.searchFrom,
-        ...this.page
-      };
+    handleSizeChange (val) {
+      console.log(val, this.page);
+      this.page.pageSize = val
+      this.queryTableData();
+    },
 
-      return (this.showPagination ? this.requestTablePaginationData(params) : this.requestTableData(this.searchFrom)).then(res => {
+    queryTableData () {
+      return (this.showPagination ? this.requestTablePaginationData(this.searchFrom, this.page) : this.requestTableData(this.searchFrom)).then(res => {
         if (res.result === '0') {
           this.tableData = res.data
+          if (this.showPagination) {
+            this.page.totalCount = res.totalCount;
+          }
         } else {
           console.error(`queryTableData message: ${res}`);
         }
@@ -412,15 +420,10 @@ export default {
       })
     },
     batchDel (list = []) {
-      this.requestBatchDel({ primaryKeyValueList: list, listPageId: this.listPageId }).then(response => {
-        const link = document.createElement('a');
-        const blob = response;
-        link.style.display = 'none';
-        link.href = URL.createObjectURL(blob);
-        link.setAttribute('download', '导出表格');
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
+      this.requestBatchDel({ primaryKeyValueList: list, listPageId: this.listPageId }).then(res => {
+        if (res.result === '0') {
+          this.queryTableData()
+        }
       })
     },
   },
