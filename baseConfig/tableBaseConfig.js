@@ -20,10 +20,11 @@ export const eidtConf = [
     // 如需多选，则添加此item
     type: 'selection',
   },
-  // {
-  //   // 如需展示索引，则添加此item
-  //   type: 'index',
-  // },
+  {
+    // 如需展示索引，则添加此item
+    label: '序号',
+    type: 'index',
+  },
   {
     label: '字段编号',
     prop: 'fieldCode',
@@ -50,7 +51,7 @@ export const eidtConf = [
     label: '对齐',
     prop: 'align',
     ...baseAttr,
-    'min-width': '50',
+    'min-width': '80',
     tagName: 'el-select',
     // 特殊组件的额外属性值例如select组件下的option组件所需的options
     extraOption: {
@@ -61,9 +62,9 @@ export const eidtConf = [
     label: '展示',
     prop: 'show',
     ...baseAttr,
-    'min-width': '50',
+    'min-width': '70',
     tagName: 'el-checkbox',
-    tagAttrs: {},
+    sortable: true,
   },
   {
     label: '排序',
@@ -71,7 +72,16 @@ export const eidtConf = [
     ...baseAttr,
     'min-width': '50',
     tagName: 'el-checkbox',
-    tagAttrs: {},
+  },
+  {
+    label: '格式化',
+    prop: 'translate',
+    ...baseAttr,
+    'min-width': '120',
+    tagAttrs: {
+      type: 'areatext',
+      placeholder: '请输入键为原始数据，值为展示数据的obj',
+    },
   },
   {
     ...baseAttr,
@@ -81,6 +91,7 @@ export const eidtConf = [
     tagAttrs: {
       clearable: true,
     },
+    'min-width': '130',
     // 特殊组件的额外属性值例如select组件下的option组件所需的options
     extraOption: {
       options: searchWidget,
@@ -89,73 +100,14 @@ export const eidtConf = [
   {
     label: '控件属性',
     prop: '',
+    'min-width': '70',
     align: 'center',
     slotName: 'setupWidget',
   },
   // 如需使用slot功能，请添加slotName属性，并在template中使用相同的slot名称
   {
     label: '操作',
-    prop: '',
-    align: 'center',
-    slotName: 'operator',
-  },
-];
-export const editBtnConf = [
-  {
-    type: 'selection',
-  },
-  {
-    label: '按钮ID',
-    prop: 'btnID',
-    ...baseAttr,
-  },
-  {
-    label: '按钮名称',
-    prop: 'btnName',
-    ...baseAttr,
-  },
-  {
-    label: '英文名称',
-    prop: 'englishName',
-    ...baseAttr,
-  },
-  {
-    label: 'URL',
-    prop: 'URL',
-    ...baseAttr,
-    'min-width': '150px',
-  },
-  {
-    label: '图标',
-    prop: 'icon',
-    ...baseAttr,
-  },
-  {
-    label: '是否可用',
-    prop: 'isUse',
-    ...baseAttr,
-    'min-width': '50',
-    tagName: 'el-checkbox',
-  },
-  {
-    label: '是否显示',
-    prop: 'isShow',
-    ...baseAttr,
-    'min-width': '50',
-    tagName: 'el-checkbox',
-    tagAttrs: {},
-  },
-  {
-    label: '按钮授权',
-    prop: 'isAuth',
-    ...baseAttr,
-    'min-width': '50',
-    tagName: 'el-checkbox',
-    tagAttrs: {},
-  },
-  // 如需使用slot功能，请添加slotName属性，并在template中使用相同的slot名称
-  {
-    label: '操作',
+    'min-width': '70',
     prop: '',
     align: 'center',
     slotName: 'operator',
@@ -171,21 +123,8 @@ export function getSingleTableData() {
     align: 1,
     show: true,
     sort: false,
+    translate: '',
     searchWidget: '',
-    searchWidgetConfig: {},
-  };
-}
-
-export function getSingleBtnData() {
-  return {
-    btnID: '',
-    btnName: '',
-    englishName: '',
-    URL: '',
-    icon: '',
-    isUse: true,
-    isShow: false,
-    isAuth: '',
     searchWidgetConfig: {},
   };
 }

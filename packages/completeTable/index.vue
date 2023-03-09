@@ -201,6 +201,7 @@ export default {
         obj.align = align.find(alignitem => alignitem.id === item.align).value
         obj['min-width'] = item.width
         obj.sortable = !!item.sort
+        obj.translate = item.translate
         return obj
       })
       if (this.isShowIndex) {
@@ -419,7 +420,7 @@ export default {
         document.body.removeChild(link);
       })
     },
-    batchDel (list = []) {
+    batchDel (list = []) { 
       this.requestBatchDel({ primaryKeyValueList: list, listPageId: this.listPageId }).then(res => {
         if (res.result === '0') {
           this.queryTableData()

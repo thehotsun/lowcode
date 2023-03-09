@@ -8,7 +8,8 @@ $ npm install @viva3la3vida/base-render
 
 ## 使用
 
-<h6> 引入之前确保已经引入并use了elementUI 以及 formCreate
+<h6> 引入之前确保已经引入并use了elementUI 以formCreate
+
 ```javascript
 import elementUI from "element-ui";
 import "./styles/element-variables.scss";
@@ -20,12 +21,14 @@ Vue.use(FcDesigner);
 ```
 
 <h6> 按需引入
+
 ```javascript
 import { completeTable } from "@viva3la3vida/base-render";
 Vue.use(completeTable);
 ```
 
 <h6> 全部引入 
+
 ```javascript
 import BaseRender from "@viva3la3vida/base-render";
 Vue.use(BaseRender);

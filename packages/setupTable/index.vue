@@ -1,18 +1,15 @@
 <template>
   <el-container style="height: 100%">
-    <!-- <el-header>
-              <div class="operate">
-                <el-button size='small' type="primary" @click="handleAdd(1)">新增一条</el-button>
-                <el-button size='small' type="primary" @click="handleAdd(5)">新增五条</el-button>
-                <el-button size='small' type="danger" :disabled="!selected.length" @click="handleDelete">删除</el-button>
-                <el-button size='small' type="" :disabled="checkUpBtnDisabled()" @click="handleUpAndDwon(-1)">上移</el-button>
-                <el-button size='small' type="" :disabled="checkDwonBtnDisabled()" @click="handleUpAndDwon(1)">下移</el-button>
-                <el-button size='small' type="primary" @click.stop.prevent="handleOpenFormDesign()">
-                  新增功能按钮
-                </el-button>
-                <slot name="btn"></slot>
-              </div>
-            </el-header> -->
+    <el-header>
+      <div class="operate">
+        <el-button size='small' type="primary" @click="handleAdd(1)">新增一条</el-button>
+        <el-button size='small' type="primary" @click="handleAdd(5)">新增五条</el-button>
+        <el-button size='small' type="danger" :disabled="!selected.length" @click="handleDelete">删除</el-button>
+        <el-button size='small' type="" :disabled="checkUpBtnDisabled()" @click="handleUpAndDwon(1)">上移</el-button>
+        <el-button size='small' type="" :disabled="checkDwonBtnDisabled()" @click="handleUpAndDwon(-1)">下移</el-button>
+        <slot name="btn"></slot>
+      </div>
+    </el-header>
 
     <el-main>
       <el-container style="height: 100%">

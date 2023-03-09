@@ -1,5 +1,5 @@
-import "./table.scss";
-
+import './table.scss';
+import { str2obj } from '/utils';
 export default {
   name: 'BaseRenderTable',
   data() {
@@ -114,7 +114,7 @@ export default {
 
     isCooperateComp(tagName) {
       if (typeof tagName !== 'string') {
-        console.error('isCooperateComp方法传入的参数必须为字符串');
+        console.warn('isCooperateComp方法传入的参数必须为字符串');
         return false;
       }
       // TODO 待添加，
@@ -126,12 +126,12 @@ export default {
       const { options = [], props = {} } = extraOption;
       // 基础版有个添加维护字典的功能，里面返回的字段为id和cnName，因此以此字段为默认取值
       const { key = 'id', label = 'cnName' } = props;
-      const disabled = !(
-        this.editMode &&
-        data.$edit &&
-        formField === this.curCellProperty
-      );
-      attrs.disabled = disabled;
+      // const disabled = !(
+      //   this.editMode &&
+      //   data.$edit &&
+      //   formField === this.curCellProperty
+      // );
+      attrs.disabled = !this.editMode;
       return (
         <el-select
           nativeOnClick={this.bubbling}
@@ -156,14 +156,30 @@ export default {
     },
 
     getCellRender(row, options) {
-      if (options.tagName) {
+      if (options.tagName || options.translate) {
         return this.cellRender(row, options);
       } else {
         return row[options.prop];
       }
     },
 
+    getCellValue(translate, row, prop) {
+      console.log('getCellValue', translate, row, prop);
+      if (translate) {
+        try {
+          const obj = str2obj(translate);
+          console.log(obj);
+          return obj[row[prop]];
+        } catch (error) {
+          console.error(`translateCell error: ${error}`);
+          return row[prop];
+        }
+      } else return row[prop];
+    },
+
     cellRender(row, options) {
+      const { getCellValue } = this;
+
       const {
         // class和style不会被组件的attr所处理，会直接赋值到组件的根节点因此需要单独拿出来赋值
         className = '',
@@ -185,8 +201,10 @@ export default {
         listeners = {},
         // 需要绑定的formData的属性名
         prop = '',
-        tagName,
+        tagName = 'span',
+        translate = '',
       } = options;
+
       const disabled = !(
         this.editMode &&
         row.$edit &&
@@ -203,8 +221,11 @@ export default {
       ) {
         Tag = 'span';
       } else {
+        // 其余组件是否禁用取决于当前是否为编辑模式
         Tag = tagName;
+        tagAttrs.disabled = !this.editMode;
       }
+      const value = getCellValue(translate, row, prop);
       const { getCooperateComp, isCooperateComp } = this;
       return (
         <div style="display: inline-block">
@@ -222,7 +243,7 @@ export default {
               <span style={frontTextStyle}>{frontText}</span>
               <Tag
                 v-model={row[prop]}
-                value={row[prop]}
+                value={value}
                 style={style}
                 class={className}
                 {...{
@@ -230,7 +251,7 @@ export default {
                   on: listeners,
                 }}
               >
-                {row[prop] || tagAttrs?.value || contentText}
+                {value || tagAttrs?.value || contentText}
               </Tag>
               <span style={behindTextStyle}>{behindText}</span>
             </div>
