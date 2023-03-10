@@ -103,7 +103,6 @@ export default {
       let model = getter(formData, formField);
       return (
         <el-select
-          // v-model={1 ? model : ""}
           value={model}
           {...{
             attrs,
@@ -126,29 +125,28 @@ export default {
     },
 
     getCascaderCompVNode(attrs, listeners, formField, extraOption) {
-      return ''
-      // const { options = [], props = {} } = extraOption;
-      // const { formData, onlyShow } = this;
-      // // 基础版有个添加维护字典的功能，里面返回的字段为id和cnName，因此以此字段为默认取值
-      // const { key = 'id', label = 'cnName', children = 'children' } = props;
-      // attrs.props = {
-      //   ...attrs.props,
-      //   value: key,
-      //   label,
-      //   children,
-      // };
-      // attrs.options = options;
-      // let model = getter(formData, formField);
-      // return (
-      //   <el-cascader
-      //     value={model}
-      //     {...{
-      //       attrs,
-      //       on: listeners,
-      //     }}
-      //     disabled={onlyShow}
-      //   ></el-cascader>
-      // );
+      // return ''
+      const { options = [], props = {} } = extraOption;
+      const { formData, onlyShow } = this;
+      // 基础版有个添加维护字典的功能，里面返回的字段为id和cnName，因此以此字段为默认取值
+      const { key = 'id', label = 'cnName', children = 'children' } = props;
+      attrs.options = options;
+      let model = getter(formData, formField);
+      return (
+        <el-cascader
+          value={model}
+          {...{
+            attrs,
+            on: listeners,
+          }}
+          props={{
+            value: key,
+            label,
+            children,
+          }}
+          disabled={onlyShow}
+        ></el-cascader>
+      );
     },
 
     getRadioGroupCompVNode(attrs, listeners, formField, extraOption) {

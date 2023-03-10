@@ -54,7 +54,7 @@ import BaseRenderForm from '../BaseRenderForm/index';
 import { getSingleTableData, eidtConf as tableOptions } from '../../baseConfig/tableBaseConfig'
 import { align, searchWidget } from '../../baseConfig/tableSelectConfigs';
 import { setPlaceholder, getWidgetOptions, getFormItemEmptyConfig, str2obj, depthFirstSearchWithRecursive } from '../../utils';
-import { merge, isEmpty } from "lodash"
+import { merge, isEmpty, cloneDeep } from "lodash"
 
 export default {
   name: 'setupTable',
@@ -79,16 +79,13 @@ export default {
       },
       setupFormOptions: [],
       curRowData: {},
-      tableData: this.rawTableData || []
+      tableData: []
     };
   },
 
   watch: {
     rawTableData (val) {
-      this.tableData = val.map(item => {
-        item.searchWidgetConfig.extraOption = JSON.stringify(item.searchWidgetConfig.extraOption)
-        return item
-      });
+      this.tableData = val;
     },
   },
 
@@ -117,9 +114,9 @@ export default {
       this.dialogVisibleFrom = true;
       const searchWidgetName = searchWidget.find((widgetitem) => widgetitem.id === row.searchWidget)?.tagName;
       this.setupFormOptions = this.composeFormOptions(searchWidgetName);
-      const searchForm = row.searchWidgetConfig
-      console.log('........');
+      const searchForm = cloneDeep(row.searchWidgetConfig)
       this.setupForm = isEmpty(depthFirstSearchWithRecursive(searchForm)) || !searchForm ? this.getSetupForm(searchWidgetName) : searchForm
+      if (this.setupForm.extraOption) this.setupForm.extraOption = JSON.stringify(this.setupForm.extraOption)
     },
     // 设置searchForm和装配fromOptions
     composeFormOptions (searchWidgetName) {
@@ -276,8 +273,6 @@ export default {
 
     handleCloseFrom () {
       this.dialogVisibleFrom = false;
-      this.setupFormOptions = [];
-      this.setupForm = {}
     },
 
     confirmFrom () {
