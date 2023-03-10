@@ -163,12 +163,10 @@ export default {
       }
     },
 
-    getCellValue(translate, row, prop) {
-      console.log('getCellValue', translate, row, prop);
+    getCellValue(translate, row = {}, prop = '') {
       if (translate) {
         try {
           const obj = str2obj(translate);
-          console.log(obj);
           return obj[row[prop]];
         } catch (error) {
           console.error(`translateCell error: ${error}`);
@@ -207,7 +205,7 @@ export default {
 
       const disabled = !(
         this.editMode &&
-        row.$edit &&
+        row?.$edit &&
         options.prop === this.curCellProperty
       );
       tagAttrs.disabled = disabled;
@@ -327,7 +325,6 @@ export default {
     //   'on-prev-click': prevClick,
     //   'on-next-click': nextClick,
     // };
-
     return (
       <div class="midd">
         <el-table
@@ -352,9 +349,12 @@ export default {
                       ...item,
                       formatter: (row, column, cellValue, index) => {
                         return item.slotName
-                          ? this.$scopedSlots[item.slotName]({
-                              row: row,
-                            })
+                          ? this.$scopedSlots[item.slotName]
+                            ? this.$scopedSlots[item.slotName]({
+                                row: row,
+                              })
+                            : (console.warn(`slot : ${item.slotName} 未定义！`),
+                              '')
                           : getCellRender(row, item);
                       },
                     },

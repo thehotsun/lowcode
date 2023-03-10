@@ -38,14 +38,21 @@ module.exports = {
     alias: { '@': path.resolve(__dirname, './src') }, //后缀名 可以根据需要自由增减
     extensions: ['.js', '.vue'],
   },
-  optimization: {
-    minimize: true,
-    minimizer: [
-      new TerserPlugin({
-        test: /\.min\.js$/,
-      }),
-    ],
-  },
+  // optimization: {
+  //   minimize: true,
+  //   minimizer: [
+  //     new TerserPlugin({
+  //       // test: /\.min\.js$/,
+  //       terserOptions: {
+  //         compress: {
+  //           drop_console: true, // 去除 console
+  //           drop_debugger: true,
+  //           pure_funcs: ['console.log'], // 移除console
+  //         },
+  //       },
+  //     }),
+  //   ],
+  // },
   module: {
     rules: [
       {

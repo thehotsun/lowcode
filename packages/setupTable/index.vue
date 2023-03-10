@@ -5,8 +5,8 @@
         <el-button size='small' type="primary" @click="handleAdd(1)">新增一条</el-button>
         <el-button size='small' type="primary" @click="handleAdd(5)">新增五条</el-button>
         <el-button size='small' type="danger" :disabled="!selected.length" @click="handleDelete">删除</el-button>
-        <el-button size='small' type="" :disabled="checkUpBtnDisabled()" @click="handleUpAndDwon(1)">上移</el-button>
-        <el-button size='small' type="" :disabled="checkDwonBtnDisabled()" @click="handleUpAndDwon(-1)">下移</el-button>
+        <el-button size='small' type="" :disabled="checkUpBtnDisabled()" @click="handleUpAndDwon(true)">上移</el-button>
+        <el-button size='small' type="" :disabled="checkDwonBtnDisabled()" @click="handleUpAndDwon(false)">下移</el-button>
         <slot name="btn"></slot>
       </div>
     </el-header>
@@ -54,7 +54,7 @@ import BaseRenderForm from '../BaseRenderForm/index';
 import { getSingleTableData, eidtConf as tableOptions } from '../../baseConfig/tableBaseConfig'
 import { align, searchWidget } from '../../baseConfig/tableSelectConfigs';
 import { setPlaceholder, getWidgetOptions, getFormItemEmptyConfig, str2obj, depthFirstSearchWithRecursive } from '../../utils';
-import { merge } from "lodash"
+import { merge, isEmpty } from "lodash"
 
 export default {
   name: 'setupTable',
@@ -63,11 +63,11 @@ export default {
     BaseRenderForm,
   },
   props: {
-    tableData: Array,
+    rawTableData: Array,
     parseJson: {
       type: Function,
       require: true
-    },
+    }
   },
   data () {
     return {
@@ -79,7 +79,14 @@ export default {
       },
       setupFormOptions: [],
       curRowData: {},
+      tableData: this.rawTableData || []
     };
+  },
+
+  watch: {
+    rawTableData (val) {
+      this.tableData = val;
+    },
   },
 
   mounted () {
@@ -87,6 +94,9 @@ export default {
   },
 
   methods: {
+    expose_getTableData () {
+      return this.tableData
+    },
 
     expose_getFormDesignData () {
       return this.formDesignData
@@ -104,7 +114,9 @@ export default {
       this.dialogVisibleFrom = true;
       const searchWidgetName = searchWidget.find((widgetitem) => widgetitem.id === row.searchWidget)?.tagName;
       this.setupFormOptions = this.composeFormOptions(searchWidgetName);
-      this.setupForm = this.getSetupForm(searchWidgetName)
+      const searchForm = row.searchWidgetConfig
+      console.log('........');
+      this.setupForm = isEmpty(searchForm) ? this.getSetupForm(searchWidgetName) : searchForm
     },
     // 设置searchForm和装配fromOptions
     composeFormOptions (searchWidgetName) {
@@ -133,7 +145,7 @@ export default {
     getFormOptions (searchWidgetName) {
       const { getSingleConfig } = this
       switch (searchWidgetName) {
-        case "el-input": case "el-date-picker": case "el-date-picker-range":
+        case "el-input": case "el-input-number": case "el-date-picker": case "el-date-picker-range":
           return [
             getSingleConfig('标签名：', '请输入标签名', 'formItemAttrs.label'), getSingleConfig('提示语：', '请输入提示语', 'tagAttrs.placeholder')]
 
@@ -145,7 +157,16 @@ export default {
                 type: 'textarea',
                 placeholder: '请输入类似{options: [],props: {key: "id",label: "cnName"}}的结构'
               },
-            }),]
+            }), getSingleConfig('开启多选', undefined, 'tagAttrs.multiple', undefined, 'el-switch'), getSingleConfig('开启本地筛选', undefined, 'tagAttrs.filterable', undefined, 'el-switch'), getSingleConfig('开启清空', undefined, 'tagAttrs.clearable', undefined, 'el-switch')]
+        case "el-cascader":
+          return [
+            getSingleConfig('标签名：', '请输入标签名', 'formItemAttrs.label'), getSingleConfig('提示语：', '请输入提示语', 'tagAttrs.placeholder'), getSingleConfig('下拉选择列表', '请输入下拉选择列表', 'tagAttrs.options', {
+              tagAttrs: {
+                autosize: true,
+                type: 'textarea',
+                placeholder: '请输入类似{options: [],props: {key: "id",label: "cnName"}}的结构'
+              },
+            }), getSingleConfig('开启多选', undefined, 'tagAttrs.props.multiple', undefined, 'el-switch'), getSingleConfig('开启本地筛选', undefined, 'tagAttrs.filterable', undefined, 'el-switch'), getSingleConfig('开启清空', undefined, 'tagAttrs.clearable', undefined, 'el-switch')]
 
         default:
           console.warn(`您输入的标签 ${searchWidgetName} 暂不支持！`);
@@ -155,7 +176,7 @@ export default {
 
     getSetupForm (searchWidgetName) {
       switch (searchWidgetName) {
-        case "el-input": case "el-date-picker": case "el-date-picker-range":
+        case "el-input": case "el-input-number": case "el-date-picker": case "el-date-picker-range":
           return {
             formItemAttrs: {
               label: ''
@@ -171,8 +192,26 @@ export default {
             },
             tagAttrs: {
               placeholder: '',
+              multiple: false,
+              filterable: false,
+              clearable: false,
             },
             extraOption: '',
+          }
+        case "el-cascader":
+          return {
+            formItemAttrs: {
+              label: ''
+            },
+            tagAttrs: {
+              placeholder: '',
+              filterable: false,
+              clearable: false,
+            },
+            options: '',
+            props: {
+              multiple: false
+            }
           }
         default:
           console.warn(`您输入的标签 ${searchWidgetName} 暂不支持！`);
@@ -186,20 +225,25 @@ export default {
     },
 
     checkDwonBtnDisabled () {
-      const length = this.tableData.length
+      const length = this.tableData?.length
       return this.selected.length === 0 || this.selected.some(item => this.tableData.indexOf(item) === length - 1)
     },
 
     // TODO 选择多个进行上移或者下移（考虑情况太多，暂时不做）
-    handleUpAndDwon (offset) {
+    handleUpAndDwon (up) {
       const { tableData, selected } = this;
       if (selected.length > 1) {
         return this.$warn('暂时只支持单个操作')
       }
       let index = tableData.indexOf(selected[0])
-      var temp = tableData[index + offset]
-      this.$set(tableData, index + offset, tableData[index])
-      this.$set(tableData, index, temp)
+      const prev = tableData.slice(0, index);
+      const next = tableData.slice(index + 1);
+      if (up) {
+        prev.splice(prev.length - 2, 0, selected[0])
+      } else {
+        next.splice(1, 0, selected[0])
+      }
+      this.tableData = prev.concat(next)
     },
 
     handleAdd (time) {
