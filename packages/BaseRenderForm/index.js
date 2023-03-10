@@ -1,4 +1,4 @@
-import { getter, getHandleInput, setPlaceholder } from '../../utils';
+import { getter, getHandleInput, setPlaceholder, str2obj } from '../../utils';
 
 export default {
   name: 'BaseRenderForm',
@@ -79,23 +79,20 @@ export default {
     },
 
     getCooperateComp(tagName, attrs, listeners, formField, extraOption) {
-      // TODO 待添加，
-      const renderFn = {
-        'el-select': this.getSelectCompVNode,
-        'el-radio-group': this.getRadioGroupCompVNode,
-      };
-      return renderFn[tagName](attrs, listeners, formField, extraOption);
-    },
-
-    // 配合组件是所有必须通过嵌套才能正常使用的组件
-    isCooperateComp(tagName) {
       if (typeof tagName !== 'string') {
         console.error('isCooperateComp方法传入的参数必须为字符串');
         return false;
       }
       // TODO 待添加，
-      const cooperateComp = ['el-select', 'el-radio-group'];
-      return cooperateComp.indexOf(tagName) !== -1;
+      const renderFn = {
+        'el-select': this.getSelectCompVNode,
+        'el-radio-group': this.getRadioGroupCompVNode,
+        'el-cascader': this.getCascaderCompVNode,
+      };
+      return (
+        renderFn[tagName] &&
+        renderFn[tagName](attrs, listeners, formField, extraOption)
+      );
     },
 
     getSelectCompVNode(attrs, listeners, formField, extraOption) {
@@ -128,6 +125,32 @@ export default {
       );
     },
 
+    getCascaderCompVNode(attrs, listeners, formField, extraOption) {
+      return ''
+      // const { options = [], props = {} } = extraOption;
+      // const { formData, onlyShow } = this;
+      // // 基础版有个添加维护字典的功能，里面返回的字段为id和cnName，因此以此字段为默认取值
+      // const { key = 'id', label = 'cnName', children = 'children' } = props;
+      // attrs.props = {
+      //   ...attrs.props,
+      //   value: key,
+      //   label,
+      //   children,
+      // };
+      // attrs.options = options;
+      // let model = getter(formData, formField);
+      // return (
+      //   <el-cascader
+      //     value={model}
+      //     {...{
+      //       attrs,
+      //       on: listeners,
+      //     }}
+      //     disabled={onlyShow}
+      //   ></el-cascader>
+      // );
+    },
+
     getRadioGroupCompVNode(attrs, listeners, formField, extraOption) {
       const { options = [], props = {} } = extraOption;
       const { formData, onlyShow } = this;
@@ -157,8 +180,8 @@ export default {
 
     //
     getSingleCompVNode(item) {
-      const { formData, isCooperateComp, getCooperateComp, onlyShow } = this;
-      const {
+      const { formData, getCooperateComp, onlyShow } = this;
+      let {
         // class和style不会被组件的attr所处理，会直接赋值到组件的根节点因此需要单独拿出来赋值
         className,
         style,
@@ -190,39 +213,35 @@ export default {
       // 若tag为select这种需要别的标签配合使用的组件，则调用getCooperateComp方法
       return (
         <div style="display: inline-block">
-          {slotName ? (
-            this.$scopedSlots[slotName] ? (
-              this.$scopedSlots[slotName]({
-                formData: formData,
-              })
-            ) : (
-              (console.warn(`slot : ${slotName} 未定义！`), '')
-            )
-          ) : isCooperateComp(tagName) ? (
-            getCooperateComp(
-              tagName,
-              tagAttrs,
-              listeners,
-              formField,
-              extraOption
-            )
-          ) : (
-            <div style="display: inline-block">
-              <span style={frontTextStyle}>{frontText}</span>
-              <Tag
-                value={model}
-                style={style}
-                class={className}
-                {...{
-                  attrs: tagAttrs,
-                  on: listeners,
-                }}
-              >
-                {model || tagAttrs?.value || contentText}
-              </Tag>
-              <span style={behindTextStyle}>{behindText}</span>
-            </div>
-          )}
+          {slotName
+            ? this.$scopedSlots[slotName]
+              ? this.$scopedSlots[slotName]({
+                  formData: formData,
+                })
+              : (console.warn(`slot : ${slotName} 未定义！`), '')
+            : getCooperateComp(
+                tagName,
+                tagAttrs,
+                listeners,
+                formField,
+                extraOption
+              ) || (
+                <div style="display: inline-block">
+                  <span style={frontTextStyle}>{frontText}</span>
+                  <Tag
+                    value={model}
+                    style={style}
+                    class={className}
+                    {...{
+                      attrs: tagAttrs,
+                      on: listeners,
+                    }}
+                  >
+                    {model || tagAttrs?.value || contentText}
+                  </Tag>
+                  <span style={behindTextStyle}>{behindText}</span>
+                </div>
+              )}
         </div>
       );
     },

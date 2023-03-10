@@ -20,34 +20,6 @@ export function setFilterAndResetBtnConfig(handleFilter, handleReset) {
   return `请${inputs.includes(tagName) ? '输入' : '选择'}${fieldName}`;
 }
 
-// 设置searchFrom和装配fromOptions
-export function composeFromOptions(searchFrom, rawSearchFrom) {
-  const formOptions = [];
-  const source = {};
-  tableData.map((item) => {
-    const searchWidgetName = searchWidget.find(
-      (widgetitem) => widgetitem.id === item.searchWidget
-    )?.tagName;
-    // 只有搜索控件有值，才会添加到options中
-    if (searchWidgetName) {
-      setFromField(source, item.fieldCode);
-      formOptions.push(getWidgetOptions(searchWidgetName, item));
-    }
-  });
-  rawSearchFrom = _.cloneDeep((searchFrom = source));
-  return [
-    {
-      elRowAttrs: {
-        gutter: 10,
-      },
-      formItem: formOptions,
-    },
-  ];
-}
-
-export function setFromField(source, field) {
-  source[field] = '';
-}
 
 export function completeFromItemOptions(data, tableItem) {
   data.formItemAttrs.prop = tableItem.fieldCode;
@@ -117,7 +89,12 @@ export function getFormItemEmptyConfig() {
 }
 
 export function str2obj(str) {
-  return new Function('return' + str)();
+  try {
+    return new Function('return' + str)();
+  } catch (error) {
+    console.error(error);
+  }
+  return {};
 }
 
 export function getter(obj = {}, field = '') {
@@ -207,11 +184,20 @@ export const depthFirstSearchWithRecursive = (source) => {
   return source;
 };
 
+export function getWidgetDefaultVal(item, searchWidgetName) {
+  switch (searchWidgetName) {
+    case 'el-select':
+      return item.tagAttrs?.multiple ? [] : '';
+    case 'el-cascader':
+      return item.tagAttrs?.props?.multiple ? [] : '';
+    default:
+      return '';
+  }
+       }
+
 export default {
   setPlaceholder,
   setFilterAndResetBtnConfig,
-  composeFromOptions,
-  setFromField,
   completeFromItemOptions,
   getWidgetOptions,
   setColSpan,
@@ -223,4 +209,5 @@ export default {
   exec,
   findFromOptionsIndexByfieldName,
   depthFirstSearchWithRecursive,
+  getWidgetDefaultVal,
 };

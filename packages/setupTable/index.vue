@@ -85,7 +85,10 @@ export default {
 
   watch: {
     rawTableData (val) {
-      this.tableData = val;
+      this.tableData = val.map(item => {
+        item.searchWidgetConfig.extraOption = JSON.stringify(item.searchWidgetConfig.extraOption)
+        return item
+      });
     },
   },
 
@@ -116,7 +119,7 @@ export default {
       this.setupFormOptions = this.composeFormOptions(searchWidgetName);
       const searchForm = row.searchWidgetConfig
       console.log('........');
-      this.setupForm = isEmpty(searchForm) ? this.getSetupForm(searchWidgetName) : searchForm
+      this.setupForm = isEmpty(depthFirstSearchWithRecursive(searchForm)) || !searchForm ? this.getSetupForm(searchWidgetName) : searchForm
     },
     // 设置searchForm和装配fromOptions
     composeFormOptions (searchWidgetName) {
@@ -157,16 +160,16 @@ export default {
                 type: 'textarea',
                 placeholder: '请输入类似{options: [],props: {key: "id",label: "cnName"}}的结构'
               },
-            }), getSingleConfig('开启多选', undefined, 'tagAttrs.multiple', undefined, 'el-switch'), getSingleConfig('开启本地筛选', undefined, 'tagAttrs.filterable', undefined, 'el-switch'), getSingleConfig('开启清空', undefined, 'tagAttrs.clearable', undefined, 'el-switch')]
+            }), getSingleConfig('开启多选', null, 'tagAttrs.multiple', null, 'el-switch'), getSingleConfig('开启本地筛选', null, 'tagAttrs.filterable', null, 'el-switch'), getSingleConfig('开启清空', null, 'tagAttrs.clearable', null, 'el-switch')]
         case "el-cascader":
           return [
-            getSingleConfig('标签名：', '请输入标签名', 'formItemAttrs.label'), getSingleConfig('提示语：', '请输入提示语', 'tagAttrs.placeholder'), getSingleConfig('下拉选择列表', '请输入下拉选择列表', 'tagAttrs.options', {
+            getSingleConfig('标签名：', '请输入标签名', 'formItemAttrs.label'), getSingleConfig('提示语：', '请输入提示语', 'tagAttrs.placeholder'), getSingleConfig('下拉选择列表', '请输入下拉选择列表', 'extraOption', {
               tagAttrs: {
                 autosize: true,
                 type: 'textarea',
-                placeholder: '请输入类似{options: [],props: {key: "id",label: "cnName"}}的结构'
+                placeholder: '请输入类似{options: [],props: {key: "id",label: "cnName", children: "children"}}的结构'
               },
-            }), getSingleConfig('开启多选', undefined, 'tagAttrs.props.multiple', undefined, 'el-switch'), getSingleConfig('开启本地筛选', undefined, 'tagAttrs.filterable', undefined, 'el-switch'), getSingleConfig('开启清空', undefined, 'tagAttrs.clearable', undefined, 'el-switch')]
+            }), getSingleConfig('开启多选', null, 'tagAttrs.props.multiple', null, 'el-switch'), getSingleConfig('开启本地筛选', null, 'tagAttrs.filterable', null, 'el-switch'), getSingleConfig('开启清空', null, 'tagAttrs.clearable', null, 'el-switch')]
 
         default:
           console.warn(`您输入的标签 ${searchWidgetName} 暂不支持！`);
@@ -207,11 +210,11 @@ export default {
               placeholder: '',
               filterable: false,
               clearable: false,
+              props: {
+                multiple: false
+              }
             },
-            options: '',
-            props: {
-              multiple: false
-            }
+            extraOption: '',
           }
         default:
           console.warn(`您输入的标签 ${searchWidgetName} 暂不支持！`);

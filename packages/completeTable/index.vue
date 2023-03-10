@@ -49,7 +49,7 @@ import BaseRenderRegular from '../BaseRenderRegular/index';
 import importFile from './component/importFile.vue';
 import { align, searchWidget } from '../../baseConfig/tableSelectConfigs';
 import { getElBtnConfig } from '../../baseConfig/widgetBaseConfig';
-import { setPlaceholder, getWidgetOptions, setColSpan, exec } from '../../utils';
+import { setPlaceholder, getWidgetOptions, setColSpan, exec, getWidgetDefaultVal, str2obj } from '../../utils';
 import { cloneDeep, merge, pickBy } from "lodash";
 
 export default {
@@ -222,8 +222,8 @@ export default {
     },
 
     // 由数据组成searchFrom
-    setFromField (source, field) {
-      this.$set(source, field, '');
+    setFromField (source, fieldCode, formOptions, searchWidgetName) {
+      this.$set(source, fieldCode, getWidgetDefaultVal(formOptions, searchWidgetName));
     },
 
     // 设置searchFrom和装配fromOptions
@@ -237,8 +237,8 @@ export default {
         const searchWidgetName = searchWidget.find((widgetitem) => widgetitem.id === item.searchWidget)?.tagName;
         // 只有搜索控件有值，才会添加到options中
         if (searchWidgetName) {
-          this.$set(this.searchFrom, item.fieldCode, '');
-          // setFromField(this.searchFrom, item.fieldCode);
+          // this.$set(this.searchFrom, item.fieldCode, '');
+          setFromField(this.searchFrom, item.fieldCode, item.searchWidgetConfig, searchWidgetName);
           const options = getWidgetOptions(searchWidgetName, item)
           // const vaildVal = pickBy(item.searchWidgetConfig);
           // console.log(vaildVal, 'vaildVal');
@@ -420,7 +420,7 @@ export default {
         document.body.removeChild(link);
       })
     },
-    batchDel (list = []) { 
+    batchDel (list = []) {
       this.requestBatchDel({ primaryKeyValueList: list, listPageId: this.listPageId }).then(res => {
         if (res.result === '0') {
           this.queryTableData()
