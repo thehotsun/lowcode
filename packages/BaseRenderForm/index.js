@@ -77,6 +77,15 @@ export default {
       });
     },
 
+    disposeRequest(request, extraOption) {
+      if (request?.url && request.status === 'pending') {
+        extraOption.options = [];
+        this.requestData(request?.url, extraOption.options);
+        request.status = 'finish';
+        // exec(request);
+      }
+    },
+
     handleClose() {
       this.showDialog = false;
       this.$emit('onClose');
@@ -125,12 +134,7 @@ export default {
     },
 
     getSelectCompVNode({ attrs, listeners, formField, extraOption, request }) {
-      if (request?.url && request.status === 'pending') {
-        extraOption.options = [];
-        this.requestData(request?.url, extraOption.options);
-        request.status = 'finish';
-        // exec(request);
-      }
+      this.disposeRequest(request, extraOption);
       let { options = [], props = {} } = extraOption;
       const { formData, onlyShow } = this;
       // 基础版有个添加维护字典的功能，里面返回的字段为id和cnName，因此以此字段为默认取值
@@ -166,7 +170,7 @@ export default {
       extraOption,
       request,
     }) {
-      // return ''
+      this.disposeRequest(request, extraOption);
       const { options = [], props = {} } = extraOption;
       const { formData, onlyShow } = this;
       // 基础版有个添加维护字典的功能，里面返回的字段为id和cnName，因此以此字段为默认取值
@@ -197,6 +201,7 @@ export default {
       extraOption,
       request,
     }) {
+      this.disposeRequest(request, extraOption);
       const { options = [], props = {} } = extraOption;
       const { formData, onlyShow } = this;
       // 基础版有个添加维护字典的功能，里面返回的字段为id和cnName，因此以此字段为默认取值
