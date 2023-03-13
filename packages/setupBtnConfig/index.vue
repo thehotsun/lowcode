@@ -90,12 +90,6 @@ export default {
       return this.btnConfigFrom
     },
 
-    // TODO应该怎么设计接受外部接口获取来的数据
-    expose_setOptions (list) {
-      // this.$set()
-      this.btnConfigFormOptions[1].formItem.extraOption.options = list
-    },
-
     expose_setExtraOption (options) {
       // this.$set(this.btnConfigFormOptions[1].formItem, 'extraOption', options )
       // console.log(options, 'expose_setExtraOption', btnConfigFormOptions);

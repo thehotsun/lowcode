@@ -1,8 +1,18 @@
-import { getter, getHandleInput, setPlaceholder, str2obj } from '../../utils';
-
+import {
+  getter,
+  getHandleInput,
+  setPlaceholder,
+  str2obj,
+  exec,
+} from '../../utils';
+import codemirror from '../components/codemirror';
 export default {
   name: 'BaseRenderForm',
+  components: { codemirror },
   props: {
+    generalRequest: {
+      type: Function,
+    },
     rules: {
       type: Object,
     },
@@ -61,6 +71,12 @@ export default {
       this.showDialog = bool;
     },
 
+    requestData(url, arr) {
+      this.generalRequest(url, 'get').then((res) => {
+        res.data.map((item) => arr.push(item));
+      });
+    },
+
     handleClose() {
       this.showDialog = false;
       this.$emit('onClose');
@@ -78,7 +94,14 @@ export default {
       });
     },
 
-    getCooperateComp(tagName, attrs, listeners, formField, extraOption) {
+    getCooperateComp({
+      tagName,
+      tagAttrs,
+      listeners,
+      formField,
+      extraOption,
+      request,
+    }) {
       if (typeof tagName !== 'string') {
         console.error('isCooperateComp方法传入的参数必须为字符串');
         return false;
@@ -91,12 +114,24 @@ export default {
       };
       return (
         renderFn[tagName] &&
-        renderFn[tagName](attrs, listeners, formField, extraOption)
+        renderFn[tagName]({
+          attrs: tagAttrs,
+          listeners,
+          formField,
+          extraOption,
+          request,
+        })
       );
     },
 
-    getSelectCompVNode(attrs, listeners, formField, extraOption) {
-      const { options = [], props = {} } = extraOption;
+    getSelectCompVNode({ attrs, listeners, formField, extraOption, request }) {
+      if (request?.url && request.status === 'pending') {
+        extraOption.options = [];
+        this.requestData(request?.url, extraOption.options);
+        request.status = 'finish';
+        // exec(request);
+      }
+      let { options = [], props = {} } = extraOption;
       const { formData, onlyShow } = this;
       // 基础版有个添加维护字典的功能，里面返回的字段为id和cnName，因此以此字段为默认取值
       const { key = 'id', label = 'cnName' } = props;
@@ -124,7 +159,13 @@ export default {
       );
     },
 
-    getCascaderCompVNode(attrs, listeners, formField, extraOption) {
+    getCascaderCompVNode({
+      attrs,
+      listeners,
+      formField,
+      extraOption,
+      request,
+    }) {
       // return ''
       const { options = [], props = {} } = extraOption;
       const { formData, onlyShow } = this;
@@ -149,7 +190,13 @@ export default {
       );
     },
 
-    getRadioGroupCompVNode(attrs, listeners, formField, extraOption) {
+    getRadioGroupCompVNode({
+      attrs,
+      listeners,
+      formField,
+      extraOption,
+      request,
+    }) {
       const { options = [], props = {} } = extraOption;
       const { formData, onlyShow } = this;
       // 基础版有个添加维护字典的功能，里面返回的字段为id和cnName，因此以此字段为默认取值
@@ -201,6 +248,8 @@ export default {
         // 需要绑定的formData的属性名
         formField = '',
         tagName,
+        // 接口处理
+        request = {},
       } = item;
       // 取代v-model语法糖，因为它不能实现多个点深层级取值赋值操作,例如fromData['a.b']
       listeners.input = getHandleInput(formData, formField, listeners.input);
@@ -217,13 +266,14 @@ export default {
                   formData: formData,
                 })
               : (console.warn(`slot : ${slotName} 未定义！`), '')
-            : getCooperateComp(
+            : getCooperateComp({
                 tagName,
                 tagAttrs,
                 listeners,
                 formField,
-                extraOption
-              ) || (
+                extraOption,
+                request,
+              }) || (
                 <div style="display: inline-block">
                   <span style={frontTextStyle}>{frontText}</span>
                   <Tag

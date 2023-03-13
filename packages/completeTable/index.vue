@@ -1,8 +1,8 @@
 <template>
   <el-container style="height: 100%">
     <el-header style="margin: 20px 0" v-if="showSearchFrom">
-      <base-render-form ref="form" :form-data="searchFrom" :form-options="formOptions" :showFooter="false"
-        :use-dialog="false">
+      <base-render-form ref="form" :generalRequest="generalRequest" :form-data="searchFrom" :form-options="formOptions"
+        :showFooter="false" :use-dialog="false">
       </base-render-form>
     </el-header>
 
@@ -85,6 +85,9 @@ export default {
       type: Function,
     },
     requestBatchDel: {
+      type: Function,
+    },
+    generalRequest: {
       type: Function,
     },
     // pageLayout: {

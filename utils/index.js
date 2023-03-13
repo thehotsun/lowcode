@@ -8,7 +8,7 @@ import {
   getElBtnConfig,
 } from '../baseConfig/widgetBaseConfig';
 
-import { pickBy } from 'lodash';
+import { pickBy, merge } from 'lodash';
 
 export function setPlaceholder(tagName, fieldName) {
   const inputs = ['el-input', 'el-input-number'];
@@ -19,7 +19,6 @@ export function setFilterAndResetBtnConfig(handleFilter, handleReset) {
   const inputs = ['el-input', 'el-input-number'];
   return `请${inputs.includes(tagName) ? '输入' : '选择'}${fieldName}`;
 }
-
 
 export function completeFromItemOptions(data, tableItem) {
   data.formItemAttrs.prop = tableItem.fieldCode;
@@ -193,7 +192,203 @@ export function getWidgetDefaultVal(item, searchWidgetName) {
     default:
       return '';
   }
-       }
+}
+
+export function getSetupFromSingleConfig(
+  label,
+  placeholder,
+  formField,
+  customAttr = {},
+  tagName = 'el-input'
+) {
+  const baseConfig = getFormItemEmptyConfig();
+  baseConfig.formField = formField;
+  baseConfig.tagName = tagName;
+  baseConfig.formItemAttrs.label = label;
+  baseConfig.tagAttrs.placeholder = placeholder;
+  return merge(baseConfig, customAttr);
+}
+
+export function getSetupFormOptions(searchWidgetName) {
+  switch (searchWidgetName) {
+    case 'el-input':
+    case 'el-input-number':
+    case 'el-date-picker':
+    case 'el-date-picker-range':
+      return [
+        getSetupFromSingleConfig(
+          '标签名：',
+          '请输入标签名',
+          'formItemAttrs.label',
+          { style: 'width: 650px' }
+        ),
+        getSetupFromSingleConfig(
+          '提示语：',
+          '请输入提示语',
+          'tagAttrs.placeholder',
+          { style: 'width: 650px' }
+        ),
+      ];
+
+    case 'el-select':
+      return [
+        getSetupFromSingleConfig(
+          '标签名：',
+          '请输入标签名',
+          'formItemAttrs.label',
+          { style: 'width: 650px' }
+        ),
+        getSetupFromSingleConfig(
+          '提示语：',
+          '请输入提示语',
+          'tagAttrs.placeholder',
+          { style: 'width: 650px' }
+        ),
+        getSetupFromSingleConfig(
+          '下拉选择列表',
+          '请输入下拉选择列表',
+          'extraOption',
+          {
+            style: 'width: 650px',
+            tagAttrs: {
+              autosize: true,
+              type: 'textarea',
+              placeholder:
+                '请输入类似{options: [],props: {key: "id",label: "cnName"}}的结构',
+            },
+          }
+        ),
+        getSetupFromSingleConfig('接口获取数据', null, 'request.url', {
+          style: 'width: 650px',
+        }),
+        getSetupFromSingleConfig(
+          '开启多选',
+          null,
+          'tagAttrs.multiple',
+          null,
+          'el-switch'
+        ),
+        getSetupFromSingleConfig(
+          '开启本地筛选',
+          null,
+          'tagAttrs.filterable',
+          null,
+          'el-switch'
+        ),
+        getSetupFromSingleConfig(
+          '开启清空',
+          null,
+          'tagAttrs.clearable',
+          null,
+          'el-switch'
+        ),
+      ];
+    case 'el-cascader':
+      return [
+        getSetupFromSingleConfig(
+          '标签名：',
+          '请输入标签名',
+          'formItemAttrs.label',
+          { style: 'width: 650px' }
+        ),
+        getSetupFromSingleConfig(
+          '提示语：',
+          '请输入提示语',
+          'tagAttrs.placeholder',
+          { style: 'width: 650px' }
+        ),
+        getSetupFromSingleConfig(
+          '下拉选择列表',
+          '请输入下拉选择列表',
+          'extraOption',
+          {
+            style: 'width: 650px',
+            tagAttrs: {
+              autosize: true,
+              type: 'textarea',
+              placeholder:
+                '请输入类似{options: [],props: {key: "id",label: "cnName", children: "children"}}的结构',
+            },
+          }
+        ),
+        getSetupFromSingleConfig(
+          '开启多选',
+          null,
+          'tagAttrs.props.multiple',
+          null,
+          'el-switch'
+        ),
+        getSetupFromSingleConfig(
+          '开启本地筛选',
+          null,
+          'tagAttrs.filterable',
+          null,
+          'el-switch'
+        ),
+        getSetupFromSingleConfig(
+          '开启清空',
+          null,
+          'tagAttrs.clearable',
+          null,
+          'el-switch'
+        ),
+      ];
+
+    default:
+      console.warn(`您输入的标签 ${searchWidgetName} 暂不支持！`);
+      break;
+  }
+}
+
+export function getSetupForm(searchWidgetName) {
+  switch (searchWidgetName) {
+    case 'el-input':
+    case 'el-input-number':
+    case 'el-date-picker':
+    case 'el-date-picker-range':
+      return {
+        formItemAttrs: {
+          label: '',
+        },
+        tagAttrs: {
+          placeholder: '',
+        },
+      };
+    case 'el-select':
+      return {
+        formItemAttrs: {
+          label: '',
+        },
+        tagAttrs: {
+          placeholder: '',
+          multiple: false,
+          filterable: false,
+          clearable: false,
+        },
+        extraOption: '',
+        request: { url: '', status: 'pending' },
+      };
+    case 'el-cascader':
+      return {
+        formItemAttrs: {
+          label: '',
+        },
+        tagAttrs: {
+          placeholder: '',
+          filterable: false,
+          clearable: false,
+          props: {
+            multiple: false,
+          },
+        },
+        extraOption: '',
+        request: { url: '', status: 'pending' },
+      };
+    default:
+      console.warn(`您输入的标签 ${searchWidgetName} 暂不支持！`);
+      break;
+  }
+}
 
 export default {
   setPlaceholder,
@@ -210,4 +405,7 @@ export default {
   findFromOptionsIndexByfieldName,
   depthFirstSearchWithRecursive,
   getWidgetDefaultVal,
+  getSetupForm,
+  getSetupFormOptions,
+  getSetupFromSingleConfig,
 };

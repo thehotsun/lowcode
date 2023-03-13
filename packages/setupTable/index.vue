@@ -53,8 +53,11 @@ import BaseRenderTable from '../BaseRenderTable/index';
 import BaseRenderForm from '../BaseRenderForm/index';
 import { getSingleTableData, eidtConf as tableOptions } from '../../baseConfig/tableBaseConfig'
 import { align, searchWidget } from '../../baseConfig/tableSelectConfigs';
-import { setPlaceholder, getWidgetOptions, getFormItemEmptyConfig, str2obj, depthFirstSearchWithRecursive } from '../../utils';
-import { merge, isEmpty, cloneDeep } from "lodash"
+import {
+  setPlaceholder, getWidgetOptions, getFormItemEmptyConfig, str2obj, depthFirstSearchWithRecursive, getSetupForm,
+  getSetupFormOptions,
+} from '../../utils';
+import { isEmpty, cloneDeep } from "lodash"
 
 export default {
   name: 'setupTable',
@@ -115,7 +118,7 @@ export default {
       const searchWidgetName = searchWidget.find((widgetitem) => widgetitem.id === row.searchWidget)?.tagName;
       this.setupFormOptions = this.composeFormOptions(searchWidgetName);
       const searchForm = cloneDeep(row.searchWidgetConfig)
-      this.setupForm = isEmpty(depthFirstSearchWithRecursive(searchForm)) || !searchForm ? this.getSetupForm(searchWidgetName) : searchForm
+      this.setupForm = isEmpty(depthFirstSearchWithRecursive(searchForm)) || !searchForm ? getSetupForm(searchWidgetName) : searchForm
       if (this.setupForm.extraOption) this.setupForm.extraOption = JSON.stringify(this.setupForm.extraOption)
     },
     // 设置searchForm和装配fromOptions
@@ -123,7 +126,7 @@ export default {
       let formOptions = [];
       // 只有搜索控件有值，才会添加到options中
       if (searchWidgetName) {
-        formOptions = this.getFormOptions(searchWidgetName)
+        formOptions = getSetupFormOptions(searchWidgetName)
       }
       return [{
         elRowAttrs: {
@@ -132,93 +135,6 @@ export default {
         formItem: formOptions
       }];
     },
-
-    getSingleConfig (label, placeholder, formField, customAttr = {}, tagName = 'el-input') {
-      const baseConfig = getFormItemEmptyConfig();
-      baseConfig.formField = formField
-      baseConfig.tagName = tagName
-      baseConfig.formItemAttrs.label = label;
-      baseConfig.tagAttrs.placeholder = placeholder;
-      return merge(baseConfig, customAttr)
-    },
-
-    getFormOptions (searchWidgetName) {
-      const { getSingleConfig } = this
-      switch (searchWidgetName) {
-        case "el-input": case "el-input-number": case "el-date-picker": case "el-date-picker-range":
-          return [
-            getSingleConfig('标签名：', '请输入标签名', 'formItemAttrs.label'), getSingleConfig('提示语：', '请输入提示语', 'tagAttrs.placeholder')]
-
-        case "el-select":
-          return [
-            getSingleConfig('标签名：', '请输入标签名', 'formItemAttrs.label'), getSingleConfig('提示语：', '请输入提示语', 'tagAttrs.placeholder'), getSingleConfig('下拉选择列表', '请输入下拉选择列表', 'extraOption', {
-              tagAttrs: {
-                autosize: true,
-                type: 'textarea',
-                placeholder: '请输入类似{options: [],props: {key: "id",label: "cnName"}}的结构'
-              },
-            }), getSingleConfig('开启多选', null, 'tagAttrs.multiple', null, 'el-switch'), getSingleConfig('开启本地筛选', null, 'tagAttrs.filterable', null, 'el-switch'), getSingleConfig('开启清空', null, 'tagAttrs.clearable', null, 'el-switch')]
-        case "el-cascader":
-          return [
-            getSingleConfig('标签名：', '请输入标签名', 'formItemAttrs.label'), getSingleConfig('提示语：', '请输入提示语', 'tagAttrs.placeholder'), getSingleConfig('下拉选择列表', '请输入下拉选择列表', 'extraOption', {
-              tagAttrs: {
-                autosize: true,
-                type: 'textarea',
-                placeholder: '请输入类似{options: [],props: {key: "id",label: "cnName", children: "children"}}的结构'
-              },
-            }), getSingleConfig('开启多选', null, 'tagAttrs.props.multiple', null, 'el-switch'), getSingleConfig('开启本地筛选', null, 'tagAttrs.filterable', null, 'el-switch'), getSingleConfig('开启清空', null, 'tagAttrs.clearable', null, 'el-switch')]
-
-        default:
-          console.warn(`您输入的标签 ${searchWidgetName} 暂不支持！`);
-          break;
-      }
-    },
-
-    getSetupForm (searchWidgetName) {
-      switch (searchWidgetName) {
-        case "el-input": case "el-input-number": case "el-date-picker": case "el-date-picker-range":
-          return {
-            formItemAttrs: {
-              label: ''
-            },
-            tagAttrs: {
-              placeholder: '',
-            },
-          }
-        case "el-select":
-          return {
-            formItemAttrs: {
-              label: ''
-            },
-            tagAttrs: {
-              placeholder: '',
-              multiple: false,
-              filterable: false,
-              clearable: false,
-            },
-            extraOption: '',
-          }
-        case "el-cascader":
-          return {
-            formItemAttrs: {
-              label: ''
-            },
-            tagAttrs: {
-              placeholder: '',
-              filterable: false,
-              clearable: false,
-              props: {
-                multiple: false
-              }
-            },
-            extraOption: '',
-          }
-        default:
-          console.warn(`您输入的标签 ${searchWidgetName} 暂不支持！`);
-          break;
-      }
-    },
-
 
     checkUpBtnDisabled () {
       return this.selected.length === 0 || this.selected.some(item => this.tableData.indexOf(item) === 0)
