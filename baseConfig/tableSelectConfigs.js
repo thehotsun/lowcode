@@ -19,6 +19,11 @@ export const align = [
 
 export const searchWidget = [
   {
+    id: -1,
+    cnName: '取消',
+    tagName: '',
+  },
+  {
     id: 0,
     cnName: '单行文本框',
     tagName: 'el-input',

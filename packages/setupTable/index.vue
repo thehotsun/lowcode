@@ -57,7 +57,7 @@ import {
   setPlaceholder, getWidgetOptions, getFormItemEmptyConfig, str2obj, depthFirstSearchWithRecursive, getSetupForm,
   getSetupFormOptions,
 } from '../../utils';
-import { isEmpty, cloneDeep } from "lodash"
+import { cloneDeep } from "lodash"
 
 export default {
   name: 'setupTable',
@@ -112,13 +112,15 @@ export default {
     handleWidgetAttr (row) {
       if (row.searchWidget === '') {
         return this.$warn('请先选择控件')
+      } else if (row.searchWidget === -1) {
+        row.searchWidgetConfig = {}
+        return this.$success('取消成功')
       }
       this.curRowData = row;
       this.dialogVisibleFrom = true;
       const searchWidgetName = searchWidget.find((widgetitem) => widgetitem.id === row.searchWidget)?.tagName;
       this.setupFormOptions = this.composeFormOptions(searchWidgetName);
-      const searchForm = cloneDeep(row.searchWidgetConfig)
-      this.setupForm = isEmpty(depthFirstSearchWithRecursive(searchForm)) || !searchForm ? getSetupForm(searchWidgetName) : searchForm
+      this.setupForm = Object.keys(row.searchWidgetConfig).length ? cloneDeep(row.searchWidgetConfig) : getSetupForm(searchWidgetName)
       if (this.setupForm.extraOption) this.setupForm.extraOption = JSON.stringify(this.setupForm.extraOption)
     },
     // 设置searchForm和装配fromOptions
@@ -195,7 +197,7 @@ export default {
       if (this.setupForm.extraOption) {
         this.setupForm.extraOption = str2obj(this.setupForm.extraOption)
       }
-      this.curRowData.searchWidgetConfig = depthFirstSearchWithRecursive(this.setupForm);
+      this.curRowData.searchWidgetConfig = this.setupForm
       this.handleCloseFrom();
     },
   }

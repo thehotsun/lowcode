@@ -10,6 +10,7 @@ function composeConfig(options) {
     listeners = {},
     extraOption = {},
     customAttr = {},
+    request = {},
   } = options;
   return {
     // 赋值给formitem组件的class和style
@@ -33,6 +34,7 @@ function composeConfig(options) {
     listeners: listeners,
     // 特殊组件的额外属性值例如select组件下的option组件所需的options
     extraOption: extraOption,
+    request,
     // 非常用属性通过此属性传递
     ...customAttr,
   };
@@ -75,10 +77,13 @@ export function getElSelectConfig() {
       label: 'cnName',
     },
   };
+  const request = { url: '', status: 'pending' };
+
   return composeConfig({
     tagName: 'el-select',
     tagAttrs,
     extraOption,
+    request,
   });
 }
 export function getElDatePickerConfig() {
@@ -126,7 +131,6 @@ export function getElCascaderConfig() {
   const tagAttrs = {
     placeholder: '请选择',
     props: { expandTrigger: 'hover' },
-    options: [],
   };
   const extraOption = {
     options: [],
@@ -135,9 +139,11 @@ export function getElCascaderConfig() {
       label: 'cnName',
     },
   };
+  const request = { url: '', status: 'pending' };
   return composeConfig({
     tagName: 'el-cascader',
     tagAttrs,
     extraOption,
+    request,
   });
 }

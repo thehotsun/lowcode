@@ -71,8 +71,9 @@ export default {
       this.showDialog = bool;
     },
 
-    requestData(url, arr) {
-      this.generalRequest(url, 'get').then((res) => {
+    requestData({ url = '', type = 'get', params = '' }, arr) {
+      params = str2obj(params);
+      this.generalRequest(url, type, params).then((res) => {
         res.data.map((item) => arr.push(item));
       });
     },
@@ -80,7 +81,7 @@ export default {
     disposeRequest(request, extraOption) {
       if (request?.url && request.status === 'pending') {
         extraOption.options = [];
-        this.requestData(request?.url, extraOption.options);
+        this.requestData(request, extraOption.options);
         request.status = 'finish';
         // exec(request);
       }
@@ -177,17 +178,21 @@ export default {
       const { key = 'id', label = 'cnName', children = 'children' } = props;
       attrs.options = options;
       let model = getter(formData, formField);
+      if (!props.isMerge) {
+        attrs.props = {
+          ...attrs.props,
+          value: key,
+          label,
+          children,
+        };
+        props.isMerge = true;
+      }
       return (
         <el-cascader
           value={model}
           {...{
             attrs,
             on: listeners,
-          }}
-          props={{
-            value: key,
-            label,
-            children,
           }}
           disabled={onlyShow}
         ></el-cascader>
@@ -302,7 +307,10 @@ export default {
     getFormItemVNode(allItemInfo = {}) {
       // 一个formItem的content也允许渲染多个组件
       const { formItemAttrs, ...item } = allItemInfo;
-      return (
+      const { renderDepend } = item;
+      return renderDepend && !getter(this.formData, renderDepend) ? (
+        ''
+      ) : (
         <el-form-item
           {...{
             attrs: formItemAttrs,

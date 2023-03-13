@@ -210,6 +210,83 @@ export function getSetupFromSingleConfig(
 }
 
 export function getSetupFormOptions(searchWidgetName) {
+  const complexOptions = () => [
+    [
+      '标签名：',
+      '请输入标签名',
+      'formItemAttrs.label',
+      { style: 'width: 650px' },
+    ],
+    [
+      '提示语：',
+      '请输入提示语',
+      'tagAttrs.placeholder',
+      { style: 'width: 650px' },
+    ],
+    [
+      '配置项',
+      '请输入配置项',
+      'extraOption',
+      {
+        style: 'width: 650px',
+        tagAttrs: {
+          autosize: true,
+          type: 'textarea',
+          placeholder:
+            '请输入类似{options: [],props: {key: "id",label: "cnName"}}的结构',
+        },
+      },
+    ],
+    ['接口获取数据', null, 'request.require', null, 'el-switch'],
+    [
+      '接口地址',
+      null,
+      'request.url',
+      {
+        style: 'width: 650px',
+        renderDepend: 'request.require',
+      },
+    ],
+    [
+      '请求方式',
+      null,
+      'request.type',
+      {
+        style: 'width: 650px',
+        renderDepend: 'request.require',
+        extraOption: {
+          options: [
+            {
+              id: 'get',
+              label: 'get',
+            },
+            {
+              id: 'post',
+              label: 'post',
+            },
+          ],
+        },
+      },
+      'el-select',
+    ],
+    [
+      '参数',
+      null,
+      'request.params',
+      {
+        style: 'width: 650px',
+        renderDepend: 'request.require',
+        tagAttrs: {
+          autosize: true,
+          type: 'textarea',
+          placeholder: '请输入参数',
+        },
+      },
+    ],
+    ['开启多选', null, 'tagAttrs.multiple', null, 'el-switch'],
+    ['开启本地筛选', null, 'tagAttrs.filterable', null, 'el-switch'],
+    ['开启清空', null, 'tagAttrs.clearable', null, 'el-switch'],
+  ];
   switch (searchWidgetName) {
     case 'el-input':
     case 'el-input-number':
@@ -231,109 +308,18 @@ export function getSetupFormOptions(searchWidgetName) {
       ];
 
     case 'el-select':
-      return [
-        getSetupFromSingleConfig(
-          '标签名：',
-          '请输入标签名',
-          'formItemAttrs.label',
-          { style: 'width: 650px' }
-        ),
-        getSetupFromSingleConfig(
-          '提示语：',
-          '请输入提示语',
-          'tagAttrs.placeholder',
-          { style: 'width: 650px' }
-        ),
-        getSetupFromSingleConfig(
-          '下拉选择列表',
-          '请输入下拉选择列表',
-          'extraOption',
-          {
-            style: 'width: 650px',
-            tagAttrs: {
-              autosize: true,
-              type: 'textarea',
-              placeholder:
-                '请输入类似{options: [],props: {key: "id",label: "cnName"}}的结构',
-            },
-          }
-        ),
-        getSetupFromSingleConfig('接口获取数据', null, 'request.url', {
-          style: 'width: 650px',
-        }),
-        getSetupFromSingleConfig(
-          '开启多选',
-          null,
-          'tagAttrs.multiple',
-          null,
-          'el-switch'
-        ),
-        getSetupFromSingleConfig(
-          '开启本地筛选',
-          null,
-          'tagAttrs.filterable',
-          null,
-          'el-switch'
-        ),
-        getSetupFromSingleConfig(
-          '开启清空',
-          null,
-          'tagAttrs.clearable',
-          null,
-          'el-switch'
-        ),
-      ];
+      return complexOptions().map((item) => getSetupFromSingleConfig(...item));
     case 'el-cascader':
-      return [
-        getSetupFromSingleConfig(
-          '标签名：',
-          '请输入标签名',
-          'formItemAttrs.label',
-          { style: 'width: 650px' }
-        ),
-        getSetupFromSingleConfig(
-          '提示语：',
-          '请输入提示语',
-          'tagAttrs.placeholder',
-          { style: 'width: 650px' }
-        ),
-        getSetupFromSingleConfig(
-          '下拉选择列表',
-          '请输入下拉选择列表',
-          'extraOption',
-          {
-            style: 'width: 650px',
-            tagAttrs: {
-              autosize: true,
-              type: 'textarea',
-              placeholder:
-                '请输入类似{options: [],props: {key: "id",label: "cnName", children: "children"}}的结构',
-            },
-          }
-        ),
-        getSetupFromSingleConfig(
-          '开启多选',
-          null,
-          'tagAttrs.props.multiple',
-          null,
-          'el-switch'
-        ),
-        getSetupFromSingleConfig(
-          '开启本地筛选',
-          null,
-          'tagAttrs.filterable',
-          null,
-          'el-switch'
-        ),
-        getSetupFromSingleConfig(
-          '开启清空',
-          null,
-          'tagAttrs.clearable',
-          null,
-          'el-switch'
-        ),
-      ];
-
+      return complexOptions().map((item) => {
+        if (item[2] === 'tagAttrs.multiple') {
+          item[2] = 'tagAttrs.props.multiple';
+        }
+        if (item[2] === 'extraOption') {
+          item[3].tagAttrs.placeholder =
+            '请输入类似{options: [],props: {key: "id",label: "cnName", children: "children"}}的结构';
+        }
+        return getSetupFromSingleConfig(...item);
+      });
     default:
       console.warn(`您输入的标签 ${searchWidgetName} 暂不支持！`);
       break;
@@ -366,7 +352,13 @@ export function getSetupForm(searchWidgetName) {
           clearable: false,
         },
         extraOption: '',
-        request: { url: '', status: 'pending' },
+        request: {
+          require: false,
+          url: '',
+          type: 'get',
+          params: '',
+          status: 'pending',
+        },
       };
     case 'el-cascader':
       return {
@@ -382,7 +374,13 @@ export function getSetupForm(searchWidgetName) {
           },
         },
         extraOption: '',
-        request: { url: '', status: 'pending' },
+        request: {
+          require: false,
+          url: '',
+          type: 'get',
+          params: '',
+          status: 'pending',
+        },
       };
     default:
       console.warn(`您输入的标签 ${searchWidgetName} 暂不支持！`);

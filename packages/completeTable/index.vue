@@ -49,8 +49,8 @@ import BaseRenderRegular from '../BaseRenderRegular/index';
 import importFile from './component/importFile.vue';
 import { align, searchWidget } from '../../baseConfig/tableSelectConfigs';
 import { getElBtnConfig } from '../../baseConfig/widgetBaseConfig';
-import { setPlaceholder, getWidgetOptions, setColSpan, exec, getWidgetDefaultVal, str2obj } from '../../utils';
-import { cloneDeep, merge, pickBy } from "lodash";
+import { setPlaceholder, getWidgetOptions, setColSpan, exec, getWidgetDefaultVal, str2obj, depthFirstSearchWithRecursive } from '../../utils';
+import { cloneDeep, merge } from "lodash";
 
 export default {
   name: 'completeTable',
@@ -243,9 +243,8 @@ export default {
           // this.$set(this.searchFrom, item.fieldCode, '');
           setFromField(this.searchFrom, item.fieldCode, item.searchWidgetConfig, searchWidgetName);
           const options = getWidgetOptions(searchWidgetName, item)
-          // const vaildVal = pickBy(item.searchWidgetConfig);
-          // console.log(vaildVal, 'vaildVal');
-          formOptions.push(merge(options, item.searchWidgetConfig));
+          console.log(depthFirstSearchWithRecursive(item.searchWidgetConfig), item.searchWidgetConfig);
+          formOptions.push(merge(options, depthFirstSearchWithRecursive(item.searchWidgetConfig)));
         }
         // 如果循环到最后一个且存在其他筛选项，则复制一份最原始的form
         if (length - 1 === index && formOptions.length) {
