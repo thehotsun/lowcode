@@ -74,6 +74,17 @@ export const eidtConf = [
     tagName: 'el-checkbox',
   },
   {
+    label: '排序函数',
+    prop: 'sort-method',
+    ...baseAttr, 
+    'min-width': '150',
+    tagAttrs: {
+      autosize: true,
+      type: 'textarea',
+      placeholder: '请输入类似function (a, b) { // todo}的结构',
+    },
+  },
+  {
     label: '格式化',
     prop: 'translate',
     ...baseAttr,

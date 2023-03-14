@@ -1,5 +1,5 @@
 import './table.scss';
-import { str2obj } from '/utils';
+import { str2obj, execByFn } from '../../utils';
 export default {
   name: 'BaseRenderTable',
   data() {
@@ -74,6 +74,16 @@ export default {
 
     headerStyle() {
       return 'background-color: #F7F9FF;color:#2E384D;padding:6px 0;height:54px;border-top:1px solid #EFF0F9';
+    },
+    // 专门处理函数属性（讲字符串转为可执行函数）
+    disposeStrFn(attrs) {
+      // TODO 待扩展
+      const fnProps = ['sort-method'];
+      fnProps.map((prop) => {
+        if (attrs[prop]) {
+          attrs[prop] = execByFn(attrs[prop]);
+        }
+      });
     },
 
     // /** 鼠标移入cell */
@@ -291,8 +301,9 @@ export default {
       rowClick,
       $attrs,
       $listeners,
+      disposeStrFn,
     } = this;
-
+    disposeStrFn($attrs);
     const defaultTableAttrs = {
       'row-style': rowStyle,
       'header-cell-style': headerStyle,

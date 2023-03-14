@@ -137,7 +137,20 @@ export function btnClick(extraOption, emit) {
 }
 
 export function exec(fn) {
-  eval(fn);
+  try {
+    eval(fn);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+export function execByFn(strFn) {
+  try {
+    return new Function(`return ${strFn}`)();
+  } catch (error) {
+    console.error(error);
+  }
+  return () => {};
 }
 
 export function findFromOptionsIndexByfieldName(options = [], fieldName = '') {
@@ -400,6 +413,7 @@ export default {
   setter,
   getHandleInput,
   exec,
+  execByFn,
   findFromOptionsIndexByfieldName,
   depthFirstSearchWithRecursive,
   getWidgetDefaultVal,
