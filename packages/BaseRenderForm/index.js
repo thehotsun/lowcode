@@ -178,15 +178,9 @@ export default {
       const { key = 'id', label = 'cnName', children = 'children' } = props;
       attrs.options = options;
       let model = getter(formData, formField);
-      if (!props.isMerge) {
-        attrs.props = {
-          ...attrs.props,
-          value: key,
-          label,
-          children,
-        };
-        props.isMerge = true;
-      }
+      attrs.props.value = key;
+      attrs.props.label = label;
+      attrs.props.children = children;
       return (
         <el-cascader
           value={model}
