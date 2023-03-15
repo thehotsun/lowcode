@@ -303,7 +303,7 @@ export default {
       'row-style': rowStyle,
       'header-cell-style': headerStyle,
       'highlight-current-row': true,
-      height: '100%',
+      // height: '100%',
       data: tableData,
     };
 

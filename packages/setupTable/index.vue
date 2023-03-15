@@ -55,7 +55,7 @@
           <el-form-item label="是否合并" prop="isShowSummary">
             <el-switch v-model="tableAttrs.isShowSummary" />
           </el-form-item>
-          <el-form-item label="合并函数" prop="summaryMethod">
+          <el-form-item label="合并函数" prop="summaryMethod" v-if="tableAttrs.isShowSummary">
             <el-input v-model="tableAttrs.summaryMethod" type="textarea" :rows="2" placeholder="请输入内容"></el-input>
           </el-form-item>
           <el-form-item label="组件大小" prop="size">
