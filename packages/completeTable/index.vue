@@ -8,13 +8,14 @@
 
     <el-main>
       <el-container style="height: 100%">
-        <el-header class="flex">
+        <el-header class="flex" v-if="showBtns">
           <base-render-regular ref="btnForm" :render-options="btnRegularOptions" @btnClick="handleBtnClick">
           </base-render-regular>
         </el-header>
         <el-main>
           <base-render-table ref="table" :table-data="tableData" :table-options="tableOptions"
-            @selection-change="selectListHandler">
+            :border="tableAttrs.isShowBorder" :stripe="tableAttrs.isShowStripe" :show-summary="tableAttrs.isShowSummary"
+            :summary-method="tableAttrs.summaryMethod" :size="tableAttrs.size" @selection-change="selectListHandler">
             <!-- 注意这里的slot值要和tableOptions中配置的slotName一致 -->
             <!-- #operator是简写，详细请查阅vue文档 -->
             <template #operator="{ row }">
@@ -24,7 +25,7 @@
             </template>
           </base-render-table>
         </el-main>
-        <el-footer v-if="showPagination">
+        <el-footer v-if="tableAttrs.showPagination">
           <el-pagination class="el-pagination" :layout="pageLayout" :current-page.sync="page.pageNo"
             :page-size="page.pageSize" :total="page.totalCount" :page-sizes="[10, 20, 50, 100]"
             @size-change="handleSizeChange" @current-change="handleCurrentChange"></el-pagination>
@@ -49,7 +50,7 @@ import BaseRenderRegular from '../BaseRenderRegular/index';
 import importFile from './component/importFile.vue';
 import { align, searchWidget } from '../../baseConfig/tableSelectConfigs';
 import { getElBtnConfig } from '../../baseConfig/widgetBaseConfig';
-import { setPlaceholder, getWidgetOptions, setColSpan, exec, getWidgetDefaultVal, str2obj, depthFirstSearchWithRecursive } from '../../utils';
+import { setPlaceholder, getWidgetOptions, setColSpan, exec, getWidgetDefaultVal, str2obj, depthFirstSearchWithRecursive, execByFn, setTableAttrs } from '../../utils';
 import { cloneDeep, merge } from "lodash";
 
 export default {
@@ -120,8 +121,7 @@ export default {
       btnRegularOptions: [],
       btnConfigJSON: [],
       showSearchFrom: true,
-      // 初始化是否显示分页
-      showPagination: false,
+      showBtns: true,
       formId: '',
       primaryKeyValue: '',
       // 按钮代表的一系列事件完毕以后是否刷新列表
@@ -129,9 +129,18 @@ export default {
       // 选中的table数据
       selectList: [],
       keyField: '',
-      isShowCheckbox: false,
-      isShowIndex: false,
-      onlyRead: false
+      onlyRead: false,
+      tableAttrs: {
+        // 初始化是否显示分页
+        showPagination: false,
+        isShowCheckbox: false,
+        isShowIndex: false,
+        isShowStripe: false,
+        isShowBorder: false,
+        isShowSummary: false,
+        summaryMethod: this.getSummaries,
+        size: ''
+      }
     };
   },
 
@@ -151,15 +160,37 @@ export default {
       this.resetFromData()
     },
 
-    expose_preview ({ tableOptions, formOptions, isPage, isShowIndex, isShowCheckbox }) {
-      this.showPagination = !!isPage;
-      this.isShowCheckbox = !!isShowCheckbox;
-      this.isShowIndex = !!isShowIndex;
-      this.tableConfigJSON = tableOptions;
-      this.btnRegularOptions = this.composeBtnRegularOptions(formOptions);
+    expose_preview (data) {
+      this.parseTableConfig(data)
       const tableData = {}
       this.composeData(tableData)
       this.tableData = [tableData];
+    },
+
+    getSummaries (param) {
+      const { columns, data } = param;
+      const sums = [];
+      columns.forEach((column, index) => {
+        if (index === 0) {
+          sums[index] = '合计';
+          return;
+        }
+        const values = data.map(item => Number(item[column.property]));
+        if (!values.every(value => isNaN(value))) {
+          sums[index] = values.reduce((prev, curr) => {
+            const value = Number(curr);
+            if (!isNaN(value)) {
+              return prev + curr;
+            } else {
+              return prev;
+            }
+          }, 0);
+        } else {
+          sums[index] = '';
+        }
+      });
+
+      return sums;
     },
 
     resetFromData () {
@@ -205,9 +236,17 @@ export default {
         obj['min-width'] = item.width
         obj.sortable = !!item.sort
         obj.translate = item.translate
+        item.fixed && (obj.fixed = item.fixed)
+        // 某些函数转换
+        const fnProps = ['sort-method'];
+        fnProps.map((prop) => {
+          if (item[prop]) {
+            obj[prop] = execByFn(item[prop]);
+          }
+        });
         return obj
       })
-      if (this.isShowIndex) {
+      if (this.tableAttrs.isShowIndex) {
         this.tableOptions.unshift({
           type: "index",
           width: "50",
@@ -215,7 +254,7 @@ export default {
           align: "center"
         })
       }
-      if (this.isShowCheckbox) {
+      if (this.tableAttrs.isShowCheckbox) {
         this.tableOptions.unshift({
           type: "selection",
           width: "55",
@@ -318,10 +357,10 @@ export default {
     },
 
     queryTableData () {
-      return (this.showPagination ? this.requestTablePaginationData(this.searchFrom, this.page) : this.requestTableData(this.searchFrom)).then(res => {
+      return (this.tableAttrs.showPagination ? this.requestTablePaginationData(this.searchFrom, this.page) : this.requestTableData(this.searchFrom)).then(res => {
         if (res.result === '0') {
           this.tableData = res.data
-          if (this.showPagination) {
+          if (this.tableAttrs.showPagination) {
             this.page.totalCount = res.totalCount;
           }
         } else {
@@ -332,17 +371,25 @@ export default {
       });
     },
 
+    parseTableConfig (data) {
+      const { tableOptions, formOptions,
+        keyField } = data
+      setTableAttrs(data, this.tableAttrs)
+      if (formOptions?.length) {
+        this.btnRegularOptions = this.composeBtnRegularOptions(formOptions);
+      } else {
+        this.showBtns = false
+      }
+      this.tableConfigJSON = tableOptions;
+      this.keyField = keyField;
+    },
+
     queryTableConfig () {
       return this.requestTableConfig().then(res => {
         if (res.result === '0') {
-          const { tableOptions, formOptions, isPage,
-            keyField, isShowIndex, isShowCheckbox } = JSON.parse(res.data);
-          this.showPagination = !!isPage;
-          this.isShowCheckbox = !!isShowCheckbox;
-          this.isShowIndex = !!isShowIndex;
-          this.keyField = keyField;
-          this.tableConfigJSON = tableOptions;
-          this.btnRegularOptions = this.composeBtnRegularOptions(formOptions)
+          const data = JSON.parse(res.data);
+          this.parseTableConfig(data)
+
         } else {
           console.error(`queryTableConfig message: ${res}`);
         }

@@ -126,6 +126,19 @@ export function getHandleInput(formData, formField, fn) {
   };
 }
 
+export function getHandleBlur(row, fn) {
+  return function(e) {
+    try {
+      // e可能是原生事件对象
+      row.$edit = false
+      fn && fn(e);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+}
+
+
 export function btnClick(extraOption, emit) {
   return function(e) {
     try {
@@ -401,6 +414,27 @@ export function getSetupForm(searchWidgetName) {
   }
 }
 
+export function setTableAttrs (data, tableAttrs) {
+    const {
+      showPagination,
+      size,
+      isShowIndex,
+      isShowCheckbox,
+      isShowStripe,
+      isShowBorder,
+      isShowSummary,
+      summaryMethod,
+    } = data;
+    tableAttrs.showPagination = !!showPagination;
+    tableAttrs.isShowCheckbox = !!isShowCheckbox;
+    tableAttrs.isShowIndex = !!isShowIndex;
+    tableAttrs.isShowStripe = !!isShowStripe;
+    tableAttrs.isShowBorder = !!isShowBorder;
+    tableAttrs.isShowSummary = !!isShowSummary;
+    summaryMethod && (tableAttrs.summaryMethod = execByFn(summaryMethod));
+    tableAttrs.size = size;
+}
+
 export default {
   setPlaceholder,
   setFilterAndResetBtnConfig,
@@ -412,6 +446,7 @@ export default {
   getter,
   setter,
   getHandleInput,
+  getHandleBlur,
   exec,
   execByFn,
   findFromOptionsIndexByfieldName,
@@ -420,4 +455,5 @@ export default {
   getSetupForm,
   getSetupFormOptions,
   getSetupFromSingleConfig,
+  setTableAttrs,
 };

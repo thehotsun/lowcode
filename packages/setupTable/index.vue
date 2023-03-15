@@ -1,227 +1,378 @@
 <template>
-  <el-container style="height: 100%">
-    <el-header>
+  <div class="content">
+    <div class="top">
+      页面设计区
       <div class="operate">
-        <el-button size='small' type="primary" @click="handleAdd(1)">新增一条</el-button>
-        <el-button size='small' type="primary" @click="handleAdd(5)">新增五条</el-button>
-        <el-button size='small' type="danger" :disabled="!selected.length" @click="handleDelete">删除</el-button>
-        <el-button size='small' type="" :disabled="checkUpBtnDisabled()" @click="handleUpAndDwon(true)">上移</el-button>
-        <el-button size='small' type="" :disabled="checkDwonBtnDisabled()" @click="handleUpAndDwon(false)">下移</el-button>
-        <slot name="btn"></slot>
+        <el-button size="mini" @click="showPreview">预览</el-button>
+        <el-button size="mini" type="primary" @click="confirm">保存</el-button>
       </div>
-    </el-header>
-
-    <el-main>
-      <el-container style="height: 100%">
-        <el-main>
-          <base-render-table ref="table" :table-data="tableData" :table-options="tableOptions" edit-mode
-            @selection-change="selectListHandler" style="height: 100%;overflow:auto">
-            <!-- 注意这里的slot值要和tableOptions中配置的slotName一致 -->
-            <!-- #operator是简写，详细请查阅vue文档 -->
-            <template #setupWidget="{ row }">
-              <el-button :disabled="row.searchWidget === ''" @click.stop.prevent="handleWidgetAttr(row)">
-                设置
-              </el-button>
-              <slot name="setupWidget" :row="row"></slot>
-            </template>
-            <template #operator="{ row }">
-              <el-button v-if="row.$edit" @click.stop.prevent="onSave(row)">
-                保存
-              </el-button>
-              <slot name="operator" :row="row"></slot>
-            </template>
-          </base-render-table>
-        </el-main>
-      </el-container>
-    </el-main>
-    <el-dialog title="设置搜索控件属性" :visible.sync="dialogVisibleFrom" :close-on-click-modal="false"
-      :close-on-press-escape="false" width="900px" :before-close="handleCloseFrom" append-to-body>
-      <base-render-form ref="setupForm" :form-data="setupForm" :form-options="setupFormOptions" :use-dialog="false"
-        :showFooter="false">
-      </base-render-form>
-      <span slot="footer" class="dialog-footer">
-        <el-button @click="handleCloseFrom">取消</el-button>
-        <el-button type="primary" @click="confirmFrom">确定</el-button>
+    </div>
+    <div class="btnDesign">
+      <span v-for="(item, index) in btnConfigArr" :key="index">
+        <el-button type="" @click="handleDetail(index)">{{ item.tagAttrs.value }}</el-button>
+        <i type="danger" class="el-icon-circle-close middle " @click="handleDelBtn(index)"></i>
       </span>
+      <el-dropdown @command="handleCommand">
+        <span class="el-dropdown-link">
+          添加功能按钮<i class="el-icon-arrow-down el-icon--right"></i>
+        </span>
+        <el-dropdown-menu slot="dropdown">
+          <el-dropdown-item command="add">新增按钮</el-dropdown-item>
+          <el-dropdown-item command="edit">编辑按钮</el-dropdown-item>
+          <el-dropdown-item command="check">查看按钮</el-dropdown-item>
+          <el-dropdown-item command="download">导出按钮</el-dropdown-item>
+          <el-dropdown-item command="batchDel">批量删除按钮</el-dropdown-item>
+          <el-dropdown-item command="custom">自定义按钮</el-dropdown-item>
+        </el-dropdown-menu>
+      </el-dropdown>
+    </div>
+
+    <el-container>
+      <el-main>
+        <div style="overflow:auto;height: 780px">
+          <single-setup-table ref="singleSetupTable" :parse-json="parseJson" :raw-table-data.sync="tableData" edit-mode>
+          </single-setup-table>
+        </div>
+      </el-main>
+      <el-aside style="min-width: 60px;background: #fff;padding: 10px; margn-top: 60px;margin-bottom: 60px;">
+        <h5>常用表格属性设置</h5> 
+        <el-form :model="tableAttrs" :rules="rules" ref="ruleForm" label-width="100px">
+          <el-form-item label="是否分页" prop="showPagination">
+            <el-switch v-model="tableAttrs.showPagination" />
+          </el-form-item>
+          <el-form-item label="是否显示序号" prop="isShowIndex">
+            <el-switch v-model="tableAttrs.isShowIndex" />
+          </el-form-item>
+          <el-form-item label="是否多选" prop="isShowCheckbox">
+            <el-switch v-model="tableAttrs.isShowCheckbox" />
+          </el-form-item>
+          <el-form-item label="是否斑马线" prop="isShowStripe">
+            <el-switch v-model="tableAttrs.isShowStripe" />
+          </el-form-item>
+          <el-form-item label="是否边框" prop="isShowBorder">
+            <el-switch v-model="tableAttrs.isShowBorder" />
+          </el-form-item>
+          <el-form-item label="是否合并" prop="isShowSummary">
+            <el-switch v-model="tableAttrs.isShowSummary" />
+          </el-form-item>
+          <el-form-item label="合并函数" prop="summaryMethod">
+            <el-input v-model="tableAttrs.summaryMethod" type="textarea" :rows="2" placeholder="请输入内容"></el-input>
+          </el-form-item>
+          <el-form-item label="组件大小" prop="size">
+            <el-select v-model="tableAttrs.size" placeholder="请选择">
+              <el-option v-for="item in sizeOptions" :key="item.value" :label="item.label" :value="item.value">
+              </el-option>
+            </el-select>
+          </el-form-item>
+        </el-form>
+      </el-aside>
+    </el-container>
+    <el-drawer title="按钮属性设置" :visible.sync="drawer" :direction="direction" :before-close="handleClose">
+      <setupBtnConfig ref="setupBtnConfig" @onSubmit="onSubmit" @onClose="onClose"></setupBtnConfig>
+    </el-drawer>
+
+    <el-dialog title="预览" :visible.sync="dialogVisiblePreview" :close-on-click-modal="false"
+      :close-on-press-escape="false" width="900px" :before-close="handleClosePreview">
+      <complete-table ref="table" :parse-json="parseJson" :generalRequest="generalRequest">
+      </complete-table>
     </el-dialog>
-  </el-container>
+  </div>
 </template>
 
 <script>
-
-import BaseRenderTable from '../BaseRenderTable/index';
-import BaseRenderForm from '../BaseRenderForm/index';
-import { getSingleTableData, eidtConf as tableOptions } from '../../baseConfig/tableBaseConfig'
-import { align, searchWidget } from '../../baseConfig/tableSelectConfigs';
-import {
-  setPlaceholder, getWidgetOptions, getFormItemEmptyConfig, str2obj, depthFirstSearchWithRecursive, getSetupForm,
-  getSetupFormOptions,
-} from '../../utils';
-import { cloneDeep } from "lodash"
-
+import { getSingleTableData } from '../../baseConfig/tableBaseConfig'
+import { setTableAttrs } from '../../utils';
+import completeTable from '../completeTable';
+import setupBtnConfig from '../setupBtnConfig';
+import singleSetupTable from './components/singleSetupTable';
 export default {
   name: 'setupTable',
   components: {
-    BaseRenderTable,
-    BaseRenderForm,
+    completeTable,
+    singleSetupTable,
+    setupBtnConfig,
   },
   props: {
-    rawTableData: Array,
     parseJson: {
       type: Function,
       require: true
-    }
+    },
+    // 获取元数据信息
+    requestFieldList: {
+      type: Function,
+      require: true
+    },
+    // 保存
+    saveListConfigJSON: {
+      type: Function,
+      require: true
+    },
+    // 获取可关联表单 
+    requestFormList: {
+      type: Function,
+      require: true
+    },
+    // 获取已保存数据
+    getListConfigJSON: {
+      type: Function,
+      require: true
+    },
+    // 获取主键
+    requestPrimekey: {
+      type: Function,
+      require: true
+    },
+    // 通用请求
+    generalRequest: {
+      type: Function,
+      require: true
+    },
   },
   data () {
     return {
-      tableOptions,
-      selected: [],
-      formDesignData: {},
-      dialogVisibleFrom: false,
+      dialogVisibleBtnConfig: false,
+      dialogVisiblePreview: false,
+      tableData: [getSingleTableData(), getSingleTableData()],
       setupForm: {
       },
       setupFormOptions: [],
       curRowData: {},
-      tableData: []
+      _groupID: '',
+      btnConfigArr: [],
+      formList: [],
+      _options: '',
+      direction: 'rtl',
+      drawer: false,
+      rules: {},
+      tableAttrs: {
+        showPagination: true,
+        isShowIndex: true,
+        isShowCheckbox: true,
+        isShowStripe: false,
+        isShowBorder: false,
+        isShowSummary: false,
+        summaryMethod: '',
+        size: '',
+        // 主键
+      },
+      keyField: '',
+      sizeOptions: [{
+        value: 'medium',
+        label: '中等'
+      }, {
+        value: 'small',
+        label: '小'
+      }, {
+        value: 'mimi',
+        label: '迷你'
+      },],
+      downloadExpression: 'this.download(this.selectList.map(item => item[this.keyField]))',
+      batchDelExpression: 'this.batchDel(this.selectList.map(item => item[this.keyField]))',
+      // editExpression: '(() => {if(this.selectList.length === 1){this.primaryKeyValue = this.selectList[0][this.keyField];}else{this.$warn("请确认只选中了一个值")} return this.selectList.length === 1})()',
+      editExpression: 'this.selectList.length === 1 ? this.primaryKeyValue = this.selectList[0][this.keyField] : this.$warn("请确认只选中了一个值")',
+
     };
   },
-
-  watch: {
-    rawTableData (val) {
-      this.tableData = val;
-    },
-  },
-
   mounted () {
     // this.init()
   },
-
   methods: {
-    expose_getTableData () {
-      return this.tableData
-    },
-
-    expose_getFormDesignData () {
-      return this.formDesignData
-    },
-
-    init () {
-      this.tableData = []
-    },
-
-    handleWidgetAttr (row) {
-      if (row.searchWidget === '') {
-        return this.$warn('请先选择控件')
-      } else if (row.searchWidget === -1) {
-        row.searchWidgetConfig = {}
-        return this.$success('取消成功')
-      }
-      this.curRowData = row;
-      this.dialogVisibleFrom = true;
-      const searchWidgetName = searchWidget.find((widgetitem) => widgetitem.id === row.searchWidget)?.tagName;
-      this.setupFormOptions = this.composeFormOptions(searchWidgetName);
-      this.setupForm = Object.keys(row.searchWidgetConfig).length ? cloneDeep(row.searchWidgetConfig) : getSetupForm(searchWidgetName)
-      if (this.setupForm.extraOption) this.setupForm.extraOption = JSON.stringify(this.setupForm.extraOption)
-    },
-    // 设置searchForm和装配fromOptions
-    composeFormOptions (searchWidgetName) {
-      let formOptions = [];
-      // 只有搜索控件有值，才会添加到options中
-      if (searchWidgetName) {
-        formOptions = getSetupFormOptions(searchWidgetName)
-      }
-      return [{
-        elRowAttrs: {
-          gutter: 10
-        },
-        formItem: formOptions
-      }];
-    },
-
-    checkUpBtnDisabled () {
-      return this.selected.length === 0 || this.selected.some(item => this.tableData.indexOf(item) === 0)
-    },
-
-    checkDwonBtnDisabled () {
-      const length = this.tableData?.length
-      return this.selected.length === 0 || this.selected.some(item => this.tableData.indexOf(item) === length - 1)
-    },
-
-    // TODO 选择多个进行上移或者下移（考虑情况太多，暂时不做）
-    handleUpAndDwon (up) {
-      const { tableData, selected } = this;
-      if (selected.length > 1) {
-        return this.$warn('暂时只支持单个操作')
-      }
-      let index = tableData.indexOf(selected[0])
-      const prev = tableData.slice(0, index);
-      const next = tableData.slice(index + 1);
-      if (up) {
-        prev.splice(prev.length - 2, 0, selected[0])
+    async init (id = '') {
+      console.log(id, 'id');
+      this._groupID = id;
+      this.queryFormList()
+      const { data } = await this.requestTableConfig()
+      if (data) {
+        const obj = JSON.parse(data);
+        const { tableOptions, formOptions, keyField } = obj;
+        setTableAttrs(obj, this.tableAttrs)
+        this.keyField = keyField;
+        this.tableData = tableOptions;
+        this.btnConfigArr = formOptions
       } else {
-        next.splice(1, 0, selected[0])
-      }
-      this.tableData = prev.concat(next)
-    },
+        this.queryFieldList();
+        this.getPrimekey()
 
-    handleAdd (time) {
-      for (let index = 0; index < time; index++) {
-        this.tableData.push(getSingleTableData())
       }
     },
 
-    handleDelete () {
-      this.tableData = this.tableData.filter(tableItem => !this.selected.find(selectedItem => selectedItem === tableItem))
+    requestTableConfig () {
+      return this.getListConfigJSON(this._groupID);
     },
 
-    onSave (row) {
-      // 推出编辑清空状态
-      row.$edit = false
-      // this.$refs.table.expose_clearCurCellPro();
+
+    getPrimekey () {
+      this.requestPrimekey(this._groupID).then(res => {
+        this.keyField = res.data.columnName
+      });
+    },
+    convertData (data) {
+      return data.map(item => {
+        const rawData = getSingleTableData();
+        return {
+          ...rawData,
+          fieldCode: item.fieldName,
+          fieldName: item.fieldDisplayName
+        };
+      });
     },
 
-    rowClick (val) {
-      console.log(val);
+    queryFieldList () {
+      this.requestFieldList(this._groupID).then(res => {
+        this.tableData = this.convertData(res.data);
+      });
     },
 
-    selectListHandler (val) {
-      this.selected = val;
-      console.log(val);
+    queryFormList () {
+      this.requestFormList(this._groupID).then(res => {
+        this._extraOption = {
+          options: res.data, props:
+          {
+            label: 'formName',
+            key: 'formID'
+          }
+        }
+
+      });
     },
 
-    handleCloseFrom () {
-      this.dialogVisibleFrom = false;
+    async confirm () {
+      await this.handleSubmitTableConfig();
+      this.$emit('onSave');
     },
 
-    confirmFrom () {
-      if (this.setupForm.extraOption) {
-        this.setupForm.extraOption = str2obj(this.setupForm.extraOption)
-      }
-      this.curRowData.searchWidgetConfig = this.setupForm
-      this.handleCloseFrom();
+    getRenderParams () {
+      const btnConfigFromArr = this.btnConfigArr
+      const json = {
+        formOptions: btnConfigFromArr,
+        tableOptions: this.$refs.singleSetupTable.expose_getTableData(),
+        ...this.tableAttrs
+      };
+      console.log('handleSubmitTableConfig', json);
+      return json;
     },
+
+    handleSubmitTableConfig () {
+      const renderParams = this.getRenderParams();
+      const params = {
+        jsonContent: JSON.stringify(renderParams),
+        listPageId: this._groupID
+      };
+      return this.saveListConfigJSON(params).then((data) => {
+        if (data.result === "0") {
+          this.$message.success("添加成功");
+        } else {
+          this.$message.warning("添加失败");
+        }
+      });
+    },
+
+    handleCommand (command) {
+      this.drawer = true
+      this.$nextTick(() => {
+        // 还原配置
+        this.$refs.setupBtnConfig.expose_setBtnConfigFromArr(this.btnConfigArr);
+        this.$refs.setupBtnConfig.expose_reductionAll();
+        this.$refs.setupBtnConfig.expose_setExtraOption(this._extraOption)
+        const config = this.$refs.setupBtnConfig.expose_getBtnConfigFrom();
+        console.log(command);
+        switch (command) {
+          case 'add':
+            config.tagAttrs.value = '新增'
+            config.extraOption.btnType = 'add';
+            break
+          case 'edit':
+            config.tagAttrs.value = '编辑';
+            // config.extraOption.defaultFn = this.editExpression;
+            config.extraOption.btnType = 'edit';
+            break
+          case 'check':
+            config.tagAttrs.value = '查看';
+            // config.extraOption.defaultFn = this.editExpression;
+            config.extraOption.btnType = 'check';
+            break
+          case 'download':
+            this.$refs.setupBtnConfig.expose_hideSomeFieldOptions(['extraOption.fn', 'extraOption.openUrl', 'extraOption.isRefresh', 'extraOption.openType', 'extraOption.relateFrom']);
+            // config.extraOption.fn = this.downloadExpression
+            config.tagAttrs.value = '导出';
+            config.extraOption.btnType = 'download';
+            break;
+          case 'batchDel':
+            this.$refs.setupBtnConfig.expose_hideSomeFieldOptions(['extraOption.fn', 'extraOption.openUrl', 'extraOption.isRefresh', 'extraOption.openType', 'extraOption.relateFrom']);
+            config.tagAttrs.value = '批量删除'
+            config.extraOption.btnType = 'batchDel';
+            // config.extraOption.fn = this.batchDelExpression
+            break;
+          case 'custom':
+            config.extraOption.btnType = 'custom';
+            break;
+          default:
+            break;
+        }
+        this.$refs.setupBtnConfig.expose_setBtnConfigFrom(config);
+      })
+    },
+
+    handleClosePreview () {
+      this.dialogVisiblePreview = false;
+    },
+
+    showPreview () {
+      this.dialogVisiblePreview = true;
+      const renderParams = this.getRenderParams();
+      this.$nextTick(() => this.$refs.table.expose_preview(renderParams));
+    },
+
+    onSubmit () {
+      this.btnConfigArr = this.$refs.setupBtnConfig.expose_getBtnConfigFromArr();
+      this.drawer = false
+    },
+
+    onClose () { },
+    handleDelBtn (index) {
+      // this.$refs.setupBtnConfig.expose_delBtnConfigFromArr(index);
+      // this.btnConfigArr = this.$refs.setupBtnConfig.expose_getBtnConfigFromArr();
+      this.btnConfigArr.splice(index, 1)
+    },
+    handleDetail (index) {
+      this.handleCommand(this.btnConfigArr[index].extraOption.btnType)
+      this.$nextTick(() => {
+        this.$refs.setupBtnConfig.expose_setBtnConfigFrom(this.btnConfigArr[index]);
+      })
+    },
+    handleClose (done) {
+      this.$confirm('确认关闭？')
+        .then(_ => {
+          done();
+        })
+        .catch(_ => { });
+    }
   }
+
 };
 </script>
 
 <style lang="scss" scoped>
-.wrap {
+.content {
   width: 100%;
+  height: 100%;
 }
 
-.operate {
-  margin-left: 20px;
-  margin-top: 20px;
+.btnDesign {
+  margin: 20px 56px;
+}
+
+.middle {
+  position: relative;
+  left: -8px;
+  top: -20px;
+  font-size: 16px;
+}
+
+.top {
   display: flex;
-  // justify-content: center;
-  align-items: center;
-}
-
-.edit {
-  position: fixed;
-  top: 20%;
-  left: 0;
-  right: 0;
-  z-index: 999;
+  justify-content: space-between;
+  padding: 0 30px;
+  align-items: center
 }
 </style>

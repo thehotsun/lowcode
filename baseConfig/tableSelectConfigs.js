@@ -16,6 +16,23 @@ export const align = [
     value: 'right',
   },
 ];
+export const fixed = [
+  {
+    id: '',
+    cnName: '取消',
+    value: '',
+  },
+  {
+    id: 'left',
+    cnName: '居左',
+    value: 'left',
+  },
+  {
+    id: 'right',
+    cnName: '居右',
+    value: 'right',
+  },
+];
 
 export const searchWidget = [
   {

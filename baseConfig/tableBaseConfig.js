@@ -1,11 +1,11 @@
 // tableOptions中的item，可以理解为传给el-table-column中的attrs，要注意区分书写格式，例如min-width不要写成驼峰格式
 
-import { align, searchWidget } from './tableSelectConfigs';
+import { align, searchWidget, fixed } from './tableSelectConfigs';
 
 const baseAttr = {
   tagName: 'el-input',
   align: 'center',
-  'min-width': '50px',
+  'min-width': '80px',
   tagAttrs: {
     placeholder: '请输入',
     maxlength: '',
@@ -44,14 +44,12 @@ export const eidtConf = [
     label: '列宽',
     prop: 'columnWidth',
     ...baseAttr,
-    'min-width': '50',
     tagName: 'el-input-number',
   },
   {
     label: '对齐',
     prop: 'align',
     ...baseAttr,
-    'min-width': '80',
     tagName: 'el-select',
     // 特殊组件的额外属性值例如select组件下的option组件所需的options
     extraOption: {
@@ -70,18 +68,32 @@ export const eidtConf = [
     label: '排序',
     prop: 'sort',
     ...baseAttr,
-    'min-width': '50',
+    'min-width': '70',
     tagName: 'el-checkbox',
   },
   {
     label: '排序函数',
     prop: 'sort-method',
-    ...baseAttr, 
-    'min-width': '150',
+    ...baseAttr,
+    'min-width': '170',
     tagAttrs: {
       autosize: true,
       type: 'textarea',
       placeholder: '请输入类似function (a, b) { // todo}的结构',
+    },
+  },
+  {
+    ...baseAttr,
+    label: '是否固定',
+    prop: 'fixed',
+    tagName: 'el-select',
+    tagAttrs: {
+      clearable: true,
+    },
+    'min-width': '130',
+    // 特殊组件的额外属性值例如select组件下的option组件所需的options
+    extraOption: {
+      options: fixed,
     },
   },
   {
