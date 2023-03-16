@@ -1,4 +1,4 @@
-import completeTable from './index.vue';
+import completeTable from './index.js';
 
 /* istanbul ignore next */
 completeTable.install = function(Vue) {

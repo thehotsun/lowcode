@@ -15,7 +15,7 @@
       </span>
 
       <el-dropdown @command="handleCommand">
-        <el-button type="primary" plain>
+        <el-button type="primary" size="small" plain>
           添加功能按钮<i class="el-icon-arrow-down el-icon--right"></i>
         </el-button>
         <el-dropdown-menu slot="dropdown">
@@ -43,9 +43,9 @@
       </el-dropdown> -->
     </div>
 
-    <el-container>
+    <el-container style="height: 100%">
       <el-main>
-        <div style="overflow:auto;height: 780px">
+        <div style="overflow:auto">
           <single-setup-table ref="singleSetupTable" :parse-json="parseJson" :raw-table-data.sync="tableData" edit-mode>
           </single-setup-table>
         </div>
@@ -54,28 +54,51 @@
         <div class="title">常用表格属性设置</div>
 
         <div class="el-divider el-divider--horizontal"></div>
-        <el-form :model="tableAttrs" :rules="rules" ref="ruleForm" label-width="100px">
+        <el-form :model="tableAttrs" :rules="rules" ref="ruleForm" label-width="100px" style="padding-bottom: 20px"
+          label-position="top">
           <el-form-item label="是否分页" prop="showPagination">
             <el-switch v-model="tableAttrs.showPagination" />
           </el-form-item>
           <el-form-item label="是否显示序号" prop="isShowIndex">
             <el-switch v-model="tableAttrs.isShowIndex" />
           </el-form-item>
+          <el-form-item label="自定义索引函数" prop="filterMethod" v-if="tableAttrs.isShowIndex">
+            <el-input v-model="tableAttrs.index" type="textarea" :rows="2"
+              placeholder="请输入function(index){ return index}格式"></el-input>
+          </el-form-item>
           <el-form-item label="是否多选" prop="isShowCheckbox">
             <el-switch v-model="tableAttrs.isShowCheckbox" />
           </el-form-item>
-          <el-form-item label="是否斑马线" prop="isShowStripe">
-            <el-switch v-model="tableAttrs.isShowStripe" />
+          <el-form-item label="是否斑马线" prop="stripe">
+            <el-switch v-model="tableAttrs.stripe" />
           </el-form-item>
-          <el-form-item label="是否边框" prop="isShowBorder">
-            <el-switch v-model="tableAttrs.isShowBorder" />
+          <el-form-item label="是否边框" prop="border">
+            <el-switch v-model="tableAttrs.border" />
           </el-form-item>
-          <el-form-item label="是否合并" prop="isShowSummary">
-            <el-switch v-model="tableAttrs.isShowSummary" />
+          <el-form-item label="是否合并" prop="showSummary">
+            <el-switch v-model="tableAttrs.showSummary" />
           </el-form-item>
-          <el-form-item label="合并函数" prop="summaryMethod" v-if="tableAttrs.isShowSummary">
+          <el-form-item label="合并函数" prop="summaryMethod" v-if="tableAttrs.showSummary">
             <el-input v-model="tableAttrs.summaryMethod" type="textarea" :rows="2" placeholder="请输入内容"></el-input>
           </el-form-item>
+          <el-form-item label="是否树类型数据" prop="isTree">
+            <el-switch v-model="tableAttrs.isTree" />
+          </el-form-item>
+          <el-form-item label="配置tree-props" prop="treeProps" v-if="tableAttrs.isTree">
+            <el-input v-model="tableAttrs.treeProps" type="textarea" :rows="2"
+              placeholder="请输入{children, hasChildren}格式"></el-input>
+          </el-form-item>
+          <el-form-item label="指定row-key" prop="filterMethod" v-if="tableAttrs.isTree">
+            <el-input v-model="tableAttrs.rowKey" type="textarea" :rows="2" placeholder="请输入充当key的字段名"></el-input>
+          </el-form-item>
+          <el-form-item label="是否懒加载" prop="lazy" v-if="tableAttrs.isTree">
+            <el-switch v-model="tableAttrs.lazy" />
+          </el-form-item>
+          <el-form-item label="load函数" prop="filterMethod" v-if="tableAttrs.isTree && tableAttrs.lazy">
+            <el-input v-model="tableAttrs.load" type="textarea" :rows="2"
+              placeholder="请输入function(tree, treeNode, resolve){resolve([data])}格式"></el-input>
+          </el-form-item>
+
           <el-form-item label="组件大小" prop="size">
             <el-select v-model="tableAttrs.size" placeholder="请选择">
               <el-option v-for="item in sizeOptions" :key="item.value" :label="item.label" :value="item.value">
@@ -99,10 +122,11 @@
 
 <script>
 import { getSingleTableData } from '../../baseConfig/tableBaseConfig'
-import { setTableAttrs } from '../../utils';
 import completeTable from '../completeTable';
 import setupBtnConfig from '../setupBtnConfig';
 import singleSetupTable from './components/singleSetupTable';
+
+import { omit } from 'lodash'
 export default {
   name: 'setupTable',
   components: {
@@ -166,13 +190,19 @@ export default {
         showPagination: true,
         isShowIndex: true,
         isShowCheckbox: true,
-        isShowStripe: false,
-        isShowBorder: false,
-        isShowSummary: false,
+        index: '',
+        stripe: false,
+        border: false,
+        showSummary: false,
         summaryMethod: '',
         size: '',
-        // 主键
+        isTree: false,
+        treeProps: '',
+        rowKey: '',
+        lazy: false,
+        load: '',
       },
+      // 主键
       keyField: '',
       sizeOptions: [{
         value: 'medium',
@@ -202,8 +232,8 @@ export default {
       const { data } = await this.requestTableConfig()
       if (data) {
         const obj = JSON.parse(data);
-        const { tableOptions, formOptions, keyField } = obj;
-        setTableAttrs(obj, this.tableAttrs)
+        const { tableOptions, formOptions, keyField, ...tableAttrs } = obj;
+        this.tableAttrs = tableAttrs
         this.keyField = keyField;
         this.tableData = tableOptions;
         this.btnConfigArr = formOptions
@@ -264,7 +294,8 @@ export default {
       const json = {
         formOptions: btnConfigFromArr,
         tableOptions: this.$refs.singleSetupTable.expose_getTableData(),
-        ...this.tableAttrs
+        ...this.tableAttrs,
+        keyField: this.keyField
       };
       console.log('handleSubmitTableConfig', json);
       return json;

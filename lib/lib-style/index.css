@@ -408,20 +408,19 @@ span.CodeMirror-selectedtext { background: none; }
   bottom: 10px;
   right: 20px; }
 
-.wrap[data-v-07c213c4] {
-  width: 100%;
-}
-.edit[data-v-07c213c4] {
+.wrap {
+  width: 100%; }
+
+.edit {
   position: fixed;
   top: 20%;
   left: 0;
   right: 0;
-  z-index: 999;
-}
-.flex[data-v-07c213c4] {
+  z-index: 999; }
+
+.flex {
   display: flex;
-  align-items: center;
-}
+  align-items: center; }
 
 .wrap[data-v-2c65d248] {
   width: 100%;

@@ -130,14 +130,13 @@ export function getHandleBlur(row, fn) {
   return function(e) {
     try {
       // e可能是原生事件对象
-      row.$edit = false
+      row.$edit = false;
       fn && fn(e);
     } catch (error) {
       console.error(error);
     }
   };
 }
-
 
 export function btnClick(extraOption, emit) {
   return function(e) {
@@ -414,25 +413,46 @@ export function getSetupForm(searchWidgetName) {
   }
 }
 
-export function setTableAttrs (data, tableAttrs) {
-    const {
-      showPagination,
-      size,
-      isShowIndex,
-      isShowCheckbox,
-      isShowStripe,
-      isShowBorder,
-      isShowSummary,
-      summaryMethod,
-    } = data;
-    tableAttrs.showPagination = !!showPagination;
-    tableAttrs.isShowCheckbox = !!isShowCheckbox;
-    tableAttrs.isShowIndex = !!isShowIndex;
-    tableAttrs.isShowStripe = !!isShowStripe;
-    tableAttrs.isShowBorder = !!isShowBorder;
-    tableAttrs.isShowSummary = !!isShowSummary;
-    summaryMethod && (tableAttrs.summaryMethod = execByFn(summaryMethod));
-    tableAttrs.size = size;
+ function getSummaries(param) {
+      const { columns, data } = param;
+      const sums = [];
+      columns.forEach((column, index) => {
+        if (index === 0) {
+          sums[index] = '合计';
+          return;
+        }
+        const values = data.map((item) => Number(item[column.property]));
+        if (!values.every((value) => isNaN(value))) {
+          sums[index] = values.reduce((prev, curr) => {
+            const value = Number(curr);
+            if (!isNaN(value)) {
+              return prev + curr;
+            } else {
+              return prev;
+            }
+          }, 0);
+        } else {
+          sums[index] = '';
+        }
+      });
+
+      return sums;
+    }
+
+export function setTableAttrs(data) {
+  const fnTranslate = ['summaryMethod', 'index', 'load'];
+  fnTranslate.map((field) => {
+    if (data[field]) {
+      data[field] = execByFn(data[field]);
+    }
+  });
+  const objTranslate = ['treeProps'];
+  objTranslate.map((field) => {
+    if (data[field]) {
+      data[field] = str2obj(data[field]);
+    }
+  });
+  return data;
 }
 
 export default {

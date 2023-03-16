@@ -1,0 +1,17 @@
+.wrap {
+  width: 100%;
+}
+
+.edit {
+  position: fixed;
+  top: 20%;
+  left: 0;
+  right: 0;
+  z-index: 999;
+}
+
+.flex {
+  display: flex;
+  align-items: center;
+}
+  

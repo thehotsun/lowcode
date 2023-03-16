@@ -88,6 +88,20 @@ export const eidtConf = [
     tagAttrs: textarea(),
   },
   {
+    label: '筛选数组',
+    prop: 'filters',
+    ...baseAttr,
+    'min-width': '170',
+    tagAttrs: textarea('请输入[{ text, value }]格式"'),
+  },
+  {
+    label: '筛选函数',
+    prop: 'filter-method',
+    ...baseAttr,
+    'min-width': '170',
+    tagAttrs: textarea('请输入function(value, row, column){}格式'),
+  },
+  {
     ...baseAttr,
     label: '是否固定',
     prop: 'fixed',
@@ -100,6 +114,14 @@ export const eidtConf = [
     extraOption: {
       options: fixed,
     },
+  },
+  {
+    label: '是否单行显示',
+    prop: 'show-overflow-tooltip',
+    prop: 'sort',
+    ...baseAttr,
+    'min-width': '100',
+    tagName: 'el-checkbox',
   },
   {
     label: '格式化',
