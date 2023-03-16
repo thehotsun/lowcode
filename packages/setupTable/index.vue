@@ -7,11 +7,27 @@
         <el-button size="mini" type="primary" @click="confirm">保存</el-button>
       </div>
     </div>
+    <div class="el-divider el-divider--horizontal"></div>
     <div class="btnDesign">
       <span v-for="(item, index) in btnConfigArr" :key="index">
         <el-button type="" @click="handleDetail(index)">{{ item.tagAttrs.value }}</el-button>
         <i type="danger" class="el-icon-circle-close middle " @click="handleDelBtn(index)"></i>
       </span>
+
+      <el-dropdown @command="handleCommand">
+        <el-button type="primary" plain>
+          添加功能按钮<i class="el-icon-arrow-down el-icon--right"></i>
+        </el-button>
+        <el-dropdown-menu slot="dropdown">
+          <el-dropdown-item command="add">新增按钮</el-dropdown-item>
+          <el-dropdown-item command="edit">编辑按钮</el-dropdown-item>
+          <el-dropdown-item command="check">查看按钮</el-dropdown-item>
+          <el-dropdown-item command="download">导出按钮</el-dropdown-item>
+          <el-dropdown-item command="batchDel">批量删除按钮</el-dropdown-item>
+          <el-dropdown-item command="custom">自定义按钮</el-dropdown-item>
+        </el-dropdown-menu>
+      </el-dropdown>
+      <!-- 
       <el-dropdown @command="handleCommand">
         <span class="el-dropdown-link">
           添加功能按钮<i class="el-icon-arrow-down el-icon--right"></i>
@@ -24,7 +40,7 @@
           <el-dropdown-item command="batchDel">批量删除按钮</el-dropdown-item>
           <el-dropdown-item command="custom">自定义按钮</el-dropdown-item>
         </el-dropdown-menu>
-      </el-dropdown>
+      </el-dropdown> -->
     </div>
 
     <el-container>
@@ -35,7 +51,9 @@
         </div>
       </el-main>
       <el-aside style="min-width: 60px;background: #fff;padding: 10px; margn-top: 60px;margin-bottom: 60px;">
-        <h5>常用表格属性设置</h5> 
+        <div class="title">常用表格属性设置</div>
+
+        <div class="el-divider el-divider--horizontal"></div>
         <el-form :model="tableAttrs" :rules="rules" ref="ruleForm" label-width="100px">
           <el-form-item label="是否分页" prop="showPagination">
             <el-switch v-model="tableAttrs.showPagination" />
@@ -358,8 +376,37 @@ export default {
   height: 100%;
 }
 
+.el-dropdown {
+  vertical-align: top;
+}
+
+.el-dropdown+.el-dropdown {
+  margin-left: 15px;
+}
+
+.el-icon-arrow-down {
+  font-size: 12px;
+}
+
+.title {
+  font-size: 18px;
+  padding-top: 16px;
+}
+
+.el-divider--horizontal {
+  display: block;
+  height: 1px;
+  width: 100%;
+  margin: 24px 0;
+}
+
+.el-divider {
+  background-color: #dcdfe6;
+  position: relative;
+}
+
 .btnDesign {
-  margin: 20px 56px;
+  margin: -6px 56px;
 }
 
 .middle {

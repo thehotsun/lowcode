@@ -1,6 +1,13 @@
 // tableOptions中的item，可以理解为传给el-table-column中的attrs，要注意区分书写格式，例如min-width不要写成驼峰格式
 
 import { align, searchWidget, fixed } from './tableSelectConfigs';
+const textarea = (placeholder) => {
+  return {
+    autosize: true,
+    type: 'textarea',
+    placeholder: placeholder || '请输入类似function (a, b) { // todo}的结构',
+  };
+};
 
 const baseAttr = {
   tagName: 'el-input',
@@ -44,6 +51,7 @@ export const eidtConf = [
     label: '列宽',
     prop: 'columnWidth',
     ...baseAttr,
+    'min-width': '170',
     tagName: 'el-input-number',
   },
   {
@@ -77,11 +85,7 @@ export const eidtConf = [
     prop: 'sort-method',
     ...baseAttr,
     'min-width': '170',
-    tagAttrs: {
-      autosize: true,
-      type: 'textarea',
-      placeholder: '请输入类似function (a, b) { // todo}的结构',
-    },
+    tagAttrs: textarea(),
   },
   {
     ...baseAttr,
@@ -102,10 +106,7 @@ export const eidtConf = [
     prop: 'translate',
     ...baseAttr,
     'min-width': '120',
-    tagAttrs: {
-      type: 'areatext',
-      placeholder: '请输入键为原始数据，值为展示数据的obj',
-    },
+    tagAttrs: textarea('请输入键为原始数据，值为展示数据的obj'),
   },
   {
     ...baseAttr,
@@ -115,7 +116,7 @@ export const eidtConf = [
     tagAttrs: {
       clearable: true,
     },
-    'min-width': '130',
+    'min-width': '170',
     // 特殊组件的额外属性值例如select组件下的option组件所需的options
     extraOption: {
       options: searchWidget,
@@ -124,14 +125,14 @@ export const eidtConf = [
   {
     label: '控件属性',
     prop: '',
-    'min-width': '70',
+    'min-width': '110',
     align: 'center',
     slotName: 'setupWidget',
   },
   // 如需使用slot功能，请添加slotName属性，并在template中使用相同的slot名称
   {
     label: '操作',
-    'min-width': '70',
+    'min-width': '110',
     prop: '',
     align: 'center',
     slotName: 'operator',

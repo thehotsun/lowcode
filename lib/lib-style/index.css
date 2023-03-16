@@ -462,8 +462,31 @@ span.CodeMirror-selectedtext { background: none; }
   width: 100%;
   height: 100%;
 }
+.el-dropdown[data-v-6d5410d8] {
+  vertical-align: top;
+}
+.el-dropdown + .el-dropdown[data-v-6d5410d8] {
+  margin-left: 15px;
+}
+.el-icon-arrow-down[data-v-6d5410d8] {
+  font-size: 12px;
+}
+.title[data-v-6d5410d8] {
+  font-size: 18px;
+  padding-top: 16px;
+}
+.el-divider--horizontal[data-v-6d5410d8] {
+  display: block;
+  height: 1px;
+  width: 100%;
+  margin: 24px 0;
+}
+.el-divider[data-v-6d5410d8] {
+  background-color: #dcdfe6;
+  position: relative;
+}
 .btnDesign[data-v-6d5410d8] {
-  margin: 20px 56px;
+  margin: -6px 56px;
 }
 .middle[data-v-6d5410d8] {
   position: relative;
