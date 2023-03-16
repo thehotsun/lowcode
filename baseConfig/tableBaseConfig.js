@@ -50,6 +50,7 @@ export const eidtConf = [
     label: '对齐',
     prop: 'align',
     ...baseAttr,
+    'min-width': '110',
     tagName: 'el-select',
     // 特殊组件的额外属性值例如select组件下的option组件所需的options
     extraOption: {
@@ -90,7 +91,7 @@ export const eidtConf = [
     tagAttrs: {
       clearable: true,
     },
-    'min-width': '130',
+    'min-width': '110',
     // 特殊组件的额外属性值例如select组件下的option组件所需的options
     extraOption: {
       options: fixed,
