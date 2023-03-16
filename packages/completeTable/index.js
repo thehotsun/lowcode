@@ -554,20 +554,33 @@ export default {
       onSubmit,
     } = this;
     const curPageListeners = {
-      'update:current-page': (val) => {
+      'update:currentPage': (val) => {
         this.page.pageNo = val;
       },
+      'size-change': handleSizeChange,
+      'current-change': handleCurrentChange,
     };
     const visibleListeners = {
       // 关键代码 - 1
       'update:visible': (val) => {
         this.dialogVisibleForm = val;
       },
+      'before-close': expose_hideDialog,
     };
 
     const scopedSlots = {
       operator: ({ row }) => {
-        row.$edit ? <el-button click={onSave(row)}>保存</el-button> : null;
+        row.$edit ? (
+          <el-button
+            {...{
+              on: {
+                click: onSave(row),
+              },
+            }}
+          >
+            保存
+          </el-button>
+        ) : null;
       },
     };
     return (
@@ -591,7 +604,11 @@ export default {
                 <base-render-regular
                   ref="btnForm"
                   render-options={btnRegularOptions}
-                  btnClick={handleBtnClick}
+                  {...{
+                    on: {
+                      btnClick: handleBtnClick,
+                    },
+                  }}
                 ></base-render-regular>
               </el-header>
             ) : null}
@@ -600,7 +617,11 @@ export default {
                 ref="table"
                 table-data={tableData}
                 table-options={tableOptions}
-                selection-change={selectListHandler}
+                {...{
+                  on: {
+                    'selection-change': selectListHandler,
+                  },
+                }}
                 {...{
                   attrs: {
                     ...attrs,
@@ -615,12 +636,10 @@ export default {
                   class="el-pagination"
                   layout={pageLayout}
                   current-page={page.pageNo}
-                  {...{ on: curPageListeners }}
                   page-size={page.pageSize}
                   total={page.totalCount}
                   page-sizes={[10, 20, 50, 100]}
-                  size-change={handleSizeChange}
-                  current-change={handleCurrentChange}
+                  {...{ on: curPageListeners }}
                 ></el-pagination>
               </el-footer>
             ) : null}
@@ -633,7 +652,6 @@ export default {
           close-on-click-modal={false}
           close-on-press-escape={false}
           width="900px"
-          before-close={expose_hideDialog}
           append-to-body
         >
           {formId ? (
@@ -641,7 +659,11 @@ export default {
               primaryKeyValue={primaryKeyValue}
               isDisabled={onlyRead}
               formId={formId}
-              submit={onSubmit}
+              {...{
+                on: {
+                  submit: { onSubmit },
+                },
+              }}
             ></FcView>
           ) : null}
         </el-dialog>
