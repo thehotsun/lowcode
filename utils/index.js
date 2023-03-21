@@ -88,6 +88,7 @@ export function getFormItemEmptyConfig() {
 }
 
 export function str2obj(str) {
+  if (str === '') return {};
   try {
     return new Function('return' + str)();
   } catch (error) {
@@ -156,7 +157,8 @@ export function exec(fn) {
   }
 }
 
-export function execByFn(strFn) {
+export function str2Fn(strFn) {
+  if (strFn === '') return () => {};
   try {
     return new Function(`return ${strFn}`)();
   } catch (error) {
@@ -413,43 +415,47 @@ export function getSetupForm(searchWidgetName) {
   }
 }
 
- function getSummaries(param) {
-      const { columns, data } = param;
-      const sums = [];
-      columns.forEach((column, index) => {
-        if (index === 0) {
-          sums[index] = '合计';
-          return;
-        }
-        const values = data.map((item) => Number(item[column.property]));
-        if (!values.every((value) => isNaN(value))) {
-          sums[index] = values.reduce((prev, curr) => {
-            const value = Number(curr);
-            if (!isNaN(value)) {
-              return prev + curr;
-            } else {
-              return prev;
-            }
-          }, 0);
-        } else {
-          sums[index] = '';
-        }
-      });
-
-      return sums;
+function getSummaries(param) {
+  const { columns, data } = param;
+  const sums = [];
+  columns.forEach((column, index) => {
+    if (index === 0) {
+      sums[index] = '合计';
+      return;
     }
+    const values = data.map((item) => Number(item[column.property]));
+    if (!values.every((value) => isNaN(value))) {
+      sums[index] = values.reduce((prev, curr) => {
+        const value = Number(curr);
+        if (!isNaN(value)) {
+          return prev + curr;
+        } else {
+          return prev;
+        }
+      }, 0);
+    } else {
+      sums[index] = '';
+    }
+  });
+
+  return sums;
+}
 
 export function setTableAttrs(data) {
-  const fnTranslate = ['summaryMethod', 'index', 'load'];
+  const fnTranslate = ['summaryMethod', 'index', 'load', 'spanMethod'];
   fnTranslate.map((field) => {
     if (data[field]) {
-      data[field] = execByFn(data[field]);
+      data[field] = str2Fn(data[field]);
+    } else {
+      delete data[field];
     }
   });
   const objTranslate = ['treeProps'];
   objTranslate.map((field) => {
     if (data[field]) {
       data[field] = str2obj(data[field]);
+    } else {
+      delete data[field];
     }
   });
   return data;
@@ -468,7 +474,7 @@ export default {
   getHandleInput,
   getHandleBlur,
   exec,
-  execByFn,
+  str2Fn,
   findFromOptionsIndexByfieldName,
   depthFirstSearchWithRecursive,
   getWidgetDefaultVal,
@@ -476,4 +482,5 @@ export default {
   getSetupFormOptions,
   getSetupFromSingleConfig,
   setTableAttrs,
+  getSummaries,
 };

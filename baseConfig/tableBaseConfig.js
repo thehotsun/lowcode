@@ -169,7 +169,7 @@ export function getSingleTableData() {
     columnWidth: '',
     align: 1,
     show: true,
-    sort: false,
+    sort: true,
     translate: '',
     searchWidget: '',
     searchWidgetConfig: {},

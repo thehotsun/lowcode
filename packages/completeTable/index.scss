@@ -1,17 +1,42 @@
-.wrap {
-  width: 100%;
-}
-
-.edit {
-  position: fixed;
-  top: 20%;
-  left: 0;
-  right: 0;
-  z-index: 999;
-}
-
-.flex {
-  display: flex;
-  align-items: center;
-}
+.CompleteTable {
+  .wrap {
+    width: 100%;
+  }
   
+  .edit {
+    position: fixed;
+    top: 20%;
+    left: 0;
+    right: 0;
+    z-index: 999;
+  }
+  
+  .flex {
+    display: flex;
+    align-items: center;
+  }
+  
+  .between {
+    justify-content: space-between;
+  }
+  .operate {
+    position: relative;
+  }
+  .panel {
+
+    position: absolute;
+      left: -122px;
+      z-index: 99;
+      top: 25px;
+      height: 250px !important;
+      max-height: inherit;
+      overflow: auto;
+  }
+  .i {
+    font-size: 20px;
+    margin-left: 20px;
+  }
+  .none {
+    display: none;
+  }
+}

@@ -1,10 +1,11 @@
-// 为何将pagination放在这个组件？首先因为baseTable仅仅是作为table的渲染器存在的，不应涉及网络请求，而pagination最重要的功能就是通过网络请求更新数据，因此在哪里使用到了获取table数据的网络请求，在哪就应该将pagination放进去
+{
+  /* <style scoped src="./index.css"></style>; */
+}
 import './index.scss';
-
 import BaseRenderTable from '../BaseRenderTable/index';
 import BaseRenderForm from '../BaseRenderForm/index';
 import BaseRenderRegular from '../BaseRenderRegular/index';
-import importFile from './component/importFile.vue';
+import panel from './component/panel.vue';
 import { align, searchWidget } from '../../baseConfig/tableSelectConfigs';
 import { getElBtnConfig } from '../../baseConfig/widgetBaseConfig';
 import {
@@ -15,8 +16,9 @@ import {
   getWidgetDefaultVal,
   str2obj,
   depthFirstSearchWithRecursive,
-  execByFn,
+  str2Fn,
   setTableAttrs,
+  getSummaries,
 } from '../../utils';
 import { cloneDeep, omit, merge } from 'lodash';
 
@@ -26,7 +28,7 @@ export default {
     BaseRenderTable,
     BaseRenderForm,
     BaseRenderRegular,
-    importFile,
+    panel,
   },
   props: {
     requestTableData: {
@@ -93,8 +95,11 @@ export default {
       primaryKeyValue: '',
       // 按钮代表的一系列事件完毕以后是否刷新列表
       isRefresh: false,
+      showPanel: false,
       // 选中的table数据
       selectList: [],
+      panelData: [],
+      filterFiled: [],
       keyField: '',
       onlyRead: false,
       tableAttrs: {
@@ -106,13 +111,15 @@ export default {
         stripe: false,
         border: false,
         showSummary: false,
-        summaryMethod: this.getSummaries,
+        summaryMethod: getSummaries,
         size: '',
         isTree: false,
         treeProps: '',
         rowKey: '',
         lazy: false,
         load: '',
+        isMerge: false,
+        spanMethod: '',
       },
     };
   },
@@ -121,13 +128,14 @@ export default {
     attrs() {
       const props = [
         'isTree',
+        'isMerge',
         'isShowIndex',
         'showPagination',
         'isShowIndex',
-        'formOptions',
         'isShowCheckbox',
         'keyField',
         'tableOptions',
+        'formOptions',
       ];
       if (!this.tableAttrs.isShowIndex) {
         props.push('index');
@@ -141,7 +149,19 @@ export default {
       if (!this.tableAttrs.lazy && props.indexOf('load') !== -1) {
         props.push('load');
       }
+      if (!this.tableAttrs.isMerge) {
+        props.push('spanMethod');
+      }
       return omit(this.tableAttrs, props);
+    },
+
+    filterTableOptions() {
+      return this.tableOptions.filter(
+        (item) =>
+          this.filterFiled.indexOf(item.prop) !== -1 ||
+          item.type === 'selection' ||
+          item.type === 'index'
+      );
     },
   },
 
@@ -168,32 +188,6 @@ export default {
       this.tableData = [tableData];
     },
 
-    getSummaries(param) {
-      const { columns, data } = param;
-      const sums = [];
-      columns.forEach((column, index) => {
-        if (index === 0) {
-          sums[index] = '合计';
-          return;
-        }
-        const values = data.map((item) => Number(item[column.property]));
-        if (!values.every((value) => isNaN(value))) {
-          sums[index] = values.reduce((prev, curr) => {
-            const value = Number(curr);
-            if (!isNaN(value)) {
-              return prev + curr;
-            } else {
-              return prev;
-            }
-          }, 0);
-        } else {
-          sums[index] = '';
-        }
-      });
-
-      return sums;
-    },
-
     resetFromData() {
       // this.rule = []
       // this.option = {}
@@ -215,6 +209,7 @@ export default {
       // await this.requestFormConfirm(this.formid, data)
       this.isRefresh && this.queryTableData();
     },
+
     // 预览的时候用，创建一个全为空字符串的对象
     setEmptyTableData(emptyData = {}, fieldCode) {
       emptyData[fieldCode] = '';
@@ -242,20 +237,29 @@ export default {
           obj.sortable = !!item.sort;
           obj.translate = item.translate;
           obj['show-overflow-tooltip'] = item['show-overflow-tooltip'];
-          item.fixed && (obj.fixed = item.fixed);
-          item.filters && (obj.filters = str2obj(item.filters));
+          if (item.fixed) obj.fixed = item.fixed;
+          if (item.filters) obj.filters = str2obj(item.filters);
           // 某些函数转换
           const fnProps = ['sort-method'];
           if (obj.filters && obj.filters.length) {
             fnProps.push('filter-method');
           }
+          // if (obj.filters && obj.filters.length) {
+          //   fnProps.push('span-method');
+          // }
           fnProps.map((prop) => {
             if (item[prop]) {
-              obj[prop] = execByFn(item[prop]);
+              obj[prop] = str2Fn(item[prop]);
             }
           });
           return obj;
         });
+      this.panelData = this.tableOptions.map((item) => {
+        return {
+          key: item.prop,
+          label: item.label,
+        };
+      });
       if (this.tableAttrs.isShowIndex) {
         const obj = {
           type: 'index',
@@ -387,6 +391,12 @@ export default {
       this.queryTableData();
     },
 
+    refresh() {
+      this.queryTableData().then(() => {
+        this.$success('刷新成功');
+      });
+    },
+
     queryTableData() {
       return (this.tableAttrs.showPagination
         ? this.requestTablePaginationData(this.searchFrom, this.page)
@@ -503,7 +513,7 @@ export default {
 
     download(list = []) {
       this.requestDownload({
-        json: list.length ? JSON.stringify(list) : '',
+        json: list.length ? JSON.stringify({ [this.keyField]: list }) : '',
         listPageId: this.listPageId,
       }).then((response) => {
         const link = document.createElement('a');
@@ -516,6 +526,7 @@ export default {
         document.body.removeChild(link);
       });
     },
+
     batchDel(list = []) {
       this.requestBatchDel({
         primaryKeyValueList: list,
@@ -525,6 +536,12 @@ export default {
           this.queryTableData();
         }
       });
+    },
+    filterShowField(val) {
+      this.filterFiled = val;
+    },
+    handleSetting() {
+      this.showPanel = !this.showPanel;
     },
   },
 
@@ -539,7 +556,7 @@ export default {
       btnRegularOptions,
       handleBtnClick,
       tableData,
-      tableOptions,
+      filterTableOptions,
       selectListHandler,
       tableAttrs,
       pageLayout,
@@ -552,7 +569,13 @@ export default {
       primaryKeyValue,
       onlyRead,
       onSubmit,
+      showPanel,
+      panelData,
+      filterShowField,
+      handleSetting,
+      refresh,
     } = this;
+
     const curPageListeners = {
       'update:currentPage': (val) => {
         this.page.pageNo = val;
@@ -584,7 +607,7 @@ export default {
       },
     };
     return (
-      <el-container style="height: 100%">
+      <el-container class="CompleteTable" style="height: 100%">
         {showSearchFrom ? (
           <el-header style="margin: 20px 0">
             <base-render-form
@@ -600,7 +623,7 @@ export default {
         <el-main>
           <el-container style="height: 100%">
             {showBtns ? (
-              <el-header class="flex">
+              <el-header class="flex between">
                 <base-render-regular
                   ref="btnForm"
                   render-options={btnRegularOptions}
@@ -610,13 +633,42 @@ export default {
                     },
                   }}
                 ></base-render-regular>
+                <div class="operate">
+                  <i
+                    class="el-icon-refresh-left i"
+                    {...{
+                      on: {
+                        click: refresh,
+                      },
+                    }}
+                  ></i>
+                  <i
+                    class="el-icon-s-tools i"
+                    {...{
+                      on: {
+                        click: handleSetting,
+                      },
+                    }}
+                  ></i>
+                  {
+                    <panel
+                      data={panelData}
+                      {...{
+                        on: {
+                          checkedChange: filterShowField,
+                        },
+                      }}
+                      class={['panel', showPanel ? '' : 'none']}
+                    ></panel>
+                  }
+                </div>
               </el-header>
             ) : null}
             <el-main>
               <base-render-table
                 ref="table"
                 table-data={tableData}
-                table-options={tableOptions}
+                table-options={filterTableOptions}
                 {...{
                   on: {
                     'selection-change': selectListHandler,

@@ -75,11 +75,17 @@
           <el-form-item label="是否边框" prop="border">
             <el-switch v-model="tableAttrs.border" />
           </el-form-item>
-          <el-form-item label="是否合并" prop="showSummary">
+          <el-form-item label="是否合计" prop="showSummary">
             <el-switch v-model="tableAttrs.showSummary" />
           </el-form-item>
-          <el-form-item label="合并函数" prop="summaryMethod" v-if="tableAttrs.showSummary">
-            <el-input v-model="tableAttrs.summaryMethod" type="textarea" :rows="2" placeholder="请输入内容"></el-input>
+          <el-form-item label="合计函数" prop="summaryMethod" v-if="tableAttrs.showSummary">
+            <el-input v-model="tableAttrs.summaryMethod" type="textarea" :rows="2" placeholder="请输入格式为Function({ columns, data })"></el-input>
+          </el-form-item>
+          <el-form-item label="是否合并" prop="isMerge">
+            <el-switch v-model="tableAttrs.isMerge" />
+          </el-form-item>
+          <el-form-item label="合并函数" prop="spanMethod" v-if="tableAttrs.isMerge">
+            <el-input v-model="tableAttrs.spanMethod" type="textarea" :rows="2" placeholder="请输入格式为Function({ row, column, rowIndex, columnIndex })"></el-input>
           </el-form-item>
           <el-form-item label="是否树类型数据" prop="isTree">
             <el-switch v-model="tableAttrs.isTree" />
@@ -96,7 +102,7 @@
           </el-form-item>
           <el-form-item label="load函数" prop="filterMethod" v-if="tableAttrs.isTree && tableAttrs.lazy">
             <el-input v-model="tableAttrs.load" type="textarea" :rows="2"
-              placeholder="请输入function(tree, treeNode, resolve){resolve([data])}格式"></el-input>
+              placeholder="请输入格式为Function(row, treeNode, resolve)"></el-input>
           </el-form-item>
 
           <el-form-item label="组件大小" prop="size">
@@ -126,7 +132,6 @@ import completeTable from '../completeTable';
 import setupBtnConfig from '../setupBtnConfig';
 import singleSetupTable from './components/singleSetupTable';
 
-import { omit } from 'lodash'
 export default {
   name: 'setupTable',
   components: {
@@ -201,6 +206,8 @@ export default {
         rowKey: '',
         lazy: false,
         load: '',
+        isMerge: false,
+        spanMethod: ''
       },
       // 主键
       keyField: '',
@@ -292,10 +299,10 @@ export default {
     getRenderParams () {
       const btnConfigFromArr = this.btnConfigArr
       const json = {
+        ...this.tableAttrs,
         formOptions: btnConfigFromArr,
         tableOptions: this.$refs.singleSetupTable.expose_getTableData(),
-        ...this.tableAttrs,
-        keyField: this.keyField
+        keyField: this.keyField,
       };
       console.log('handleSubmitTableConfig', json);
       return json;
