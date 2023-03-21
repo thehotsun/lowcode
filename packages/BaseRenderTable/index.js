@@ -333,63 +333,55 @@ export default {
     // };
     return (
       <div class="midd">
-        <el-table
-          ref={tableRef}
-          {...{
-            attrs: {
-              ...defaultTableAttrs,
-              ...$attrs,
-            },
-            on: {
-              ...defaultTableEvent,
-              ...$listeners,
-            },
-          }}
-        >
-          {tableOptions && tableOptions.length > 0 ? (
-            tableOptions.map((item) => {
-              return (
-                <el-table-column
-                  {...{
-                    attrs: {
-                      ...item,
-                      formatter: (row, column, cellValue, index) => {
-                        return item.slotName
-                          ? this.$scopedSlots[item.slotName]
-                            ? this.$scopedSlots[item.slotName]({
-                                row: row,
-                              })
-                            : (console.warn(`slot : ${item.slotName} 未定义！`),
-                              '')
-                          : getCellRender(row, item);
-                      },
-                    },
-                  }}
-                ></el-table-column>
-              );
-            })
-          ) : (
-            <div slot="empty">
-              <img src={zanwu} alt="" />
-              <p style="font-size: 16px; color: #000; margin-top: 36px">
-                暂无数据
-              </p>
-            </div>
-          )}
-        </el-table>
-        {/* {page.totalCount > page.pageSize ? (
-          <el-pagination
-            class="el-pagination"
+        {/* el-table对于rowkey属性并没有进行watch，导致如果一开始传入undefined。则后续传入值也不会应用树状结构 */}
+        {tableOptions && tableOptions.length ? (
+          <el-table
+            ref={tableRef}
             {...{
               attrs: {
-                ...defaultPageEvent,
-                ...defaultPageAttrs,
+                ...defaultTableAttrs,
+                ...$attrs,
+              },
+              on: {
+                ...defaultTableEvent,
+                ...$listeners,
               },
             }}
-          ></el-pagination>
-        ) : (
-          ''
-        )} */}
+          >
+            {tableOptions && tableOptions.length > 0 ? (
+              tableOptions.map((item) => {
+                return (
+                  <el-table-column
+                    {...{
+                      attrs: {
+                        ...item,
+                        formatter: (row, column, cellValue, index) => {
+                          return item.slotName
+                            ? this.$scopedSlots[item.slotName]
+                              ? this.$scopedSlots[item.slotName]({
+                                  row: row,
+                                })
+                              : (console.warn(
+                                  `slot : ${item.slotName} 未定义！`
+                                ),
+                                '')
+                            : getCellRender(row, item);
+                        },
+                      },
+                    }}
+                  ></el-table-column>
+                );
+              })
+            ) : (
+              <div slot="empty">
+                <img src={zanwu} alt="" />
+                <p style="font-size: 16px; color: #000; margin-top: 36px">
+                  暂无数据
+                </p>
+              </div>
+            )}
+          </el-table>
+        ) : null}
       </div>
     );
   },
