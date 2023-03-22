@@ -178,6 +178,7 @@ export default {
     handleAddParent () {
       const { tableData, selected } = this;
       const parentNode = getSingleTableData()
+      parentNode.fieldCode = 'placeholders'
       selected.map((item, idx) => {
         const index = tableData.indexOf(item)
         if (parentNode.children) {
