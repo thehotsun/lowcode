@@ -3,7 +3,7 @@
     <el-header>
       <div class="operate">
         <el-button size='small' type="primary" @click="handleAdd(1)">新增一条</el-button>
-        <el-button size='small' type="primary" @click="handleAdd(5)">新增五条</el-button>
+        <!-- <el-button size='small' type="primary" @click="handleAdd(5)">新增五条</el-button> -->
         <el-button size='small' type="primary" :disabled="!selected.length" @click="handleAddParent">新增父级</el-button>
         <el-button size='small' type="danger" :disabled="!selected.length" @click="handleDelete">删除</el-button>
         <el-button size='small' type="" :disabled="checkUpBtnDisabled()" @click="handleUpAndDwon(true)">上移</el-button>

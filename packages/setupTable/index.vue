@@ -27,20 +27,6 @@
           <el-dropdown-item command="custom">自定义按钮</el-dropdown-item>
         </el-dropdown-menu>
       </el-dropdown>
-      <!-- 
-      <el-dropdown @command="handleCommand">
-        <span class="el-dropdown-link">
-          添加功能按钮<i class="el-icon-arrow-down el-icon--right"></i>
-        </span>
-        <el-dropdown-menu slot="dropdown">
-          <el-dropdown-item command="add">新增按钮</el-dropdown-item>
-          <el-dropdown-item command="edit">编辑按钮</el-dropdown-item>
-          <el-dropdown-item command="check">查看按钮</el-dropdown-item>
-          <el-dropdown-item command="download">导出按钮</el-dropdown-item>
-          <el-dropdown-item command="batchDel">批量删除按钮</el-dropdown-item>
-          <el-dropdown-item command="custom">自定义按钮</el-dropdown-item>
-        </el-dropdown-menu>
-      </el-dropdown> -->
     </div>
 
     <el-container style="height: 100%">
@@ -79,13 +65,15 @@
             <el-switch v-model="tableAttrs.showSummary" />
           </el-form-item>
           <el-form-item label="合计函数" prop="summaryMethod" v-if="tableAttrs.showSummary">
-            <el-input v-model="tableAttrs.summaryMethod" type="textarea" :rows="2" placeholder="请输入格式为Function({ columns, data })"></el-input>
+            <el-input v-model="tableAttrs.summaryMethod" type="textarea" :rows="2"
+              placeholder="请输入格式为Function({ columns, data })"></el-input>
           </el-form-item>
           <el-form-item label="是否合并" prop="isMerge">
             <el-switch v-model="tableAttrs.isMerge" />
           </el-form-item>
           <el-form-item label="合并函数" prop="spanMethod" v-if="tableAttrs.isMerge">
-            <el-input v-model="tableAttrs.spanMethod" type="textarea" :rows="2" placeholder="请输入格式为Function({ row, column, rowIndex, columnIndex })"></el-input>
+            <el-input v-model="tableAttrs.spanMethod" type="textarea" :rows="2"
+              placeholder="请输入格式为Function({ row, column, rowIndex, columnIndex })"></el-input>
           </el-form-item>
           <el-form-item label="是否树类型数据" prop="isTree">
             <el-switch v-model="tableAttrs.isTree" />
@@ -444,7 +432,7 @@ export default {
 }
 
 .btnDesign {
-  margin: -6px 56px;
+  margin: -6px 56px 10px 56px;
 }
 
 .middle {
