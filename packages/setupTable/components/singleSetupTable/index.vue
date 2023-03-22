@@ -16,7 +16,7 @@
       <el-container style="height: 100%">
         <el-main>
           <base-render-table ref="table" :table-data="tableData" :table-options="tableOptions" edit-mode
-            row-key="fieldName" @selection-change="selectListHandler" style="height: 100%;overflow:auto">
+            row-key="fieldCode" @selection-change="selectListHandler" style="height: 100%;overflow:auto">
             <!-- 注意这里的slot值要和tableOptions中配置的slotName一致 -->
             <!-- #operator是简写，详细请查阅vue文档 -->
             <template #setupWidget="{ row }">
@@ -178,7 +178,7 @@ export default {
     handleAddParent () {
       const { tableData, selected } = this;
       const parentNode = getSingleTableData()
-      parentNode.fieldCode = 'placeholders'
+      parentNode.fieldCode = 'placeholders' + Math.floor(Math.random() * 4000 + 1000)
       selected.map((item, idx) => {
         const index = tableData.indexOf(item)
         if (parentNode.children) {
