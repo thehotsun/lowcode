@@ -221,45 +221,54 @@ export default {
       this.composeData();
     },
 
+    setSingleTableOptions(item, emptyData) {
+      const obj = {};
+      obj.prop = item.fieldCode;
+      emptyData && this.setEmptyTableData(emptyData, item.fieldCode);
+      obj.label = item.fieldName;
+      obj.align = align.find((alignitem) => alignitem.id === item.align).value;
+      obj['min-width'] = item.width;
+      obj.sortable = !!item.sort;
+      obj.translate = item.translate;
+      obj['show-overflow-tooltip'] = item['show-overflow-tooltip'];
+      if (item.fixed) obj.fixed = item.fixed;
+      if (item.filters) obj.filters = str2obj(item.filters);
+      // 某些函数转换
+      const fnProps = ['sort-method'];
+      if (obj.filters && obj.filters.length) {
+        fnProps.push('filter-method');
+      }
+      // if (obj.filters && obj.filters.length) {
+      //   fnProps.push('span-method');
+      // }
+      fnProps.map((prop) => {
+        if (item[prop]) {
+          obj[prop] = str2Fn(item[prop]);
+        }
+      });
+
+      if (item.children) {
+        obj.children = item.children.map((item) =>
+          this.setSingleTableOptions(item, emptyData)
+        );
+      }
+      return obj;
+    },
+
     composeData(emptyData) {
       this.formOptions = this.composeFromOptions(this.tableConfigJSON);
+
       this.tableOptions = this.tableConfigJSON
         .filter((item) => item.show)
-        .map((item) => {
-          const obj = {};
-          obj.prop = item.fieldCode;
-          emptyData && this.setEmptyTableData(emptyData, item.fieldCode);
-          obj.label = item.fieldName;
-          obj.align = align.find(
-            (alignitem) => alignitem.id === item.align
-          ).value;
-          obj['min-width'] = item.width;
-          obj.sortable = !!item.sort;
-          obj.translate = item.translate;
-          obj['show-overflow-tooltip'] = item['show-overflow-tooltip'];
-          if (item.fixed) obj.fixed = item.fixed;
-          if (item.filters) obj.filters = str2obj(item.filters);
-          // 某些函数转换
-          const fnProps = ['sort-method'];
-          if (obj.filters && obj.filters.length) {
-            fnProps.push('filter-method');
-          }
-          // if (obj.filters && obj.filters.length) {
-          //   fnProps.push('span-method');
-          // }
-          fnProps.map((prop) => {
-            if (item[prop]) {
-              obj[prop] = str2Fn(item[prop]);
-            }
-          });
-          return obj;
-        });
+        .map((item) => this.setSingleTableOptions(item, emptyData));
+
       this.panelData = this.tableOptions.map((item) => {
         return {
           key: item.prop,
           label: item.label,
         };
       });
+
       if (this.tableAttrs.isShowIndex) {
         const obj = {
           type: 'index',

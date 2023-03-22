@@ -264,6 +264,34 @@ export default {
       );
     },
 
+    tableColumnRender(item) {
+      const { getCellRender, tableColumnRender } = this;
+      return (
+        <el-table-column
+          {...{
+            attrs: {
+              ...item,
+              formatter: (row, column, cellValue, index) => {
+                return item.slotName
+                  ? this.$scopedSlots[item.slotName]
+                    ? this.$scopedSlots[item.slotName]({
+                        row: row,
+                      })
+                    : (console.warn(`slot : ${item.slotName} 未定义！`), '')
+                  : getCellRender(row, item);
+              },
+            },
+          }}
+        >
+          {item.children
+            ? item.children.map((child) => {
+                return tableColumnRender(child);
+              })
+            : null}
+        </el-table-column>
+      );
+    },
+
     // handleSizeChange(val) {
     //   this.$emit('handleSizeChange', val);
     // },
@@ -290,14 +318,11 @@ export default {
       headerStyle,
       selectListHandler,
       zanwu,
-      getCellRender,
-      handleCellEnter,
-      handleCellLeave,
       handleCellClick,
       rowClick,
       $attrs,
       $listeners,
-      disposeStrFn,
+      tableColumnRender,
     } = this;
     const defaultTableAttrs = {
       'row-style': rowStyle,
@@ -350,27 +375,7 @@ export default {
           >
             {tableOptions && tableOptions.length > 0 ? (
               tableOptions.map((item) => {
-                return (
-                  <el-table-column
-                    {...{
-                      attrs: {
-                        ...item,
-                        formatter: (row, column, cellValue, index) => {
-                          return item.slotName
-                            ? this.$scopedSlots[item.slotName]
-                              ? this.$scopedSlots[item.slotName]({
-                                  row: row,
-                                })
-                              : (console.warn(
-                                  `slot : ${item.slotName} 未定义！`
-                                ),
-                                '')
-                            : getCellRender(row, item);
-                        },
-                      },
-                    }}
-                  ></el-table-column>
-                );
+                return tableColumnRender(item);
               })
             ) : (
               <div slot="empty">

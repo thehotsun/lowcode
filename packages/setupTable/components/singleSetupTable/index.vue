@@ -4,6 +4,7 @@
       <div class="operate">
         <el-button size='small' type="primary" @click="handleAdd(1)">新增一条</el-button>
         <el-button size='small' type="primary" @click="handleAdd(5)">新增五条</el-button>
+        <el-button size='small' type="primary" :disabled="!selected.length" @click="handleAddParent">新增父级</el-button>
         <el-button size='small' type="danger" :disabled="!selected.length" @click="handleDelete">删除</el-button>
         <el-button size='small' type="" :disabled="checkUpBtnDisabled()" @click="handleUpAndDwon(true)">上移</el-button>
         <el-button size='small' type="" :disabled="checkDwonBtnDisabled()" @click="handleUpAndDwon(false)">下移</el-button>
@@ -15,7 +16,7 @@
       <el-container style="height: 100%">
         <el-main>
           <base-render-table ref="table" :table-data="tableData" :table-options="tableOptions" edit-mode
-            @selection-change="selectListHandler" style="height: 100%;overflow:auto">
+            row-key="fieldName" @selection-change="selectListHandler" style="height: 100%;overflow:auto">
             <!-- 注意这里的slot值要和tableOptions中配置的slotName一致 -->
             <!-- #operator是简写，详细请查阅vue文档 -->
             <template #setupWidget="{ row }">
@@ -172,6 +173,24 @@ export default {
 
     handleDelete () {
       this.tableData = this.tableData.filter(tableItem => !this.selected.find(selectedItem => selectedItem === tableItem))
+    },
+
+    handleAddParent () {
+      const { tableData, selected } = this;
+      const parentNode = getSingleTableData()
+      selected.map((item, idx) => {
+        const index = tableData.indexOf(item)
+        if (parentNode.children) {
+          parentNode.children.push(item)
+        } else {
+          parentNode.children = [item]
+        }
+        if (!idx) {
+          tableData.splice(index, 1, parentNode)
+        } else {
+          tableData.splice(index, 1)
+        }
+      })
     },
 
     onSave (row) {

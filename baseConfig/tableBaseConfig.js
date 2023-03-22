@@ -27,23 +27,26 @@ export const eidtConf = [
     // 如需多选，则添加此item
     type: 'selection',
   },
-  {
-    // 如需展示索引，则添加此item
-    label: '序号',
-    type: 'index',
-  },
+  // {
+  //   // 如需展示索引，则添加此item
+  //   label: '序号',
+  //   type: 'index',
+  // },
   {
     label: '字段编号',
     prop: 'fieldCode',
+    'min-width': '170',
     ...baseAttr,
   },
   {
     label: '字段名称',
+    'min-width': '170',
     prop: 'fieldName',
     ...baseAttr,
   },
   {
     label: '英文名称',
+    'min-width': '170',
     prop: 'englishName',
     ...baseAttr,
   },
