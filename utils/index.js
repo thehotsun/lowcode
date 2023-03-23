@@ -9,6 +9,7 @@ import {
 } from '../baseConfig/widgetBaseConfig';
 
 import { pickBy, merge } from 'lodash';
+import { root } from 'postcss';
 
 export function setPlaceholder(tagName, fieldName) {
   const inputs = ['el-input', 'el-input-number'];
@@ -175,38 +176,54 @@ export function filterObj(obj) {
   pickBy(obj);
 }
 
+const isObj = (val) =>
+  Object.prototype.toString.call(val) === '[object Object]';
+
+const isArray = (source) => Array.isArray(source);
+
+const isEmytyRefer = (source, key) => {
+  const val = source[key];
+  if (isArray(val)) {
+    source[key] = val.filter(item => item);
+    return !source[key].length;
+  } else if (isObj(val)) {
+    return !Object.keys(val).length;
+  } else {
+    return val === '' || val === undefined || val === null || isNaN(val);
+  }
+};
+
+const del = (source, key, val) => {
+  if (isEmytyRefer(source, key)) {
+    if (isArray(source)) {
+      const index = source.indexOf(val);
+      source.splice(index, 1, null);
+    } else {
+      delete source[key];
+    }
+  }
+};
+
+const dfs = (source, key) => {
+  const val = source[key];
+  if (isObj(val) || isArray(val)) {
+    depthFirstSearchWithRecursive(val);
+  }
+  del(source, key, val);
+};
+
 // 用递归实现深度优先遍历
 export const depthFirstSearchWithRecursive = (source) => {
-  // function del(source, key) {
-  //   if (Array.isArray(source)) {
-  //     source.splice(key, 1);
-  //   } else {
-  //     delete source[key];
-  //   }
-  // }
-  // 递归方法
-
-  const dfs = (source, key) => {
-    const val = source[key];
-    if (Object.prototype.toString.call(val) === '[object Object]') {
-      // const keys = Object.keys(obj);
-      // keys.map((key) => {});
-      depthFirstSearchWithRecursive(val);
-    } else if (Array.isArray(val)) {
-      // if (val.length === 0) del(source, key);
-      // else {
-      //   source[key] = val.filter((item, index) => dfs(val, index));
-      // }
-    } else {
-      if (val === '' || val === undefined || val === null) delete source[key];
-    }
-  };
-  const keys = Object.keys(source);
-  keys.map((key, index) => {
-    dfs(source, key);
-  });
-  // 开始搜索
-  // dfs(source);
+  if (isObj(source)) {
+    const keys = Object.keys(source);
+    keys.map((key, index) => {
+      dfs(source, key);
+    });
+  } else if (isArray(source)) {
+    source.map((item, index) => {
+      dfs(source, index);
+    });
+  }
   return source;
 };
 
