@@ -1,5 +1,6 @@
 import './table.scss';
 import { str2obj, getHandleBlur } from '../../utils';
+import { omit } from 'lodash';
 export default {
   name: 'BaseRenderTable',
   data() {
@@ -266,11 +267,12 @@ export default {
 
     tableColumnRender(item) {
       const { getCellRender, tableColumnRender } = this;
+      const attr = omit(item, ['className', 'style']);
       return (
         <el-table-column
           {...{
             attrs: {
-              ...item,
+              ...attr,
               formatter: (row, column, cellValue, index) => {
                 return item.slotName
                   ? this.$scopedSlots[item.slotName]

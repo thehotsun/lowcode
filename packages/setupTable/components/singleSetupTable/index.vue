@@ -7,8 +7,8 @@
         <el-button size='small' type="primary" :disabled="!selected.length" @click="handleAddParent">新增父级</el-button>
         <el-button size='small' type="primary" :disabled="!selected.length" @click="handleDelParent">删除父级</el-button>
         <el-button size='small' type="danger" :disabled="!selected.length" @click="handleDelete">删除</el-button>
-        <el-button size='small' type="" :disabled="checkUpBtnDisabled()" @click="handleUpAndDwon(true)">上移</el-button>
-        <el-button size='small' type="" :disabled="checkDwonBtnDisabled()" @click="handleUpAndDwon(false)">下移</el-button>
+        <!-- <el-button size='small' type="" :disabled="checkUpBtnDisabled()" @click="handleUpAndDwon(true)">上移</el-button>
+        <el-button size='small' type="" :disabled="checkDwonBtnDisabled()" @click="handleUpAndDwon(false)">下移</el-button> -->
         <slot name="btn"></slot>
       </div>
     </el-header>
@@ -60,6 +60,7 @@ import {
   getSetupFormOptions,
 } from '../../../../utils';
 import { cloneDeep } from "lodash"
+import Sortable from "sortablejs"
 
 export default {
   name: 'singleSetupTable',
@@ -95,7 +96,7 @@ export default {
   },
 
   mounted () {
-    // this.init()
+    this.rowDrop()
   },
 
   methods: {
@@ -138,6 +139,23 @@ export default {
         },
         formItem: formOptions
       }];
+    },
+
+    rowDrop () {
+      // 此时找到的元素是要拖拽元素的父容器
+      const tbody = document.querySelector('.el-table__body-wrapper tbody');
+      let tableData = this.tableData;
+      Sortable.create(tbody, {
+        ghostClass: 'sortable-ghost',
+        setData: function (dataTransfer) {
+          dataTransfer.setData('Text', '')
+        },
+        onEnd: e => {
+          //e.oldIndex为拖动一行原来的位置，e.newIndex为拖动后新的位置
+          const targetRow = tableData.splice(e.oldIndex, 1)[0];
+          tableData.splice(e.newIndex, 0, targetRow);
+        }
+      })
     },
 
     checkUpBtnDisabled () {

@@ -32,6 +32,13 @@ export const eidtConf = [
   //   label: '序号',
   //   type: 'index',
   // },
+  // {
+  //   label: '',
+  //   prop: '',
+  //   tagName: 'i',
+  //   'min-width': '30',
+  //   className: 'iconfont icon-drag drag-option',
+  // },
   {
     ...baseAttr,
     label: '字段编号',
