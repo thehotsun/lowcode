@@ -285,7 +285,7 @@ export default {
             },
           }}
         >
-          {item.children
+          {item.children && item.children.length
             ? item.children.map((child) => {
                 return tableColumnRender(child);
               })

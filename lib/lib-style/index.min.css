@@ -425,17 +425,20 @@ span.CodeMirror-selectedtext { background: none; }
 .CompleteTable .between {
   justify-content: space-between; }
 
-.CompleteTable .operate {
+.CompleteTable .relative {
   position: relative; }
 
-.CompleteTable .panel {
+.CompleteTable .absolute {
+  position: absolute; }
+
+.CompleteTable .custom {
+  left: -120px;
+  top: 30px; }
+
+.CompleteTable .operate {
   position: absolute;
-  left: -122px;
-  z-index: 99;
-  top: 25px;
-  height: 250px !important;
-  max-height: inherit;
-  overflow: auto; }
+  z-index: 9;
+  right: 20px; }
 
 .CompleteTable .i {
   font-size: 20px;
@@ -443,6 +446,10 @@ span.CodeMirror-selectedtext { background: none; }
 
 .CompleteTable .none {
   display: none; }
+
+.panel__body[data-v-a7dda638] {
+  height: 290px;
+}
 
 .wrap[data-v-2c65d248] {
   width: 100%;

@@ -87,6 +87,7 @@ export default {
         pageSize: 10,
         totalCount: 0,
       },
+      dialogTitle: '表单',
       btnRegularOptions: [],
       btnConfigJSON: [],
       showSearchFrom: true,
@@ -257,10 +258,13 @@ export default {
 
     composeData(emptyData) {
       this.formOptions = this.composeFromOptions(this.tableConfigJSON);
-
+      this.filterFiled = [];
       this.tableOptions = this.tableConfigJSON
         .filter((item) => item.show)
-        .map((item) => this.setSingleTableOptions(item, emptyData));
+        .map((item) => {
+          this.filterFiled.push(item.fieldCode);
+          return this.setSingleTableOptions(item, emptyData);
+        });
 
       this.panelData = this.tableOptions.map((item) => {
         return {
@@ -321,8 +325,8 @@ export default {
           );
           const options = getWidgetOptions(searchWidgetName, item);
           console.log(
-            depthFirstSearchWithRecursive(item.searchWidgetConfig),
-            item.searchWidgetConfig
+            cloneDeep(item.searchWidgetConfig),
+            depthFirstSearchWithRecursive(item.searchWidgetConfig)
           );
           formOptions.push(
             merge(
@@ -423,6 +427,7 @@ export default {
         })
         .catch((e) => {
           console.error(`queryTableData error: ${e}`);
+          throw new Error(res.message);
         });
     },
 
@@ -490,6 +495,7 @@ export default {
               this.expose_showDialog(relateFrom);
               this.onlyRead = false;
               this.primaryKeyValue = '';
+              this.dialogTitle = '新增';
             } else {
               this.$router.push(openUrl, relateFrom);
             }
@@ -501,6 +507,7 @@ export default {
               if (openType === 0) {
                 this.expose_showDialog(relateFrom);
                 this.onlyRead = btnType === 'check';
+                this.dialogTitle = btnType === 'check' ? '查看' : '编辑';
               } else {
                 this.$router.push(openUrl, relateFrom);
               }
@@ -583,6 +590,7 @@ export default {
       filterShowField,
       handleSetting,
       refresh,
+      dialogTitle,
     } = this;
 
     const curPageListeners = {
@@ -626,13 +634,14 @@ export default {
               form-options={formOptions}
               showFooter={false}
               use-dialog={false}
+              isSearch={true}
             ></base-render-form>
           </el-header>
         ) : null}
         <el-main>
           <el-container style="height: 100%">
-            {showBtns ? (
-              <el-header class="flex between">
+            <el-header class="flex between relative">
+              {showBtns ? (
                 <base-render-regular
                   ref="btnForm"
                   render-options={btnRegularOptions}
@@ -642,24 +651,26 @@ export default {
                     },
                   }}
                 ></base-render-regular>
-                <div class="operate">
-                  <i
-                    class="el-icon-refresh-left i"
-                    {...{
-                      on: {
-                        click: refresh,
-                      },
-                    }}
-                  ></i>
-                  <i
-                    class="el-icon-s-tools i"
-                    {...{
-                      on: {
-                        click: handleSetting,
-                      },
-                    }}
-                  ></i>
-                  {
+              ) : null}
+              <div class="operate">
+                <i
+                  class="el-icon-refresh-left i"
+                  {...{
+                    on: {
+                      click: refresh,
+                    },
+                  }}
+                ></i>
+                <i
+                  class="el-icon-s-tools i"
+                  {...{
+                    on: {
+                      click: handleSetting,
+                    },
+                  }}
+                ></i>
+                {showPanel ? (
+                  <div class="custom absolute">
                     <panel
                       data={panelData}
                       {...{
@@ -667,12 +678,12 @@ export default {
                           checkedChange: filterShowField,
                         },
                       }}
-                      class={['panel', showPanel ? '' : 'none']}
                     ></panel>
-                  }
-                </div>
-              </el-header>
-            ) : null}
+                  </div>
+                ) : null}
+              </div>
+            </el-header>
+
             <el-main>
               <base-render-table
                 ref="table"
@@ -706,28 +717,31 @@ export default {
             ) : null}
           </el-container>
         </el-main>
-        <el-dialog
-          title="表单"
-          visible={dialogVisibleForm}
-          {...{ on: visibleListeners }}
-          close-on-click-modal={false}
-          close-on-press-escape={false}
-          width="900px"
-          append-to-body
-        >
-          {formId ? (
-            <FcView
-              primaryKeyValue={primaryKeyValue}
-              isDisabled={onlyRead}
-              formId={formId}
-              {...{
-                on: {
-                  submit: { onSubmit },
-                },
-              }}
-            ></FcView>
-          ) : null}
-        </el-dialog>
+        {dialogVisibleForm ? (
+          <el-dialog
+            title={dialogTitle}
+            visible={dialogVisibleForm}
+            {...{ on: visibleListeners }}
+            close-on-click-modal={false}
+            close-on-press-escape={false}
+            width="900px"
+            append-to-body
+          >
+            {formId ? (
+              <FcView
+                primaryKeyValue={primaryKeyValue}
+                isDisabled={onlyRead}
+                hasSubmit={!onlyRead}
+                formId={formId}
+                {...{
+                  on: {
+                    submit: { onSubmit },
+                  },
+                }}
+              ></FcView>
+            ) : null}
+          </el-dialog>
+        ) : null}
       </el-container>
     );
   },

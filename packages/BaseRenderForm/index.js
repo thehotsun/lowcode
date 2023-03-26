@@ -33,6 +33,7 @@ export default {
       type: Object,
     },
     onlyShow: Boolean,
+    isSearch: Boolean,
     showFooter: {
       type: Boolean,
       default() {
@@ -79,7 +80,7 @@ export default {
     },
 
     disposeRequest(request, extraOption) {
-      if (request?.url && request.status === 'pending') {
+      if (request?.require && request?.url && request.status === 'pending') {
         extraOption.options = [];
         this.requestData(request, extraOption.options);
         request.status = 'finish';
@@ -137,10 +138,11 @@ export default {
     getSelectCompVNode({ attrs, listeners, formField, extraOption, request }) {
       this.disposeRequest(request, extraOption);
       let { options = [], props = {} } = extraOption;
-      const { formData, onlyShow } = this;
+      const { formData, onlyShow, isSearch } = this;
       // 基础版有个添加维护字典的功能，里面返回的字段为id和cnName，因此以此字段为默认取值
       const { key = 'id', label = 'cnName' } = props;
       let model = getter(formData, formField);
+      // TODO isSearch 暂时用label做value 后台原因
       return (
         <el-select
           value={model}
@@ -155,7 +157,7 @@ export default {
               <el-option
                 key={item[key]}
                 label={item[label]}
-                value={item[key]}
+                value={isSearch ? item[label] : item[key]}
                 disabled={item.disabled}
               ></el-option>
             );

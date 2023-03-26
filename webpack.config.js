@@ -21,8 +21,6 @@ module.exports = {
     'baseRenderTable.min': './packages/baseRenderTable/main.js',
     baseRenderRegular: './packages/baseRenderRegular/main.js',
     'baseRenderRegular.min': './packages/baseRenderRegular/main.js',
-    config: './baseConfig/index.js',
-    'config.min': './baseConfig/index.js',
     utils: './utils/index.js',
     'utils.min': './utils/index.js',
   },

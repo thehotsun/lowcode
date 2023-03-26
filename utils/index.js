@@ -189,7 +189,7 @@ const isEmytyRefer = (source, key) => {
   } else if (isObj(val)) {
     return !Object.keys(val).length;
   } else {
-    return val === '' || val === undefined || val === null || isNaN(val);
+    return val === '' || val === undefined || val === null;
   }
 };
 

@@ -19,19 +19,32 @@
   .between {
     justify-content: space-between;
   }
-  .operate {
-    position: relative;
-  }
-  .panel {
+    .relative {
+      position: relative;
+    }
 
+            .absolute {
+              position: absolute;
+            }
+            .custom {
+                  left: -120px;
+                    top: 30px;
+            }
+  .operate {
     position: absolute;
-      left: -122px;
-      z-index: 99;
-      top: 25px;
-      height: 250px !important;
-      max-height: inherit;
-      overflow: auto;
+    z-index: 9;
+    right: 20px;
   }
+  // .panel {
+
+  //   position: absolute;
+  //     left: -122px;
+  //     z-index: 99;
+  //     top: 25px;
+  //     height: 250px !important;
+  //     max-height: inherit;
+  //     overflow: auto;
+  // }
   .i {
     font-size: 20px;
     margin-left: 20px;
