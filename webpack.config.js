@@ -21,8 +21,6 @@ module.exports = {
     'baseRenderTable.min': './packages/baseRenderTable/main.js',
     baseRenderRegular: './packages/baseRenderRegular/main.js',
     'baseRenderRegular.min': './packages/baseRenderRegular/main.js',
-    utils: './utils/index.js',
-    'utils.min': './utils/index.js',
   },
   output: {
     path: path.join(__dirname, '/lib'),

@@ -735,7 +735,7 @@ export default {
                 formId={formId}
                 {...{
                   on: {
-                    submit: { onSubmit },
+                    submit: onSubmit,
                   },
                 }}
               ></FcView>
