@@ -70,7 +70,7 @@ export default {
     },
 
     rowStyle() {
-      return 'height:60px';
+      return 'height:40px';
     },
 
     headerStyle() {
@@ -204,32 +204,34 @@ export default {
         translate = '',
       } = options;
       // 失去input失去焦点变为span
-      if (
-        this.editMode &&
-        (tagName === 'el-input' || tagName === 'el-input-number')
-      ) {
-        listeners.blur = getHandleBlur(row, listeners.blur);
-      }
-      const disabled = !(
-        this.editMode &&
-        row?.$edit &&
-        options.prop === this.curCellProperty
-      );
-      tagAttrs.disabled = disabled;
+      // if (
+      //   this.editMode &&
+      //   (tagName === 'el-input' || tagName === 'el-input-number')
+      // ) {
+      //   listeners.blur = getHandleBlur(row, listeners.blur);
+      // }
+      // const disabled = !(
+      //   this.editMode &&
+      //   row?.$edit &&
+      //   options.prop === this.curCellProperty
+      // );
+      // tagAttrs.disabled = disabled;
       // tagName必须是eleui提供的已有组件或HTML已有标签,如果是只读标签，则固定使用span标签
       // Tag必须开头大写，否则会被识别为字符串
       let Tag;
       // 如果当前cell不在编辑模式且是输入框格式的，此时应该显示文本
-      if (
-        disabled &&
-        (tagName === 'el-input' || tagName === 'el-input-number')
-      ) {
-        Tag = 'span';
-      } else {
-        // 其余组件是否禁用取决于当前是否为编辑模式
-        Tag = tagName;
-        tagAttrs.disabled = !this.editMode;
-      }
+      // if (
+      //   disabled &&
+      //   (tagName === 'el-input' || tagName === 'el-input-number')
+      // ) {
+      //   Tag = 'span';
+      // } else {
+      //   // 其余组件是否禁用取决于当前是否为编辑模式
+      //   Tag = tagName;
+      //   tagAttrs.disabled = !this.editMode;
+      // }
+       Tag = tagName;
+       tagAttrs.disabled = !this.editMode;
       const value = getCellValue(translate, row, prop);
       const { getCooperateComp, isCooperateComp } = this;
       return (

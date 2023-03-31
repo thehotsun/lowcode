@@ -3,18 +3,19 @@
     <div class="top">
       页面设计区
       <div class="operate">
+        <el-button size="mini" @click="showTableAttrs">表格属性设置</el-button>
         <el-button size="mini" @click="showPreview">预览</el-button>
         <el-button size="mini" type="primary" @click="confirm">保存</el-button>
       </div>
     </div>
-    <div class="el-divider el-divider--horizontal"></div>
+    <!-- <div class="el-divider el-divider--horizontal"></div> -->
     <div class="btnDesign">
       <span v-for="(item, index) in btnConfigArr" :key="index">
-        <el-button type="" @click="handleDetail(index)">{{ item.tagAttrs.value }}</el-button>
+        <el-button type="" size="small" @click="handleDetail(index)">{{ item.tagAttrs.value }}</el-button>
         <i type="danger" class="el-icon-circle-close middle " @click="handleDelBtn(index)"></i>
       </span>
 
-      <el-dropdown @command="handleCommand">
+      <el-dropdown szie="small" @command="handleCommand">
         <el-button type="primary" size="small" plain>
           添加功能按钮<i class="el-icon-arrow-down el-icon--right"></i>
         </el-button>
@@ -29,19 +30,28 @@
       </el-dropdown>
     </div>
 
-    <el-container style="height: 100%">
-      <el-main>
-        <div style="overflow:auto">
-          <single-setup-table ref="singleSetupTable" :parse-json="parseJson" :raw-table-data.sync="tableData" edit-mode>
-          </single-setup-table>
-        </div>
-      </el-main>
-      <el-aside style="min-width: 60px;background: #fff;padding: 10px; margn-top: 60px;margin-bottom: 60px;">
-        <div class="title">常用表格属性设置</div>
+    <div class="tablesetup">
+      <single-setup-table ref="singleSetupTable" :parse-json="parseJson" :raw-table-data.sync="tableData" edit-mode>
+      </single-setup-table>
+    </div>
 
-        <div class="el-divider el-divider--horizontal"></div>
-        <el-form :model="tableAttrs" :rules="rules" ref="ruleForm" label-width="100px" style="padding-bottom: 20px"
-          label-position="top">
+    <el-drawer title="按钮属性设置" :visible.sync="drawer" :direction="direction" :before-close="handleClose">
+      <setupBtnConfig ref="setupBtnConfig" @onSubmit="onSubmit" @onClose="onClose"></setupBtnConfig>
+    </el-drawer>
+
+    <el-dialog title="预览" :visible.sync="dialogVisiblePreview" :close-on-click-modal="false"
+      :close-on-press-escape="false" width="90%" :before-close="handleClosePreview">
+      <complete-table class="preview" ref="table" :parse-json="parseJson" :generalRequest="generalRequest">
+      </complete-table>
+    </el-dialog>
+
+    <el-dialog title="表格属性设置" :visible.sync="dialogVisibleTableAttrs" :close-on-click-modal="false"
+      :close-on-press-escape="false" width="900px" :before-close="handleCloseTableAttrs">
+      <div style="min-width: 60px;background: #fff;padding: 10px; margn-top: 60px;margin-bottom: 60px;">
+        <!-- <div class="title">常用表格属性设置</div> -->
+
+        <!-- <div class="el-divider el-divider--horizontal"></div> -->
+        <el-form :model="tableAttrs" :rules="rules" ref="ruleForm" label-width="130px" style="padding-bottom: 20px">
           <el-form-item label="是否分页" prop="showPagination">
             <el-switch v-model="tableAttrs.showPagination" />
           </el-form-item>
@@ -100,16 +110,7 @@
             </el-select>
           </el-form-item>
         </el-form>
-      </el-aside>
-    </el-container>
-    <el-drawer title="按钮属性设置" :visible.sync="drawer" :direction="direction" :before-close="handleClose">
-      <setupBtnConfig ref="setupBtnConfig" @onSubmit="onSubmit" @onClose="onClose"></setupBtnConfig>
-    </el-drawer>
-
-    <el-dialog title="预览" :visible.sync="dialogVisiblePreview" :close-on-click-modal="false"
-      :close-on-press-escape="false" width="900px" :before-close="handleClosePreview">
-      <complete-table ref="table" :parse-json="parseJson" :generalRequest="generalRequest">
-      </complete-table>
+      </div>
     </el-dialog>
   </div>
 </template>
@@ -167,6 +168,7 @@ export default {
     return {
       dialogVisibleBtnConfig: false,
       dialogVisiblePreview: false,
+      dialogVisibleTableAttrs: false,
       tableData: [getSingleTableData(), getSingleTableData()],
       setupForm: {
       },
@@ -361,10 +363,18 @@ export default {
       this.dialogVisiblePreview = false;
     },
 
+    handleCloseTableAttrs () {
+      this.dialogVisibleTableAttrs = false;
+    },
+
     showPreview () {
       this.dialogVisiblePreview = true;
       const renderParams = this.getRenderParams();
       this.$nextTick(() => this.$refs.table.expose_preview(renderParams));
+    },
+
+    showTableAttrs () {
+      this.dialogVisibleTableAttrs = true;
     },
 
     onSubmit () {
@@ -432,13 +442,19 @@ export default {
 }
 
 .btnDesign {
-  margin: -6px 56px 10px 56px;
+  // margin: -6px 56px 10px 56px;
+  background: #fff;
+  height: 65px;
+  display: flex;
+  align-items: center;
+  margin-top: 10px;
+  padding-left: 20px;
 }
 
 .middle {
   position: relative;
-  left: -8px;
-  top: -20px;
+  left: -12px;
+  top: -16px;
   font-size: 16px;
 }
 
@@ -446,6 +462,16 @@ export default {
   display: flex;
   justify-content: space-between;
   padding: 0 30px;
-  align-items: center
+  align-items: center;
+  background: #fff;
+  height: 60px;
+}
+
+.preview {
+  padding: 20px 0 50px 0;
+}
+
+.tablesetup {
+  height: calc(100% - 140px);
 }
 </style>

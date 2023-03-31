@@ -43,6 +43,7 @@ export const eidtConf = [
     ...baseAttr,
     label: '字段编号',
     prop: 'fieldCode',
+    disable: true,
     'min-width': '170',
   },
   {
@@ -53,10 +54,18 @@ export const eidtConf = [
   },
   {
     ...baseAttr,
-    label: '英文名称',
-    prop: 'englishName',
-    'min-width': '170',
+    label: '展示',
+    prop: 'show',
+    'min-width': '70',
+    tagName: 'el-switch',
+    sortable: true,
   },
+  // {
+  //   ...baseAttr,
+  //   label: '英文名称',
+  //   prop: 'englishName',
+  //   'min-width': '170',
+  // },
   {
     ...baseAttr,
     label: '列宽',
@@ -77,42 +86,6 @@ export const eidtConf = [
   },
   {
     ...baseAttr,
-    label: '展示',
-    prop: 'show',
-    'min-width': '70',
-    tagName: 'el-checkbox',
-    sortable: true,
-  },
-  {
-    ...baseAttr,
-    label: '排序',
-    prop: 'sort',
-    'min-width': '70',
-    tagName: 'el-checkbox',
-  },
-  {
-    ...baseAttr,
-    label: '排序函数',
-    prop: 'sort-method',
-    'min-width': '170',
-    tagAttrs: textarea(),
-  },
-  {
-    ...baseAttr,
-    label: '筛选数组',
-    prop: 'filters',
-    'min-width': '170',
-    tagAttrs: textarea('请输入[{ text, value }]格式"'),
-  },
-  {
-    ...baseAttr,
-    label: '筛选函数',
-    prop: 'filter-method',
-    'min-width': '170',
-    tagAttrs: textarea('请输入function(value, row, column){}格式'),
-  },
-  {
-    ...baseAttr,
     label: '是否固定',
     prop: 'fixed',
     tagName: 'el-select',
@@ -124,21 +97,6 @@ export const eidtConf = [
     extraOption: {
       options: fixed,
     },
-  },
-  {
-    ...baseAttr,
-    label: '是否单行显示',
-    prop: 'show-overflow-tooltip',
-    prop: 'sort',
-    'min-width': '100',
-    tagName: 'el-checkbox',
-  },
-  {
-    ...baseAttr,
-    label: '格式化',
-    prop: 'translate',
-    'min-width': '120',
-    tagAttrs: textarea('请输入键为原始数据，值为展示数据的obj'),
   },
   {
     ...baseAttr,
@@ -161,22 +119,66 @@ export const eidtConf = [
     align: 'center',
     slotName: 'setupWidget',
   },
-  // 如需使用slot功能，请添加slotName属性，并在template中使用相同的slot名称
   {
-    label: '操作',
-    'min-width': '110',
-    prop: '',
-    align: 'center',
-    slotName: 'operator',
+    ...baseAttr,
+    label: '排序',
+    prop: 'sort',
+    'min-width': '70',
+    tagName: 'el-switch',
   },
+
+  {
+    ...baseAttr,
+    label: '排序函数',
+    prop: 'sort-method',
+    'min-width': '200',
+    tagAttrs: textarea(),
+  },
+  {
+    ...baseAttr,
+    label: '筛选数组',
+    prop: 'filters',
+    'min-width': '200',
+    tagAttrs: textarea('请输入[{ text, value }]格式"'),
+  },
+  {
+    ...baseAttr,
+    label: '筛选函数',
+    prop: 'filter-method',
+    'min-width': '200',
+    tagAttrs: textarea('请输入function(value, row, column){}格式'),
+  },
+  {
+    ...baseAttr,
+    label: '是否单行显示',
+    prop: 'show-overflow-tooltip',
+    'min-width': '100',
+    tagName: 'el-switch',
+  },
+  {
+    ...baseAttr,
+    label: '格式化',
+    prop: 'translate',
+    'min-width': '200',
+    tagAttrs: textarea('请输入键为原始数据，值为展示数据的obj'),
+  },
+
+  // 如需使用slot功能，请添加slotName属性，并在template中使用相同的slot名称
+  // {
+  //   label: '操作',
+  //   'min-width': '110',
+  //   prop: '',
+  //   align: 'center',
+  //   slotName: 'operator',
+  // },
 ];
 
 export function getSingleTableData() {
   return {
     fieldCode: '',
     fieldName: '',
-    englishName: '',
-    columnWidth: '',
+    // englishName: '',
+    columnWidth: 70,
     align: 1,
     show: true,
     sort: true,

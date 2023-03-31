@@ -1,41 +1,41 @@
 <template>
-  <el-container style="height: 100%">
-    <el-header>
-      <div class="operate">
-        <el-button size='small' type="primary" @click="handleAdd(1)">新增一条</el-button>
-        <!-- <el-button size='small' type="primary" @click="handleAdd(5)">新增五条</el-button> -->
-        <el-button size='small' type="primary" :disabled="!selected.length" @click="handleAddParent">新增父级</el-button>
-        <el-button size='small' type="primary" :disabled="!selected.length" @click="handleDelParent">删除父级</el-button>
-        <el-button size='small' type="danger" :disabled="!selected.length" @click="handleDelete">删除</el-button>
-        <!-- <el-button size='small' type="" :disabled="checkUpBtnDisabled()" @click="handleUpAndDwon(true)">上移</el-button>
+  <div class="wrap" style="height: 100%; backg">
+    <!-- <el-header> -->
+    <div class="operate">
+      <el-button size='small' type="primary" @click="handleAdd(1)">新增一条</el-button>
+      <!-- <el-button size='small' type="primary" @click="handleAdd(5)">新增五条</el-button> -->
+      <el-button size='small' type="primary" :disabled="!selected.length" @click="handleAddParent">新增父级</el-button>
+      <el-button size='small' type="danger" :disabled="!selected.length" @click="handleDelParent">删除父级</el-button>
+      <el-button size='small' type="danger" :disabled="!selected.length" @click="handleDelete">删除</el-button>
+      <!-- <el-button size='small' type="" :disabled="checkUpBtnDisabled()" @click="handleUpAndDwon(true)">上移</el-button>
         <el-button size='small' type="" :disabled="checkDwonBtnDisabled()" @click="handleUpAndDwon(false)">下移</el-button> -->
-        <slot name="btn"></slot>
-      </div>
-    </el-header>
+      <slot name="btn"></slot>
+    </div>
+    <!-- </el-header> -->
 
-    <el-main>
-      <el-container style="height: 100%">
-        <el-main>
-          <base-render-table ref="table" :table-data="tableData" :table-options="tableOptions" edit-mode
-            row-key="fieldCode" @selection-change="selectListHandler" style="height: 100%;overflow:auto">
-            <!-- 注意这里的slot值要和tableOptions中配置的slotName一致 -->
-            <!-- #operator是简写，详细请查阅vue文档 -->
-            <template #setupWidget="{ row }">
-              <el-button :disabled="row.searchWidget === ''" @click.stop.prevent="handleWidgetAttr(row)">
-                设置
-              </el-button>
-              <slot name="setupWidget" :row="row"></slot>
-            </template>
-            <template #operator="{ row }">
-              <el-button v-if="row.$edit" @click.stop.prevent="onSave(row)">
-                保存
-              </el-button>
-              <slot name="operator" :row="row"></slot>
-            </template>
-          </base-render-table>
-        </el-main>
-      </el-container>
-    </el-main>
+    <!-- <el-main> -->
+    <div class="renderwrap">
+      <!-- <el-main> -->
+      <base-render-table ref="table" :table-data="tableData" :table-options="tableOptions" edit-mode row-key="fieldCode"
+        border @selection-change="selectListHandler" height="100%" style="height: 100%;overflow:auto">
+        <!-- 注意这里的slot值要和tableOptions中配置的slotName一致 -->
+        <!-- #operator是简写，详细请查阅vue文档 -->
+        <template #setupWidget="{ row }">
+          <el-button :disabled="row.searchWidget === ''" @click.stop.prevent="handleWidgetAttr(row)">
+            设置
+          </el-button>
+          <slot name="setupWidget" :row="row"></slot>
+        </template>
+        <template #operator="{ row }">
+          <el-button v-if="row.$edit" @click.stop.prevent="onSave(row)">
+            保存
+          </el-button>
+          <slot name="operator" :row="row"></slot>
+        </template>
+      </base-render-table>
+      <!-- </el-main> -->
+    </div>
+    <!-- </el-main> -->
     <el-dialog title="设置搜索控件属性" :visible.sync="dialogVisibleFrom" :close-on-click-modal="false"
       :close-on-press-escape="false" width="900px" :before-close="handleCloseFrom" append-to-body>
       <base-render-form ref="setupForm" :form-data="setupForm" :form-options="setupFormOptions" :use-dialog="false"
@@ -46,7 +46,7 @@
         <el-button type="primary" @click="confirmFrom">确定</el-button>
       </span>
     </el-dialog>
-  </el-container>
+  </div>
 </template>
 
 <script>
@@ -254,12 +254,14 @@ export default {
 
 <style lang="scss" scoped>
 .wrap {
-  width: 100%;
+  height: 100%;
+  background: #fff;
+  margin-top: 10px;
 }
 
 .operate {
   margin-left: 20px;
-  margin-top: 20px;
+  padding-top: 20px;
   display: flex;
   // justify-content: center;
   align-items: center;
@@ -271,5 +273,11 @@ export default {
   left: 0;
   right: 0;
   z-index: 999;
+}
+
+.renderwrap {
+  height: calc(100% - 20px);
+  padding: 20px;
+
 }
 </style>
