@@ -43,7 +43,7 @@ export const eidtConf = [
     ...baseAttr,
     label: '字段编号',
     prop: 'fieldCode',
-    disable: true,
+    disabled: true,
     'min-width': '170',
   },
   {
@@ -178,7 +178,7 @@ export function getSingleTableData() {
     fieldCode: '',
     fieldName: '',
     // englishName: '',
-    columnWidth: 70,
+    columnWidth: 110,
     align: 1,
     show: true,
     sort: true,
