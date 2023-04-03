@@ -1,4 +1,4 @@
-import './table.scss';
+import './table.less';
 import { str2obj, getHandleBlur } from '../../utils';
 import { omit } from 'lodash';
 export default {

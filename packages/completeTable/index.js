@@ -1,7 +1,7 @@
 {
   /* <style scoped src="./index.css"></style>; */
 }
-import './index.scss';
+import './index.less';
 import BaseRenderTable from '../BaseRenderTable/index';
 import BaseRenderForm from '../BaseRenderForm/index';
 import BaseRenderRegular from '../BaseRenderRegular/index';
