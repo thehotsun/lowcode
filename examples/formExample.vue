@@ -105,7 +105,7 @@ export default {
 };
 </script>
 
-<style lang="scss" scoped>
+<style lang="less" scoped>
 /deep/ .input {
   border: 1px solid red;
 }

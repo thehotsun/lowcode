@@ -75,21 +75,12 @@ module.exports = {
         use: [MiniCssExtractPlugin.loader, 'css-loader', 'postcss-loader'],
       },
       {
-        test: /\.s[ac]ss$/i,
+        test: /\.less$/i, //使用正则表达式匹配less
         use: [
-          MiniCssExtractPlugin.loader,
+          'style-loader',
           'css-loader',
-          'postcss-loader',
-          'sass-loader',
+          'less-loader', //这个是导入顺序的第一个
         ],
-      },
-       {
-        test:/\.less$/i,   //使用正则表达式匹配less
-        use:[
-          "style-loader",
-          "css-loader", 
-          "less-loader"  //这个是导入顺序的第一个
-        ]
       },
       {
         test: /\.js$/,

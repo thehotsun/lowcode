@@ -1,6 +1,6 @@
 <template>
   <div class="el-transfer-panel">
-    <div :class="['panel__body']">
+    <div class="panel__body">
       <el-input class="el-transfer-panel__filter" v-model="query" size="small" :placeholder="placeholder"
         @mouseenter.native="inputHover = true" @mouseleave.native="inputHover = false">
         <i slot="prefix" :class="['el-input__icon', 'el-icon-' + inputIcon]" @click="clearQuery"></i>
@@ -94,7 +94,7 @@ export default {
 };
 </script>
 
-<style lang="sass" scoped>
+<style lang="less" scoped>
 .panel__body{
     height: 290px
 }

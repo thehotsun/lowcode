@@ -252,7 +252,7 @@ export default {
 };
 </script>
 
-<style lang="scss" scoped>
+<style lang="less" scoped>
 .wrap {
   height: 100%;
   background: #fff;
