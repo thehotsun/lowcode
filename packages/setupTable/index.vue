@@ -41,7 +41,8 @@
 
     <el-dialog title="预览" :visible.sync="dialogVisiblePreview" :close-on-click-modal="false"
       :close-on-press-escape="false" width="90%" :before-close="handleClosePreview">
-      <complete-table class="preview" ref="table" :parse-json="parseJson" :generalRequest="generalRequest">
+      <complete-table class="preview" ref="table" :parse-json="parseJson" style="height:650px"
+        :generalRequest="generalRequest">
       </complete-table>
     </el-dialog>
 

@@ -220,7 +220,7 @@ export default {
       // tagName必须是eleui提供的已有组件或HTML已有标签,如果是只读标签，则固定使用span标签
       // Tag必须开头大写，否则会被识别为字符串
       let Tag;
-      // 如果当前cell不在编辑模式且是输入框格式的，此时应该显示文本
+      // 如果当前option中disabled为true且在编辑模式且是输入框格式的，此时应该显示文本
       if (
         disabled &&
         (tagName === 'el-input' || tagName === 'el-input-number')
