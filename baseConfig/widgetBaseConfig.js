@@ -11,11 +11,12 @@ function composeConfig(options) {
     extraOption = {},
     customAttr = {},
     request = {},
+    style = '',
   } = options;
   return {
     // 赋值给formitem组件的class和style
     // className: 'select',
-    style: baseStyle,
+    style: style || baseStyle,
     // tagName必须是eleui提供的已有组件或HTML已有标签
     tagName: tagName,
     // 对应的formData的具体属性值，用于赋值组件的v-model
@@ -119,6 +120,7 @@ export function getElBtnConfig(type = 'primary', fn, text, extraOption = {}) {
     contentText: text,
   };
   return composeConfig({
+    style: 'margin-left: 20px',
     tagName: 'el-button',
     tagAttrs,
     listeners,

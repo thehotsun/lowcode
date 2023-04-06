@@ -362,7 +362,12 @@ export default {
       const resetConfig = getElBtnConfig('', this.handleReset, '重置');
       setColSpan(filterConfig, 2);
       setColSpan(resetConfig, 2);
-      return [filterConfig, resetConfig];
+      return [
+        {
+          formItemAttrs: { 'label-width': '35px' },
+          child: [filterConfig, resetConfig],
+        },
+      ];
     },
 
     handleFilter() {
@@ -626,7 +631,7 @@ export default {
     return (
       <el-container class="CompleteTable" style="height: 100%">
         {showSearchFrom ? (
-          <el-header style="margin: 20px 0">
+          <el-header style="margin: 20px 0 0 0;" class="flex-header-height">
             <base-render-form
               ref="form"
               generalRequest={generalRequest}
@@ -638,9 +643,9 @@ export default {
             ></base-render-form>
           </el-header>
         ) : null}
-        <el-main>
+        <el-main class="main-padding">
           <el-container style="height: 100%">
-            <el-header class="flex between relative">
+            <el-header class="flex between relative absolute-header-height">
               {showBtns ? (
                 <base-render-regular
                   ref="btnForm"

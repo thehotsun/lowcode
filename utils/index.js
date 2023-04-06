@@ -259,20 +259,20 @@ export function getSetupFormOptions(searchWidgetName) {
       '标签名：',
       '请输入标签名',
       'formItemAttrs.label',
-      { style: 'width: 650px' },
+      { style: 'width: 350px' },
     ],
     [
       '提示语：',
       '请输入提示语',
       'tagAttrs.placeholder',
-      { style: 'width: 650px' },
+      { style: 'width: 350px' },
     ],
     [
       '配置项',
       '请输入配置项',
       'extraOption',
       {
-        style: 'width: 650px',
+        style: 'width: 350px',
         tagAttrs: {
           autosize: true,
           type: 'textarea',
@@ -287,7 +287,7 @@ export function getSetupFormOptions(searchWidgetName) {
       null,
       'request.url',
       {
-        style: 'width: 650px',
+        style: 'width: 350px',
         renderDepend: 'request.require',
       },
     ],
@@ -296,7 +296,7 @@ export function getSetupFormOptions(searchWidgetName) {
       null,
       'request.type',
       {
-        style: 'width: 650px',
+        style: 'width: 350px',
         renderDepend: 'request.require',
         extraOption: {
           options: [
@@ -318,7 +318,7 @@ export function getSetupFormOptions(searchWidgetName) {
       null,
       'request.params',
       {
-        style: 'width: 650px',
+        style: 'width: 350px',
         renderDepend: 'request.require',
         tagAttrs: {
           autosize: true,
@@ -341,13 +341,13 @@ export function getSetupFormOptions(searchWidgetName) {
           '标签名：',
           '请输入标签名',
           'formItemAttrs.label',
-          { style: 'width: 650px' }
+          { style: 'width: 350px' }
         ),
         getSetupFromSingleConfig(
           '提示语：',
           '请输入提示语',
           'tagAttrs.placeholder',
-          { style: 'width: 650px' }
+          { style: 'width: 350px' }
         ),
       ];
 

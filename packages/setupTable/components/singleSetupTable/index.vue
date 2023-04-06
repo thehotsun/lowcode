@@ -17,7 +17,8 @@
     <div class="renderwrap">
       <!-- <el-main> -->
       <base-render-table ref="table" :table-data="tableData" :table-options="tableOptions" edit-mode row-key="fieldCode"
-        border @selection-change="selectListHandler" height="100%" style="height: 100%;overflow:auto">
+        border @selection-change="selectListHandler" :row-style="{ height: '30px' }" :cell-style="{ padding: '4px' }"
+        height="100%" style="height: 100%;overflow:auto">
         <!-- 注意这里的slot值要和tableOptions中配置的slotName一致 -->
         <!-- #operator是简写，详细请查阅vue文档 -->
         <template #setupWidget="{ row }">
@@ -37,7 +38,7 @@
     </div>
     <!-- </el-main> -->
     <el-dialog title="设置搜索控件属性" :visible.sync="dialogVisibleFrom" :close-on-click-modal="false"
-      :close-on-press-escape="false" width="900px" :before-close="handleCloseFrom" append-to-body>
+      :close-on-press-escape="false" width="500px" v-dialogDrag :before-close="handleCloseFrom" append-to-body>
       <base-render-form ref="setupForm" :form-data="setupForm" :form-options="setupFormOptions" :use-dialog="false"
         :showFooter="false">
       </base-render-form>

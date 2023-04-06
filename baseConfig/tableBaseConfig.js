@@ -9,6 +9,12 @@ const textarea = (placeholder) => {
   };
 };
 
+const input = (placeholder) => {
+  return {
+    placeholder: placeholder || '请输入类似function (a, b) { // todo}的结构',
+  };
+};
+
 const baseAttr = {
   tagName: 'el-input',
   align: 'center',
@@ -41,20 +47,20 @@ export const eidtConf = [
   // },
   {
     ...baseAttr,
-    label: '字段编号',
+    label: '字段名称',
     prop: 'fieldCode',
     disabled: true,
-    'min-width': '170',
+    'min-width': '150',
   },
   {
     ...baseAttr,
-    label: '字段名称',
+    label: '标题',
     prop: 'fieldName',
-    'min-width': '170',
+    'min-width': '150',
   },
   {
     ...baseAttr,
-    label: '展示',
+    label: '显示',
     prop: 'show',
     'min-width': '70',
     tagName: 'el-switch',
@@ -64,14 +70,14 @@ export const eidtConf = [
   //   ...baseAttr,
   //   label: '英文名称',
   //   prop: 'englishName',
-  //   'min-width': '170',
+  //   'min-width': '150',
   // },
   {
     ...baseAttr,
     label: '列宽',
     prop: 'columnWidth',
-    'min-width': '170',
-    tagName: 'el-input-number',
+    'min-width': '100',
+    // tagName: 'el-input-number',
   },
   {
     ...baseAttr,
@@ -106,7 +112,7 @@ export const eidtConf = [
     tagAttrs: {
       clearable: true,
     },
-    'min-width': '170',
+    'min-width': '150',
     // 特殊组件的额外属性值例如select组件下的option组件所需的options
     extraOption: {
       options: searchWidget,
@@ -132,21 +138,21 @@ export const eidtConf = [
     label: '排序函数',
     prop: 'sort-method',
     'min-width': '200',
-    tagAttrs: textarea(),
+    tagAttrs: input(),
   },
   {
     ...baseAttr,
     label: '筛选数组',
     prop: 'filters',
     'min-width': '200',
-    tagAttrs: textarea('请输入[{ text, value }]格式"'),
+    tagAttrs: input('请输入[{ text, value }]格式"'),
   },
   {
     ...baseAttr,
     label: '筛选函数',
     prop: 'filter-method',
     'min-width': '200',
-    tagAttrs: textarea('请输入function(value, row, column){}格式'),
+    tagAttrs: input('请输入function(value, row, column){}格式'),
   },
   {
     ...baseAttr,
@@ -160,7 +166,7 @@ export const eidtConf = [
     label: '格式化',
     prop: 'translate',
     'min-width': '200',
-    tagAttrs: textarea('请输入键为原始数据，值为展示数据的obj'),
+    tagAttrs: input('请输入键为原始数据，值为展示数据的obj'),
   },
 
   // 如需使用slot功能，请添加slotName属性，并在template中使用相同的slot名称
