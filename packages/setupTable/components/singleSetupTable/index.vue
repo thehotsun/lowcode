@@ -17,7 +17,7 @@
     <div class="renderwrap">
       <!-- <el-main> -->
       <base-render-table ref="table" :table-data="tableData" :table-options="tableOptions" edit-mode row-key="fieldCode"
-        border @selection-change="selectListHandler" :row-style="{ height: '30px' }" :cell-style="{ padding: '4px' }"
+        border @selection-change="selectListHandler" :row-style="{ height: '40px' }" :cell-style="{ padding: '4px' }"
         height="100%" style="height: 100%;overflow:auto">
         <!-- 注意这里的slot值要和tableOptions中配置的slotName一致 -->
         <!-- #operator是简写，详细请查阅vue文档 -->
