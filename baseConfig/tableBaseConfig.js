@@ -139,6 +139,7 @@ export const eidtConf = [
     prop: 'sort-method',
     'min-width': '200',
     tagAttrs: input(),
+    showCodeEditor: true,
   },
   {
     ...baseAttr,

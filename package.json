@@ -9,10 +9,11 @@
     "deploy": "npm run build && npm publish"
   },
   "dependencies": {
+    "ace-builds": "^1.16.0",
     "core-js": "^3.6.5",
+    "file-loader": "^6.2.0",
     "less": "^4.1.2",
     "less-loader": "^5.0.0",
-    "file-loader": "^6.2.0",
     "lodash": "^4.17.21",
     "sortablejs": "^1.15.0",
     "style-loader": "^3.2.1",

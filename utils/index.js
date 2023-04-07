@@ -141,6 +141,17 @@ export function getHandleBlur(row, fn) {
   };
 }
 
+export function decorator(customfn, fn) {
+  return function(e) {
+    try {
+      customfn && customfn(e);
+      fn && fn(e);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+}
+
 export function btnClick(extraOption, emit) {
   return function(e) {
     try {
@@ -547,4 +558,5 @@ export default {
   getSetupFromSingleConfig,
   setTableAttrs,
   getSummaries,
+  decorator,
 };

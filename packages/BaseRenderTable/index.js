@@ -1,8 +1,10 @@
 import './table.less';
-import { str2obj, getHandleBlur } from '../../utils';
+import { str2obj, decorator } from '../../utils';
 import { omit } from 'lodash';
+import codeEditor from '../components/codemirror' 
 export default {
   name: 'BaseRenderTable',
+  components: {codeEditor},
   data() {
     return {
       zanwu: require('@/assets/noData.png'),
@@ -10,6 +12,8 @@ export default {
       curRow: {},
       tableRef: 'elTable',
       curCellProperty: '',
+      showCodeEditor: false,
+      codeValue: {},
       // pageLayout: 'total,sizes, prev, pager, next,jumper', // 分页组件
     };
   },
@@ -203,7 +207,14 @@ export default {
         tagName = 'span',
         disabled,
         translate = '',
+        showCodeEditor = false,
       } = options;
+      if (showCodeEditor && tagName === 'el-input') {
+        listeners.focus = decorator((e) => {
+          this.showCodeEditor = true;
+          this.codeValue = { row, prop };
+        }, listeners.focus);
+      }
       // 失去input失去焦点变为span
       // if (
       //   this.editMode &&
@@ -312,6 +323,9 @@ export default {
     // nextClick(val) {
     //   this.$emit('nextClick', val);
     // },
+    handleClose() {
+      this.showCodeEditor = false;
+    },
   },
 
   render() {
@@ -328,6 +342,9 @@ export default {
       $attrs,
       $listeners,
       tableColumnRender,
+      codeValue,
+      showCodeEditor,
+      handleClose,
     } = this;
     const defaultTableAttrs = {
       'row-style': rowStyle,
@@ -345,6 +362,18 @@ export default {
       // 'cell-mouse-leave': handleCellLeave,
     };
 
+    const defaultDialogAttrs = {
+      beforeClose: handleClose,
+      title: '代码编写',
+      visible: showCodeEditor,
+      width: '900px',
+    };
+
+    const codeEditorListeners = {
+      'update:value': (val) => {
+        codeValue.row[codeValue.prop] = val;
+      },
+    };
     // const defaultPageAttrs = {
     //   'current-page': page.pageNum,
     //   'page-size': page.pageSize,
@@ -391,6 +420,21 @@ export default {
               </div>
             )}
           </el-table>
+        ) : null}
+        {showCodeEditor ? (
+          <el-dialog
+            {...{
+              attrs: { ...defaultDialogAttrs },
+            }}
+          >
+            <code-editor
+              mode="javascript"
+              readonly={false}
+              value={codeValue.row[codeValue.prop]}
+              ref="chEditor"
+              {...{ on: codeEditorListeners }}
+            ></code-editor>
+          </el-dialog>
         ) : null}
       </div>
     );
