@@ -9,7 +9,6 @@ import {
 } from '../baseConfig/widgetBaseConfig';
 
 import { pickBy, merge } from 'lodash';
-import { root } from 'postcss';
 
 export function setPlaceholder(tagName, fieldName) {
   const inputs = ['el-input', 'el-input-number'];
@@ -77,6 +76,8 @@ export function getFormItemEmptyConfig() {
       clearable: true,
     },
     formField: '',
+    relateOtherField: [],
+    renderDepend: '',
     extraOption: {
       options: [],
       props: {
@@ -250,6 +251,7 @@ export function getSetupFromSingleConfig(
   baseConfig.tagName = tagName;
   baseConfig.formItemAttrs.label = label;
   baseConfig.tagAttrs.placeholder = placeholder;
+  baseConfig.formItemAttrs['label-width'] = '110px';
   return merge(baseConfig, customAttr);
 }
 
@@ -346,12 +348,28 @@ export function getSetupFormOptions(searchWidgetName) {
           'tagAttrs.placeholder',
           { style: 'width: 350px' }
         ),
-        // getSetupFromSingleConfig(
-        //   '提示语：',
-        //   '请输入提示语',
-        //   'tagAttrs.placeholder',
-        //   { style: 'width: 350px' }
-        // ),
+        getSetupFromSingleConfig(
+          '关联其他字段：',
+          '',
+          'relateOtherField',
+          {
+            style: 'width: 350px',
+            extraOption: {
+              options: [
+                {
+                  id: '',
+                  cnName: '',
+                },
+              ],
+            },
+            tagAttrs: {
+              placeholder: '请选择关联其他字段：',
+              clearable: true,
+              multiple: true,
+            },
+          },
+          'el-select'
+        ),
       ];
     case 'el-input-number':
     case 'el-date-picker':
@@ -393,6 +411,15 @@ export function getSetupFormOptions(searchWidgetName) {
 export function getSetupForm(searchWidgetName) {
   switch (searchWidgetName) {
     case 'el-input':
+      return {
+        relateOtherField: [],
+        formItemAttrs: {
+          label: '',
+        },
+        tagAttrs: {
+          placeholder: '',
+        },
+      };
     case 'el-input-number':
     case 'el-date-picker':
     case 'el-date-picker-range':

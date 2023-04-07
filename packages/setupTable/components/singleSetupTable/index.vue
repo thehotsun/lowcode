@@ -119,7 +119,7 @@ export default {
       this.curRowData = row;
       this.dialogVisibleFrom = true;
       const searchWidgetName = searchWidget.find((widgetitem) => widgetitem.id === row.searchWidget)?.tagName;
-      this.setupFormOptions = this.composeFormOptions(searchWidgetName);
+      this.setupFormOptions = this.composeFormOptions(searchWidgetName, row);
       const searchWidgetConfig = row.searchWidgetConfig
       this.setupForm = Object.keys(searchWidgetConfig).length ? cloneDeep(searchWidgetConfig) : this.getDefaultValueForm(searchWidgetName, row.fieldName)
       if (this.setupForm.extraOption) this.setupForm.extraOption = JSON.stringify(this.setupForm.extraOption)
@@ -131,11 +131,21 @@ export default {
       return form
     },
     // 设置searchForm和装配fromOptions
-    composeFormOptions (searchWidgetName) {
+    composeFormOptions (searchWidgetName, row) {
       let formOptions = [];
       // 只有搜索控件有值，才会添加到options中
       if (searchWidgetName) {
         formOptions = getSetupFormOptions(searchWidgetName)
+      }
+      // 如果是输入框，则考虑关联其他字段，在这里进行填充 el-select的options
+      if (searchWidgetName === 'el-input') {
+        const target = formOptions.find(item => item.formField === 'relateOtherField')
+        target.extraOption = {
+          props: { key: 'fieldCode', label: 'fieldName' },
+          // 去除自己和已存在筛选框的和未显示的
+          options: this.tableData.filter(item => item.fieldCode !== row.fieldCode && !Object.keys(item.searchWidgetConfig).length && item.show
+          )
+        }
       }
       return [{
         elRowAttrs: {
