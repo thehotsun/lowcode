@@ -184,7 +184,7 @@ const isArray = (source) => Array.isArray(source);
 const isEmytyRefer = (source, key) => {
   const val = source[key];
   if (isArray(val)) {
-    source[key] = val.filter(item => item);
+    source[key] = val.filter((item) => item);
     return !source[key].length;
   } else if (isObj(val)) {
     return !Object.keys(val).length;
@@ -333,6 +333,26 @@ export function getSetupFormOptions(searchWidgetName) {
   ];
   switch (searchWidgetName) {
     case 'el-input':
+      return [
+        getSetupFromSingleConfig(
+          '标签名：',
+          '请输入标签名',
+          'formItemAttrs.label',
+          { style: 'width: 350px' }
+        ),
+        getSetupFromSingleConfig(
+          '提示语：',
+          '请输入提示语',
+          'tagAttrs.placeholder',
+          { style: 'width: 350px' }
+        ),
+        // getSetupFromSingleConfig(
+        //   '提示语：',
+        //   '请输入提示语',
+        //   'tagAttrs.placeholder',
+        //   { style: 'width: 350px' }
+        // ),
+      ];
     case 'el-input-number':
     case 'el-date-picker':
     case 'el-date-picker-range':

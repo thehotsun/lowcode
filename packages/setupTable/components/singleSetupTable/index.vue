@@ -58,7 +58,7 @@ import { getSingleTableData, eidtConf as tableOptions } from '../../../../baseCo
 import { searchWidget } from '../../../../baseConfig/tableSelectConfigs';
 import {
   str2obj, getSetupForm,
-  getSetupFormOptions,
+  getSetupFormOptions, setPlaceholder
 } from '../../../../utils';
 import { cloneDeep } from "lodash"
 import Sortable from "sortablejs"
@@ -71,10 +71,6 @@ export default {
   },
   props: {
     rawTableData: Array,
-    parseJson: {
-      type: Function,
-      require: true
-    }
   },
   data () {
     return {
@@ -124,8 +120,15 @@ export default {
       this.dialogVisibleFrom = true;
       const searchWidgetName = searchWidget.find((widgetitem) => widgetitem.id === row.searchWidget)?.tagName;
       this.setupFormOptions = this.composeFormOptions(searchWidgetName);
-      this.setupForm = Object.keys(row.searchWidgetConfig).length ? cloneDeep(row.searchWidgetConfig) : getSetupForm(searchWidgetName)
+      const searchWidgetConfig = row.searchWidgetConfig
+      this.setupForm = Object.keys(searchWidgetConfig).length ? cloneDeep(searchWidgetConfig) : this.getDefaultValueForm(searchWidgetName, row.fieldName)
       if (this.setupForm.extraOption) this.setupForm.extraOption = JSON.stringify(this.setupForm.extraOption)
+    },
+    getDefaultValueForm (searchWidgetName, fieldName) {
+      const form = getSetupForm(searchWidgetName)
+      form.formItemAttrs.label = fieldName;
+      form.tagAttrs.placeholder = setPlaceholder(searchWidgetName, fieldName);
+      return form
     },
     // 设置searchForm和装配fromOptions
     composeFormOptions (searchWidgetName) {

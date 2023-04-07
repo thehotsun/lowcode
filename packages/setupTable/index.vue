@@ -31,7 +31,7 @@
     </div>
 
     <div class="tablesetup">
-      <single-setup-table ref="singleSetupTable" :parse-json="parseJson" :raw-table-data.sync="tableData" edit-mode>
+      <single-setup-table ref="singleSetupTable" :raw-table-data.sync="tableData" edit-mode>
       </single-setup-table>
     </div>
 
@@ -41,8 +41,7 @@
 
     <el-dialog title="预览" :visible.sync="dialogVisiblePreview" :close-on-click-modal="false"
       :close-on-press-escape="false" width="90%" :before-close="handleClosePreview">
-      <complete-table class="preview" ref="table" :parse-json="parseJson" style="height:650px"
-        :generalRequest="generalRequest">
+      <complete-table class="preview" ref="table" style="height:650px" :generalRequest="generalRequest">
       </complete-table>
     </el-dialog>
 
@@ -130,10 +129,6 @@ export default {
     setupBtnConfig,
   },
   props: {
-    parseJson: {
-      type: Function,
-      require: true
-    },
     // 获取元数据信息
     requestFieldList: {
       type: Function,

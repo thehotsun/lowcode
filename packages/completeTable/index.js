@@ -40,10 +40,6 @@ export default {
     requestFormData: {
       type: Function,
     },
-    parseJson: {
-      type: Function,
-      require: true,
-    },
     requestTableConfig: {
       type: Function,
       require: true,
