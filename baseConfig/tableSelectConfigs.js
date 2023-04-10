@@ -36,7 +36,7 @@ export const fixed = [
 
 export const searchWidget = [
   {
-    id: -1,
+    id: '',
     cnName: '取消',
     tagName: '',
   },

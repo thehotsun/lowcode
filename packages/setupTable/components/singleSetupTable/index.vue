@@ -143,7 +143,7 @@ export default {
         target.extraOption = {
           props: { key: 'fieldCode', label: 'fieldName' },
           // 去除自己和已存在筛选框的和未显示的
-          options: this.tableData.filter(item => item.fieldCode !== row.fieldCode && !Object.keys(item.searchWidgetConfig).length && item.show
+          options: this.tableData.filter(item => item.fieldCode !== row.fieldCode && item.searchWidget === '' && item.show
           )
         }
       }

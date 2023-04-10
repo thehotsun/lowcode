@@ -1,10 +1,10 @@
 import './table.less';
 import { str2obj, decorator } from '../../utils';
 import { omit } from 'lodash';
-import codeEditor from '../components/codemirror' 
+import codeEditor from '../components/codemirror';
 export default {
   name: 'BaseRenderTable',
-  components: {codeEditor},
+  components: { codeEditor },
   data() {
     return {
       zanwu: require('@/assets/noData.png'),
@@ -370,7 +370,8 @@ export default {
     };
 
     const codeEditorListeners = {
-      'update:value': (val) => {
+      input: (val) => {
+        console.log(val, 'codeEditorListeners');
         codeValue.row[codeValue.prop] = val;
       },
     };

@@ -147,6 +147,7 @@ export const eidtConf = [
     prop: 'filters',
     'min-width': '200',
     tagAttrs: input('请输入[{ text, value }]格式"'),
+    showCodeEditor: true,
   },
   {
     ...baseAttr,
@@ -154,6 +155,7 @@ export const eidtConf = [
     prop: 'filter-method',
     'min-width': '200',
     tagAttrs: input('请输入function(value, row, column){}格式'),
+    showCodeEditor: true,
   },
   {
     ...baseAttr,
@@ -168,6 +170,7 @@ export const eidtConf = [
     prop: 'translate',
     'min-width': '200',
     tagAttrs: input('请输入键为原始数据，值为展示数据的obj'),
+    showCodeEditor: true,
   },
 
   // 如需使用slot功能，请添加slotName属性，并在template中使用相同的slot名称
@@ -185,12 +188,17 @@ export function getSingleTableData() {
     fieldCode: '',
     fieldName: '',
     // englishName: '',
+    show: true,
     columnWidth: 110,
     align: 1,
-    show: true,
-    sort: true,
-    translate: '',
+    fixed: '',
     searchWidget: '',
     searchWidgetConfig: {},
+    sort: true,
+    'sort-method': '',
+    filters: '',
+    'filter-method': '',
+    'show-overflow-tooltip': false,
+    translate: '',
   };
 }

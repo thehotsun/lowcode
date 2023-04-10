@@ -410,20 +410,24 @@ export default {
     // 此处要处理两个字段使用同一input的模糊搜索
     getParams() {
       // 去掉最后添加的按钮
-      const formItem = this.formOptions[0].formItem.slice(0, -1);
-      const extraParams = {};
-      formItem.map((item) => {
-        const { relateOtherField = [], formField = '' } = item;
-        if (relateOtherField.length) {
-          relateOtherField.map((fieldName) => {
-            extraParams[fieldName] = this.searchFrom[formField];
-          });
-        }
-      });
-      return {
-        ...this.searchFrom,
-        ...extraParams,
-      };
+      if (this.formOptions?.length) {
+        const formItem = this.formOptions[0].formItem.slice(0, -1);
+        const extraParams = {};
+        formItem.map((item) => {
+          const { relateOtherField = [], formField = '' } = item;
+          if (relateOtherField.length) {
+            relateOtherField.map((fieldName) => {
+              extraParams[fieldName] = this.searchFrom[formField];
+            });
+          }
+        });
+        return {
+          ...this.searchFrom,
+          ...extraParams,
+        };
+      } else {
+        return this.searchFrom;
+      }
     },
 
     queryTableData() {
