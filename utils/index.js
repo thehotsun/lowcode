@@ -75,6 +75,7 @@ export function getFormItemEmptyConfig() {
       placeholder: '',
       clearable: true,
     },
+    sortNumb: '0',
     formField: '',
     relateOtherField: [],
     renderDepend: '',
@@ -267,6 +268,7 @@ export function getSetupFromSingleConfig(
 }
 
 export function getSetupFormOptions(searchWidgetName) {
+  let options = [];
   const complexOptions = () => [
     [
       '标签名：',
@@ -346,7 +348,7 @@ export function getSetupFormOptions(searchWidgetName) {
   ];
   switch (searchWidgetName) {
     case 'el-input':
-      return [
+      options = [
         getSetupFromSingleConfig(
           '标签名：',
           '请输入标签名',
@@ -382,10 +384,11 @@ export function getSetupFormOptions(searchWidgetName) {
           'el-select'
         ),
       ];
+      break;
     case 'el-input-number':
     case 'el-date-picker':
     case 'el-date-picker-range':
-      return [
+      options = [
         getSetupFromSingleConfig(
           '标签名：',
           '请输入标签名',
@@ -399,11 +402,14 @@ export function getSetupFormOptions(searchWidgetName) {
           { style: 'width: 350px' }
         ),
       ];
-
+      break;
     case 'el-select':
-      return complexOptions().map((item) => getSetupFromSingleConfig(...item));
+      options = complexOptions().map((item) =>
+        getSetupFromSingleConfig(...item)
+      );
+      break;
     case 'el-cascader':
-      return complexOptions().map((item) => {
+      options = complexOptions().map((item) => {
         if (item[2] === 'tagAttrs.multiple') {
           item[2] = 'tagAttrs.props.multiple';
         }
@@ -413,10 +419,17 @@ export function getSetupFormOptions(searchWidgetName) {
         }
         return getSetupFromSingleConfig(...item);
       });
+      break;
     default:
       console.warn(`您输入的标签 ${searchWidgetName} 暂不支持！`);
       break;
   }
+  options.push(
+    getSetupFromSingleConfig('序号：', '请输入序号', 'sortNumb', {
+      style: 'width: 350px',
+    })
+  );
+  return options;
 }
 
 export function getSetupForm(searchWidgetName) {
@@ -430,6 +443,7 @@ export function getSetupForm(searchWidgetName) {
         tagAttrs: {
           placeholder: '',
         },
+        sortNumb: '0',
       };
     case 'el-input-number':
     case 'el-date-picker':
@@ -441,6 +455,7 @@ export function getSetupForm(searchWidgetName) {
         tagAttrs: {
           placeholder: '',
         },
+        sortNumb: '0',
       };
     case 'el-select':
       return {
@@ -461,6 +476,7 @@ export function getSetupForm(searchWidgetName) {
           params: '',
           status: 'pending',
         },
+        sortNumb: '0',
       };
     case 'el-cascader':
       return {
@@ -483,6 +499,7 @@ export function getSetupForm(searchWidgetName) {
           params: '',
           status: 'pending',
         },
+        sortNumb: '0',
       };
     default:
       console.warn(`您输入的标签 ${searchWidgetName} 暂不支持！`);

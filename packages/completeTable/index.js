@@ -301,7 +301,7 @@ export default {
       this.showSearchFrom = false;
       if (!tableData.length) return [];
       const { setFromField } = this;
-      const formOptions = [];
+      let formOptions = [];
       const length = tableData.length;
       tableData.map((item, index) => {
         const searchWidgetName = searchWidget.find(
@@ -328,10 +328,17 @@ export default {
             )
           );
         }
-        // 如果循环到最后一个且存在其他筛选项，则复制一份最原始的form
+        // 如果循环到最后一个且存在其他筛选项，则对formOptions通过sortNumb进行排序，复制一份最原始的form,添加筛选和重置按钮
         if (length - 1 === index && formOptions.length) {
           this.rawSearchFrom = cloneDeep(this.searchFrom);
-          // 添加筛选和重置按钮
+          formOptions = formOptions.sort((a, b) => {
+            if (a.sortNumb < b.sortNumb) {
+              return -1;
+            } else if (a.sortNumb > b.sortNumb) {
+            } else {
+              return 0;
+            }
+          });
           formOptions.push(...this.getBtnConfig());
           this.showSearchFrom = true;
         }
