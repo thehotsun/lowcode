@@ -18,11 +18,6 @@ export const align = [
 ];
 export const fixed = [
   {
-    id: '',
-    cnName: '取消',
-    value: '',
-  },
-  {
     id: 'left',
     cnName: '居左',
     value: 'left',
@@ -35,11 +30,6 @@ export const fixed = [
 ];
 
 export const searchWidget = [
-  {
-    id: '',
-    cnName: '取消',
-    tagName: '',
-  },
   {
     id: 0,
     cnName: '单行文本框',

@@ -52,40 +52,40 @@
 
         <!-- <div class="el-divider el-divider--horizontal"></div> -->
         <el-form :model="tableAttrs" :rules="rules" ref="ruleForm" label-width="130px" style="padding-bottom: 20px">
-          <el-form-item label="是否分页" prop="showPagination">
+          <el-form-item label="分页" prop="showPagination">
             <el-switch v-model="tableAttrs.showPagination" />
           </el-form-item>
-          <el-form-item label="是否显示序号" prop="isShowIndex">
+          <el-form-item label="显示序号" prop="isShowIndex">
             <el-switch v-model="tableAttrs.isShowIndex" />
           </el-form-item>
           <el-form-item label="自定义索引函数" prop="filterMethod" v-if="tableAttrs.isShowIndex">
             <el-input v-model="tableAttrs.index" type="textarea" :rows="2"
               placeholder="请输入function(index){ return index}格式"></el-input>
           </el-form-item>
-          <el-form-item label="是否多选" prop="isShowCheckbox">
+          <el-form-item label="多选" prop="isShowCheckbox">
             <el-switch v-model="tableAttrs.isShowCheckbox" />
           </el-form-item>
-          <el-form-item label="是否斑马线" prop="stripe">
+          <el-form-item label="斑马线" prop="stripe">
             <el-switch v-model="tableAttrs.stripe" />
           </el-form-item>
-          <el-form-item label="是否边框" prop="border">
+          <el-form-item label="边框" prop="border">
             <el-switch v-model="tableAttrs.border" />
           </el-form-item>
-          <el-form-item label="是否合计" prop="showSummary">
+          <el-form-item label="合计" prop="showSummary">
             <el-switch v-model="tableAttrs.showSummary" />
           </el-form-item>
           <el-form-item label="合计函数" prop="summaryMethod" v-if="tableAttrs.showSummary">
             <el-input v-model="tableAttrs.summaryMethod" type="textarea" :rows="2"
               placeholder="请输入格式为Function({ columns, data })"></el-input>
           </el-form-item>
-          <el-form-item label="是否合并" prop="isMerge">
+          <el-form-item label="合并" prop="isMerge">
             <el-switch v-model="tableAttrs.isMerge" />
           </el-form-item>
           <el-form-item label="合并函数" prop="spanMethod" v-if="tableAttrs.isMerge">
             <el-input v-model="tableAttrs.spanMethod" type="textarea" :rows="2"
               placeholder="请输入格式为Function({ row, column, rowIndex, columnIndex })"></el-input>
           </el-form-item>
-          <el-form-item label="是否树类型数据" prop="isTree">
+          <el-form-item label="树类型数据" prop="isTree">
             <el-switch v-model="tableAttrs.isTree" />
           </el-form-item>
           <el-form-item label="配置tree-props" prop="treeProps" v-if="tableAttrs.isTree">
@@ -95,7 +95,7 @@
           <el-form-item label="指定row-key" prop="filterMethod" v-if="tableAttrs.isTree">
             <el-input v-model="tableAttrs.rowKey" type="textarea" :rows="2" placeholder="请输入充当key的字段名"></el-input>
           </el-form-item>
-          <el-form-item label="是否懒加载" prop="lazy" v-if="tableAttrs.isTree">
+          <el-form-item label="懒加载" prop="lazy" v-if="tableAttrs.isTree">
             <el-switch v-model="tableAttrs.lazy" />
           </el-form-item>
           <el-form-item label="load函数" prop="filterMethod" v-if="tableAttrs.isTree && tableAttrs.lazy">
@@ -182,8 +182,8 @@ export default {
         isShowIndex: true,
         isShowCheckbox: true,
         index: '',
-        stripe: false,
-        border: false,
+        stripe: true,
+        border: true,
         showSummary: false,
         summaryMethod: '',
         size: '',
