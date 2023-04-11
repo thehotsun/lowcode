@@ -287,6 +287,7 @@ export default {
           {...{
             attrs: {
               ...attr,
+              key: item?.prop,
               formatter: (row, column, cellValue, index) => {
                 return item.slotName
                   ? this.$scopedSlots[item.slotName]

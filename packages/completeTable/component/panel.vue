@@ -19,6 +19,8 @@
 </template>
 
 <script>
+import Sortable from "sortablejs"
+
 export default {
   name: 'panel',
   props: {
@@ -49,17 +51,6 @@ export default {
     };
   },
 
-  watch: {
-    checked (val) {
-      this.$emit('checkedChange', val);
-    },
-    data: {
-      immediate: true,
-      handler (val) {
-        this.checked = val.map(item => item[this.keyProp])
-      }
-    }
-  },
 
   computed: {
     filteredData () {
@@ -84,19 +75,54 @@ export default {
     },
   },
 
+  watch: {
+    checked (val) {
+      this.$emit('checkedChange', val);
+    },
+    data: {
+      immediate: true,
+      handler (val) {
+        this.checked = val.map(item => item[this.keyProp])
+      }
+    }
+  },
+
+  mounted () {
+    this.rowDrop()
+  },
+
+
   methods: {
     clearQuery () {
       if (this.inputIcon === 'circle-close') {
         this.query = '';
       }
-    }
+    },
+
+    rowDrop () {
+      // 此时找到的元素是要拖拽元素的父容器
+      const dom = document.querySelector('.el-transfer-panel__list');
+      let listData = this.filteredData;
+      Sortable.create(dom, {
+        ghostClass: 'sortable-ghost',
+        setData: function (dataTransfer) {
+          dataTransfer.setData('Text', '')
+        },
+        onEnd: e => {
+          //e.oldIndex为拖动一行原来的位置，e.newIndex为拖动后新的位置
+          const targetRow = listData.splice(e.oldIndex, 1)[0];
+          listData.splice(e.newIndex, 0, targetRow);
+          this.$emit('checkedChange', listData.map(item => item[this.keyProp]));
+        }
+      })
+    },
   }
 };
 </script>
 
 <style lang="less" scoped>
-.panel__body{
-    height: 290px
+.panel__body {
+  height: 290px
 }
 </style>
 

@@ -151,12 +151,25 @@ export default {
     },
 
     filterTableOptions() {
-      return this.tableOptions.filter(
-        (item) =>
-          this.filterFiled.indexOf(item.prop) !== -1 ||
-          item.type === 'selection' ||
-          item.type === 'index'
+      const { tableOptions, filterFiled } = this;
+      if (tableOptions?.length === 0) return [];
+      let configOptions = [];
+      if (
+        tableOptions[1]?.type === 'selection' ||
+        tableOptions[1]?.type === 'index'
+      ) {
+        configOptions = tableOptions.slice(0, 2);
+      } else if (
+        tableOptions[0]?.type === 'selection' ||
+        tableOptions[0]?.type === 'index'
+      ) {
+        configOptions = tableOptions.slice(0, 1);
+      }
+
+      const options = filterFiled.map((field) =>
+        tableOptions.find((rawitem) => rawitem.prop === field)
       );
+      return [...configOptions, ...options];
     },
   },
 
@@ -177,7 +190,7 @@ export default {
     },
 
     expose_preview(data) {
-      this.previewMode = true
+      this.previewMode = true;
       this.parseTableConfig(data);
       const tableData = {};
       this.composeData(tableData);
@@ -514,7 +527,6 @@ export default {
       defaultFn = '',
       btnType = '',
     }) {
-      
       console.log(defaultFn, 'defaultFn');
       this.isRefresh = isRefresh;
       if (fn) {
@@ -586,7 +598,7 @@ export default {
         }
       });
     },
-    filterShowField(val) {
+    filterFieldChange(val) {
       this.filterFiled = val;
     },
     handleSetting() {
@@ -620,7 +632,7 @@ export default {
       onSubmit,
       showPanel,
       panelData,
-      filterShowField,
+      filterFieldChange,
       handleSetting,
       refresh,
       dialogTitle,
@@ -709,7 +721,7 @@ export default {
                       data={panelData}
                       {...{
                         on: {
-                          checkedChange: filterShowField,
+                          checkedChange: filterFieldChange,
                         },
                       }}
                     ></panel>

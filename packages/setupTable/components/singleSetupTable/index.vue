@@ -112,9 +112,6 @@ export default {
     handleWidgetAttr (row) {
       if (row.searchWidget === '') {
         return this.$warn('请先选择控件')
-      } else if (row.searchWidget === -1) {
-        row.searchWidgetConfig = {}
-        return this.$success('取消成功')
       }
       this.curRowData = row;
       this.dialogVisibleFrom = true;
@@ -124,6 +121,7 @@ export default {
       this.setupForm = Object.keys(searchWidgetConfig).length ? cloneDeep(searchWidgetConfig) : this.getDefaultValueForm(searchWidgetName, row.fieldName)
       if (this.setupForm.extraOption) this.setupForm.extraOption = JSON.stringify(this.setupForm.extraOption)
     },
+    
     getDefaultValueForm (searchWidgetName, fieldName) {
       const form = getSetupForm(searchWidgetName)
       form.formItemAttrs.label = fieldName;
