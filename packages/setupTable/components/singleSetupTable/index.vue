@@ -130,6 +130,15 @@ export default {
       form.tagAttrs.placeholder = setPlaceholder(searchWidgetName, fieldName);
       return form
     },
+
+    supplementLabel (props, options) {
+      const { key, label } = props
+      return options.map(item => {
+        item[label] = `${item[label]}(${item[key]})`
+        return item
+      })
+    },
+
     // 设置searchForm和装配fromOptions
     composeFormOptions (searchWidgetName, row) {
       let formOptions = [];
@@ -140,11 +149,12 @@ export default {
       // 如果是输入框，则考虑关联其他字段，在这里进行填充 el-select的options
       if (searchWidgetName === 'el-input') {
         const target = formOptions.find(item => item.formField === 'relateOtherField')
+        const options = this.tableData.filter(item => item.fieldCode !== row.fieldCode && item.searchWidget === '' && item.show);
+        const props = { key: 'fieldCode', label: 'fieldName' }
         target.extraOption = {
-          props: { key: 'fieldCode', label: 'fieldName' },
+          props,
           // 去除自己和已存在筛选框的和未显示的
-          options: this.tableData.filter(item => item.fieldCode !== row.fieldCode && item.searchWidget === '' && item.show
-          )
+          options: this.supplementLabel(props, options)
         }
       }
       return [{
