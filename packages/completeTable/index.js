@@ -96,6 +96,7 @@ export default {
       filterFiled: [],
       keyField: '',
       onlyRead: false,
+      previewMode: false,
       tableAttrs: {
         // 初始化是否显示分页
         showPagination: false,
@@ -176,6 +177,7 @@ export default {
     },
 
     expose_preview(data) {
+      this.previewMode = true
       this.parseTableConfig(data);
       const tableData = {};
       this.composeData(tableData);
@@ -512,6 +514,7 @@ export default {
       defaultFn = '',
       btnType = '',
     }) {
+      
       console.log(defaultFn, 'defaultFn');
       this.isRefresh = isRefresh;
       if (fn) {
@@ -544,9 +547,11 @@ export default {
             }
             break;
           case 'download':
+            if (this.previewMode) return;
             this.download(this.selectList.map((item) => item[this.keyField]));
             break;
           case 'batchDel':
+            if (this.previewMode) return;
             this.batchDel(this.selectList.map((item) => item[this.keyField]));
             break;
           default:
@@ -619,6 +624,7 @@ export default {
       handleSetting,
       refresh,
       dialogTitle,
+      previewMode,
     } = this;
 
     const curPageListeners = {
@@ -759,7 +765,7 @@ export default {
               <FcView
                 primaryKeyValue={primaryKeyValue}
                 isDisabled={onlyRead}
-                hasSubmit={!onlyRead}
+                hasSubmit={!onlyRead && !previewMode}
                 formId={formId}
                 {...{
                   on: {
