@@ -16,8 +16,6 @@ export default {
       curCellProperty: '',
       showCodeEditor: false,
       codeValue: {},
-      isMountCellComponent: false,
-      cellFormatterComponent: '',
       // pageLayout: 'total,sizes, prev, pager, next,jumper', // 分页组件
     };
   },
@@ -270,13 +268,28 @@ export default {
 
     tableColumnRender(item) {
       const { getCellRender, tableColumnRender } = this;
-      if (!this.isMountCellComponent && item.formatter) {
-        this.cellFormatterComponent = Vue.extend({
+      if (item.formatter && !item.cellFormatterComponent) {
+        item.cellFormatterComponent = Vue.extend({
           props: { row: Object, index: Number },
           render: Vue.compile(item.formatter()).render,
         });
-        this.isMountCellComponent = true;
       }
+      if (item.renderHeader && !item.cellHeaderFormatterComponent) {
+        item.cellHeaderFormatterComponent = Vue.extend({
+          props: { column: Object, index: Number },
+          render: Vue.compile(item.renderHeader()).render,
+        });
+      }
+      const renderHeader = (hsd, { column, index }) => {
+        if (item.cellHeaderFormatterComponent) {
+          return h(item.cellHeaderFormatterComponent, {
+            props: { column, index },
+          });
+        } else {
+          return h('span', [`${column.label}`]);
+        }
+      };
+
       const formatter = (row, column, cellValue, index) => {
         return item.slotName
           ? this.$scopedSlots[item.slotName]
@@ -285,15 +298,20 @@ export default {
               })
             : (console.warn(`slot : ${item.slotName} 未定义！`), '')
           : item.formatter
-          ? (() => {
-              return h(this.cellFormatterComponent, {
-                props: { row, index },
-              });
-            })()
+          ? h(item.cellFormatterComponent, {
+              props: { row, index },
+            })
           : getCellRender(row, item);
       };
 
-      const attr = omit(item, ['className', 'style', 'formatter']);
+      const attr = omit(item, [
+        'className',
+        'style',
+        'formatter',
+        'cellFormatterComponent',
+        'renderHeader',
+        'cellHeaderFormatterComponent',
+      ]);
 
       return (
         <el-table-column
@@ -302,6 +320,7 @@ export default {
               ...attr,
               key: item?.prop || item.type,
               formatter,
+              renderHeader,
             },
           }}
         >
