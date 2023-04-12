@@ -30,8 +30,9 @@ module.exports = {
     libraryExport: 'default',
   },
   resolve: {
-    // 设置src别名
-    alias: { '@': path.resolve(__dirname, './src') }, //后缀名 可以根据需要自由增减
+    alias: {
+      '@': path.resolve(__dirname, './src'),
+    },
     extensions: ['.js', '.vue'],
   },
   // optimization: {

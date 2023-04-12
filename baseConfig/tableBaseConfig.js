@@ -166,10 +166,18 @@ export const eidtConf = [
   },
   {
     ...baseAttr,
-    label: '格式化',
-    prop: 'translate',
+    label: '列表渲染函数',
+    prop: 'formatter',
     'min-width': '200',
-    tagAttrs: input('请输入键为原始数据，值为展示数据的obj'),
+    tagAttrs: input('请输入Function(row, column, cellValue, index)格式'),
+    showCodeEditor: true,
+  },
+  {
+    ...baseAttr,
+    label: '表头渲染函数',
+    prop: 'renderHeader',
+    'min-width': '200',
+    tagAttrs: input('请输入Function(h, { column, $index })格式'),
     showCodeEditor: true,
   },
 
@@ -199,6 +207,7 @@ export function getSingleTableData() {
     filters: '',
     'filter-method': '',
     'show-overflow-tooltip': false,
-    translate: '',
+    formatter: '',
+    renderHeader: '',
   };
 }

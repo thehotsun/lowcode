@@ -2,6 +2,8 @@ import './table.less';
 import { str2obj, decorator } from '../../utils';
 import { omit } from 'lodash';
 import codeEditor from '../components/codemirror';
+import Vue from 'vue/dist/vue.min.js';
+import { h } from 'vue';
 export default {
   name: 'BaseRenderTable',
   components: { codeEditor },
@@ -14,6 +16,8 @@ export default {
       curCellProperty: '',
       showCodeEditor: false,
       codeValue: {},
+      isMountCellComponent: false,
+      cellFormatterComponent: '',
       // pageLayout: 'total,sizes, prev, pager, next,jumper', // 分页组件
     };
   },
@@ -161,28 +165,14 @@ export default {
     },
 
     getCellRender(row, options) {
-      if (options.tagName || options.translate) {
+      if (options.tagName) {
         return this.cellRender(row, options);
       } else {
         return row[options.prop];
       }
     },
 
-    getCellValue(translate, row = {}, prop = '') {
-      if (translate) {
-        try {
-          const obj = str2obj(translate);
-          return obj[row[prop]];
-        } catch (error) {
-          console.error(`translateCell error: ${error}`);
-          return row[prop];
-        }
-      } else return row[prop];
-    },
-
     cellRender(row, options) {
-      const { getCellValue } = this;
-
       const {
         // class和style不会被组件的attr所处理，会直接赋值到组件的根节点因此需要单独拿出来赋值
         className = '',
@@ -206,7 +196,6 @@ export default {
         prop = '',
         tagName = 'span',
         disabled,
-        translate = '',
         showCodeEditor = false,
       } = options;
       if (showCodeEditor && tagName === 'el-input') {
@@ -244,7 +233,7 @@ export default {
       }
       //  Tag = tagName;
       //  tagAttrs.disabled = !this.editMode;
-      const value = getCellValue(translate, row, prop);
+      const value = row[prop];
       const { getCooperateComp, isCooperateComp } = this;
       return (
         <div style="display: inline-block">
@@ -281,22 +270,38 @@ export default {
 
     tableColumnRender(item) {
       const { getCellRender, tableColumnRender } = this;
-      const attr = omit(item, ['className', 'style']);
+      if (!this.isMountCellComponent && item.formatter) {
+        this.cellFormatterComponent = Vue.extend({
+          props: { row: Object, index: Number },
+          render: Vue.compile(item.formatter()).render,
+        });
+        this.isMountCellComponent = true;
+      }
+      const formatter = (row, column, cellValue, index) => {
+        return item.slotName
+          ? this.$scopedSlots[item.slotName]
+            ? this.$scopedSlots[item.slotName]({
+                row: row,
+              })
+            : (console.warn(`slot : ${item.slotName} 未定义！`), '')
+          : item.formatter
+          ? (() => {
+              return h(this.cellFormatterComponent, {
+                props: { row, index },
+              });
+            })()
+          : getCellRender(row, item);
+      };
+
+      const attr = omit(item, ['className', 'style', 'formatter']);
+
       return (
         <el-table-column
           {...{
             attrs: {
               ...attr,
-              key: item?.prop,
-              formatter: (row, column, cellValue, index) => {
-                return item.slotName
-                  ? this.$scopedSlots[item.slotName]
-                    ? this.$scopedSlots[item.slotName]({
-                        row: row,
-                      })
-                    : (console.warn(`slot : ${item.slotName} 未定义！`), '')
-                  : getCellRender(row, item);
-              },
+              key: item?.prop || item.type,
+              formatter,
             },
           }}
         >

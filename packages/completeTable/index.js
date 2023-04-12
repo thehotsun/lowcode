@@ -238,18 +238,15 @@ export default {
       obj.align = align.find((alignitem) => alignitem.id === item.align).value;
       obj['min-width'] = item.width;
       obj.sortable = !!item.sort;
-      obj.translate = item.translate;
       obj['show-overflow-tooltip'] = item['show-overflow-tooltip'];
       if (item.fixed) obj.fixed = item.fixed;
       if (item.filters) obj.filters = str2obj(item.filters);
+
       // 某些函数转换
-      const fnProps = ['sort-method'];
+      const fnProps = ['sort-method', 'formatter', 'renderHeader'];
       if (obj.filters && obj.filters.length) {
         fnProps.push('filter-method');
       }
-      // if (obj.filters && obj.filters.length) {
-      //   fnProps.push('span-method');
-      // }
       fnProps.map((prop) => {
         if (item[prop]) {
           obj[prop] = str2Fn(item[prop]);
