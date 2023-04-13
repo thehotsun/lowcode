@@ -8,7 +8,7 @@ $ npm install @viva3la3vida/base-render
 
 ## 使用
 
-<h6> 引入之前确保已经引入并use了elementUI 以formCreate
+<h6> 引入之前确保已经引入并use了elementUI和vform, vue.config.js 添加runtimeCompiler: true的选项，且把vue暴露在全局中， window.vue = vue
 
 ```javascript
 import elementUI from "element-ui";
@@ -211,7 +211,7 @@ const baseAttr = {
   },
 };
 
-const eidtConf = [
+const editConf = [
   {
     // 如需多选，则添加此item
     type: 'selection',

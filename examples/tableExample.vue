@@ -52,7 +52,7 @@
 
 import BaseRenderTable from '../packages/BaseRenderTable/index';
 import BaseRenderForm from '../packages/BaseRenderForm/index';
-import {eidtConf as tableOptions} from '../baseConfig/tableBaseConfig';
+import { editConf as tableOptions} from '../baseConfig/tableBaseConfig';
 import { align, searchWidget } from '../baseConfig/tableSelectConfigs';
 import { getElDatePickerConfig, getElDatePickerRangeConfig, getElInputConfig, getElSelectConfig, getElBtnConfig } from '../baseConfig/widgetBaseConfig';
 import { setPlaceholder } from '../utils';

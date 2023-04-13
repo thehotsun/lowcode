@@ -2,7 +2,10 @@ import './table.less';
 import { str2obj, decorator } from '../../utils';
 import { omit } from 'lodash';
 import codeEditor from '../components/codemirror';
-import Vue from 'vue/dist/vue.min.js';
+// import Vue from 'vue/dist/vue.min.js';
+// import ElementUI from 'element-ui';
+// import 'element-ui/lib/theme-chalk/index.css';
+// Vue.use(ElementUI);
 import { h } from 'vue';
 export default {
   name: 'BaseRenderTable',
@@ -416,6 +419,7 @@ export default {
     //   'on-prev-click': prevClick,
     //   'on-next-click': nextClick,
     // };
+
     return (
       <div class="midd">
         {/* el-table对于rowkey属性并没有进行watch，导致如果一开始传入undefined。则后续传入值也不会应用树状结构 */}
