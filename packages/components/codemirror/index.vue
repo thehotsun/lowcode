@@ -1,5 +1,5 @@
 <template>
-  <div class="ace-container">
+  <div class="codemirror">
     <div class="ace-editor" ref="ace"></div>
   </div>
 </template>
@@ -124,8 +124,18 @@ export default {
 }
 </script>
 
-<style lang="less" scoped>
-.ace-editor {
-  min-height: 300px;
+<style lang="less">
+.codemirror {
+  .ace-editor {
+    min-height: 300px;
+  }
+
+  .ace_editor,
+  .ace_editor * {
+    font-family: "Monaco", "Menlo", "Ubuntu Mono", "Droid Sans Mono", "Consolas", monospace !important;
+    font-size: 14px !important;
+    font-weight: 400 !important;
+    letter-spacing: 0 !important;
+  }
 }
 </style>
