@@ -344,9 +344,11 @@ export default {
         if (length - 1 === index && formOptions.length) {
           this.rawSearchFrom = cloneDeep(this.searchFrom);
           formOptions = formOptions.sort((a, b) => {
-            if (a.sortNumb < b.sortNumb) {
+            const prev = Number(a.sortNumb);
+            const next = Number(b.sortNumb);
+            if (prev < next) {
               return -1;
-            } else if (a.sortNumb > b.sortNumb) {
+            } else if (prev > next) {
             } else {
               return 0;
             }
@@ -370,8 +372,27 @@ export default {
     },
 
     getBtnConfig() {
-      const filterConfig = getElBtnConfig('primary', this.handleFilter, '筛选');
-      const resetConfig = getElBtnConfig('', this.handleReset, '重置');
+      const customAttr = (contentText) =>
+        this.previewMode
+          ? {
+              contentText,
+              tagAttrs: {
+                disabled: this.previewMode,
+              },
+            }
+          : {
+              contentText,
+            };
+      const filterConfig = getElBtnConfig(
+        'primary',
+        this.handleFilter,
+        customAttr('筛选')
+      );
+      const resetConfig = getElBtnConfig(
+        '',
+        this.handleReset,
+        customAttr('重置')
+      );
       setColSpan(filterConfig, 2);
       setColSpan(resetConfig, 2);
       return [
@@ -499,6 +520,19 @@ export default {
     },
 
     composeBtnRegularOptions(config) {
+      if (this.previewMode) {
+        config.map((item) => {
+          if (item.tagAttrs) {
+            item.tagAttrs.disabled = !['新增', '查看', '编辑'].includes(
+              item.tagAttrs.value
+            );
+          } else {
+            item.tagAttrs = {
+              disabled: !['新增', '查看', '编辑'].includes(item.tagAttrs.value),
+            };
+          }
+        });
+      }
       return [
         {
           elRowAttrs: {

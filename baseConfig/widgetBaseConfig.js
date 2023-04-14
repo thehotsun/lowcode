@@ -110,16 +110,18 @@ export function getElDatePickerRangeConfig() {
   return config;
 }
 
-export function getElBtnConfig(type = 'primary', fn, text, extraOption = {}) {
+export function getElBtnConfig(
+  type = 'primary',
+  fn,
+  customAttr,
+  extraOption = {}
+) {
   const tagAttrs = {
     size: 'small',
     type,
   };
   const listeners = {
     click: fn,
-  };
-  const customAttr = {
-    contentText: text,
   };
   return composeConfig({
     style: 'margin-left: 20px',
