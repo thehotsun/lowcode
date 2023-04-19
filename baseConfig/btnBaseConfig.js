@@ -79,31 +79,6 @@ export const btnConfigFormOptions = [
     },
     formItem: {
       formItemAttrs: {
-        prop: 'extraOption.relateFrom',
-        label: '选择表单：',
-        required: false,
-      },
-      tagName: 'el-select',
-      tagAttrs: {
-        placeholder: '',
-      },
-      // 对应formData中的属性值
-      formField: 'extraOption.relateFrom',
-      extraOption: {
-        options: [],
-        props: {
-          key: 'id',
-          label: 'cnName',
-        },
-      },
-    },
-  },
-  {
-    elRowAttrs: {
-      gutter: 10,
-    },
-    formItem: {
-      formItemAttrs: {
         prop: 'extraOption.openType',
         label: '打开方式：',
         required: true,
@@ -129,6 +104,42 @@ export const btnConfigFormOptions = [
     },
     formItem: {
       formItemAttrs: {
+        prop: 'extraOption.relateFrom',
+        label: '选择表单：',
+        required: false,
+      },
+      tagName: 'el-select',
+      tagAttrs: {
+        placeholder: '',
+      },
+      // 对应formData中的属性值
+      formField: 'extraOption.relateFrom',
+      extraOption: {
+        options: [],
+        props: {
+          key: 'id',
+          label: 'cnName',
+        },
+      },
+      request: {
+        require: false,
+        url: '',
+        type: 'get',
+        params: '',
+        status: 'pending',
+      },
+      renderDependFn: function(formData) {
+        return formData.extraOption.openType === 0;
+      },
+    },
+  },
+
+  {
+    elRowAttrs: {
+      gutter: 10,
+    },
+    formItem: {
+      formItemAttrs: {
         prop: 'extraOption.openUrl',
         label: '跳转的url：',
       },
@@ -138,6 +149,9 @@ export const btnConfigFormOptions = [
       },
       // 对应formData中的属性值
       formField: 'extraOption.openUrl',
+      renderDependFn: function(formData) {
+        return formData.extraOption.openType === 1;
+      },
     },
   },
   {
@@ -161,6 +175,9 @@ export const btnConfigFormOptions = [
           key: 'value',
           label: 'label',
         },
+      },
+      renderDependFn: function(formData) {
+        return formData.extraOption.openType === 0;
       },
     },
   },

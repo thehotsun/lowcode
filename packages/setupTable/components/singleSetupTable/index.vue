@@ -2,11 +2,11 @@
   <div class="wrap" style="height: 100%; backg">
     <!-- <el-header> -->
     <div class="operate">
-      <el-button size='small' type="primary" @click="handleAdd(1)">新增一条</el-button>
+      <!-- <el-button size='small' type="primary" @click="handleAdd(1)">新增一条</el-button> -->
       <!-- <el-button size='small' type="primary" @click="handleAdd(5)">新增五条</el-button> -->
       <el-button size='small' type="primary" :disabled="!selected.length" @click="handleAddParent">新增父级</el-button>
       <el-button size='small' type="danger" :disabled="!selected.length" @click="handleDelParent">删除父级</el-button>
-      <el-button size='small' type="danger" :disabled="!selected.length" @click="handleDelete">删除</el-button>
+      <!-- <el-button size='small' type="danger" :disabled="!selected.length" @click="handleDelete">删除</el-button> -->
       <!-- <el-button size='small' type="" :disabled="checkUpBtnDisabled()" @click="handleUpAndDwon(true)">上移</el-button>
         <el-button size='small' type="" :disabled="checkDwonBtnDisabled()" @click="handleUpAndDwon(false)">下移</el-button> -->
       <slot name="btn"></slot>
@@ -213,7 +213,18 @@ export default {
     },
 
     handleDelete () {
-      this.tableData = this.tableData.filter(tableItem => !this.selected.find(selectedItem => selectedItem === tableItem))
+      this.$confirm(`确认删除选中的数据吗?`, "提示", {
+        confirmButtonText: "确定",
+        cancelButtonText: "取消",
+        type: "warning"
+      }).then((result) => {
+        this.tableData = this.tableData.filter(tableItem => !this.selected.find(selectedItem => selectedItem === tableItem))
+      }).catch((err) => {
+        this.$message({
+          type: 'info',
+          message: '已取消删除'
+        });
+      });
     },
 
     handleAddParent () {
@@ -236,12 +247,24 @@ export default {
     },
 
     handleDelParent () {
-      const { tableData, selected } = this;
-      selected.filter(item => item.children).map((item, idx) => {
-        const index = tableData.indexOf(item)
-        const children = item.children || []
-        tableData.splice(index, 1, ...children)
-      })
+      this.$confirm(`确认删除父级数据吗?`, "提示", {
+        confirmButtonText: "确定",
+        cancelButtonText: "取消",
+        type: "warning"
+      }).then((result) => {
+        const { tableData, selected } = this;
+        selected.filter(item => item.children).map((item, idx) => {
+          const index = tableData.indexOf(item)
+          const children = item.children || []
+          tableData.splice(index, 1, ...children)
+        })
+      }).catch((err) => {
+        this.$message({
+          type: 'info',
+          message: '已取消删除'
+        });
+      });
+
     },
 
     onSave (row) {

@@ -47,7 +47,7 @@ export default {
       this.btnConfigFrom = new BtnConfigFrom()
     },
 
-    expose_hideSomeFieldOptions (fieldName) { 
+    expose_hideSomeFieldOptions (fieldName) {
       if (typeof fieldName === 'string') {
         fieldName = [fieldName]
       }
@@ -90,11 +90,12 @@ export default {
       return this.btnConfigFrom
     },
 
-    expose_setExtraOption (options) {
+    expose_setExtraOption (options, field) {
       // this.$set(this.btnConfigFormOptions[1].formItem, 'extraOption', options )
       // console.log(options, 'expose_setExtraOption', btnConfigFormOptions);
-      this.btnConfigFormOptions[1].formItem.extraOption = options
-
+      const target = this.btnConfigFormOptions.find(item => item.formItem.formField === field)
+      console.log(target, 'target');
+      if (target) target.formItem.extraOption = options
     },
     expose_delBtnConfigFromArr (index) {
       this.btnConfigFromArr.splice(index, 1)

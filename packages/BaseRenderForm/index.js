@@ -4,6 +4,7 @@ import {
   setPlaceholder,
   str2obj,
   exec,
+  str2Fn,
 } from '../../utils';
 import codemirror from '../components/codemirror';
 export default {
@@ -303,8 +304,11 @@ export default {
     getFormItemVNode(allItemInfo = {}) {
       // 一个formItem的content也允许渲染多个组件
       const { formItemAttrs, ...item } = allItemInfo;
-      const { renderDepend } = item;
-      return renderDepend && !getter(this.formData, renderDepend) ? (
+      const { renderDependFn } = item;
+      if (typeof renderDependFn === 'string' && renderDependFn?.length > 0) {
+        item.renderDependFn = renderDependFn = str2Fn(renderDependFn);
+      }
+      return renderDependFn && !renderDependFn(this.formData) ? (
         ''
       ) : (
         <el-form-item

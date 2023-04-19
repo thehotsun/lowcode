@@ -233,7 +233,6 @@ export default {
       } else {
         this.queryFieldList();
         this.getPrimekey()
-
       }
     },
 
@@ -273,7 +272,6 @@ export default {
             key: 'formID'
           }
         }
-
       });
     },
 
@@ -296,15 +294,11 @@ export default {
 
     handleSubmitTableConfig () {
       const renderParams = this.getRenderParams();
-      const params = {
-        jsonContent: JSON.stringify(renderParams),
-        listPageId: this._groupID
-      };
-      return this.saveListConfigJSON(params).then((data) => {
+      return this.saveListConfigJSON(renderParams, this._groupID).then((data) => {
         if (data.result === "0") {
-          this.$message.success("添加成功");
+          this.$message.success("保存成功");
         } else {
-          this.$message.warning("添加失败");
+          this.$message.warning("保存失败");
         }
       });
     },
@@ -315,7 +309,7 @@ export default {
         // 还原配置
         this.$refs.setupBtnConfig.expose_setBtnConfigFromArr(this.btnConfigArr);
         this.$refs.setupBtnConfig.expose_reductionAll();
-        this.$refs.setupBtnConfig.expose_setExtraOption(this._extraOption)
+        this.$refs.setupBtnConfig.expose_setExtraOption(this._extraOption, 'extraOption.relateFrom')
         const config = this.$refs.setupBtnConfig.expose_getBtnConfigFrom();
         console.log(command);
         switch (command) {

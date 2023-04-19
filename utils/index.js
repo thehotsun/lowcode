@@ -78,7 +78,7 @@ export function getFormItemEmptyConfig() {
     sortNumb: '0',
     formField: '',
     relateOtherField: [],
-    renderDepend: '',
+    renderDependFn: '',
     extraOption: {
       options: [],
       props: {
@@ -303,7 +303,9 @@ export function getSetupFormOptions(searchWidgetName) {
       'request.url',
       {
         style: 'width: 350px',
-        renderDepend: 'request.require',
+        renderDependFn: function(formData) {
+          return formData.request.require;
+        },
       },
     ],
     [
@@ -312,7 +314,9 @@ export function getSetupFormOptions(searchWidgetName) {
       'request.type',
       {
         style: 'width: 350px',
-        renderDepend: 'request.require',
+        renderDependFn: function(formData) {
+          return formData.request.require;
+        },
         extraOption: {
           options: [
             {
@@ -334,7 +338,9 @@ export function getSetupFormOptions(searchWidgetName) {
       'request.params',
       {
         style: 'width: 350px',
-        renderDepend: 'request.require',
+        renderDependFn: function(formData) {
+          return formData.request.require;
+        },
         tagAttrs: {
           autosize: true,
           type: 'textarea',

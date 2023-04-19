@@ -473,8 +473,8 @@ export default {
     queryTableData() {
       const params = this.getParams();
       return (this.tableAttrs.showPagination
-        ? this.requestTablePaginationData(params, this.page)
-        : this.requestTableData(params)
+        ? this.requestTablePaginationData(params, this.page, this.listPageId)
+        : this.requestTableData(params, this.listPageId)
       )
         .then((res) => {
           if (res.result === '0') {
@@ -533,6 +533,7 @@ export default {
           }
         });
       }
+      this.showBtns = true;
       return [
         {
           elRowAttrs: {
@@ -563,28 +564,23 @@ export default {
       if (fn) {
         this.exec(fn);
       } else {
+        if (openType === 1) {
+          return this.$router.push(openUrl, relateFrom);
+        }
         switch (btnType) {
           case 'add':
-            if (openType === 0) {
-              this.expose_showDialog(relateFrom);
-              this.onlyRead = false;
-              this.primaryKeyValue = '';
-              this.dialogTitle = '新增';
-            } else {
-              this.$router.push(openUrl, relateFrom);
-            }
+            this.expose_showDialog(relateFrom);
+            this.onlyRead = false;
+            this.primaryKeyValue = '';
+            this.dialogTitle = '新增';
             break;
           case 'check':
           case 'edit':
             if (this.selectList.length === 1) {
               this.primaryKeyValue = this.selectList[0][this.keyField];
-              if (openType === 0) {
-                this.expose_showDialog(relateFrom);
-                this.onlyRead = btnType === 'check';
-                this.dialogTitle = btnType === 'check' ? '查看' : '编辑';
-              } else {
-                this.$router.push(openUrl, relateFrom);
-              }
+              this.expose_showDialog(relateFrom);
+              this.onlyRead = btnType === 'check';
+              this.dialogTitle = btnType === 'check' ? '查看' : '编辑';
             } else {
               this.$warn('请确认只选中了一个值');
             }
@@ -604,10 +600,12 @@ export default {
     },
 
     download(list = []) {
-      this.requestDownload({
-        json: list.length ? JSON.stringify({ [this.keyField]: list }) : '',
-        listPageId: this.listPageId,
-      }).then((response) => {
+      this.requestDownload(
+        {
+          [this.keyField]: list.length ? list : [],
+        },
+        this.listPageId
+      ).then((response) => {
         const link = document.createElement('a');
         const blob = response;
         link.style.display = 'none';
@@ -620,11 +618,9 @@ export default {
     },
 
     batchDel(list = []) {
-      this.requestBatchDel({
-        primaryKeyValueList: list,
-        listPageId: this.listPageId,
-      }).then((res) => {
+      this.requestBatchDel(list, this.listPageId).then((res) => {
         if (res.result === '0') {
+          this.$success('删除成功');
           this.queryTableData();
         }
       });
@@ -805,17 +801,31 @@ export default {
             append-to-body
           >
             {formId ? (
-              <FcView
-                primaryKeyValue={primaryKeyValue}
-                isDisabled={onlyRead}
-                hasSubmit={!onlyRead && !previewMode}
-                formId={formId}
-                {...{
-                  on: {
-                    submit: onSubmit,
-                  },
-                }}
-              ></FcView>
+              previewMode ? (
+                <VFPreview
+                  primaryKeyValue={primaryKeyValue}
+                  isDisabled={onlyRead}
+                  hasSubmit={!onlyRead && !previewMode}
+                  formId={formId}
+                  {...{
+                    on: {
+                      submit: onSubmit,
+                    },
+                  }}
+                ></VFPreview>
+              ) : (
+                <VFRuntime
+                  primaryKeyValue={primaryKeyValue}
+                  isDisabled={onlyRead}
+                  hasSubmit={!onlyRead && !previewMode}
+                  formId={formId}
+                  {...{
+                    on: {
+                      submit: onSubmit,
+                    },
+                  }}
+                ></VFRuntime>
+              )
             ) : null}
           </el-dialog>
         ) : null}
