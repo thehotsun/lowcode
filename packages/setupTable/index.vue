@@ -144,6 +144,11 @@ export default {
       type: Function,
       require: true
     },
+    // 按钮权限集合
+    requestAuthorizeList: {
+      type: Function,
+      require: true
+    },
     // 获取已保存数据
     getListConfigJSON: {
       type: Function,
@@ -222,6 +227,7 @@ export default {
       console.log(id, 'id');
       this._groupID = id;
       this.queryFormList()
+      this.queryAuthorizeList()
       const { data } = await this.requestTableConfig()
       if (data) {
         const obj = JSON.parse(data);
@@ -275,6 +281,18 @@ export default {
       });
     },
 
+    queryAuthorizeList () {
+      this.requestAuthorizeList().then(res => {
+        this._btnAuthorize = {
+          options: res.data, props:
+          {
+            label: 'actionName',
+            key: 'actionCode'
+          }
+        }
+      });
+    },
+
     async confirm () {
       await this.handleSubmitTableConfig();
       this.$emit('onSave');
@@ -294,7 +312,15 @@ export default {
 
     handleSubmitTableConfig () {
       const renderParams = this.getRenderParams();
-      return this.saveListConfigJSON(renderParams, this._groupID).then((data) => {
+      const actionList = renderParams.formOptions?.map(item => {
+        return {
+          actionCode: item.authorize,
+          actionName: item.tagAttrs.value
+        }
+      })
+      return this.saveListConfigJSON({
+        json: JSON.stringify(renderParams), actionList
+      }, this._groupID).then((data) => {
         if (data.result === "0") {
           this.$message.success("保存成功");
         } else {
@@ -310,6 +336,7 @@ export default {
         this.$refs.setupBtnConfig.expose_setBtnConfigFromArr(this.btnConfigArr);
         this.$refs.setupBtnConfig.expose_reductionAll();
         this.$refs.setupBtnConfig.expose_setExtraOption(this._extraOption, 'extraOption.relateFrom')
+        this.$refs.setupBtnConfig.expose_setExtraOption(this._btnAuthorize, 'authorize')
         const config = this.$refs.setupBtnConfig.expose_getBtnConfigFrom();
         console.log(command);
         switch (command) {
@@ -374,8 +401,6 @@ export default {
 
     onClose () { },
     handleDelBtn (index) {
-      // this.$refs.setupBtnConfig.expose_delBtnConfigFromArr(index);
-      // this.btnConfigArr = this.$refs.setupBtnConfig.expose_getBtnConfigFromArr();
       this.btnConfigArr.splice(index, 1)
     },
     handleDetail (index) {

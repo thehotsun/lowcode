@@ -106,7 +106,10 @@ export const btnConfigFormOptions = [
       formItemAttrs: {
         prop: 'extraOption.relateFrom',
         label: '选择表单：',
-        required: false,
+        required: true,
+        rules: {
+       
+        },
       },
       tagName: 'el-select',
       tagAttrs: {
@@ -178,6 +181,31 @@ export const btnConfigFormOptions = [
       },
       renderDependFn: function(formData) {
         return formData.extraOption.openType === 0;
+      },
+    },
+  },
+  {
+    elRowAttrs: {
+      gutter: 10,
+    },
+    formItem: {
+      formItemAttrs: {
+        prop: 'authorize',
+        label: '选择权限：',
+        required: true,
+      },
+      tagName: 'el-select',
+      tagAttrs: {
+        placeholder: '',
+      },
+      // 对应formData中的属性值
+      formField: 'authorize',
+      extraOption: {
+        options: [],
+        props: {
+          key: 'id',
+          label: 'cnName',
+        },
       },
     },
   },
@@ -344,6 +372,7 @@ export function BtnConfigFrom(custom = {}) {
       fn: '',
       isRefresh: true,
     },
+    authorize: '',
     ...custom,
   };
 }

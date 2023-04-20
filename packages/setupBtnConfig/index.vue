@@ -34,8 +34,13 @@ export default {
       btnConfigFormOptions,
       rawBtnConfigFormOptions: cloneDeep(btnConfigFormOptions),
       btnConfigFromArr: [],
+      originConfigForm: {},
       btnConfigFrom: new BtnConfigFrom(),
     };
+  },
+
+  created () {
+    this.setRules()
   },
 
   mounted () {
@@ -83,7 +88,8 @@ export default {
     },
 
     expose_setBtnConfigFrom (obj) {
-      this.btnConfigFrom = obj
+      this.originConfigForm = obj
+      this.btnConfigFrom = cloneDeep(obj)
     },
 
     expose_getBtnConfigFrom () {
@@ -91,25 +97,43 @@ export default {
     },
 
     expose_setExtraOption (options, field) {
-      // this.$set(this.btnConfigFormOptions[1].formItem, 'extraOption', options )
-      // console.log(options, 'expose_setExtraOption', btnConfigFormOptions);
       const target = this.btnConfigFormOptions.find(item => item.formItem.formField === field)
       console.log(target, 'target');
-      if (target) target.formItem.extraOption = options
+      if (target) target.formItem .extraOption = options
     },
     expose_delBtnConfigFromArr (index) {
       this.btnConfigFromArr.splice(index, 1)
     },
+
+    setRules () {
+      const target = this.btnConfigFormOptions.find(item => item.formItem.formField === 'extraOption.relateFrom')
+      target.formItem.formItemAttrs.rules = {
+        validator: this.validateRelateFrom,
+        trigger: 'change',
+      }
+    },
+
+    validateRelateFrom (rule, value, callback) {
+      if (this.btnConfigFrom.extraOption.openType === 0 && !value) {
+        callback(new Error('请选择表单'));
+      } else {
+        callback();
+      }
+    },
+
     onSubmit (data) {
       // 如果相同则说明是编辑，不同则是新增
-      if (!this.btnConfigFromArr.some(item => item === data)) {
+      if (!this.btnConfigFromArr.some(item => item === this.originConfigForm)) {
         this.btnConfigFromArr.push(data)
+      } else {
+        merge(this.originConfigForm, data)
       }
       this.$emit('onSubmit')
       this.btnConfigFrom = new BtnConfigFrom()
     },
     onClose () {
       this.$emit('onClose');
+      this.originConfigForm = {}
       this.btnConfigFrom = new BtnConfigFrom()
     },
     setBtnType (type) {

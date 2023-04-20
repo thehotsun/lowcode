@@ -132,8 +132,10 @@ export default {
     supplementLabel (props, options) {
       const { key, label } = props
       return options.map(item => {
-        item[label] = `${item[label]}(${item[key]})`
-        return item
+        const obj = {}
+        obj[key] = item[key]
+        obj[label] = `${item[label]}(${item[key]})`
+        return obj
       })
     },
 

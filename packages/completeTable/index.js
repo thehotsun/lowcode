@@ -82,7 +82,6 @@ export default {
       },
       dialogTitle: '表单',
       btnRegularOptions: [],
-      btnConfigJSON: [],
       showSearchFrom: true,
       showBtns: true,
       formId: '',
@@ -116,6 +115,7 @@ export default {
         isMerge: false,
         spanMethod: '',
       },
+      btnsAuthorize: [],
     };
   },
 
@@ -534,6 +534,10 @@ export default {
         });
       }
       this.showBtns = true;
+      // 根据权限筛选
+      // config = config.filter((item) => {
+      //   return this.btnsAuthorize[item.authorize];
+      // });
       return [
         {
           elRowAttrs: {
