@@ -488,7 +488,7 @@ export default {
         })
         .catch((e) => {
           console.error(`queryTableData error: ${e}`);
-          throw new Error(res.message);
+          throw new Error(e);
         });
     },
 
@@ -801,7 +801,7 @@ export default {
             {...{ on: visibleListeners }}
             close-on-click-modal={false}
             close-on-press-escape={false}
-            width="900px"
+            width="1200px"
             append-to-body
           >
             {formId ? (

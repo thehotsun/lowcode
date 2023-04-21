@@ -223,9 +223,10 @@ export default {
     // this.init()
   },
   methods: {
-    async init (id = '') {
+    async init (id = '', formCode) {
       console.log(id, 'id');
       this._groupID = id;
+      this._formCode = formCode;
       this.queryFormList()
       this.queryAuthorizeList()
       const { data } = await this.requestTableConfig()
@@ -306,7 +307,6 @@ export default {
         tableOptions: this.$refs.singleSetupTable.expose_getTableData(),
         keyField: this.keyField,
       };
-      console.log('handleSubmitTableConfig', json);
       return json;
     },
 
@@ -314,7 +314,7 @@ export default {
       const renderParams = this.getRenderParams();
       const actionList = renderParams.formOptions?.map(item => {
         return {
-          actionCode: item.authorize,
+          actionCode: `${this._formCode}:${item.authorize}`,
           actionName: item.tagAttrs.value
         }
       })
