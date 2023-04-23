@@ -17,7 +17,7 @@
 
 import BaseRenderForm from '../BaseRenderForm/index';
 import { btnConfigFormOptions, BtnConfigFrom } from "../../baseConfig/btnBaseConfig"
-import { setPlaceholder, getWidgetOptions, setColSpan, findFromOptionsIndexByfieldName } from '../../utils';
+import { findFromOptionsIndexByfieldName } from '../../utils';
 import { cloneDeep, merge } from "lodash";
 
 export default {
@@ -99,7 +99,7 @@ export default {
     expose_setExtraOption (options, field) {
       const target = this.btnConfigFormOptions.find(item => item.formItem.formField === field)
       console.log(target, 'target');
-      if (target) target.formItem .extraOption = options
+      if (target) target.formItem.extraOption = options
     },
     expose_delBtnConfigFromArr (index) {
       this.btnConfigFromArr.splice(index, 1)

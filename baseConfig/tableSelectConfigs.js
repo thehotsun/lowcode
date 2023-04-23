@@ -60,4 +60,9 @@ export const searchWidget = [
     cnName: '级联选择器',
     tagName: 'el-cascader',
   },
+  {
+    id: 6,
+    cnName: '字典选择器',
+    tagName: 'dictionary',
+  },
 ];

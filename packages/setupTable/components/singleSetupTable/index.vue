@@ -41,6 +41,15 @@
       :close-on-press-escape="false" width="500px" v-dialogDrag :before-close="handleCloseFrom" append-to-body>
       <base-render-form ref="setupForm" :form-data="setupForm" :form-options="setupFormOptions" :use-dialog="false"
         :showFooter="false">
+        <template #selectDic="{ formData }">
+          <el-select :value="formData.request.url" @change="changeFormData($event, formData)" placeholder="请选择">
+            <el-option v-for="item in dicCodeList" :key="item.dicCode" :label="item.dicName" :value="item.dicCode">
+              <span class="code">{{ item.dicCode.split('dicCode=')[1] }}</span> 
+              <span >{{ item.dicName }}</span>
+            </el-option>
+          </el-select>
+          <el-button @click="requestDicCodeListData">刷新</el-button>
+        </template>
       </base-render-form>
       <span slot="footer" class="dialog-footer">
         <el-button @click="handleCloseFrom">取消</el-button>
@@ -71,6 +80,9 @@ export default {
   },
   props: {
     rawTableData: Array,
+    generalRequest: {
+      type: Function,
+    },
   },
   data () {
     return {
@@ -82,7 +94,8 @@ export default {
       },
       setupFormOptions: [],
       curRowData: {},
-      tableData: []
+      tableData: [],
+      dicCodeList: [],
     };
   },
 
@@ -94,6 +107,7 @@ export default {
 
   mounted () {
     this.rowDrop()
+    this.requestDicCodeListData()
   },
 
   methods: {
@@ -109,6 +123,20 @@ export default {
       this.tableData = []
     },
 
+    requestDicCodeListData () {
+      this.generalRequest('/dic/list', 'get').then((res) => {
+        this.dicCodeList = res.data.map(item => {
+          item.dicCode = `/dic/content/list?dicCode=${item.dicCode}`
+          return item
+        });
+      });
+    },
+
+    changeFormData (value, formData) {
+      console.log(formData, value);
+      // 防止用户赋值给没有声明的属性值，导致其变为非响应式数据
+      this.$set(formData.request, 'url', `${value}`);
+    },
     handleWidgetAttr (row) {
       if (row.searchWidget === '') {
         return this.$warn('请先选择控件')
@@ -305,7 +333,10 @@ export default {
   background: #fff;
   margin-top: 10px;
 }
-
+.code {
+  float: right;
+  color: #999;
+}
 .operate {
   margin-left: 20px;
   padding-top: 20px;

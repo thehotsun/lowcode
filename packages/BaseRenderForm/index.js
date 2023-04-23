@@ -73,17 +73,26 @@ export default {
       this.showDialog = bool;
     },
 
-    requestData({ url = '', type = 'get', params = '' }, arr) {
+    requestData({ url = '', type = 'get', params = '' }, extraOption) {
       params = str2obj(params);
       this.generalRequest(url, type, params).then((res) => {
-        res.data.map((item) => arr.push(item));
+        res.data
+          .sort((a, b) => a.sortNum - b.sortNum)
+          .map((item) => {
+            if (extraOption.labelTranslateType == 1) {
+              item[extraOption.props.label] = `${item[extraOption.props.key]}-${
+                item[extraOption.props.label]
+              }`;
+            }
+            extraOption.options.push(item);
+          });
       });
     },
 
     disposeRequest(request, extraOption) {
       if (request?.require && request?.url && request.status === 'pending') {
         extraOption.options = [];
-        this.requestData(request, extraOption.options);
+        this.requestData(request, extraOption);
         request.status = 'finish';
         // exec(request);
       }
@@ -138,7 +147,7 @@ export default {
 
     getSelectCompVNode({ attrs, listeners, formField, extraOption, request }) {
       this.disposeRequest(request, extraOption);
-      let { options = [], props = {} } = extraOption;
+      let { options = [], props = {}, labelTranslateFn = '' } = extraOption;
       const { formData, onlyShow, isSearch } = this;
       // 基础版有个添加维护字典的功能，里面返回的字段为id和cnName，因此以此字段为默认取值
       const { key = 'id', label = 'cnName' } = props;

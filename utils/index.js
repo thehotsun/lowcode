@@ -43,6 +43,8 @@ export function getWidgetOptions(searchWidgetName, item) {
       return completeFromItemOptions(getElDatePickerRangeConfig(), item);
     case 'el-cascader':
       return completeFromItemOptions(getElCascaderConfig(), item);
+    case 'dictionary':
+      return completeFromItemOptions(getElSelectConfig(), item);
     default:
       console.warn(`您输入的标签 ${searchWidgetName} 暂不支持！`);
       break;
@@ -426,6 +428,47 @@ export function getSetupFormOptions(searchWidgetName) {
         return getSetupFromSingleConfig(...item);
       });
       break;
+    case 'dictionary':
+      options = [
+        getSetupFromSingleConfig(
+          '标签名：',
+          '请输入标签名',
+          'formItemAttrs.label',
+          { style: 'width: 350px' }
+        ),
+        getSetupFromSingleConfig(
+          '提示语：',
+          '请输入提示语',
+          'tagAttrs.placeholder',
+          { style: 'width: 350px' }
+        ),
+        getSetupFromSingleConfig('字典项：', '请输入字典项', '', {
+          style: 'width: 350px',
+          slotName: 'selectDic',
+        }),
+        getSetupFromSingleConfig(
+          '数据格式：',
+          '请输入数据格式',
+          'extraOption',
+          {
+            style: 'width: 350px',
+            extraOption: {
+              options: [
+                {
+                  id: '{"labelTranslateType":0}',
+                  cnName: '仅文本',
+                },
+                {
+                  id: '{"labelTranslateType":1}',
+                  cnName: '编号-文本',
+                },
+              ],
+            },
+          },
+          'el-select'
+        ),
+      ];
+      break;
     default:
       console.warn(`您输入的标签 ${searchWidgetName} 暂不支持！`);
       break;
@@ -472,7 +515,7 @@ export function getSetupForm(searchWidgetName) {
           placeholder: '',
           multiple: false,
           filterable: false,
-          clearable: false,
+          clearable: true,
         },
         extraOption: '',
         request: {
@@ -492,7 +535,7 @@ export function getSetupForm(searchWidgetName) {
         tagAttrs: {
           placeholder: '',
           filterable: false,
-          clearable: false,
+          clearable: true,
           props: {
             multiple: false,
           },
@@ -500,6 +543,29 @@ export function getSetupForm(searchWidgetName) {
         extraOption: '',
         request: {
           require: false,
+          url: '',
+          type: 'get',
+          params: '',
+          status: 'pending',
+        },
+        sortNumb: '0',
+      };
+    case 'dictionary':
+      return {
+        formItemAttrs: {
+          label: '',
+        },
+        tagAttrs: {
+          placeholder: '',
+          filterable: false,
+          clearable: true,
+          props: {
+            multiple: false,
+          },
+        },
+        extraOption: '',
+        request: {
+          require: true,
           url: '',
           type: 'get',
           params: '',

@@ -483,7 +483,7 @@ export default {
               this.page.totalCount = res.totalCount;
             }
           } else {
-            console.error(`queryTableData message: ${res}`);
+            console.error(`queryTableData message: ${res.message}`);
           }
         })
         .catch((e) => {

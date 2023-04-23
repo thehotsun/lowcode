@@ -31,7 +31,8 @@
     </div>
 
     <div class="tablesetup">
-      <single-setup-table ref="singleSetupTable" :raw-table-data.sync="tableData" edit-mode>
+      <single-setup-table ref="singleSetupTable" :generalRequest="generalRequest" :raw-table-data.sync="tableData"
+        edit-mode>
       </single-setup-table>
     </div>
 
