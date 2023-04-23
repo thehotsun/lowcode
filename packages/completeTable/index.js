@@ -803,6 +803,7 @@ export default {
             close-on-press-escape={false}
             width="1200px"
             append-to-body
+            v-draggable
           >
             {formId ? (
               previewMode ? (
