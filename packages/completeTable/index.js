@@ -746,18 +746,17 @@ export default {
                     },
                   }}
                 ></i>
-                {showPanel ? (
-                  <div class="custom absolute">
-                    <panel
-                      data={panelData}
-                      {...{
-                        on: {
-                          checkedChange: filterFieldChange,
-                        },
-                      }}
-                    ></panel>
-                  </div>
-                ) : null}
+
+                <div class={['custom', 'absolute', showPanel ? '' : 'none']}>
+                  <panel
+                    data={panelData}
+                    {...{
+                      on: {
+                        checkedChange: filterFieldChange,
+                      },
+                    }}
+                  ></panel>
+                </div>
               </div>
             </el-header>
 

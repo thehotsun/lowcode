@@ -44,8 +44,8 @@
         <template #selectDic="{ formData }">
           <el-select :value="formData.request.url" @change="changeFormData($event, formData)" placeholder="请选择">
             <el-option v-for="item in dicCodeList" :key="item.dicCode" :label="item.dicName" :value="item.dicCode">
-              <span class="code">{{ item.dicCode.split('dicCode=')[1] }}</span> 
-              <span >{{ item.dicName }}</span>
+              <span class="code">{{ item.dicCode.split('dicCode=')[1] }}</span>
+              <span>{{ item.dicName }}</span>
             </el-option>
           </el-select>
           <el-button @click="requestDicCodeListData">刷新</el-button>
@@ -198,7 +198,7 @@ export default {
       const tbody = document.querySelector('.el-table__body-wrapper tbody');
       let tableData = this.tableData;
       Sortable.create(tbody, {
-        ghostClass: 'sortable-ghost',
+        handle: ".renderwrap .my-handle",
         setData: function (dataTransfer) {
           dataTransfer.setData('Text', '')
         },
@@ -333,10 +333,12 @@ export default {
   background: #fff;
   margin-top: 10px;
 }
+
 .code {
   float: right;
   color: #999;
 }
+
 .operate {
   margin-left: 20px;
   padding-top: 20px;

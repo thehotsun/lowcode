@@ -46,6 +46,13 @@ const originEditConf = [
   //   className: 'iconfont icon-drag drag-option',
   // },
   {
+    tagName: 'i',
+    label: '拖拽排序',
+    align: 'center',
+    className: 'iconfont icon-drag drag-option my-handle',
+    width: '50',
+  },
+  {
     ...baseAttr,
     label: '字段名称',
     prop: 'fieldCode',
