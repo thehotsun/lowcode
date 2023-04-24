@@ -3,6 +3,7 @@
     <div class="top">
       页面设计区
       <div class="operate">
+        <el-button size="mini" @click="showTableSetting">页面属性</el-button>
         <el-button size="mini" @click="showTableAttrs">表格属性设置</el-button>
         <el-button size="mini" @click="showPreview">预览</el-button>
         <el-button size="mini" type="primary" @click="confirm">保存</el-button>
@@ -393,6 +394,10 @@ export default {
 
     showTableAttrs () {
       this.dialogVisibleTableAttrs = true;
+    },
+    
+    showTableSetting () {
+      this.$emit('showTableSetting')
     },
 
     onSubmit () {

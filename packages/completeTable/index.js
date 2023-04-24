@@ -28,6 +28,9 @@ export default {
     panel,
   },
   props: {
+    pageCode: {
+      type: String,
+    },
     requestTableData: {
       type: Function,
     },
@@ -51,6 +54,9 @@ export default {
       type: Function,
     },
     generalRequest: {
+      type: Function,
+    },
+    checkPermission: {
       type: Function,
     },
     // pageLayout: {
@@ -115,7 +121,6 @@ export default {
         isMerge: false,
         spanMethod: '',
       },
-      btnsAuthorize: [],
     };
   },
 
@@ -535,9 +540,11 @@ export default {
       }
       this.showBtns = true;
       // 根据权限筛选
-      // config = config.filter((item) => {
-      //   return this.btnsAuthorize[item.authorize];
-      // });
+      config = config.filter((item) => {
+        return this.checkPermission(`${this.pageCode}:${item.authorize}`);
+      });
+      if (config.length === 0) this.showBtns = false;
+
       return [
         {
           elRowAttrs: {
