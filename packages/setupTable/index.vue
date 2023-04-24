@@ -166,6 +166,11 @@ export default {
       type: Function,
       require: true
     },
+    // 表格按钮权限
+    checkPermission: {
+      type: Function,
+      require: true
+    },
   },
   data () {
     return {
@@ -214,11 +219,6 @@ export default {
         value: 'mimi',
         label: '迷你'
       },],
-      downloadExpression: 'this.download(this.selectList.map(item => item[this.keyField]))',
-      batchDelExpression: 'this.batchDel(this.selectList.map(item => item[this.keyField]))',
-      // editExpression: '(() => {if(this.selectList.length === 1){this.primaryKeyValue = this.selectList[0][this.keyField];}else{this.$warn("请确认只选中了一个值")} return this.selectList.length === 1})()',
-      editExpression: 'this.selectList.length === 1 ? this.primaryKeyValue = this.selectList[0][this.keyField] : this.$warn("请确认只选中了一个值")',
-
     };
   },
   mounted () {
@@ -348,25 +348,21 @@ export default {
             break
           case 'edit':
             config.tagAttrs.value = '编辑';
-            // config.extraOption.defaultFn = this.editExpression;
             config.extraOption.btnType = 'edit';
             break
           case 'check':
             config.tagAttrs.value = '查看';
-            // config.extraOption.defaultFn = this.editExpression;
             config.extraOption.btnType = 'check';
             break
           case 'download':
-            this.$refs.setupBtnConfig.expose_hideSomeFieldOptions(['extraOption.fn', 'extraOption.openUrl', 'extraOption.isRefresh', 'extraOption.openType', 'extraOption.relateFrom']);
-            // config.extraOption.fn = this.downloadExpression
+            this.$refs.setupBtnConfig.expose_hideSomeFieldOptions(['extraOption.fn', 'extraOption.openUrl', 'extraOption.isRefresh', 'extraOption.openType', 'extraOption.relateFrom', 'extraOption.dialogHeight', 'extraOption.dialogTitle', 'extraOption.dialogWidth']);
             config.tagAttrs.value = '导出';
             config.extraOption.btnType = 'download';
             break;
           case 'batchDel':
-            this.$refs.setupBtnConfig.expose_hideSomeFieldOptions(['extraOption.fn', 'extraOption.openUrl', 'extraOption.isRefresh', 'extraOption.openType', 'extraOption.relateFrom']);
+            this.$refs.setupBtnConfig.expose_hideSomeFieldOptions(['extraOption.fn', 'extraOption.openUrl', 'extraOption.isRefresh', 'extraOption.openType', 'extraOption.relateFrom', 'extraOption.dialogHeight', 'extraOption.dialogTitle', 'extraOption.dialogWidth']);
             config.tagAttrs.value = '批量删除'
             config.extraOption.btnType = 'batchDel';
-            // config.extraOption.fn = this.batchDelExpression
             break;
           case 'custom':
             config.extraOption.btnType = 'custom';
@@ -395,7 +391,7 @@ export default {
     showTableAttrs () {
       this.dialogVisibleTableAttrs = true;
     },
-    
+
     showTableSetting () {
       this.$emit('showTableSetting')
     },

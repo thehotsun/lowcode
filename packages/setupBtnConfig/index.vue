@@ -1,6 +1,6 @@
 <template>
   <base-render-form ref="form" :form-data="btnConfigFrom" :form-options="btnConfigFormOptions" @onSubmit="onSubmit"
-    @onClose="onClose" label-position="top" :useDialog="useDialog" style="background: #fff;padding:30px 20px">
+    @onClose="onClose" :useDialog="useDialog" style="background: #fff;padding:30px 20px">
     <template #color>
       <el-row>
         <span v-for="item in colorList" :key="item">

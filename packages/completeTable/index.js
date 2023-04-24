@@ -540,10 +540,12 @@ export default {
       }
       this.showBtns = true;
       // 根据权限筛选
-      config = config.filter((item) => {
-        return this.checkPermission(`${this.pageCode}:${item.authorize}`);
-      });
-      if (config.length === 0) this.showBtns = false;
+      if (!this.previewMode) {
+        config = config.filter((item) => {
+          return this.checkPermission(`${this.pageCode}:${item.authorize}`);
+        });
+        if (config.length === 0) this.showBtns = false;
+      }
 
       return [
         {
@@ -569,9 +571,16 @@ export default {
       isRefresh = false,
       defaultFn = '',
       btnType = '',
+      dialogTitle = '',
+      dialogWidth = '',
+      dialogHeight = '',
     }) {
       console.log(defaultFn, 'defaultFn');
       this.isRefresh = isRefresh;
+      this.dialogWidth =
+        dialogWidth.slice(-2) === 'px' ? dialogWidth : `${dialogWidth}px`;
+      this.dialogHeight =
+        dialogHeight.slice(-2) === 'px' ? dialogHeight : `${dialogHeight}px`;
       if (fn) {
         this.exec(fn);
       } else {
@@ -583,7 +592,7 @@ export default {
             this.expose_showDialog(relateFrom);
             this.onlyRead = false;
             this.primaryKeyValue = '';
-            this.dialogTitle = '新增';
+            this.dialogTitle = dialogTitle || '新增';
             break;
           case 'check':
           case 'edit':
@@ -591,7 +600,8 @@ export default {
               this.primaryKeyValue = this.selectList[0][this.keyField];
               this.expose_showDialog(relateFrom);
               this.onlyRead = btnType === 'check';
-              this.dialogTitle = btnType === 'check' ? '查看' : '编辑';
+              this.dialogTitle =
+                dialogTitle || btnType === 'check' ? '查看' : '编辑';
             } else {
               this.$warn('请确认只选中了一个值');
             }
@@ -674,6 +684,8 @@ export default {
       handleSetting,
       refresh,
       dialogTitle,
+      dialogWidth,
+      dialogHeight,
       previewMode,
     } = this;
 
@@ -807,37 +819,39 @@ export default {
             {...{ on: visibleListeners }}
             close-on-click-modal={false}
             close-on-press-escape={false}
-            width="1200px"
+            width={dialogWidth || '1200px'}
             append-to-body
             v-draggable
           >
-            {formId ? (
-              previewMode ? (
-                <VFPreview
-                  primaryKeyValue={primaryKeyValue}
-                  isDisabled={onlyRead}
-                  hasSubmit={!onlyRead && !previewMode}
-                  formId={formId}
-                  {...{
-                    on: {
-                      submit: onSubmit,
-                    },
-                  }}
-                ></VFPreview>
-              ) : (
-                <VFRuntime
-                  primaryKeyValue={primaryKeyValue}
-                  isDisabled={onlyRead}
-                  hasSubmit={!onlyRead && !previewMode}
-                  formId={formId}
-                  {...{
-                    on: {
-                      submit: onSubmit,
-                    },
-                  }}
-                ></VFRuntime>
-              )
-            ) : null}
+            <div style={{ height: dialogHeight, overflow: 'auto' }}>
+              {formId ? (
+                previewMode ? (
+                  <VFPreview
+                    primaryKeyValue={primaryKeyValue}
+                    isDisabled={onlyRead}
+                    hasSubmit={!onlyRead && !previewMode}
+                    formId={formId}
+                    {...{
+                      on: {
+                        submit: onSubmit,
+                      },
+                    }}
+                  ></VFPreview>
+                ) : (
+                  <VFRuntime
+                    primaryKeyValue={primaryKeyValue}
+                    isDisabled={onlyRead}
+                    hasSubmit={!onlyRead && !previewMode}
+                    formId={formId}
+                    {...{
+                      on: {
+                        submit: onSubmit,
+                      },
+                    }}
+                  ></VFRuntime>
+                )
+              ) : null}
+            </div>
           </el-dialog>
         ) : null}
       </el-container>

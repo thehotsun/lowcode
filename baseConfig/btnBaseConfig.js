@@ -66,6 +66,7 @@ export const btnConfigFormOptions = [
         required: true,
       },
       tagName: 'el-input',
+      style: 'width: 180px',
       tagAttrs: {
         placeholder: '',
       },
@@ -107,9 +108,7 @@ export const btnConfigFormOptions = [
         prop: 'extraOption.relateFrom',
         label: '选择表单：',
         required: true,
-        rules: {
-       
-        },
+        rules: {},
       },
       tagName: 'el-select',
       tagAttrs: {
@@ -147,6 +146,7 @@ export const btnConfigFormOptions = [
         label: '跳转的url：',
       },
       tagName: 'el-input',
+      style: 'width: 180px',
       tagAttrs: {
         placeholder: '',
       },
@@ -154,33 +154,6 @@ export const btnConfigFormOptions = [
       formField: 'extraOption.openUrl',
       renderDependFn: function(formData) {
         return formData.extraOption.openType === 1;
-      },
-    },
-  },
-  {
-    elRowAttrs: {
-      gutter: 10,
-    },
-    formItem: {
-      formItemAttrs: {
-        prop: 'extraOption.isRefresh',
-        label: '是否刷新列表：',
-      },
-      tagName: 'el-radio-group',
-      tagAttrs: {
-        placeholder: '',
-      },
-      // 对应formData中的属性值
-      formField: 'extraOption.isRefresh',
-      extraOption: {
-        options: yesOrNo,
-        props: {
-          key: 'value',
-          label: 'label',
-        },
-      },
-      renderDependFn: function(formData) {
-        return formData.extraOption.openType === 0;
       },
     },
   },
@@ -215,6 +188,97 @@ export const btnConfigFormOptions = [
     },
     formItem: {
       formItemAttrs: {
+        prop: 'extraOption.isRefresh',
+        label: '刷新列表：',
+      },
+      tagName: 'el-radio-group',
+      tagAttrs: {
+        placeholder: '',
+      },
+      // 对应formData中的属性值
+      formField: 'extraOption.isRefresh',
+      extraOption: {
+        options: yesOrNo,
+        props: {
+          key: 'value',
+          label: 'label',
+        },
+      },
+      renderDependFn: function(formData) {
+        return formData.extraOption.openType === 0;
+      },
+    },
+  },
+  {
+    elRowAttrs: {
+      gutter: 10,
+    },
+    formItem: {
+      formItemAttrs: {
+        prop: 'extraOption.dialogTitle',
+        label: '弹窗标题：',
+      },
+      tagName: 'el-input',
+      style: 'width: 180px',
+      tagAttrs: {
+        placeholder: '请输入弹窗标题',
+      },
+      // 对应formData中的属性值
+      formField: 'extraOption.dialogTitle',
+      renderDependFn: function(formData) {
+        return formData.extraOption.openType === 0;
+      },
+    },
+  },
+  {
+    elRowAttrs: {
+      gutter: 10,
+    },
+    formItem: {
+      formItemAttrs: {
+        prop: 'extraOption.dialogWidth',
+        label: '弹窗宽度：',
+      },
+      tagName: 'el-input',
+      style: 'width: 180px',
+      tagAttrs: {
+        placeholder: '请输入弹窗宽度',
+      },
+      // 对应formData中的属性值
+      formField: 'extraOption.dialogWidth',
+      renderDependFn: function(formData) {
+        return formData.extraOption.openType === 0;
+      },
+    },
+  },
+  {
+    elRowAttrs: {
+      gutter: 10,
+    },
+    formItem: {
+      formItemAttrs: {
+        prop: 'extraOption.dialogHeight',
+        label: '弹窗高度：',
+      },
+      tagName: 'el-input',
+      style: 'width: 180px',
+      tagAttrs: {
+        placeholder: '请输入弹窗高度',
+      },
+      // 对应formData中的属性值
+      formField: 'extraOption.dialogHeight',
+      renderDependFn: function(formData) {
+        return formData.extraOption.openType === 0;
+      },
+    },
+  },
+
+  {
+    elRowAttrs: {
+      gutter: 10,
+    },
+    formItem: {
+      formItemAttrs: {
         prop: 'tagAttrs.showType',
         label: '显示形式：',
       },
@@ -239,7 +303,7 @@ export const btnConfigFormOptions = [
     },
     formItem: {
       formItemAttrs: {
-        label: '颜色',
+        label: '颜色：',
       },
       slotName: 'color',
     },
@@ -326,6 +390,7 @@ export const btnConfigFormOptions = [
         label: '自定义样式：',
       },
       tagName: 'el-input',
+      style: 'width: 180px',
       tagAttrs: {
         placeholder: '',
       },
@@ -343,6 +408,7 @@ export const btnConfigFormOptions = [
         prop: 'extraOption.fn',
       },
       tagName: 'el-input',
+      style: 'width: 180px',
       tagAttrs: {
         placeholder: '',
         type: 'textarea',
@@ -371,6 +437,9 @@ export function BtnConfigFrom(custom = {}) {
       openUrl: '',
       fn: '',
       isRefresh: true,
+      dialogTitle: '',
+      dialogWidth: '',
+      dialogHeight: '',
     },
     authorize: '',
     ...custom,
