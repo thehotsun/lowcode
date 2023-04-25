@@ -87,6 +87,8 @@ export default {
         totalCount: 0,
       },
       dialogTitle: '表单',
+      dialogWidth: '',
+      dialogHeight: '',
       btnRegularOptions: [],
       showSearchFrom: true,
       showBtns: true,
@@ -563,6 +565,14 @@ export default {
 
     exec,
 
+    formatterWidthOrHeightStyle(length) {
+      return length.slice(-2) === 'px'
+        ? length
+        : length.slice(-1) === '%'
+        ? length
+        : `${length}px`;
+    },
+
     handleBtnClick({
       relateFrom = '',
       openType = '',
@@ -572,15 +582,13 @@ export default {
       defaultFn = '',
       btnType = '',
       dialogTitle = '',
-      dialogWidth = '',
       dialogHeight = '',
+      dialogWidth = '',
     }) {
       console.log(defaultFn, 'defaultFn');
       this.isRefresh = isRefresh;
-      this.dialogWidth =
-        dialogWidth.slice(-2) === 'px' ? dialogWidth : `${dialogWidth}px`;
-      this.dialogHeight =
-        dialogHeight.slice(-2) === 'px' ? dialogHeight : `${dialogHeight}px`;
+      this.dialogHeight = dialogHeight;
+      this.dialogWidth = dialogWidth;
       if (fn) {
         this.exec(fn);
       } else {
@@ -688,6 +696,7 @@ export default {
       dialogWidth,
       dialogHeight,
       previewMode,
+      formatterWidthOrHeightStyle,
     } = this;
 
     const curPageListeners = {
@@ -720,6 +729,10 @@ export default {
         ) : null;
       },
     };
+
+    const width = dialogWidth
+      ? formatterWidthOrHeightStyle(dialogWidth)
+      : '1200px';
     return (
       <el-container class="CompleteTable" style="height: 100%">
         {showSearchFrom ? (
@@ -820,11 +833,21 @@ export default {
             {...{ on: visibleListeners }}
             close-on-click-modal={false}
             close-on-press-escape={false}
-            width={dialogWidth || '1200px'}
             append-to-body
             v-draggable
+            width={
+              dialogWidth ? formatterWidthOrHeightStyle(dialogWidth) : '1200px'
+            }
           >
-            <div style={{ height: dialogHeight, overflow: 'auto' }}>
+            <div
+              style={{
+                height: dialogHeight
+                  ? formatterWidthOrHeightStyle(dialogHeight)
+                  : '650px',
+                overflow: 'auto',
+                width: `calc(${width} - '40px')`,
+              }}
+            >
               {formId ? (
                 previewMode ? (
                   <VFPreview
