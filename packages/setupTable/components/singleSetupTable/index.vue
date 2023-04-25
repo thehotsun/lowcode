@@ -42,7 +42,8 @@
       <base-render-form ref="setupForm" :form-data="setupForm" :form-options="setupFormOptions" :use-dialog="false"
         :showFooter="false">
         <template #selectDic="{ formData }">
-          <el-select :value="formData.request.url" @change="changeFormData($event, formData)" placeholder="请选择">
+          <el-select :value="formData.request.url" @change="changeFormData($event, formData)" placeholder="请选择字典项"
+            filterable clearable="">
             <el-option v-for="item in dicCodeList" :key="item.dicCode" :label="item.dicName" :value="item.dicCode">
               <span class="code">{{ item.dicCode.split('dicCode=')[1] }}</span>
               <span>{{ item.dicName }}</span>

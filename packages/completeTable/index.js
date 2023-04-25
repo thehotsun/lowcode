@@ -597,6 +597,7 @@ export default {
           case 'check':
           case 'edit':
             if (this.selectList.length === 1) {
+              // this.keyField = this.getKeyField(this.selectList[0], this.keyField);
               this.primaryKeyValue = this.selectList[0][this.keyField];
               this.expose_showDialog(relateFrom);
               this.onlyRead = btnType === 'check';
@@ -834,6 +835,7 @@ export default {
                     {...{
                       on: {
                         submit: onSubmit,
+                        cancel: expose_hideDialog,
                       },
                     }}
                   ></VFPreview>
@@ -846,6 +848,7 @@ export default {
                     {...{
                       on: {
                         submit: onSubmit,
+                        cancel: expose_hideDialog,
                       },
                     }}
                   ></VFRuntime>
