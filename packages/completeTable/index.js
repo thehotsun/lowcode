@@ -393,7 +393,7 @@ export default {
       const filterConfig = getElBtnConfig(
         'primary',
         this.handleFilter,
-        customAttr('筛选')
+        customAttr('搜索')
       );
       const resetConfig = getElBtnConfig(
         '',
@@ -605,8 +605,12 @@ export default {
           case 'check':
           case 'edit':
             if (this.selectList.length === 1) {
-              // this.keyField = this.getKeyField(this.selectList[0], this.keyField);
               this.primaryKeyValue = this.selectList[0][this.keyField];
+              if ([undefined, null].includes(this.primaryKeyValue)) {
+                return this.$warn(
+                  '主键字段未取到值，请检查数据或在列表设计页面重新关联主键！'
+                );
+              }
               this.expose_showDialog(relateFrom);
               this.onlyRead = btnType === 'check';
               this.dialogTitle =
@@ -616,12 +620,16 @@ export default {
             }
             break;
           case 'download':
-            if (this.previewMode) return;
-            this.download(this.selectList.map((item) => item[this.keyField]));
-            break;
           case 'batchDel':
             if (this.previewMode) return;
-            this.batchDel(this.selectList.map((item) => item[this.keyField]));
+            if ([undefined, null].includes(this.selectList[0][this.keyField])) {
+              return this.$warn(
+                '主键字段未取到值，请检查数据或重新在列表设计页面重新关联主键！'
+              );
+            }
+            (btnType === 'download' ? this.download : this.batchDel)(
+              this.selectList.map((item) => item[this.keyField])
+            );
             break;
           default:
             break;

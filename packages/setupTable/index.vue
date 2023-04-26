@@ -256,8 +256,9 @@ export default {
       });
     },
     convertData (data) {
-      return data.map(item => {
+      return data.map((item, index) => {
         const rawData = getSingleTableData();
+        if (index < 3) rawData.show = true
         return {
           ...rawData,
           fieldCode: item.fieldName,

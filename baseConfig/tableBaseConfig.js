@@ -51,6 +51,7 @@ const originEditConf = [
     align: 'center',
     className: 'iconfont icon-drag drag-option my-handle',
     width: '50',
+    fixed: 'left',
   },
   {
     ...baseAttr,
@@ -58,12 +59,14 @@ const originEditConf = [
     prop: 'fieldCode',
     disabled: true,
     'min-width': '150',
+    fixed: 'left',
   },
   {
     ...baseAttr,
     label: '标题',
     prop: 'fieldName',
     'min-width': '150',
+    fixed: 'left',
   },
   {
     ...baseAttr,
@@ -72,6 +75,7 @@ const originEditConf = [
     'min-width': '70',
     tagName: 'el-switch',
     sortable: true,
+    fixed: 'left',
   },
   // {
   //   ...baseAttr,
@@ -233,7 +237,7 @@ export function getSingleTableData() {
     fieldCode: '',
     fieldName: '',
     // englishName: '',
-    show: true,
+    show: false,
     columnWidth: 110,
     align: 1,
     fixed: '',
@@ -243,7 +247,7 @@ export function getSingleTableData() {
     'sort-method': '',
     filters: '',
     'filter-method': '',
-    'show-overflow-tooltip': false,
+    'show-overflow-tooltip': true,
     formatter: '',
     renderHeader: '',
   };

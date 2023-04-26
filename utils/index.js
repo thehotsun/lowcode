@@ -563,7 +563,7 @@ export function getSetupForm(searchWidgetName) {
             multiple: false,
           },
         },
-        extraOption: '',
+        extraOption: { labelTranslateType: 0 },
         request: {
           require: true,
           url: '',
