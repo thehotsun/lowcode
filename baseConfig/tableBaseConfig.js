@@ -47,11 +47,11 @@ const originEditConf = [
   // },
   {
     tagName: 'i',
-    label: '拖拽排序',
+    label: '',
     align: 'center',
     className: 'iconfont icon-drag drag-option my-handle',
+    style: 'cursor: pointer',
     width: '50',
-    fixed: 'left',
   },
   {
     ...baseAttr,
@@ -59,14 +59,12 @@ const originEditConf = [
     prop: 'fieldCode',
     disabled: true,
     'min-width': '150',
-    fixed: 'left',
   },
   {
     ...baseAttr,
     label: '标题',
     prop: 'fieldName',
     'min-width': '150',
-    fixed: 'left',
   },
   {
     ...baseAttr,
@@ -75,7 +73,6 @@ const originEditConf = [
     'min-width': '70',
     tagName: 'el-switch',
     sortable: true,
-    fixed: 'left',
   },
   // {
   //   ...baseAttr,
@@ -115,11 +112,25 @@ const originEditConf = [
       options: fixed,
     },
   },
+  // {
+  //   ...baseAttr,
+  //   label: '查询控件',
+  //   prop: 'searchWidget',
+  //   tagName: 'el-select',
+  //   tagAttrs: {
+  //     clearable: true,
+  //   },
+  //   'min-width': '150',
+  //   // 特殊组件的额外属性值例如select组件下的option组件所需的options
+  //   extraOption: {
+  //     options: searchWidget,
+  //   },
+  // },
   {
     ...baseAttr,
-    label: '查询控件',
-    prop: 'searchWidget',
-    tagName: 'el-select',
+    label: '添加查询控件',
+    prop: 'isSearchWidget',
+    tagName: 'el-switch',
     tagAttrs: {
       clearable: true,
     },
@@ -242,6 +253,7 @@ export function getSingleTableData() {
     align: 1,
     fixed: '',
     searchWidget: '',
+    isSearchWidget: false,
     searchWidgetConfig: {},
     sort: false,
     'sort-method': '',

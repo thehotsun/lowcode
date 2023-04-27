@@ -326,8 +326,8 @@ export default {
         const searchWidgetName = searchWidget.find(
           (widgetitem) => widgetitem.id === item.searchWidget
         )?.tagName;
-        // 只有搜索控件有值，才会添加到options中
-        if (searchWidgetName) {
+        // 只有搜索控件有值且开启了搜索项，才会添加到options中
+        if (searchWidgetName && item.isSearchWidget) {
           // this.$set(this.searchFrom, item.fieldCode, '');
           setFromField(
             this.searchFrom,

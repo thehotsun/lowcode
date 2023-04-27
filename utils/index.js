@@ -8,6 +8,8 @@ import {
   getElBtnConfig,
 } from '../baseConfig/widgetBaseConfig';
 
+import { searchWidget } from '../baseConfig/tableSelectConfigs';
+
 import { pickBy, merge } from 'lodash';
 
 export function setPlaceholder(tagName, fieldName) {
@@ -273,6 +275,15 @@ export function getSetupFormOptions(searchWidgetName) {
   let options = [];
   const complexOptions = () => [
     [
+      '控件类型：',
+      '请选择控件类型',
+      '',
+      {
+        style: 'width: 350px',
+        slotName: 'searchWidget',
+      },
+    ],
+    [
       '标签名：',
       '请输入标签名',
       'formItemAttrs.label',
@@ -357,6 +368,10 @@ export function getSetupFormOptions(searchWidgetName) {
   switch (searchWidgetName) {
     case 'el-input':
       options = [
+        getSetupFromSingleConfig('控件类型：', '请选择控件类型', '', {
+          style: 'width: 350px',
+          slotName: 'searchWidget',
+        }),
         getSetupFromSingleConfig(
           '标签名：',
           '请输入标签名',
@@ -397,6 +412,10 @@ export function getSetupFormOptions(searchWidgetName) {
     case 'el-date-picker':
     case 'el-date-picker-range':
       options = [
+        getSetupFromSingleConfig('控件类型：', '请选择控件类型', '', {
+          style: 'width: 350px',
+          slotName: 'searchWidget',
+        }),
         getSetupFromSingleConfig(
           '标签名：',
           '请输入标签名',
@@ -430,6 +449,10 @@ export function getSetupFormOptions(searchWidgetName) {
       break;
     case 'dictionary':
       options = [
+        getSetupFromSingleConfig('控件类型：', '请选择控件类型', '', {
+          style: 'width: 350px',
+          slotName: 'searchWidget',
+        }),
         getSetupFromSingleConfig(
           '标签名：',
           '请输入标签名',
@@ -482,9 +505,10 @@ export function getSetupFormOptions(searchWidgetName) {
 }
 
 export function getSetupForm(searchWidgetName) {
+  let form;
   switch (searchWidgetName) {
     case 'el-input':
-      return {
+      form = {
         relateOtherField: [],
         formItemAttrs: {
           label: '',
@@ -494,10 +518,12 @@ export function getSetupForm(searchWidgetName) {
         },
         sortNumb: '0',
       };
+      break;
     case 'el-input-number':
     case 'el-date-picker':
     case 'el-date-picker-range':
-      return {
+      form = {
+        searchWidgetType: 0,
         formItemAttrs: {
           label: '',
         },
@@ -506,8 +532,10 @@ export function getSetupForm(searchWidgetName) {
         },
         sortNumb: '0',
       };
+      break;
     case 'el-select':
-      return {
+      form = {
+        searchWidgetType: 0,
         formItemAttrs: {
           label: '',
         },
@@ -527,8 +555,9 @@ export function getSetupForm(searchWidgetName) {
         },
         sortNumb: '0',
       };
+      break;
     case 'el-cascader':
-      return {
+      form = {
         formItemAttrs: {
           label: '',
         },
@@ -550,8 +579,9 @@ export function getSetupForm(searchWidgetName) {
         },
         sortNumb: '0',
       };
+      break;
     case 'dictionary':
-      return {
+      form = {
         formItemAttrs: {
           label: '',
         },
@@ -573,10 +603,16 @@ export function getSetupForm(searchWidgetName) {
         },
         sortNumb: '0',
       };
+      break;
     default:
       console.warn(`您输入的标签 ${searchWidgetName} 暂不支持！`);
       break;
   }
+
+  form.searchWidgetType = searchWidget.find(
+    (item) => item.tagName === searchWidgetName
+  )?.id;
+  return form;
 }
 
 function getSummaries(param) {

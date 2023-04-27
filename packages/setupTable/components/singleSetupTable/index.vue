@@ -22,36 +22,56 @@
         <!-- 注意这里的slot值要和tableOptions中配置的slotName一致 -->
         <!-- #operator是简写，详细请查阅vue文档 -->
         <template #setupWidget="{ row }">
-          <el-button :disabled="row.searchWidget === ''" @click.stop.prevent="handleWidgetAttr(row)">
+          <el-button :disabled="row.isSearchWidget === false" @click.stop.prevent="handleWidgetAttr(row)">
             设置
           </el-button>
           <slot name="setupWidget" :row="row"></slot>
         </template>
-        <template #operator="{ row }">
+        <!-- <template #operator="{ row }">
           <el-button v-if="row.$edit" @click.stop.prevent="onSave(row)">
             保存
           </el-button>
           <slot name="operator" :row="row"></slot>
-        </template>
+        </template> -->
       </base-render-table>
       <!-- </el-main> -->
     </div>
     <!-- </el-main> -->
     <el-dialog title="设置搜索控件属性" :visible.sync="dialogVisibleFrom" :close-on-click-modal="false"
-      :close-on-press-escape="false" width="500px" v-dialogDrag :before-close="handleCloseFrom" append-to-body>
-      <base-render-form ref="setupForm" :form-data="setupForm" :form-options="setupFormOptions" :use-dialog="false"
-        :showFooter="false">
-        <template #selectDic="{ formData }">
-          <el-select :value="formData.request.url" @change="changeFormData($event, formData)" placeholder="请选择字典项"
-            filterable clearable="">
-            <el-option v-for="item in dicCodeList" :key="item.dicCode" :label="item.dicName" :value="item.dicCode">
-              <span class="code">{{ item.dicCode.split('dicCode=')[1] }}</span>
-              <span>{{ item.dicName }}</span>
-            </el-option>
-          </el-select>
-          <el-button @click="requestDicCodeListData">刷新</el-button>
-        </template>
-      </base-render-form>
+      :close-on-press-escape="false" width="950px" v-dialogDrag :before-close="handleCloseFrom" append-to-body>
+      <div class="flex">
+        <div class="left">
+          <base-render-form ref="setupForm" :form-data="setupForm" :form-options="setupFormOptions" :use-dialog="false"
+            :showFooter="false">
+            <template #searchWidget>
+              <el-select v-model="setupForm.searchWidgetType" @change="changeWidget" placeholder="请选择控件类型" filterable
+                clearable="">
+                <el-option v-for="item in searchWidget" :key="item.id" :label="item.cnName" :value="item.id">
+                </el-option>
+              </el-select>
+            </template>
+            <template #selectDic="{ formData }">
+              <el-select :value="formData.request.url" @change="changeFormData($event, formData)" placeholder="请选择字典项"
+                filterable clearable="">
+                <el-option v-for="item in dicCodeList" :key="item.dicCode" :label="item.dicName" :value="item.dicCode">
+                  <span class="code">{{ item.dicCode.split('dicCode=')[1] }}</span>
+                  <span>{{ item.dicName }}</span>
+                </el-option>
+              </el-select>
+              <el-button @click="requestDicCodeListData">刷新</el-button>
+            </template>
+          </base-render-form>
+          <el-form>
+            <el-form-item label-width="106px" label="生成sql片段：">
+              <div class="sql">{{ suggestSQL }}</div>
+            </el-form-item>
+            <div>提示：生成的sql片段仅供参考</div>
+          </el-form>
+        </div>
+        <div class="right">
+          <code-editor v-model="wholeSQL"></code-editor>
+        </div>
+      </div>
       <span slot="footer" class="dialog-footer">
         <el-button @click="handleCloseFrom">取消</el-button>
         <el-button type="primary" @click="confirmFrom">确定</el-button>
@@ -66,6 +86,8 @@ import BaseRenderTable from '../../../../packages/BaseRenderTable/index';
 import BaseRenderForm from '../../../../packages/BaseRenderForm/index';
 import { getSingleTableData, editConf as tableOptions } from '../../../../baseConfig/tableBaseConfig'
 import { searchWidget } from '../../../../baseConfig/tableSelectConfigs';
+import codeEditor from '../../../components/codemirror';
+
 import {
   str2obj, getSetupForm,
   getSetupFormOptions, setPlaceholder
@@ -78,6 +100,7 @@ export default {
   components: {
     BaseRenderTable,
     BaseRenderForm,
+    codeEditor
   },
   props: {
     rawTableData: Array,
@@ -97,6 +120,9 @@ export default {
       curRowData: {},
       tableData: [],
       dicCodeList: [],
+      searchWidget,
+      suggestSQL: '',
+      wholeSQL: '',
     };
   },
 
@@ -133,15 +159,23 @@ export default {
       });
     },
 
+    input (val) { this.wholeSQL = val },
+
+    changeWidget (val) {
+      const searchWidgetName = searchWidget.find((widgetitem) => widgetitem.id === val)?.tagName;
+      this.setupForm = this.getDefaultValueForm(searchWidgetName, this.curRowData.fieldName)
+      this.setupFormOptions = this.composeFormOptions(searchWidgetName, this.row);
+    },
+
     changeFormData (value, formData) {
       console.log(formData, value);
       // 防止用户赋值给没有声明的属性值，导致其变为非响应式数据
       this.$set(formData.request, 'url', `${value}`);
     },
     handleWidgetAttr (row) {
-      if (row.searchWidget === '') {
-        return this.$warn('请先选择控件')
-      }
+      // if (row.searchWidget === '') {
+      //   return this.$warn('请先选择控件')
+      // }
       this.curRowData = row;
       this.dialogVisibleFrom = true;
       const searchWidgetName = searchWidget.find((widgetitem) => widgetitem.id === row.searchWidget)?.tagName;
@@ -151,7 +185,7 @@ export default {
       if (this.setupForm.extraOption) this.setupForm.extraOption = JSON.stringify(this.setupForm.extraOption)
     },
 
-    getDefaultValueForm (searchWidgetName, fieldName) {
+    getDefaultValueForm (searchWidgetName = 'el-input', fieldName) {
       const form = getSetupForm(searchWidgetName)
       form.formItemAttrs.label = fieldName;
       form.tagAttrs.placeholder = setPlaceholder(searchWidgetName, fieldName);
@@ -169,7 +203,7 @@ export default {
     },
 
     // 设置searchForm和装配fromOptions
-    composeFormOptions (searchWidgetName, row) {
+    composeFormOptions (searchWidgetName = 'el-input', row) {
       let formOptions = [];
       // 只有搜索控件有值，才会添加到options中
       if (searchWidgetName) {
@@ -315,6 +349,8 @@ export default {
 
     handleCloseFrom () {
       this.dialogVisibleFrom = false;
+      this.setupForm = {}
+      this.setupFormOptions = []
     },
 
     confirmFrom () {
@@ -322,6 +358,7 @@ export default {
         this.setupForm.extraOption = str2obj(this.setupForm.extraOption)
       }
       this.curRowData.searchWidgetConfig = this.setupForm
+      this.curRowData.searchWidget = this.setupForm.searchWidgetType
       this.handleCloseFrom();
     },
   }
@@ -335,9 +372,29 @@ export default {
   margin-top: 10px;
 }
 
+.flex {
+  display: flex;
+
+  .left {
+    width: 500px;
+  }
+
+  .right {
+    width: 400px;
+  }
+}
+
 .code {
   float: right;
   color: #999;
+}
+
+.sql {
+  width: 350px;
+  min-height: 70px;
+  font-size: 14px;
+  line-height: 20px;
+  border: 1px solid #DCDFE6;
 }
 
 .operate {
