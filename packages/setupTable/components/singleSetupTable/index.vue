@@ -167,7 +167,7 @@ export default {
     requestDicCodeListData () {
       this.generalRequest('/dic/list', 'get').then((res) => {
         this.dicCodeList = res.data.map(item => {
-          item.dicCode = `/dic/content/list?dicCode=${item.dicCode}`
+          item.dicCode = `/dic/item/list?dicCode=${item.dicCode}`
           return item
         });
       });

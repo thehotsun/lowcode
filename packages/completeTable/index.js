@@ -669,6 +669,13 @@ export default {
     handleSetting() {
       this.showPanel = !this.showPanel;
     },
+    submitForm() {
+      console.log(this.$refs.VFRuntime, 'this.$refs');
+      this.$refs.VFRuntime.submitForm();
+    },
+    handleCancel() {
+      this.$refs.VFRuntime.handleCancel();
+    },
   },
 
   render() {
@@ -705,6 +712,8 @@ export default {
       dialogHeight,
       previewMode,
       formatterWidthOrHeightStyle,
+      submitForm,
+      handleCancel,
     } = this;
 
     const curPageListeners = {
@@ -859,6 +868,7 @@ export default {
               {formId ? (
                 previewMode ? (
                   <VFPreview
+                    ref={'VFPreview'}
                     primaryKeyValue={primaryKeyValue}
                     isDisabled={onlyRead}
                     hasSubmit={!onlyRead && !previewMode}
@@ -872,6 +882,7 @@ export default {
                   ></VFPreview>
                 ) : (
                   <VFRuntime
+                    ref="VFRuntime"
                     primaryKeyValue={primaryKeyValue}
                     isDisabled={onlyRead}
                     hasSubmit={!onlyRead && !previewMode}
@@ -886,6 +897,30 @@ export default {
                 )
               ) : null}
             </div>
+
+            <span slot="footer">
+              <el-button
+                type="primary"
+                size="small"
+                {...{
+                  on: {
+                    click: submitForm,
+                  },
+                }}
+              >
+                提 交
+              </el-button>
+              <el-button
+                size="small"
+                {...{
+                  on: {
+                    click: handleCancel,
+                  },
+                }}
+              >
+                取 消
+              </el-button>
+            </span>
           </el-dialog>
         ) : null}
       </el-container>

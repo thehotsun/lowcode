@@ -1,6 +1,6 @@
 {
   "name": "@viva3la3vida/base-render",
-  "version": "1.0.51",
+  "version": "1.0.53",
   "description": "baseRender",
   "license": "MIT",
   "main": "./lib/index.min.js",
@@ -87,5 +87,12 @@
   "volta": {
     "node": "14.18.2"
   },
-  "files": ["/lib"]
+  "files": [
+    "baseConfig",
+    "packages",
+    "examples",
+    "src",
+    "utils",
+    "lib"
+  ]
 }

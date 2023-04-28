@@ -9,7 +9,6 @@
         <el-button size="mini" type="primary" @click="confirm">保存</el-button>
       </div>
     </div>
-    <!-- <div class="el-divider el-divider--horizontal"></div> -->
     <div class="btnDesign">
       <div class="btns">
         <span v-for="(item, index) in btnConfigArr" :key="index" style="display:inline-block">
@@ -52,9 +51,6 @@
     <el-dialog title="表格属性设置" :visible.sync="dialogVisibleTableAttrs" :close-on-click-modal="false"
       :close-on-press-escape="false" width="900px" :before-close="handleCloseTableAttrs">
       <div style="min-width: 60px;background: #fff;padding: 10px; margn-top: 60px;margin-bottom: 60px;">
-        <!-- <div class="title">常用表格属性设置</div> -->
-
-        <!-- <div class="el-divider el-divider--horizontal"></div> -->
         <el-form :model="tableAttrs" :rules="rules" ref="ruleForm" label-width="130px" style="padding-bottom: 20px">
           <el-form-item label="分页" prop="showPagination">
             <el-switch v-model="tableAttrs.showPagination" />
@@ -188,7 +184,7 @@ export default {
       dialogVisibleBtnConfig: false,
       dialogVisiblePreview: false,
       dialogVisibleTableAttrs: false,
-      tableData: [getSingleTableData(), getSingleTableData()],
+      tableData: [],
       setupForm: {
       },
       setupFormOptions: [],
@@ -233,7 +229,7 @@ export default {
     };
   },
   mounted () {
-    this.columnDrop()
+    // this.columnDrop()
   },
   methods: {
     async init (id = '', formCode) {
@@ -346,10 +342,9 @@ export default {
     },
 
     getRenderParams () {
-      const btnConfigFromArr = this.btnConfigArr
       const json = {
         ...this.tableAttrs,
-        formOptions: btnConfigFromArr,
+        formOptions: this.btnConfigArr,
         tableOptions: this.$refs.singleSetupTable.expose_getTableData(),
         keyField: this.keyField,
       };

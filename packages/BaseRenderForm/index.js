@@ -147,7 +147,13 @@ export default {
 
     getSelectCompVNode({ attrs, listeners, formField, extraOption, request }) {
       this.disposeRequest(request, extraOption);
-      let { options = [], props = {}, labelTranslateFn = '' } = extraOption;
+      let { options = [], props = {}, labelTranslateType = '' } = extraOption;
+      if (typeof labelTranslateType === 'number') {
+        props = {
+          key: 'dicId',
+          label: 'cnname',
+        };
+      }
       const { formData, onlyShow, isSearch } = this;
       // 基础版有个添加维护字典的功能，里面返回的字段为id和cnName，因此以此字段为默认取值
       const { key = 'id', label = 'cnName' } = props;
