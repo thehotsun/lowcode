@@ -300,7 +300,7 @@ export default {
       if (this.tableAttrs.isShowCheckbox) {
         this.tableOptions.unshift({
           type: 'selection',
-          width: '55',
+          width: '46',
           align: 'center',
         });
       }

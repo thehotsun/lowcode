@@ -38,7 +38,7 @@
     </div>
     <!-- </el-main> -->
     <el-dialog title="设置搜索控件属性" :visible.sync="dialogVisibleFrom" :close-on-click-modal="false"
-      :close-on-press-escape="false" width="950px" v-dialogDrag :before-close="handleCloseFrom" append-to-body>
+      :close-on-press-escape="false" width="1450px" v-dialogDrag :before-close="handleCloseFrom" append-to-body>
       <div class="flex">
         <div class="left">
           <base-render-form ref="setupForm" :form-data="setupForm" :form-options="setupFormOptions" :use-dialog="false"
@@ -69,7 +69,7 @@
           </el-form>
         </div>
         <div class="right">
-          <code-editor v-model="wholeSQL"></code-editor>
+          <code-editor ref="ace" v-model="wholeSQL"></code-editor>
         </div>
       </div>
       <span slot="footer" class="dialog-footer">
@@ -86,7 +86,7 @@ import BaseRenderTable from '../../../../packages/BaseRenderTable/index';
 import BaseRenderForm from '../../../../packages/BaseRenderForm/index';
 import { getSingleTableData, editConf as tableOptions } from '../../../../baseConfig/tableBaseConfig'
 import { searchWidget } from '../../../../baseConfig/tableSelectConfigs';
-import codeEditor from '../../../components/codemirror';
+import codeEditor from '../../../components/sqlCodeMirror';
 
 import {
   str2obj, getSetupForm,
@@ -103,9 +103,18 @@ export default {
     codeEditor
   },
   props: {
+    listPageId: String,
     rawTableData: Array,
     generalRequest: {
       type: Function,
+    },
+    generateQuerySql: {
+      type: Function,
+      require: true
+    },
+    saveSql: {
+      type: Function,
+      require: true
     },
   },
   data () {
@@ -130,6 +139,11 @@ export default {
     rawTableData (val) {
       this.tableData = val;
     },
+    'setupForm.tagAttrs.multiple': {
+      handler (val) {
+        this.querySql(val ? 'checkbox' : 'radio')
+      }
+    }
   },
 
   mounted () {
@@ -158,13 +172,13 @@ export default {
         });
       });
     },
-
-    input (val) { this.wholeSQL = val },
-
     changeWidget (val) {
       const searchWidgetName = searchWidget.find((widgetitem) => widgetitem.id === val)?.tagName;
+      if ([0, 2].includes(val)) {
+        this.querySql(val === 0 ? 'input' : 'radio')
+      }
       this.setupForm = this.getDefaultValueForm(searchWidgetName, this.curRowData.fieldName)
-      this.setupFormOptions = this.composeFormOptions(searchWidgetName, this.row);
+      this.setupFormOptions = this.composeFormOptions(searchWidgetName, this.curRowData);
     },
 
     changeFormData (value, formData) {
@@ -172,10 +186,23 @@ export default {
       // 防止用户赋值给没有声明的属性值，导致其变为非响应式数据
       this.$set(formData.request, 'url', `${value}`);
     },
+    querySql (type = 'input', row) {
+      const params = {
+        "listPageId": this.listPageId,
+        "displayDataType": type,
+        "fieldName": row?.fieldCode || this.curRowData.fieldCode
+      }
+      this.generateQuerySql(params).then(res => {
+        this.$refs.ace.codeValue = this.wholeSQL = res.data.querySql
+        this.$refs.ace.aceEditor.setValue(this.wholeSQL)
+        this.suggestSQL = res.data.querySqlFragment;
+      })
+    },
     handleWidgetAttr (row) {
       // if (row.searchWidget === '') {
       //   return this.$warn('请先选择控件')
       // }
+      this.querySql('input', row)
       this.curRowData = row;
       this.dialogVisibleFrom = true;
       const searchWidgetName = searchWidget.find((widgetitem) => widgetitem.id === row.searchWidget)?.tagName;
@@ -230,17 +257,14 @@ export default {
 
     rowDrop () {
       // 此时找到的元素是要拖拽元素的父容器
-      const tbody = document.querySelector('.el-table__body-wrapper tbody');
-      let tableData = this.tableData;
-      Sortable.create(tbody, {
+      const dom = document.querySelector('.el-table__body-wrapper tbody');
+      Sortable.create(dom, {
         handle: ".renderwrap .my-handle",
-        setData: function (dataTransfer) {
-          dataTransfer.setData('Text', '')
-        },
         onEnd: e => {
           //e.oldIndex为拖动一行原来的位置，e.newIndex为拖动后新的位置
-          const targetRow = tableData.splice(e.oldIndex, 1)[0];
-          tableData.splice(e.newIndex, 0, targetRow);
+          const targetRow = this.tableData.splice(e.oldIndex, 1)[0];
+          this.tableData.splice(e.newIndex, 0, targetRow);
+          console.log(e.oldIndex, e.newIndex);
         }
       })
     },
@@ -351,9 +375,12 @@ export default {
       this.dialogVisibleFrom = false;
       this.setupForm = {}
       this.setupFormOptions = []
+      this.wholeSQL = ''
+      this.suggestSQL = ''
     },
 
     confirmFrom () {
+      this.saveSql(this.listPageId, this.wholeSQL);
       if (this.setupForm.extraOption) {
         this.setupForm.extraOption = str2obj(this.setupForm.extraOption)
       }
@@ -380,7 +407,7 @@ export default {
   }
 
   .right {
-    width: 400px;
+    width: 990px;
   }
 }
 

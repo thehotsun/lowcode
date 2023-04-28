@@ -11,10 +11,12 @@
     </div>
     <!-- <div class="el-divider el-divider--horizontal"></div> -->
     <div class="btnDesign">
-      <span v-for="(item, index) in btnConfigArr" :key="index">
-        <el-button type="" size="small" @click="handleDetail(index)">{{ item.tagAttrs.value }}</el-button>
-        <i type="danger" class="el-icon-circle-close middle " @click="handleDelBtn(index)"></i>
-      </span>
+      <div class="btns">
+        <span v-for="(item, index) in btnConfigArr" :key="index" style="display:inline-block">
+          <el-button type="" size="small" @click="handleDetail(index)">{{ item.tagAttrs.value }}</el-button>
+          <i type="danger" class="el-icon-circle-close middle " @click="handleDelBtn(index)"></i>
+        </span>
+      </div>
 
       <el-dropdown szie="small" @command="handleCommand">
         <el-button type="primary" size="small" plain>
@@ -33,7 +35,7 @@
 
     <div class="tablesetup">
       <single-setup-table ref="singleSetupTable" :generalRequest="generalRequest" :raw-table-data.sync="tableData"
-        edit-mode>
+        :generateQuerySql="generateQuerySql" :saveSql="saveSql" :listPageId="listPageId" edit-mode>
       </single-setup-table>
     </div>
 
@@ -122,7 +124,7 @@ import { getSingleTableData } from '../../baseConfig/tableBaseConfig'
 import completeTable from '../completeTable';
 import setupBtnConfig from '../setupBtnConfig';
 import singleSetupTable from './components/singleSetupTable';
-
+import Sortable from "sortablejs"
 export default {
   name: 'setupTable',
   components: {
@@ -136,8 +138,17 @@ export default {
       type: Function,
       require: true
     },
+    listPageId: String,
     // 保存
     saveListConfigJSON: {
+      type: Function,
+      require: true
+    },
+    saveSql: {
+      type: Function,
+      require: true
+    },
+    generateQuerySql: {
       type: Function,
       require: true
     },
@@ -222,7 +233,7 @@ export default {
     };
   },
   mounted () {
-    // this.init()
+    this.columnDrop()
   },
   methods: {
     async init (id = '', formCode) {
@@ -239,10 +250,24 @@ export default {
         this.keyField = keyField;
         this.tableData = tableOptions;
         this.btnConfigArr = formOptions
+        this.updateFieldList();
       } else {
         this.queryFieldList();
         this.getPrimekey()
       }
+    },
+
+    columnDrop () {
+      // 此时找到的元素是要拖拽元素的父容器
+      const dom = document.querySelector('.btnDesign .btns');
+      Sortable.create(dom, {
+        onEnd: e => {
+          //e.oldIndex为拖动一行原来的位置，e.newIndex为拖动后新的位置
+          const targetRow = this.btnConfigArr.splice(e.oldIndex, 1)[0];
+          this.btnConfigArr.splice(e.newIndex, 0, targetRow);
+          console.log(e.oldIndex, e.newIndex);
+        }
+      })
     },
 
     requestTableConfig () {
@@ -264,6 +289,24 @@ export default {
           fieldCode: item.fieldName,
           fieldName: item.fieldDisplayName
         };
+      });
+    },
+    updateFieldList () {
+      this.requestFieldList(this._groupID).then(res => {
+        const list = res.data;
+        list.map(item => {
+          if (!this.tableData.some(tableDataItem => tableDataItem.fieldCode === item.fieldName)) {
+            const rawData = getSingleTableData();
+            this.tableData.push({
+              ...rawData,
+              fieldCode: item.fieldName,
+              fieldName: item.fieldDisplayName
+            })
+          }
+        })
+        this.tableData = this.tableData.filter(tableDataItem => {
+          return list.some(item => tableDataItem.fieldCode === item.fieldName)
+        })
       });
     },
 

@@ -167,7 +167,7 @@ export default {
               <el-option
                 key={item[key]}
                 label={item[label]}
-                value={isSearch ? item[label] : item[key]}
+                value={item[key]}
                 disabled={item.disabled}
               ></el-option>
             );

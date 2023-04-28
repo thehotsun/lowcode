@@ -296,7 +296,7 @@ export function getSetupFormOptions(searchWidgetName) {
       { style: 'width: 350px' },
     ],
     [
-      '配置项',
+      '配置项：',
       '请输入配置项',
       'extraOption',
       {
@@ -309,9 +309,9 @@ export function getSetupFormOptions(searchWidgetName) {
         },
       },
     ],
-    ['接口获取数据', null, 'request.require', null, 'el-switch'],
+    ['接口获取数据：', null, 'request.require', null, 'el-switch'],
     [
-      '接口地址',
+      '接口地址：',
       null,
       'request.url',
       {
@@ -322,7 +322,7 @@ export function getSetupFormOptions(searchWidgetName) {
       },
     ],
     [
-      '请求方式',
+      '请求方式：',
       null,
       'request.type',
       {
@@ -346,7 +346,7 @@ export function getSetupFormOptions(searchWidgetName) {
       'el-select',
     ],
     [
-      '参数',
+      '参数：',
       null,
       'request.params',
       {
@@ -361,9 +361,9 @@ export function getSetupFormOptions(searchWidgetName) {
         },
       },
     ],
-    ['开启多选', null, 'tagAttrs.multiple', null, 'el-switch'],
-    ['开启本地筛选', null, 'tagAttrs.filterable', null, 'el-switch'],
-    ['开启清空', null, 'tagAttrs.clearable', null, 'el-switch'],
+    ['开启多选：', null, 'tagAttrs.multiple', null, 'el-switch'],
+    ['开启本地筛选：', null, 'tagAttrs.filterable', null, 'el-switch'],
+    ['开启清空：', null, 'tagAttrs.clearable', null, 'el-switch'],
   ];
   switch (searchWidgetName) {
     case 'el-input':
@@ -486,6 +486,10 @@ export function getSetupFormOptions(searchWidgetName) {
                   cnName: '编号-文本',
                 },
               ],
+            },
+            tagAttrs: {
+              placeholder: '',
+              clearable: false,
             },
           },
           'el-select'

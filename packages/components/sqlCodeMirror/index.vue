@@ -5,12 +5,22 @@
 </template>
 
 <script>
-import ace from 'ace-builds'
-import 'ace-builds/src-min-noconflict/theme-sqlserver' // 新设主题
-import 'ace-builds/src-min-noconflict/mode-javascript' // 默认设置的语言模式
-import 'ace-builds/src-min-noconflict/mode-json' //
-import 'ace-builds/src-min-noconflict/mode-css' //
-import 'ace-builds/src-min-noconflict/ext-language_tools'
+import ace from "ace-builds";
+import "ace-builds/src-noconflict/snippets/javascript";
+import "ace-builds/src-noconflict/snippets/html";
+import "ace-builds/src-noconflict/snippets/css";
+import "ace-builds/src-noconflict/snippets/scss";
+import "ace-builds/src-noconflict/snippets/json";
+import "ace-builds/src-noconflict/snippets/java";
+import "ace-builds/src-noconflict/snippets/text";
+import "ace-builds/src-noconflict/snippets/sql";
+import "ace-builds/src-noconflict/snippets/sqlserver";
+import "ace-builds/webpack-resolver";
+import "ace-builds/src-noconflict/ace";
+import "ace-builds/src-noconflict/theme-monokai";
+import "ace-builds/src-noconflict/mode-javascript";
+import "ace-builds/src-noconflict/mode-sql";
+import "ace-builds/src-noconflict/mode-sqlserver";
 
 export default {
   name: 'CodeEditor',
@@ -50,7 +60,6 @@ export default {
       highlightActiveLine: true,
       value: this.codeValue
     })
-
     this.aceEditor.setOptions({
       enableBasicAutocompletion: true,
       enableSnippets: true,  // 设置代码片段提示
@@ -77,13 +86,17 @@ export default {
     return {
       aceEditor: null,
       themePath: 'ace/theme/sqlserver', // 不导入 webpack-resolver，该模块路径会报错
-      modePath: 'ace/mode/javascript', // 同上
-      codeValue: this.value
+      modePath: "ace/mode/sql", // 同上
+      codeValue: ''
     }
   },
-  watch: {
-    //
-  },
+
+  // watch: {
+  //   value (val) {
+  //     this.codeValue = val
+  //     this.aceEditor.setValue(val)
+  //   }
+  // },
   methods: {
     addAutoCompletion (ace) {
       let acData = [
@@ -127,7 +140,7 @@ export default {
 <style lang="less">
 .codemirror {
   .ace-editor {
-    min-height: 300px;
+    height: 600px !important;
   }
 
   .ace-sqlserver .ace_print-margin {
