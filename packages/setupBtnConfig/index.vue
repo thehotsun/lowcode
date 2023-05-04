@@ -124,6 +124,7 @@ export default {
     onSubmit (data) {
       // 如果相同则说明是编辑，不同则是新增
       if (!this.btnConfigFromArr.some(item => item === this.originConfigForm)) {
+        data.renderId = Math.random()
         this.btnConfigFromArr.push(data)
       } else {
         merge(this.originConfigForm, data)

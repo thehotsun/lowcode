@@ -11,7 +11,7 @@
     </div>
     <div class="btnDesign">
       <div class="btns">
-        <span v-for="(item, index) in btnConfigArr" :key="index" style="display:inline-block">
+        <span v-for="(item, index) in btnConfigArr" :key="item.renderId" style="display:inline-block">
           <el-button type="" size="small" @click="handleDetail(index)">{{ item.tagAttrs.value }}</el-button>
           <i type="danger" class="el-icon-circle-close middle " @click="handleDelBtn(index)"></i>
         </span>
@@ -229,6 +229,7 @@ export default {
     };
   },
   mounted () {
+    // TODO 按钮排序
     // this.columnDrop()
   },
   methods: {
