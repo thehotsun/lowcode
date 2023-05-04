@@ -4,8 +4,11 @@
     <div class="operate">
       <!-- <el-button size='small' type="primary" @click="handleAdd(1)">新增一条</el-button> -->
       <!-- <el-button size='small' type="primary" @click="handleAdd(5)">新增五条</el-button> -->
+      <el-button size='small' @click="handleShowField">{{ filterShowField ? '列出全部字段' : '列出显示字段' }}
+      </el-button>
       <el-button size='small' type="primary" :disabled="!selected.length" @click="handleAddParent">新增父级</el-button>
       <el-button size='small' type="danger" :disabled="!selected.length" @click="handleDelParent">删除父级</el-button>
+
       <!-- <el-button size='small' type="danger" :disabled="!selected.length" @click="handleDelete">删除</el-button> -->
       <!-- <el-button size='small' type="" :disabled="checkUpBtnDisabled()" @click="handleUpAndDwon(true)">上移</el-button>
         <el-button size='small' type="" :disabled="checkDwonBtnDisabled()" @click="handleUpAndDwon(false)">下移</el-button> -->
@@ -16,9 +19,9 @@
     <!-- <el-main> -->
     <div class="renderwrap">
       <!-- <el-main> -->
-      <base-render-table ref="table" :table-data="tableData" :table-options="tableOptions" edit-mode row-key="fieldCode"
-        border @selection-change="selectListHandler" :row-style="{ height: '40px' }" :cell-style="{ padding: '4px' }"
-        height="100%" style="height: 100%;overflow:auto">
+      <base-render-table ref="table" :table-data="finalTableData" :table-options="tableOptions" edit-mode
+        row-key="fieldCode" border @selection-change="selectListHandler" :row-style="{ height: '40px' }"
+        :cell-style="{ padding: '4px' }" height="100%" style="height: 100%;overflow:auto">
         <!-- 注意这里的slot值要和tableOptions中配置的slotName一致 -->
         <!-- #operator是简写，详细请查阅vue文档 -->
         <template #setupWidget="{ row }">
@@ -132,7 +135,14 @@ export default {
       searchWidget,
       suggestSQL: '',
       wholeSQL: '',
+      filterShowField: false,
     };
+  },
+
+  computed: {
+    finalTableData () {
+      return this.filterShowField ? this.tableData.filter(item => item.show) : this.tableData
+    }
   },
 
   watch: {
@@ -162,6 +172,10 @@ export default {
 
     init () {
       this.tableData = []
+    },
+
+    handleShowField () {
+      this.filterShowField = !this.filterShowField
     },
 
     requestDicCodeListData () {
@@ -202,7 +216,6 @@ export default {
       // if (row.searchWidget === '') {
       //   return this.$warn('请先选择控件')
       // }
-      this.querySql('input', row)
       this.curRowData = row;
       this.dialogVisibleFrom = true;
       const searchWidgetName = searchWidget.find((widgetitem) => widgetitem.id === row.searchWidget)?.tagName;
@@ -262,8 +275,12 @@ export default {
         handle: ".renderwrap .my-handle",
         onEnd: e => {
           //e.oldIndex为拖动一行原来的位置，e.newIndex为拖动后新的位置
-          const targetRow = this.tableData.splice(e.oldIndex, 1)[0];
-          this.tableData.splice(e.newIndex, 0, targetRow);
+          const targetRow = this.finalTableData[e.oldIndex]
+          const substitute = this.finalTableData[e.newIndex]
+          const oldIndex = this.tableData.indexOf(targetRow)
+          const newIndex = this.tableData.indexOf(substitute)
+          this.tableData.splice(oldIndex, 1);
+          this.tableData.splice(newIndex, 0, targetRow);
           console.log(e.oldIndex, e.newIndex);
         }
       })

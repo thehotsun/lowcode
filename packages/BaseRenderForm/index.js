@@ -34,7 +34,6 @@ export default {
       type: Object,
     },
     onlyShow: Boolean,
-    isSearch: Boolean,
     showFooter: {
       type: Boolean,
       default() {
@@ -55,8 +54,6 @@ export default {
     // this.init();
   },
   methods: {
-    // TODO 怎样找到更好的方法塞进去？
-    expose_setOptions() {},
     // 可以通过调用此组件的这个方法获取el-form的实例
     expose_getElFormInstance() {
       return this.$refs[this.formRef];
@@ -147,18 +144,18 @@ export default {
 
     getSelectCompVNode({ attrs, listeners, formField, extraOption, request }) {
       this.disposeRequest(request, extraOption);
-      let { options = [], props = {}, labelTranslateType = '' } = extraOption;
+      let { options = [], props = {}, labelTranslateType} = extraOption;
+      // 这个有值代表是字典类型得，字典类型默认props为此
       if (typeof labelTranslateType === 'number') {
         props = {
           key: 'dicId',
           label: 'cnname',
         };
       }
-      const { formData, onlyShow, isSearch } = this;
+      const { formData, onlyShow } = this;
       // 基础版有个添加维护字典的功能，里面返回的字段为id和cnName，因此以此字段为默认取值
       const { key = 'id', label = 'cnName' } = props;
       let model = getter(formData, formField);
-      // TODO isSearch 暂时用label做value 后台原因
       return (
         <el-select
           value={model}

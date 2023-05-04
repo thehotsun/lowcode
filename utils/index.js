@@ -494,6 +494,20 @@ export function getSetupFormOptions(searchWidgetName) {
           },
           'el-select'
         ),
+        getSetupFromSingleConfig(
+          '开启多选：',
+          null,
+          'tagAttrs.multiple',
+          null,
+          'el-switch'
+        ),
+        getSetupFromSingleConfig(
+          '开启本地筛选：',
+          null,
+          'tagAttrs.filterable',
+          null,
+          'el-switch'
+        ),
       ];
       break;
     default:

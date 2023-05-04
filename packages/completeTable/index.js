@@ -627,10 +627,15 @@ export default {
                 '主键字段未取到值，请检查数据或重新在列表设计页面重新关联主键！'
               );
             }
-            (btnType === 'download' ? this.download : this.batchDel)(
-              this.selectList.map((item) => item[this.keyField])
-            );
+            if (this.selectList.length === 1) {
+              (btnType === 'download' ? this.download : this.batchDel)(
+                this.selectList.map((item) => item[this.keyField])
+              );
+            } else {
+              this.$warn('请确认只选中了一个值');
+            }
             break;
+
           default:
             break;
         }
