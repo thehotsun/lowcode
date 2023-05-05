@@ -229,8 +229,7 @@ export default {
     };
   },
   mounted () {
-    // TODO 按钮排序
-    // this.columnDrop()
+    this.columnDrop()
   },
   methods: {
     async init (id = '', formCode) {
