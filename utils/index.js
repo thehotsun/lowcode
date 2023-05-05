@@ -79,7 +79,7 @@ export function getFormItemEmptyConfig() {
       placeholder: '',
       clearable: true,
     },
-    sortNumb: '0',
+    sortNumb: 0,
     formField: '',
     relateOtherField: [],
     renderDependFn: '',
@@ -271,6 +271,7 @@ export function getSetupFromSingleConfig(
   return merge(baseConfig, customAttr);
 }
 
+// 获取列表搜索组件弹窗的options
 export function getSetupFormOptions(searchWidgetName) {
   let options = [];
   const complexOptions = () => [
@@ -514,14 +515,15 @@ export function getSetupFormOptions(searchWidgetName) {
       console.warn(`您输入的标签 ${searchWidgetName} 暂不支持！`);
       break;
   }
-  options.push(
-    getSetupFromSingleConfig('序号：', '请输入序号', 'sortNumb', {
-      style: 'width: 350px',
-    })
-  );
+  // options.push(
+  //   getSetupFromSingleConfig('序号：', '请输入序号', 'sortNumb', {
+  //     style: 'width: 350px',
+  //   })
+  // );
   return options;
 }
 
+// 获取列表搜索组件弹窗的form
 export function getSetupForm(searchWidgetName) {
   let form;
   switch (searchWidgetName) {
@@ -534,7 +536,7 @@ export function getSetupForm(searchWidgetName) {
         tagAttrs: {
           placeholder: '',
         },
-        sortNumb: '0',
+        sortNumb: 0,
       };
       break;
     case 'el-input-number':
@@ -548,7 +550,7 @@ export function getSetupForm(searchWidgetName) {
         tagAttrs: {
           placeholder: '',
         },
-        sortNumb: '0',
+        sortNumb: 0,
       };
       break;
     case 'el-select':
@@ -571,7 +573,7 @@ export function getSetupForm(searchWidgetName) {
           params: '',
           status: 'pending',
         },
-        sortNumb: '0',
+        sortNumb: 0,
       };
       break;
     case 'el-cascader':
@@ -595,7 +597,7 @@ export function getSetupForm(searchWidgetName) {
           params: '',
           status: 'pending',
         },
-        sortNumb: '0',
+        sortNumb: 0,
       };
       break;
     case 'dictionary':
@@ -619,7 +621,7 @@ export function getSetupForm(searchWidgetName) {
           params: '',
           status: 'pending',
         },
-        sortNumb: '0',
+        sortNumb: 0,
       };
       break;
     default:

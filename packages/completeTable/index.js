@@ -766,7 +766,6 @@ export default {
               form-options={formOptions}
               showFooter={false}
               use-dialog={false}
-              isSearch={true}
             ></base-render-form>
           </el-header>
         ) : null}
@@ -876,7 +875,7 @@ export default {
                     ref={'VFPreview'}
                     primaryKeyValue={primaryKeyValue}
                     isDisabled={onlyRead}
-                    hasSubmit={!onlyRead && !previewMode}
+                    hasSubmit={false}
                     formId={formId}
                     {...{
                       on: {
@@ -890,7 +889,7 @@ export default {
                     ref="VFRuntime"
                     primaryKeyValue={primaryKeyValue}
                     isDisabled={onlyRead}
-                    hasSubmit={!onlyRead && !previewMode}
+                    hasSubmit={false}
                     formId={formId}
                     {...{
                       on: {
@@ -902,30 +901,31 @@ export default {
                 )
               ) : null}
             </div>
-
-            <span slot="footer">
-              <el-button
-                type="primary"
-                size="small"
-                {...{
-                  on: {
-                    click: submitForm,
-                  },
-                }}
-              >
-                提 交
-              </el-button>
-              <el-button
-                size="small"
-                {...{
-                  on: {
-                    click: handleCancel,
-                  },
-                }}
-              >
-                取 消
-              </el-button>
-            </span>
+            {!onlyRead && !previewMode ? (
+              <span slot="footer">
+                <el-button
+                  type="primary"
+                  size="small"
+                  {...{
+                    on: {
+                      click: submitForm,
+                    },
+                  }}
+                >
+                  提 交
+                </el-button>
+                <el-button
+                  size="small"
+                  {...{
+                    on: {
+                      click: handleCancel,
+                    },
+                  }}
+                >
+                  取 消
+                </el-button>
+              </span>
+            ) : null}
           </el-dialog>
         ) : null}
       </el-container>

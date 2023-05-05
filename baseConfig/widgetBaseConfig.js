@@ -26,7 +26,7 @@ function composeConfig(options) {
       prop: '',
       label: '',
     },
-    sortNumb: '0',
+    sortNumb: 0,
     // attrs主要包含直接赋值给当前组件的属性值
     tagAttrs: tagAttrs,
     // 事件命名保持和ele官网一致，如'current-change', 'sort-change'等，如果是原生事件，则去掉on使用on后面的名字作为方法名 参考nativeTag
