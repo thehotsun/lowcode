@@ -283,7 +283,7 @@ export default {
           render: Vue.compile(item.renderHeader()).render,
         });
       }
-      const renderHeader = (hsd, { column, index }) => {
+      const renderHeader = (_, { column, index }) => {
         if (item.cellHeaderFormatterComponent) {
           return h(item.cellHeaderFormatterComponent, {
             props: { column, index },

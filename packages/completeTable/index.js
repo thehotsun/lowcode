@@ -622,20 +622,18 @@ export default {
           case 'download':
           case 'batchDel':
             if (this.previewMode) return;
+            if (this.selectList.length === 0) {
+              return this.$warn('请确认只选中了一个值');
+            }
             if ([undefined, null].includes(this.selectList[0][this.keyField])) {
               return this.$warn(
                 '主键字段未取到值，请检查数据或重新在列表设计页面重新关联主键！'
               );
             }
-            if (this.selectList.length === 1) {
-              (btnType === 'download' ? this.download : this.batchDel)(
-                this.selectList.map((item) => item[this.keyField])
-              );
-            } else {
-              this.$warn('请确认只选中了一个值');
-            }
+            (btnType === 'download' ? this.download : this.batchDel)(
+              this.selectList.map((item) => item[this.keyField])
+            );
             break;
-
           default:
             break;
         }
