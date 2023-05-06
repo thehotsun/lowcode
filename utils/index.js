@@ -561,7 +561,7 @@ export function getSetupForm(searchWidgetName) {
         },
         tagAttrs: {
           placeholder: '',
-          multiple: false,
+          multiple: true,
           filterable: false,
           clearable: true,
         },
@@ -586,7 +586,7 @@ export function getSetupForm(searchWidgetName) {
           filterable: false,
           clearable: true,
           props: {
-            multiple: false,
+            multiple: true,
           },
         },
         extraOption: '',
@@ -609,9 +609,7 @@ export function getSetupForm(searchWidgetName) {
           placeholder: '',
           filterable: false,
           clearable: true,
-          props: {
-            multiple: false,
-          },
+          multiple: true,
         },
         extraOption: { labelTranslateType: 0 },
         request: {

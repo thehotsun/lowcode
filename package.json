@@ -1,12 +1,12 @@
 {
   "name": "@viva3la3vida/base-render",
-  "version": "1.0.56",
+  "version": "1.0.57",
   "description": "baseRender",
   "license": "MIT",
   "main": "./lib/index.min.js",
   "scripts": {
     "build": "webpack --config webpack.config.js && npm run copyPaste",
-    "deploy": "npm run build && npm run updateVersion && npm publish",
+    "deploy": "npm run build && npm run version && npm publish",
     "version": "node ./scripts/update-version.js",
     "copyPaste": "node ./scripts/update-target-lib.js"
   },

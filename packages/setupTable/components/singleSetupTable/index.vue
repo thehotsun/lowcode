@@ -45,7 +45,7 @@
       <div class="flex">
         <div class="left">
           <base-render-form ref="setupForm" :form-data="setupForm" :form-options="setupFormOptions" :use-dialog="false"
-            :showFooter="false">
+            :showFooter="false" v-if="dialogVisibleFrom">
             <template #searchWidget>
               <el-select v-model="setupForm.searchWidgetType" @change="changeWidget" placeholder="请选择控件类型" filterable
                 clearable="">
@@ -98,6 +98,9 @@ import {
 import { cloneDeep } from "lodash"
 import Sortable from "sortablejs"
 
+// TODO待完善
+const selectWidgetQuerySqlParamsMap = ['input', '', 'checkbox', '', 'datePicker', 'checkbox', 'checkbox']
+
 export default {
   name: 'singleSetupTable',
   components: {
@@ -149,11 +152,6 @@ export default {
     rawTableData (val) {
       this.tableData = val;
     },
-    'setupForm.tagAttrs.multiple': {
-      handler (val) {
-        this.querySql(val ? 'checkbox' : 'radio')
-      }
-    }
   },
 
   mounted () {
@@ -186,11 +184,11 @@ export default {
         });
       });
     },
+
     changeWidget (val) {
       const searchWidgetName = searchWidget.find((widgetitem) => widgetitem.id === val)?.tagName;
-      if ([0, 2].includes(val)) {
-        this.querySql(val === 0 ? 'input' : 'radio')
-      }
+      this.suggestSQL = ''
+      this.querySql(selectWidgetQuerySqlParamsMap[val])
       this.setupForm = this.getDefaultValueForm(searchWidgetName, this.curRowData.fieldName)
       this.setupFormOptions = this.composeFormOptions(searchWidgetName, this.curRowData);
     },
@@ -200,11 +198,11 @@ export default {
       // 防止用户赋值给没有声明的属性值，导致其变为非响应式数据
       this.$set(formData.request, 'url', `${value}`);
     },
-    querySql (type = 'input', row) {
+    querySql (type = 'input') {
       const params = {
         "listPageId": this.listPageId,
         "displayDataType": type,
-        "fieldName": row?.fieldCode || this.curRowData.fieldCode
+        "fieldName": this.curRowData.fieldCode
       }
       this.generateQuerySql(params).then(res => {
         this.$refs.ace.codeValue = this.wholeSQL = res.data.querySql
@@ -213,22 +211,32 @@ export default {
       })
     },
     handleWidgetAttr (row) {
-      // if (row.searchWidget === '') {
-      //   return this.$warn('请先选择控件')
-      // }
       this.curRowData = row;
       this.dialogVisibleFrom = true;
       const searchWidgetName = searchWidget.find((widgetitem) => widgetitem.id === row.searchWidget)?.tagName;
       this.setupFormOptions = this.composeFormOptions(searchWidgetName, row);
       const searchWidgetConfig = row.searchWidgetConfig
-      this.setupForm = Object.keys(searchWidgetConfig).length ? cloneDeep(searchWidgetConfig) : this.getDefaultValueForm(searchWidgetName, row.fieldName)
-      if (this.setupForm.extraOption) this.setupForm.extraOption = JSON.stringify(this.setupForm.extraOption)
+      if (Object.keys(searchWidgetConfig).length) {
+        this.setupForm = cloneDeep(searchWidgetConfig)
+        // 针对字典项的特殊处理
+        if (typeof this.setupForm.extraOption?.labelTranslateType === 'number') {
+          this.setupForm.extraOption = JSON.stringify(this.setupForm.extraOption)
+        }
+      } else {
+        this.setupForm = this.getDefaultValueForm(searchWidgetName, row.fieldName)
+      }
+      const val = this.setupForm.searchWidgetType
+      this.querySql(selectWidgetQuerySqlParamsMap[val])
     },
 
     getDefaultValueForm (searchWidgetName = 'el-input', fieldName) {
       const form = getSetupForm(searchWidgetName)
       form.formItemAttrs.label = fieldName;
       form.tagAttrs.placeholder = setPlaceholder(searchWidgetName, fieldName);
+      // 针对字典项的特殊处理
+      if (typeof form.extraOption?.labelTranslateType === 'number') {
+        form.extraOption = JSON.stringify(form.extraOption)
+      }
       return form
     },
 
@@ -259,6 +267,11 @@ export default {
           // 去除自己和已存在筛选框的和未显示的
           options: this.supplementLabel(props, options)
         }
+      }
+      // 由于查询sql接口需要区分单选多选，因此el-select el-cascader 和 dictionary 的多选按钮需要触发相应接口
+      if (['el-select', 'el-cascader', 'dictionary'].includes(searchWidgetName)) {
+        const target = formOptions.find(item => ['tagAttrs.multiple', 'tagAttrs.props.multiple'].includes(item.formField))
+        target.listeners.change = (val) => this.querySql(val ? 'checkbox' : 'radio')
       }
       return [{
         elRowAttrs: {
@@ -404,6 +417,7 @@ export default {
       this.curRowData.searchWidgetConfig = this.setupForm
       this.curRowData.searchWidget = this.setupForm.searchWidgetType
       this.handleCloseFrom();
+      this.$emit('searchOptionsChange')
     },
   }
 };

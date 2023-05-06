@@ -9,6 +9,13 @@
         <el-button size="mini" type="primary" @click="confirm">保存</el-button>
       </div>
     </div>
+
+
+    <div v-if="showSearchFromArea" class="searchArea">
+      <base-render-form ref="form" :generalRequest="generalRequest" :form-data="searchFrom"
+        :form-options="searchFromOptions" :showFooter="false" :use-dialog="false"></base-render-form>
+    </div>
+
     <div class="btnDesign">
       <div class="btns">
         <span v-for="(item, index) in btnConfigArr" :key="item.renderId" style="display:inline-block">
@@ -34,7 +41,8 @@
 
     <div class="tablesetup">
       <single-setup-table ref="singleSetupTable" :generalRequest="generalRequest" :raw-table-data.sync="tableData"
-        :generateQuerySql="generateQuerySql" :saveSql="saveSql" :listPageId="listPageId" edit-mode>
+        :generateQuerySql="generateQuerySql" :saveSql="saveSql" :listPageId="listPageId" edit-mode
+        @searchOptionsChange="searchOptionsChange">
       </single-setup-table>
     </div>
 
@@ -120,6 +128,13 @@ import { getSingleTableData } from '../../baseConfig/tableBaseConfig'
 import completeTable from '../completeTable';
 import setupBtnConfig from '../setupBtnConfig';
 import singleSetupTable from './components/singleSetupTable';
+import {
+  getWidgetOptions,
+  getWidgetDefaultVal,
+  depthFirstSearchWithRecursive,
+} from '../../utils';
+import { align, searchWidget } from '../../baseConfig/tableSelectConfigs';
+import { merge } from "lodash"
 import Sortable from "sortablejs"
 export default {
   name: 'setupTable',
@@ -226,6 +241,9 @@ export default {
         value: 'mimi',
         label: '迷你'
       },],
+      searchFromOptions: [],
+      searchFrom: {},
+      showSearchFromArea: false
     };
   },
   mounted () {
@@ -246,7 +264,8 @@ export default {
         this.keyField = keyField;
         this.tableData = tableOptions;
         this.btnConfigArr = formOptions
-        this.updateFieldList();
+        await this.updateFieldList();
+        this.searchFromOptions = this.composeFromOptions(tableOptions);
       } else {
         this.queryFieldList();
         this.getPrimekey()
@@ -264,6 +283,71 @@ export default {
           console.log(e.oldIndex, e.newIndex);
         }
       })
+    },
+
+    searchOptionsChange () {
+      const tableOptions = this.$refs.singleSetupTable.expose_getTableData()
+      this.searchFromOptions = this.composeFromOptions(tableOptions);
+    },
+
+
+    // 设置searchFrom和装配fromOptions
+    composeFromOptions (tableData) {
+      this.showSearchFromArea = false;
+      if (!tableData.length) return [];
+      let formOptions = [];
+      const length = tableData.length;
+      tableData.map((item, index) => {
+        const searchWidgetName = searchWidget.find(
+          (widgetitem) => widgetitem.id === item.searchWidget
+        )?.tagName;
+        // 只有搜索控件有值且开启了搜索项，才会添加到options中
+        if (searchWidgetName && item.isSearchWidget) {
+          const options = getWidgetOptions(searchWidgetName, item);
+          formOptions.push(
+            merge(
+              options,
+              depthFirstSearchWithRecursive(item.searchWidgetConfig)
+            )
+          );
+        }
+        // 如果循环到最后一个且存在其他筛选项，则对formOptions通过sortNumb进行排序
+        if (length - 1 === index && formOptions.length) {
+          formOptions = formOptions.sort((a, b) => {
+            const prev = Number(a.sortNumb);
+            const next = Number(b.sortNumb);
+            if (prev < next) {
+              return -1;
+            } else if (prev > next) {
+            } else {
+              return 0;
+            }
+          });
+          this.showSearchFromArea = true;
+        }
+      });
+      return [
+        {
+          elRowAttrs: {
+            gutter: 10,
+            type: 'flex',
+            align: 'middle',
+            justify: 'start',
+          },
+          style: 'flex-wrap: wrap',
+          formItem: formOptions,
+        },
+      ];
+    },
+
+
+    // 由数据组成searchFrom
+    setFromField (source, fieldCode, formOptions, searchWidgetName) {
+      this.$set(
+        source,
+        fieldCode,
+        getWidgetDefaultVal(formOptions, searchWidgetName)
+      );
     },
 
     requestTableConfig () {
@@ -288,7 +372,7 @@ export default {
       });
     },
     updateFieldList () {
-      this.requestFieldList(this._groupID).then(res => {
+      return this.requestFieldList(this._groupID).then(res => {
         const list = res.data;
         list.map(item => {
           if (!this.tableData.some(tableDataItem => tableDataItem.fieldCode === item.fieldName)) {
@@ -466,6 +550,8 @@ export default {
 .content {
   width: 100%;
   height: 100%;
+  display: flex;
+  flex-direction: column;
 }
 
 .el-dropdown {
@@ -528,6 +614,7 @@ export default {
 }
 
 .tablesetup {
-  height: calc(100% - 140px);
+  height: 0;
+  flex: 1;
 }
 </style>
