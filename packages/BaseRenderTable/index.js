@@ -199,11 +199,19 @@ export default {
         disabled,
         showCodeEditor = false,
       } = options;
+
+      const finalListeners = {};
+      Object.keys(listeners).map((key) => {
+        finalListeners[key] = (...arr) => {
+          listeners[key](row, ...arr);
+        };
+      });
+
       if (showCodeEditor && tagName === 'el-input') {
-        listeners.focus = decorator((e) => {
+        finalListeners.focus = decorator(() => {
           this.showCodeEditor = true;
           this.codeValue = { row, prop };
-        }, listeners.focus);
+        }, finalListeners.focus);
       }
       // 失去input失去焦点变为span
       // if (
@@ -242,7 +250,7 @@ export default {
             getCooperateComp(
               tagName,
               tagAttrs,
-              listeners,
+              finalListeners,
               prop,
               extraOption,
               row
@@ -257,7 +265,7 @@ export default {
                 class={className}
                 {...{
                   attrs: tagAttrs,
-                  on: listeners,
+                  on: finalListeners,
                 }}
               >
                 {value || tagAttrs?.value || contentText}

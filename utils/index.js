@@ -543,7 +543,6 @@ export function getSetupForm(searchWidgetName) {
     case 'el-date-picker':
     case 'el-date-picker-range':
       form = {
-        searchWidgetType: 0,
         formItemAttrs: {
           label: '',
         },
@@ -555,7 +554,6 @@ export function getSetupForm(searchWidgetName) {
       break;
     case 'el-select':
       form = {
-        searchWidgetType: 0,
         formItemAttrs: {
           label: '',
         },

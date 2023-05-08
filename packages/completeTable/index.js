@@ -336,10 +336,6 @@ export default {
             searchWidgetName
           );
           const options = getWidgetOptions(searchWidgetName, item);
-          console.log(
-            cloneDeep(item.searchWidgetConfig),
-            depthFirstSearchWithRecursive(item.searchWidgetConfig)
-          );
           formOptions.push(
             merge(
               options,
@@ -350,16 +346,7 @@ export default {
         // 如果循环到最后一个且存在其他筛选项，则对formOptions通过sortNumb进行排序，复制一份最原始的form,添加筛选和重置按钮
         if (length - 1 === index && formOptions.length) {
           this.rawSearchFrom = cloneDeep(this.searchFrom);
-          formOptions = formOptions.sort((a, b) => {
-            const prev = Number(a.sortNumb);
-            const next = Number(b.sortNumb);
-            if (prev < next) {
-              return -1;
-            } else if (prev > next) {
-            } else {
-              return 0;
-            }
-          });
+          formOptions = formOptions.sort((a, b) => a.sortNumb - b.sortNumb);
           formOptions.push(...this.getBtnConfig());
           this.showSearchFrom = true;
         }
@@ -454,18 +441,30 @@ export default {
         this.$success('刷新成功');
       });
     },
-    // 此处要处理两个字段使用同一input的模糊搜索
     getParams() {
       // 去掉最后添加的按钮
       if (this.formOptions?.length) {
         const formItem = this.formOptions[0].formItem.slice(0, -1);
         const extraParams = {};
         formItem.map((item) => {
-          const { relateOtherField = [], formField = '' } = item;
-          if (relateOtherField.length) {
+          // 此处要处理两个字段使用同一input的模糊搜索
+          const {
+            relateOtherField = [],
+            formField = '',
+            searchWidgetType,
+          } = item;
+          if (searchWidgetType === 0 && relateOtherField.length) {
             relateOtherField.map((fieldName) => {
               extraParams[fieldName] = this.searchFrom[formField];
             });
+          }
+          // 此处要处理日期选择框数组形式后端不识别，改为字段名加end和start
+          if (
+            searchWidgetType === 4 &&
+            this.searchFrom[formField].length === 2
+          ) {
+            extraParams[`${formField}Start`] = this.searchFrom[formField][0];
+            extraParams[`${formField}End`] = this.searchFrom[formField][1];
           }
         });
         return {

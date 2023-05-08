@@ -236,6 +236,7 @@ function getEditConf() {
         return `<div style="display: inline-block;"><span>{{column.label}}</span><el-tooltip content="${content}"><i style="width: 20px" class="el-icon-question"/></el-tooltip></div>`;
       };
     }
+    item.listeners = {}
     return item;
   });
 }
@@ -262,5 +263,6 @@ export function getSingleTableData() {
     'show-overflow-tooltip': true,
     formatter: '',
     renderHeader: '',
+    listeners: {},
   };
 }

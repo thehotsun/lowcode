@@ -47,8 +47,7 @@
           <base-render-form ref="setupForm" :form-data="setupForm" :form-options="setupFormOptions" :use-dialog="false"
             :showFooter="false" v-if="dialogVisibleFrom">
             <template #searchWidget>
-              <el-select v-model="setupForm.searchWidgetType" @change="changeWidget" placeholder="请选择控件类型" filterable
-                clearable="">
+              <el-select v-model="setupForm.searchWidgetType" @change="changeWidget" placeholder="请选择控件类型" filterable>
                 <el-option v-for="item in searchWidget" :key="item.id" :label="item.cnName" :value="item.id">
                 </el-option>
               </el-select>
@@ -154,6 +153,20 @@ export default {
     },
   },
 
+  created () {
+    const that = this
+    const target = this.tableOptions.find(item => item.label === '添加查询控件')
+    target.listeners.change = (row, val) => {
+      // 如果不显示查询控件，则清空当前控件配置
+      if (!val) {
+        // 当前函数的row为tabledata中此行的row
+        row.searchWidgetConfig = {}
+        row.searchWidget = ''
+      }
+      that.$emit('searchOptionsChange');
+    }
+  },
+
   mounted () {
     this.rowDrop()
     this.requestDicCodeListData()
@@ -229,10 +242,21 @@ export default {
       this.querySql(selectWidgetQuerySqlParamsMap[val])
     },
 
+    getSortNumb () {
+      let number = 0
+      this.tableData.filter(item => typeof item.searchWidget === 'number' && item.isSearchWidget).map(item => {
+        if (item.searchWidgetConfig.sortNumb > number) {
+          number = item.searchWidgetConfig.sortNumb
+        }
+      })
+      return number + 2
+    },
+
     getDefaultValueForm (searchWidgetName = 'el-input', fieldName) {
       const form = getSetupForm(searchWidgetName)
       form.formItemAttrs.label = fieldName;
       form.tagAttrs.placeholder = setPlaceholder(searchWidgetName, fieldName);
+      form.sortNumb = this.getSortNumb()
       // 针对字典项的特殊处理
       if (typeof form.extraOption?.labelTranslateType === 'number') {
         form.extraOption = JSON.stringify(form.extraOption)
@@ -336,7 +360,7 @@ export default {
         confirmButtonText: "确定",
         cancelButtonText: "取消",
         type: "warning"
-      }).then((result) => {
+      }).then(() => {
         this.tableData = this.tableData.filter(tableItem => !this.selected.find(selectedItem => selectedItem === tableItem))
       }).catch((err) => {
         this.$message({

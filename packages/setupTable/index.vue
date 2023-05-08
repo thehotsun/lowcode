@@ -132,8 +132,10 @@ import {
   getWidgetOptions,
   getWidgetDefaultVal,
   depthFirstSearchWithRecursive,
+  setColSpan
 } from '../../utils';
 import { align, searchWidget } from '../../baseConfig/tableSelectConfigs';
+import { getElBtnConfig } from '../../baseConfig/widgetBaseConfig';
 import { merge } from "lodash"
 import Sortable from "sortablejs"
 export default {
@@ -203,7 +205,6 @@ export default {
       setupForm: {
       },
       setupFormOptions: [],
-      curRowData: {},
       _groupID: '',
       btnConfigArr: [],
       formList: [],
@@ -243,11 +244,19 @@ export default {
       },],
       searchFromOptions: [],
       searchFrom: {},
-      showSearchFromArea: false
+      showSearchFromArea: false,
+      previewMode: true
     };
   },
-  mounted () {
-    this.columnDrop()
+  watch: {
+    showSearchFromArea (val) {
+      if (val) {
+        this.$nextTick().then(() => this.searchAreaDrop())
+      }
+    }
+  },
+  async mounted () {
+    this.btnsColumnDrop()
   },
   methods: {
     async init (id = '', formCode) {
@@ -272,7 +281,7 @@ export default {
       }
     },
 
-    columnDrop () {
+    btnsColumnDrop () {
       // 此时找到的元素是要拖拽元素的父容器
       const dom = document.querySelector('.btnDesign .btns');
       Sortable.create(dom, {
@@ -281,6 +290,31 @@ export default {
           const targetRow = this.btnConfigArr.splice(e.oldIndex, 1)[0];
           this.btnConfigArr.splice(e.newIndex, 0, targetRow);
           console.log(e.oldIndex, e.newIndex);
+        }
+      })
+    },
+
+    searchAreaDrop () {
+      // 此时找到的元素是要拖拽元素的父容器
+      const dom = document.querySelector('.searchArea .el-form .el-row');
+      Sortable.create(dom, {
+        handle: '.el-form-item__label',
+        onEnd: e => {
+          //e.oldIndex为拖动一行原来的位置，e.newIndex为拖动后新的位置
+          // 排序后要先获取最新的列表，否则下面list[e.oldIndex]取不到正确的值
+          let list = this.composeFromOptions(this.tableData)[0].formItem.slice(0, -1)
+          const { newIndex, oldIndex } = e
+          if (newIndex < oldIndex) {
+            list[e.oldIndex].sortNumb = list[e.newIndex].sortNumb - 1
+          } else {
+            list[e.oldIndex].sortNumb = list[e.newIndex].sortNumb + 1
+          }
+
+          list.sort((a, b) => a.sortNumb - b.sortNumb).map((item, index) => {
+            const target = this.tableData.find(tableDataItem => item.formField === tableDataItem.fieldCode)
+            item.sortNumb = target.searchWidgetConfig.sortNumb = index * 2
+          })
+
         }
       })
     },
@@ -294,6 +328,7 @@ export default {
     // 设置searchFrom和装配fromOptions
     composeFromOptions (tableData) {
       this.showSearchFromArea = false;
+      this.setupForm = {}
       if (!tableData.length) return [];
       let formOptions = [];
       const length = tableData.length;
@@ -303,6 +338,12 @@ export default {
         )?.tagName;
         // 只有搜索控件有值且开启了搜索项，才会添加到options中
         if (searchWidgetName && item.isSearchWidget) {
+          this.setFromField(
+            this.searchFrom,
+            item.fieldCode,
+            item.searchWidgetConfig,
+            searchWidgetName
+          );
           const options = getWidgetOptions(searchWidgetName, item);
           formOptions.push(
             merge(
@@ -313,16 +354,8 @@ export default {
         }
         // 如果循环到最后一个且存在其他筛选项，则对formOptions通过sortNumb进行排序
         if (length - 1 === index && formOptions.length) {
-          formOptions = formOptions.sort((a, b) => {
-            const prev = Number(a.sortNumb);
-            const next = Number(b.sortNumb);
-            if (prev < next) {
-              return -1;
-            } else if (prev > next) {
-            } else {
-              return 0;
-            }
-          });
+          formOptions = formOptions.sort((a, b) => a.sortNumb - b.sortNumb);
+          formOptions.push(...this.getBtnConfig());
           this.showSearchFromArea = true;
         }
       });
@@ -340,7 +373,6 @@ export default {
       ];
     },
 
-
     // 由数据组成searchFrom
     setFromField (source, fieldCode, formOptions, searchWidgetName) {
       this.$set(
@@ -348,6 +380,38 @@ export default {
         fieldCode,
         getWidgetDefaultVal(formOptions, searchWidgetName)
       );
+    },
+
+    getBtnConfig () {
+      const customAttr = (contentText) =>
+        this.previewMode
+          ? {
+            contentText,
+            tagAttrs: {
+              disabled: this.previewMode,
+            },
+          }
+          : {
+            contentText,
+          };
+      const filterConfig = getElBtnConfig(
+        'primary',
+        () => { },
+        customAttr('搜索')
+      );
+      const resetConfig = getElBtnConfig(
+        '',
+        () => { },
+        customAttr('重置')
+      );
+      setColSpan(filterConfig, 2);
+      setColSpan(resetConfig, 2);
+      return [
+        {
+          formItemAttrs: { 'label-width': '35px' },
+          child: [filterConfig, resetConfig],
+        },
+      ];
     },
 
     requestTableConfig () {

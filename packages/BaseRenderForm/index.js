@@ -398,7 +398,7 @@ export default {
       rules,
       model: formData,
       size: 'mini',
-      'label-width': '100px',
+      'label-width': 'auto',
     };
 
     const defaultDialogAttrs = {
