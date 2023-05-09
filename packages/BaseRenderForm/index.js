@@ -76,7 +76,7 @@ export default {
         res.data
           .sort((a, b) => a.sortNum - b.sortNum)
           .map((item) => {
-            if (extraOption.labelTranslateType == 1) {
+            if (extraOption.labelTranslateType === 1) {
               item[extraOption.props.label] = `${item[extraOption.props.key]}-${
                 item[extraOption.props.label]
               }`;
@@ -89,6 +89,13 @@ export default {
     disposeRequest(request, extraOption) {
       if (request?.require && request?.url && request.status === 'pending') {
         extraOption.options = [];
+        // 这个有值代表是字典类型得，字典类型默认props为此
+        if (typeof extraOption.labelTranslateType === 'number') {
+          extraOption.props = {
+            key: 'dicId',
+            label: 'cnname',
+          };
+        }
         this.requestData(request, extraOption);
         request.status = 'finish';
         // exec(request);
@@ -144,14 +151,7 @@ export default {
 
     getSelectCompVNode({ attrs, listeners, formField, extraOption, request }) {
       this.disposeRequest(request, extraOption);
-      let { options = [], props = {}, labelTranslateType} = extraOption;
-      // 这个有值代表是字典类型得，字典类型默认props为此
-      if (typeof labelTranslateType === 'number') {
-        props = {
-          key: 'dicId',
-          label: 'cnname',
-        };
-      }
+      let { options = [], props = {} } = extraOption;
       const { formData, onlyShow } = this;
       // 基础版有个添加维护字典的功能，里面返回的字段为id和cnName，因此以此字段为默认取值
       const { key = 'id', label = 'cnName' } = props;
