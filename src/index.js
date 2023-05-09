@@ -1,4 +1,4 @@
-import baseRenderFrom from '../packages/BaseRenderForm/main.js';
+import baseRenderForm from '../packages/BaseRenderForm/main.js';
 import baseRenderTable from '../packages/BaseRenderTable/main.js';
 import BaseRenderRegular from '../packages/BaseRenderRegular/main.js';
 import completeTable from '../packages/completeTable/main.js';
@@ -8,7 +8,7 @@ import setupBtnConfig from '../packages/setupBtnConfig/main.js';
 import './iconfont/iconfont.css';
 
 const components = [
-  baseRenderFrom,
+  baseRenderForm,
   baseRenderTable,
   BaseRenderRegular,
   completeTable,
@@ -29,7 +29,7 @@ if (typeof window !== 'undefined' && window.Vue) {
 
 export default {
   install,
-  baseRenderFrom,
+  baseRenderForm,
   baseRenderTable,
   BaseRenderRegular,
   completeTable,
