@@ -98,7 +98,7 @@ import { cloneDeep } from "lodash"
 import Sortable from "sortablejs"
 
 // TODO待完善
-const selectWidgetQuerySqlParamsMap = ['input', '', 'checkbox', '', 'datePicker', 'checkbox', 'checkbox']
+const selectWidgetQuerySqlParamsMap = ['input', '', 'jy-dict-list', 'dateRadio', 'datePicker', 'jy-dict-list', 'jy-dict-list']
 
 export default {
   name: 'singleSetupTable',
@@ -295,7 +295,7 @@ export default {
       // 由于查询sql接口需要区分单选多选，因此el-select el-cascader 和 dictionary 的多选按钮需要触发相应接口
       if (['el-select', 'el-cascader', 'dictionary'].includes(searchWidgetName)) {
         const target = formOptions.find(item => ['tagAttrs.multiple', 'tagAttrs.props.multiple'].includes(item.formField))
-        target.listeners.change = (val) => this.querySql(val ? 'checkbox' : 'radio')
+        target.listeners.change = (val) => this.querySql(val ? 'jy-dict-list' : 'jy-dict')
       }
       return [{
         elRowAttrs: {
