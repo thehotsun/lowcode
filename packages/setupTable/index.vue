@@ -345,6 +345,8 @@ export default {
             searchWidgetName
           );
           const options = getWidgetOptions(searchWidgetName, item);
+          // 给formitem加个key，因为只有设计区可以拖拽排序，防止渲染错乱
+          options.formItemAttrs.key = Math.random();
           formOptions.push(
             merge(
               options,
@@ -352,7 +354,7 @@ export default {
             )
           );
         }
-        // 如果循环到最后一个且存在其他筛选项，则对formOptions通过sortNumb进行排序
+        // 如果循环到最后一个且存在其他筛选项，则对formOptions通过sortNumb进行排序且添加按钮到最后一个
         if (length - 1 === index && formOptions.length) {
           formOptions = formOptions.sort((a, b) => a.sortNumb - b.sortNumb);
           formOptions.push(...this.getBtnConfig());
@@ -408,7 +410,7 @@ export default {
       setColSpan(resetConfig, 2);
       return [
         {
-          formItemAttrs: { 'label-width': '35px' },
+          formItemAttrs: { 'label-width': '35px', key: Math.random() },
           child: [filterConfig, resetConfig],
         },
       ];
