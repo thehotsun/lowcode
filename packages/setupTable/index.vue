@@ -19,12 +19,12 @@
     <div class="btnDesign">
       <div class="btns">
         <span v-for="(item, index) in btnConfigArr" :key="item.renderId" style="display:inline-block">
-          <el-button type="" size="small" @click="handleDetail(index)">{{ item.tagAttrs.value }}</el-button>
+          <el-button type="" size="small" @click="handleBtnDetail(index)">{{ item.tagAttrs.value }}</el-button>
           <i type="danger" class="el-icon-circle-close middle " @click="handleDelBtn(index)"></i>
         </span>
       </div>
 
-      <el-dropdown szie="small" @command="handleCommand">
+      <el-dropdown szie="small" @command="handleBtnCommand">
         <el-button type="primary" size="small" plain>
           添加功能按钮<i class="el-icon-arrow-down el-icon--right"></i>
         </el-button>
@@ -266,6 +266,7 @@ export default {
       this.queryFormList()
       this.queryAuthorizeList()
       const { data } = await this.requestTableConfig()
+      // 编辑状态
       if (data) {
         const obj = JSON.parse(data);
         const { tableOptions, formOptions, keyField, ...tableAttrs } = obj;
@@ -273,9 +274,11 @@ export default {
         this.keyField = keyField;
         this.tableData = tableOptions;
         this.btnConfigArr = formOptions
+        // 更新数据库字段，如果多了新增默认，少了去除
         await this.updateFieldList();
         this.searchFromOptions = this.composeFromOptions(tableOptions);
       } else {
+        // 新增状态
         this.queryFieldList();
         this.getPrimekey()
       }
@@ -319,6 +322,7 @@ export default {
       })
     },
 
+    // 添加查询控件的change事件和控件属性弹窗的确认按钮触发
     searchOptionsChange () {
       const tableOptions = this.$refs.singleSetupTable.expose_getTableData()
       this.searchFromOptions = this.composeFromOptions(tableOptions);
@@ -384,6 +388,7 @@ export default {
       );
     },
 
+
     getBtnConfig () {
       const customAttr = (contentText) =>
         this.previewMode
@@ -426,6 +431,8 @@ export default {
         this.keyField = res.data.columnName
       });
     },
+
+    // 将元数据包装为可渲染的tableoptions
     convertData (data) {
       return data.map((item, index) => {
         const rawData = getSingleTableData();
@@ -437,6 +444,8 @@ export default {
         };
       });
     },
+
+    // 更新数据库字段，如果多了新增默认，少了去除
     updateFieldList () {
       return this.requestFieldList(this._groupID).then(res => {
         const list = res.data;
@@ -456,12 +465,13 @@ export default {
       });
     },
 
+    // 查询元数据
     queryFieldList () {
       this.requestFieldList(this._groupID).then(res => {
         this.tableData = this.convertData(res.data);
       });
     },
-
+    
     queryFormList () {
       this.requestFormList(this._groupID).then(res => {
         this._extraOption = {
@@ -490,7 +500,7 @@ export default {
       await this.handleSubmitTableConfig();
       this.$emit('onSave');
     },
-
+    // 获取保存接口所需所需params
     getRenderParams () {
       const json = {
         ...this.tableAttrs,
@@ -501,6 +511,7 @@ export default {
       return json;
     },
 
+    // 保存按钮事件
     handleSubmitTableConfig () {
       const renderParams = this.getRenderParams();
       const actionList = renderParams.formOptions?.map(item => {
@@ -520,16 +531,22 @@ export default {
       });
     },
 
-    handleCommand (command) {
+    // 添加功能按钮处理事件
+    handleBtnCommand (command) {
       this.drawer = true
       this.$nextTick(() => {
-        // 还原配置
+        // 给按钮设计器设置config
         this.$refs.setupBtnConfig.expose_setBtnConfigFromArr(this.btnConfigArr);
+        // 还原form配置
         this.$refs.setupBtnConfig.expose_reductionAll();
+        // 配置关联的设计列表下拉框
         this.$refs.setupBtnConfig.expose_setExtraOption(this._extraOption, 'extraOption.relateFrom')
+        // 配置权限下拉框
         this.$refs.setupBtnConfig.expose_setExtraOption(this._btnAuthorize, 'authorize')
+        // 获取原始按钮配置form
         const config = this.$refs.setupBtnConfig.expose_getBtnConfigFrom();
         console.log(command);
+        // 根据不同的command填充不同的form信息
         switch (command) {
           case 'add':
             config.tagAttrs.value = '新增'
@@ -544,11 +561,13 @@ export default {
             config.extraOption.btnType = 'check';
             break
           case 'download':
+            // 隐藏某些字段
             this.$refs.setupBtnConfig.expose_hideSomeFieldOptions(['extraOption.fn', 'extraOption.openUrl', 'extraOption.isRefresh', 'extraOption.openType', 'extraOption.relateFrom', 'extraOption.dialogHeight', 'extraOption.dialogTitle', 'extraOption.dialogWidth']);
             config.tagAttrs.value = '导出';
             config.extraOption.btnType = 'download';
             break;
           case 'batchDel':
+            // 隐藏某些字段
             this.$refs.setupBtnConfig.expose_hideSomeFieldOptions(['extraOption.fn', 'extraOption.openUrl', 'extraOption.isRefresh', 'extraOption.openType', 'extraOption.relateFrom', 'extraOption.dialogHeight', 'extraOption.dialogTitle', 'extraOption.dialogWidth']);
             config.tagAttrs.value = '批量删除'
             config.extraOption.btnType = 'batchDel';
@@ -559,6 +578,7 @@ export default {
           default:
             break;
         }
+        // 设置装配好的按钮form
         this.$refs.setupBtnConfig.expose_setBtnConfigFrom(config);
       })
     },
@@ -571,6 +591,7 @@ export default {
       this.dialogVisibleTableAttrs = false;
     },
 
+    // 预览状态下，外部组件调用此方法
     showPreview () {
       this.dialogVisiblePreview = true;
       const renderParams = this.getRenderParams();
@@ -585,6 +606,7 @@ export default {
       this.$emit('showTableSetting')
     },
 
+    // 按钮设计的提交事件
     onSubmit () {
       this.btnConfigArr = this.$refs.setupBtnConfig.expose_getBtnConfigFromArr();
       this.drawer = false
@@ -594,8 +616,10 @@ export default {
     handleDelBtn (index) {
       this.btnConfigArr.splice(index, 1)
     },
-    handleDetail (index) {
-      this.handleCommand(this.btnConfigArr[index].extraOption.btnType)
+
+    // 展开当前按钮详情
+    handleBtnDetail (index) {
+      this.handleBtnCommand(this.btnConfigArr[index].extraOption.btnType)
       this.$nextTick(() => {
         this.$refs.setupBtnConfig.expose_setBtnConfigFrom(this.btnConfigArr[index]);
       })

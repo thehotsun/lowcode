@@ -441,6 +441,7 @@ export default {
         this.$success('刷新成功');
       });
     },
+    // 获取列表数据接口参数
     getParams() {
       // 去掉最后添加的按钮
       if (this.formOptions?.length) {
@@ -564,6 +565,7 @@ export default {
 
     exec,
 
+    // 格式化高度宽度
     formatterWidthOrHeightStyle(length) {
       return length.slice(-2) === 'px'
         ? length
@@ -571,7 +573,7 @@ export default {
         ? length
         : `${length}px`;
     },
-
+    // 处理按钮点击事件
     handleBtnClick({
       relateFrom = '',
       openType = '',
@@ -588,9 +590,11 @@ export default {
       this.isRefresh = isRefresh;
       this.dialogHeight = dialogHeight;
       this.dialogWidth = dialogWidth;
+      // 如果有自定义事件，则执行自定义事件
       if (fn) {
         this.exec(fn);
       } else {
+        // openType为1是打开外链
         if (openType === 1) {
           return this.$router.push(openUrl, relateFrom);
         }

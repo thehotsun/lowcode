@@ -223,6 +223,7 @@ export default {
         this.suggestSQL = res.data.querySqlFragment;
       })
     },
+    // 处理设置控件属性事件
     handleWidgetAttr (row) {
       this.curRowData = row;
       this.dialogVisibleFrom = true;
@@ -263,7 +264,7 @@ export default {
       }
       return form
     },
-
+    // 填充options的label
     supplementLabel (props, options) {
       const { key, label } = props
       return options.map(item => {
@@ -432,12 +433,13 @@ export default {
       this.wholeSQL = ''
       this.suggestSQL = ''
     },
-
+    // 设置查询控件表单确认事件
     confirmFrom () {
       this.saveSql(this.listPageId, this.wholeSQL);
       if (this.setupForm.extraOption) {
         this.setupForm.extraOption = str2obj(this.setupForm.extraOption)
       }
+      // 将已确认的setupForm更新到tabledata的数据上
       this.curRowData.searchWidgetConfig = this.setupForm
       this.curRowData.searchWidget = this.setupForm.searchWidgetType
       this.handleCloseFrom();
