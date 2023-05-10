@@ -189,13 +189,11 @@ export default {
       this.disposeRequest(request, extraOption);
       const { options = [], props = {} } = extraOption;
       const { formData, onlyShow } = this;
-      // 基础版有个添加维护字典的功能，里面返回的字段为id和cnName，因此以此字段为默认取值
-      const { key = 'id', label = 'cnName', children = 'children' } = props;
+      console.log(props, 'props');
       attrs.options = options;
+      attrs.props = props;
+      attrs.props.value = props.key;
       let model = getter(formData, formField);
-      attrs.props.value = key;
-      attrs.props.label = label;
-      attrs.props.children = children;
       return (
         <el-cascader
           value={model}

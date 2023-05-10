@@ -170,6 +170,11 @@ export default {
       type: Function,
       require: true
     },
+    // 获取可关联流程 
+    requestFlowList: {
+      type: Function,
+      require: true
+    },
     // 按钮权限集合
     requestAuthorizeList: {
       type: Function,
@@ -264,6 +269,7 @@ export default {
       this._groupID = id;
       this._formCode = formCode;
       this.queryFormList()
+      this.queryFlowList()
       this.queryAuthorizeList()
       const { data } = await this.requestTableConfig()
       // 编辑状态
@@ -471,14 +477,28 @@ export default {
         this.tableData = this.convertData(res.data);
       });
     },
-    
+
     queryFormList () {
       this.requestFormList(this._groupID).then(res => {
-        this._extraOption = {
+        this._formListExtraOption = {
           options: res.data, props:
           {
             label: 'formName',
             key: 'formID'
+          }
+        }
+      });
+    },
+
+    queryFlowList () {
+      this.requestFlowList().then(data => {
+        this._flowListExtraOption = {
+          options: data, props:
+          {
+            label: 'name',
+            key: 'flowKey',
+            children: 'flowDefinitionDtoList',
+            emitPath: false,
           }
         }
       });
@@ -540,7 +560,9 @@ export default {
         // 还原form配置
         this.$refs.setupBtnConfig.expose_reductionAll();
         // 配置关联的设计列表下拉框
-        this.$refs.setupBtnConfig.expose_setExtraOption(this._extraOption, 'extraOption.relateFrom')
+        this.$refs.setupBtnConfig.expose_setExtraOption(this._formListExtraOption, 'extraOption.relateFrom')
+        // 配置关联的设计列表下拉框
+        this.$refs.setupBtnConfig.expose_setExtraOption(this._flowListExtraOption, 'extraOption.flowKey')
         // 配置权限下拉框
         this.$refs.setupBtnConfig.expose_setExtraOption(this._btnAuthorize, 'authorize')
         // 获取原始按钮配置form

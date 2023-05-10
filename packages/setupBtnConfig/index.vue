@@ -55,8 +55,7 @@ export default {
     expose_hideSomeFieldOptions (fieldName) {
       if (typeof fieldName === 'string') {
         fieldName = [fieldName]
-      }
-      if (Array.isArray(fieldName)) {
+      } else if (Array.isArray(fieldName)) {
         fieldName.map(item => {
           const index = findFromOptionsIndexByfieldName(this.btnConfigFormOptions, item);
           console.log(index, 'index');

@@ -5,6 +5,7 @@ import BaseRenderRegular from '../BaseRenderRegular/index';
 import panel from './component/panel.vue';
 import { align, searchWidget } from '../../baseConfig/tableSelectConfigs';
 import { getElBtnConfig } from '../../baseConfig/widgetBaseConfig';
+import { h } from 'vue';
 import {
   setPlaceholder,
   getWidgetOptions,
@@ -68,9 +69,11 @@ export default {
 
     listPageId: String,
   },
+
   data() {
     return {
       pageLayout: '->, total,sizes, prev, pager, next,jumper',
+      // 显示动态表单相关
       dialogVisibleForm: false,
       rule: [],
       option: {},
@@ -183,6 +186,8 @@ export default {
   mounted() {
     // this.init()
   },
+
+  inject: ['flowComp', 'queryFlowDef'],
 
   methods: {
     expose_showDialog(formId) {
@@ -526,6 +531,7 @@ export default {
         });
     },
 
+    // 构成按钮设计区的options
     composeBtnRegularOptions(config) {
       if (this.previewMode) {
         config.map((item) => {
@@ -542,12 +548,12 @@ export default {
       }
       this.showBtns = true;
       // 根据权限筛选
-      if (!this.previewMode) {
-        config = config.filter((item) => {
-          return this.checkPermission(`${this.pageCode}:${item.authorize}`);
-        });
-        if (config.length === 0) this.showBtns = false;
-      }
+      // if (!this.previewMode) {
+      //   config = config.filter((item) => {
+      //     return this.checkPermission(`${this.pageCode}:${item.authorize}`);
+      //   });
+      //   if (config.length === 0) this.showBtns = false;
+      // }
 
       return [
         {
@@ -574,7 +580,7 @@ export default {
         : `${length}px`;
     },
     // 处理按钮点击事件
-    handleBtnClick({
+    async handleBtnClick({
       relateFrom = '',
       openType = '',
       openUrl = '',
@@ -585,6 +591,7 @@ export default {
       dialogTitle = '',
       dialogHeight = '',
       dialogWidth = '',
+      flowKey = '',
     }) {
       console.log(defaultFn, 'defaultFn');
       this.isRefresh = isRefresh;
@@ -594,53 +601,206 @@ export default {
       if (fn) {
         this.exec(fn);
       } else {
-        // openType为1是打开外链
         if (openType === 1) {
-          return this.$router.push(openUrl, relateFrom);
-        }
-        switch (btnType) {
-          case 'add':
-            this.expose_showDialog(relateFrom);
-            this.onlyRead = false;
-            this.primaryKeyValue = '';
-            this.dialogTitle = dialogTitle || '新增';
-            break;
-          case 'check':
-          case 'edit':
-            if (this.selectList.length === 1) {
-              this.primaryKeyValue = this.selectList[0][this.keyField];
-              if ([undefined, null].includes(this.primaryKeyValue)) {
+          // openType为1是当前页面跳转
+          this.$router.push(openUrl, relateFrom);
+        } else if (openType === 3) {
+          // openType为3是新窗口打开;
+          window.open(openUrl, '_blank');
+        } else if (openType === 2) {
+          const res = await this.queryFlowDef('', '', flowKey);
+          const flowInfo = res.data;
+          flowInfo.name = flowInfo.flowName;
+          // 发起流程
+          if (flowInfo.startMode === 'stdNew') {
+            const query = {
+              queryMode: 'add',
+              currentVersionId: flowInfo.currentVersionId,
+            };
+            const routeUrl = this.$router.resolve({
+              path: '/examine-approve-detail',
+              query,
+            });
+            window.open(routeUrl.href, '_blank');
+          } else {
+            this.$refs.flowDialogSummary.openAddDialog(flowInfo);
+          }
+          // openType为2是打开流程
+        } else if (openType === 0) {
+          // openType为2是打开表单
+          switch (btnType) {
+            case 'add':
+              this.expose_showDialog(relateFrom);
+              this.onlyRead = false;
+              this.primaryKeyValue = '';
+              this.dialogTitle = dialogTitle || '新增';
+              break;
+            case 'check':
+            case 'edit':
+              if (this.selectList.length === 1) {
+                this.primaryKeyValue = this.selectList[0][this.keyField];
+                if ([undefined, null].includes(this.primaryKeyValue)) {
+                  return this.$warn(
+                    '主键字段未取到值，请检查数据或在列表设计页面重新关联主键！'
+                  );
+                }
+                this.expose_showDialog(relateFrom);
+                this.onlyRead = btnType === 'check';
+                this.dialogTitle =
+                  dialogTitle || btnType === 'check' ? '查看' : '编辑';
+              } else {
+                this.$warn('请确认只选中了一个值');
+              }
+              break;
+            case 'download':
+            case 'batchDel':
+              if (this.previewMode) return;
+              if (this.selectList.length === 0) {
+                return this.$warn('请确认只选中了一个值');
+              }
+              if (
+                [undefined, null].includes(this.selectList[0][this.keyField])
+              ) {
                 return this.$warn(
-                  '主键字段未取到值，请检查数据或在列表设计页面重新关联主键！'
+                  '主键字段未取到值，请检查数据或重新在列表设计页面重新关联主键！'
                 );
               }
-              this.expose_showDialog(relateFrom);
-              this.onlyRead = btnType === 'check';
-              this.dialogTitle =
-                dialogTitle || btnType === 'check' ? '查看' : '编辑';
-            } else {
-              this.$warn('请确认只选中了一个值');
-            }
-            break;
-          case 'download':
-          case 'batchDel':
-            if (this.previewMode) return;
-            if (this.selectList.length === 0) {
-              return this.$warn('请确认只选中了一个值');
-            }
-            if ([undefined, null].includes(this.selectList[0][this.keyField])) {
-              return this.$warn(
-                '主键字段未取到值，请检查数据或重新在列表设计页面重新关联主键！'
+              (btnType === 'download' ? this.download : this.batchDel)(
+                this.selectList.map((item) => item[this.keyField])
               );
-            }
-            (btnType === 'download' ? this.download : this.batchDel)(
-              this.selectList.map((item) => item[this.keyField])
-            );
-            break;
-          default:
-            break;
+              break;
+            default:
+              break;
+          }
         }
       }
+    },
+
+    dialogDynamicFormVNode() {
+      const {
+        dialogVisibleForm,
+        dialogTitle,
+        dialogWidth,
+        dialogHeight,
+        formId,
+        previewMode,
+        primaryKeyValue,
+        onlyRead,
+        onSubmit,
+        expose_hideDialog,
+        submitForm,
+        handleCancel,
+      } = this;
+      if (dialogVisibleForm) {
+        const visibleListeners = {
+          // 关键代码 - 1
+          'update:visible': (val) => {
+            this.dialogVisibleForm = val;
+          },
+          'before-close': expose_hideDialog,
+        };
+        const width = dialogWidth
+          ? formatterWidthOrHeightStyle(dialogWidth)
+          : '1200px';
+        return (
+          <el-dialog
+            title={dialogTitle}
+            visible={dialogVisibleForm}
+            {...{ on: visibleListeners }}
+            close-on-click-modal={false}
+            close-on-press-escape={false}
+            append-to-body
+            v-draggable
+            width={
+              dialogWidth ? formatterWidthOrHeightStyle(dialogWidth) : '1200px'
+            }
+          >
+            <div
+              style={{
+                height: dialogHeight
+                  ? formatterWidthOrHeightStyle(dialogHeight)
+                  : '650px',
+                overflow: 'auto',
+                width: `calc(${width} - '40px')`,
+              }}
+            >
+              {formId ? (
+                previewMode ? (
+                  <VFPreview
+                    ref={'VFPreview'}
+                    primaryKeyValue={primaryKeyValue}
+                    isDisabled={onlyRead}
+                    hasSubmit={false}
+                    formId={formId}
+                    {...{
+                      on: {
+                        submit: onSubmit,
+                        cancel: expose_hideDialog,
+                      },
+                    }}
+                  ></VFPreview>
+                ) : (
+                  <VFRuntime
+                    ref="VFRuntime"
+                    primaryKeyValue={primaryKeyValue}
+                    isDisabled={onlyRead}
+                    hasSubmit={false}
+                    formId={formId}
+                    {...{
+                      on: {
+                        submit: onSubmit,
+                        cancel: expose_hideDialog,
+                      },
+                    }}
+                  ></VFRuntime>
+                )
+              ) : null}
+            </div>
+            {!onlyRead && !previewMode ? (
+              <span slot="footer">
+                <el-button
+                  type="primary"
+                  size="small"
+                  {...{
+                    on: {
+                      click: submitForm,
+                    },
+                  }}
+                >
+                  提 交
+                </el-button>
+                <el-button
+                  size="small"
+                  {...{
+                    on: {
+                      click: handleCancel,
+                    },
+                  }}
+                >
+                  取 消
+                </el-button>
+              </span>
+            ) : null}
+          </el-dialog>
+        );
+      }
+    },
+
+    flowVNode() {
+      const FlowComp = this.flowComp;
+      console.log();
+      return (
+        <FlowComp
+          ref="flowDialogSummary"
+          mode="add"
+          view={0}
+          {...{
+            on: {
+              updateTable: this.queryTableData,
+            },
+          }}
+        ></FlowComp>
+      );
     },
 
     download(list = []) {
@@ -702,24 +862,13 @@ export default {
       page,
       handleSizeChange,
       handleCurrentChange,
-      dialogVisibleForm,
-      expose_hideDialog,
-      formId,
-      primaryKeyValue,
-      onlyRead,
-      onSubmit,
       showPanel,
       panelData,
       filterFieldChange,
       handleSetting,
       refresh,
-      dialogTitle,
-      dialogWidth,
-      dialogHeight,
-      previewMode,
-      formatterWidthOrHeightStyle,
-      submitForm,
-      handleCancel,
+      dialogDynamicFormVNode,
+      flowVNode,
     } = this;
 
     const curPageListeners = {
@@ -728,13 +877,6 @@ export default {
       },
       'size-change': handleSizeChange,
       'current-change': handleCurrentChange,
-    };
-    const visibleListeners = {
-      // 关键代码 - 1
-      'update:visible': (val) => {
-        this.dialogVisibleForm = val;
-      },
-      'before-close': expose_hideDialog,
     };
 
     const scopedSlots = {
@@ -753,9 +895,6 @@ export default {
       },
     };
 
-    const width = dialogWidth
-      ? formatterWidthOrHeightStyle(dialogWidth)
-      : '1200px';
     return (
       <el-container class="CompleteTable" style="height: 100%">
         {showSearchFrom ? (
@@ -848,87 +987,8 @@ export default {
             ) : null}
           </el-container>
         </el-main>
-        {dialogVisibleForm ? (
-          <el-dialog
-            title={dialogTitle}
-            visible={dialogVisibleForm}
-            {...{ on: visibleListeners }}
-            close-on-click-modal={false}
-            close-on-press-escape={false}
-            append-to-body
-            v-draggable
-            width={
-              dialogWidth ? formatterWidthOrHeightStyle(dialogWidth) : '1200px'
-            }
-          >
-            <div
-              style={{
-                height: dialogHeight
-                  ? formatterWidthOrHeightStyle(dialogHeight)
-                  : '650px',
-                overflow: 'auto',
-                width: `calc(${width} - '40px')`,
-              }}
-            >
-              {formId ? (
-                previewMode ? (
-                  <VFPreview
-                    ref={'VFPreview'}
-                    primaryKeyValue={primaryKeyValue}
-                    isDisabled={onlyRead}
-                    hasSubmit={false}
-                    formId={formId}
-                    {...{
-                      on: {
-                        submit: onSubmit,
-                        cancel: expose_hideDialog,
-                      },
-                    }}
-                  ></VFPreview>
-                ) : (
-                  <VFRuntime
-                    ref="VFRuntime"
-                    primaryKeyValue={primaryKeyValue}
-                    isDisabled={onlyRead}
-                    hasSubmit={false}
-                    formId={formId}
-                    {...{
-                      on: {
-                        submit: onSubmit,
-                        cancel: expose_hideDialog,
-                      },
-                    }}
-                  ></VFRuntime>
-                )
-              ) : null}
-            </div>
-            {!onlyRead && !previewMode ? (
-              <span slot="footer">
-                <el-button
-                  type="primary"
-                  size="small"
-                  {...{
-                    on: {
-                      click: submitForm,
-                    },
-                  }}
-                >
-                  提 交
-                </el-button>
-                <el-button
-                  size="small"
-                  {...{
-                    on: {
-                      click: handleCancel,
-                    },
-                  }}
-                >
-                  取 消
-                </el-button>
-              </span>
-            ) : null}
-          </el-dialog>
-        ) : null}
+        {dialogDynamicFormVNode()}
+        {flowVNode()}
       </el-container>
     );
   },

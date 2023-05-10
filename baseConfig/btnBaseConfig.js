@@ -1,10 +1,18 @@
 export const openType = [
   {
     id: 0,
-    cnName: '当前页面打开',
+    cnName: '关联表单',
+  },
+  {
+    id: 2,
+    cnName: '关联流程',
   },
   {
     id: 1,
+    cnName: '当前页面跳转',
+  },
+  {
+    id: 3,
     cnName: '新窗口打开',
   },
 ];
@@ -112,7 +120,7 @@ export const btnConfigFormOptions = [
       },
       tagName: 'el-select',
       tagAttrs: {
-        placeholder: '',
+        placeholder: '请选择表单',
       },
       // 对应formData中的属性值
       formField: 'extraOption.relateFrom',
@@ -153,10 +161,49 @@ export const btnConfigFormOptions = [
       // 对应formData中的属性值
       formField: 'extraOption.openUrl',
       renderDependFn: function(formData) {
-        return formData.extraOption.openType === 1;
+        return [1, 3].includes(formData.extraOption.openType);
       },
     },
   },
+
+  {
+    elRowAttrs: {
+      gutter: 10,
+    },
+    formItem: {
+      extraOption: {
+        options: [],
+        props: {
+          emitPath: false,
+          value: 'flowKey',
+          label: 'name',
+          children: 'flowDefinitionDtoList',
+        },
+      },
+      request: {
+        require: false,
+        url: '',
+        type: 'get',
+        params: '',
+        status: 'pending',
+      },
+      formItemAttrs: {
+        prop: 'extraOption.flowKey',
+        label: '选择流程：',
+      },
+      tagName: 'el-cascader',
+      style: 'width: 180px',
+      tagAttrs: {
+        placeholder: '请选择流程',
+      },
+      // 对应formData中的属性值
+      formField: 'extraOption.flowKey',
+      renderDependFn: function(formData) {
+        return [2].includes(formData.extraOption.openType);
+      },
+    },
+  },
+
   {
     elRowAttrs: {
       gutter: 10,
@@ -436,6 +483,7 @@ export function BtnConfigFrom(custom = {}) {
       openType: 0,
       openUrl: '',
       fn: '',
+      flowKey: '',
       isRefresh: true,
       dialogTitle: '',
       dialogWidth: '',
