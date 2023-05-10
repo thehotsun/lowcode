@@ -610,7 +610,7 @@ export default {
         } else if (openType === 2) {
           const res = await this.queryFlowDef('', '', flowKey);
           const flowInfo = res.data;
-          flowInfo.name = flowInfo.flowName;
+          flowInfo.name = flowInfo.groupName;
           // 发起流程
           if (flowInfo.startMode === 'stdNew') {
             const query = {
