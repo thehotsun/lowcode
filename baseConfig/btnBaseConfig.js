@@ -71,7 +71,11 @@ export const btnConfigFormOptions = [
       formItemAttrs: {
         prop: 'tagAttrs.value',
         label: '按钮标题：',
-        required: true,
+        rules: {
+          message: '请输入按钮标题',
+          trigger: 'blur',
+          required: true,
+        },
       },
       tagName: 'el-input',
       style: 'width: 180px',
@@ -90,7 +94,11 @@ export const btnConfigFormOptions = [
       formItemAttrs: {
         prop: 'extraOption.openType',
         label: '打开方式：',
-        required: true,
+        rules: {
+          required: true,
+          message: '请选择打开方式',
+          trigger: 'change',
+        },
       },
       tagName: 'el-select',
       tagAttrs: {
@@ -115,8 +123,11 @@ export const btnConfigFormOptions = [
       formItemAttrs: {
         prop: 'extraOption.relateFrom',
         label: '选择表单：',
-        required: true,
-        rules: {},
+        rules: {
+          required: true,
+          message: '请选择表单',
+          trigger: 'change',
+        },
       },
       tagName: 'el-select',
       tagAttrs: {
@@ -152,6 +163,11 @@ export const btnConfigFormOptions = [
       formItemAttrs: {
         prop: 'extraOption.openUrl',
         label: '跳转的url：',
+        rules: {
+          required: true,
+          message: '请输入url',
+          trigger: 'blur',
+        },
       },
       tagName: 'el-input',
       style: 'width: 180px',
@@ -190,6 +206,11 @@ export const btnConfigFormOptions = [
       formItemAttrs: {
         prop: 'extraOption.flowKey',
         label: '选择流程：',
+        rules: {
+          required: true,
+          message: '请选择流程',
+          trigger: 'change',
+        },
       },
       tagName: 'el-cascader',
       style: 'width: 180px',
@@ -212,7 +233,11 @@ export const btnConfigFormOptions = [
       formItemAttrs: {
         prop: 'authorize',
         label: '选择权限：',
-        required: true,
+        rules: {
+          required: true,
+          message: '请选择权限',
+          trigger: 'change',
+        },
       },
       tagName: 'el-select',
       tagAttrs: {

@@ -548,12 +548,12 @@ export default {
       }
       this.showBtns = true;
       // 根据权限筛选
-      // if (!this.previewMode) {
-      //   config = config.filter((item) => {
-      //     return this.checkPermission(`${this.pageCode}:${item.authorize}`);
-      //   });
-      //   if (config.length === 0) this.showBtns = false;
-      // }
+      if (!this.previewMode) {
+        config = config.filter((item) => {
+          return this.checkPermission(`${this.pageCode}:${item.authorize}`);
+        });
+        if (config.length === 0) this.showBtns = false;
+      }
 
       return [
         {

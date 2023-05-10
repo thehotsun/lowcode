@@ -126,7 +126,7 @@
 <script>
 import { getSingleTableData } from '../../baseConfig/tableBaseConfig'
 import completeTable from '../completeTable';
-import setupBtnConfig from '../setupBtnConfig';
+import setupBtnConfig from './components/setupBtnConfig';
 import singleSetupTable from './components/singleSetupTable';
 import {
   getWidgetOptions,
