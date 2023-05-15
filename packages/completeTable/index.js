@@ -618,7 +618,7 @@ export default {
             reg.test(openUrl)
               ? openUrl
               : `${window.location.origin}${
-                  openUrl.at(1) === '/' ? '' : '/'
+                  openUrl.at(0) === '/' ? '' : '/'
                 }${openUrl}`,
             '_blank'
           );
