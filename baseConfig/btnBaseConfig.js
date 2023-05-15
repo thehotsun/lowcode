@@ -1,11 +1,15 @@
 export const openType = [
   {
     id: 0,
-    cnName: '关联表单',
+    cnName: '对话框（关联表单）',
   },
   {
     id: 2,
-    cnName: '关联流程',
+    cnName: '对话框（关联流程）',
+  },
+  {
+    id: 4,
+    cnName: '对话框（关联组件）',
   },
   {
     id: 1,
@@ -161,6 +165,46 @@ export const btnConfigFormOptions = [
     },
     formItem: {
       formItemAttrs: {
+        prop: 'extraOption.relateComponent',
+        label: '选择组件：',
+        rules: {
+          required: true,
+          message: '请选择组件',
+          trigger: 'change',
+        },
+      },
+      tagName: 'el-select',
+      tagAttrs: {
+        placeholder: '请选择组件',
+      },
+      // 对应formData中的属性值
+      formField: 'extraOption.relateComponent',
+      extraOption: {
+        options: [],
+        props: {
+          key: 'id',
+          label: 'cnName',
+        },
+      },
+      request: {
+        require: false,
+        url: '',
+        type: 'get',
+        params: '',
+        status: 'pending',
+      },
+      renderDependFn: function(formData) {
+        return formData.extraOption.openType === 4;
+      },
+    },
+  },
+
+  {
+    elRowAttrs: {
+      gutter: 10,
+    },
+    formItem: {
+      formItemAttrs: {
         prop: 'extraOption.openUrl',
         label: '跳转的url：',
         rules: {
@@ -232,7 +276,7 @@ export const btnConfigFormOptions = [
     formItem: {
       formItemAttrs: {
         prop: 'authorize',
-        label: '选择权限：',
+        label: '权限设置：',
         rules: {
           required: true,
           message: '请选择权限',
@@ -241,7 +285,7 @@ export const btnConfigFormOptions = [
       },
       tagName: 'el-select',
       tagAttrs: {
-        placeholder: '',
+        placeholder: '请选择权限',
       },
       // 对应formData中的属性值
       formField: 'authorize',
@@ -298,7 +342,7 @@ export const btnConfigFormOptions = [
       // 对应formData中的属性值
       formField: 'extraOption.dialogTitle',
       renderDependFn: function(formData) {
-        return formData.extraOption.openType === 0;
+        return [0, 4, 2].includes(formData.extraOption.openType);
       },
     },
   },
@@ -319,7 +363,7 @@ export const btnConfigFormOptions = [
       // 对应formData中的属性值
       formField: 'extraOption.dialogWidth',
       renderDependFn: function(formData) {
-        return formData.extraOption.openType === 0;
+        return [0, 4, 2].includes(formData.extraOption.openType);
       },
     },
   },
@@ -340,7 +384,7 @@ export const btnConfigFormOptions = [
       // 对应formData中的属性值
       formField: 'extraOption.dialogHeight',
       renderDependFn: function(formData) {
-        return formData.extraOption.openType === 0;
+        return [0, 4, 2].includes(formData.extraOption.openType);
       },
     },
   },
@@ -505,16 +549,18 @@ export function BtnConfigFrom(custom = {}) {
     },
     extraOption: {
       relateFrom: '',
+      relateComponent: '',
       openType: 0,
       openUrl: '',
       fn: '',
       flowKey: '',
-      isRefresh: true,
+      isRefresh: false,
       dialogTitle: '',
-      dialogWidth: '',
-      dialogHeight: '',
+      dialogWidth: '900',
+      dialogHeight: '600',
     },
     authorize: '',
+    btnId: +new Date(),
     ...custom,
   };
 }

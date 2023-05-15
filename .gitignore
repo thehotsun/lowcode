@@ -5,7 +5,9 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 **/*.log
-lib
+lib/
+package-lock.json
+
 
 test/unit/coverage
 test/e2e/reports

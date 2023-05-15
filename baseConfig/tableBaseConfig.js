@@ -32,6 +32,7 @@ const originEditConf = [
   {
     // 如需多选，则添加此item
     type: 'selection',
+    align: 'center',
   },
   // {
   //   // 如需展示索引，则添加此item
@@ -58,7 +59,7 @@ const originEditConf = [
     label: '字段名称',
     prop: 'fieldCode',
     disabled: true,
-    'min-width': '150',
+    'min-width': '120',
   },
   {
     ...baseAttr,
@@ -128,22 +129,22 @@ const originEditConf = [
   // },
   {
     ...baseAttr,
-    label: '添加查询控件',
+    label: '启用查询',
     prop: 'isSearchWidget',
     tagName: 'el-switch',
     tagAttrs: {
       clearable: true,
     },
-    'min-width': '150',
+    'min-width': '100',
     // 特殊组件的额外属性值例如select组件下的option组件所需的options
     extraOption: {
       options: searchWidget,
     },
   },
   {
-    label: '控件属性',
+    label: '查询设置',
     prop: '',
-    'min-width': '110',
+    'min-width': '100',
     align: 'center',
     slotName: 'setupWidget',
   },

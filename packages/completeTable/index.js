@@ -74,7 +74,7 @@ export default {
     return {
       pageLayout: '->, total,sizes, prev, pager, next,jumper',
       // 显示动态表单相关
-      dialogVisibleForm: false,
+      btnRelateDialogVisible: false,
       rule: [],
       option: {},
       // tabledata 属性值要做到和tableOptions中的prop相对应
@@ -107,6 +107,7 @@ export default {
       keyField: '',
       onlyRead: false,
       previewMode: false,
+      relateComponent: null,
       tableAttrs: {
         // 初始化是否显示分页
         showPagination: false,
@@ -187,17 +188,15 @@ export default {
     // this.init()
   },
 
-  inject: ['flowComp', 'queryFlowDef'],
+  inject: ['flowComp', 'queryFlowDef', 'componentList'],
 
   methods: {
-    expose_showDialog(formId) {
-      this.dialogVisibleForm = true;
-      this.formId = formId;
-      // this.queryFormConfig(formId)
+    expose_showDialog() {
+      this.btnRelateDialogVisible = true;
     },
 
     expose_hideDialog() {
-      this.dialogVisibleForm = false;
+      this.btnRelateDialogVisible = false;
       this.resetFromData();
     },
 
@@ -550,7 +549,11 @@ export default {
       // 根据权限筛选
       if (!this.previewMode) {
         config = config.filter((item) => {
-          return this.checkPermission(`${this.pageCode}:${item.authorize}`);
+          return (
+            this.checkPermission(
+              `${this.pageCode}:${item.btnId}:${item.authorize}`
+            ) || item.authorize === 'defaultShow'
+          );
         });
         if (config.length === 0) this.showBtns = false;
       }
@@ -582,6 +585,7 @@ export default {
     // 处理按钮点击事件
     async handleBtnClick({
       relateFrom = '',
+      relateComponent = '',
       openType = '',
       openUrl = '',
       fn = '',
@@ -597,6 +601,9 @@ export default {
       this.isRefresh = isRefresh;
       this.dialogHeight = dialogHeight;
       this.dialogWidth = dialogWidth;
+      // 只要执行点击按钮操作，先置空formid
+      this.formId = null;
+      this.relateComponent = null;
       // 如果有自定义事件，则执行自定义事件
       if (fn) {
         this.exec(fn);
@@ -606,11 +613,26 @@ export default {
           this.$router.push(openUrl, relateFrom);
         } else if (openType === 3) {
           // openType为3是新窗口打开;
-          window.open(openUrl, '_blank');
+          var reg = /http(s)?:\/\/([\w-]+\.)+[\w-]+(\/[\w- .\/?%&=]*)?/;
+          window.open(
+            reg.test(openUrl)
+              ? openUrl
+              : `${window.location.origin}${
+                  openUrl.at(1) === '/' ? '' : '/'
+                }${openUrl}`,
+            '_blank'
+          );
+        } else if (openType === 4) {
+          this.expose_showDialog();
+          this.relateComponent = this.componentList.find(
+            (item) => item.id === relateComponent
+          )?.component;
         } else if (openType === 2) {
+          // openType为2是打开流程
           const res = await this.queryFlowDef('', '', flowKey);
           const flowInfo = res.data;
           flowInfo.name = flowInfo.groupName;
+          flowInfo.id = flowInfo.flowDefinitionId;
           // 发起流程
           if (flowInfo.startMode === 'stdNew') {
             const query = {
@@ -625,12 +647,12 @@ export default {
           } else {
             this.$refs.flowDialogSummary.openAddDialog(flowInfo);
           }
-          // openType为2是打开流程
         } else if (openType === 0) {
-          // openType为2是打开表单
+          // openType为0是打开表单
           switch (btnType) {
             case 'add':
-              this.expose_showDialog(relateFrom);
+              this.expose_showDialog();
+              this.formId = relateFrom;
               this.onlyRead = false;
               this.primaryKeyValue = '';
               this.dialogTitle = dialogTitle || '新增';
@@ -644,7 +666,8 @@ export default {
                     '主键字段未取到值，请检查数据或在列表设计页面重新关联主键！'
                   );
                 }
-                this.expose_showDialog(relateFrom);
+                this.expose_showDialog();
+                this.formId = relateFrom;
                 this.onlyRead = btnType === 'check';
                 this.dialogTitle =
                   dialogTitle || btnType === 'check' ? '查看' : '编辑';
@@ -676,26 +699,69 @@ export default {
       }
     },
 
-    dialogDynamicFormVNode() {
+    dynamicFormVNode() {
       const {
-        dialogVisibleForm,
-        dialogTitle,
-        dialogWidth,
-        dialogHeight,
         formId,
         previewMode,
         primaryKeyValue,
         onlyRead,
         onSubmit,
         expose_hideDialog,
+      } = this;
+      if (formId) {
+        return previewMode ? (
+          <VFPreview
+            ref={'VFPreview'}
+            primaryKeyValue={primaryKeyValue}
+            isDisabled={onlyRead}
+            hasSubmit={false}
+            formId={formId}
+            {...{
+              on: {
+                submit: onSubmit,
+                cancel: expose_hideDialog,
+              },
+            }}
+          ></VFPreview>
+        ) : (
+          <VFRuntime
+            ref="VFRuntime"
+            primaryKeyValue={primaryKeyValue}
+            isDisabled={onlyRead}
+            hasSubmit={false}
+            formId={formId}
+            {...{
+              on: {
+                submit: onSubmit,
+                cancel: expose_hideDialog,
+              },
+            }}
+          ></VFRuntime>
+        );
+      }
+    },
+
+    btnRelateDialogVNode() {
+      const {
+        btnRelateDialogVisible,
+        dialogTitle,
+        dialogWidth,
+        dialogHeight,
+        previewMode,
+        onlyRead,
+        formId,
+        dynamicFormVNode,
+        relateComponentVNode,
+        expose_hideDialog,
         submitForm,
         handleCancel,
+        formatterWidthOrHeightStyle,
       } = this;
-      if (dialogVisibleForm) {
+      if (btnRelateDialogVisible) {
         const visibleListeners = {
           // 关键代码 - 1
           'update:visible': (val) => {
-            this.dialogVisibleForm = val;
+            this.btnRelateDialogVisible = val;
           },
           'before-close': expose_hideDialog,
         };
@@ -705,7 +771,7 @@ export default {
         return (
           <el-dialog
             title={dialogTitle}
-            visible={dialogVisibleForm}
+            visible={btnRelateDialogVisible}
             {...{ on: visibleListeners }}
             close-on-click-modal={false}
             close-on-press-escape={false}
@@ -724,39 +790,11 @@ export default {
                 width: `calc(${width} - '40px')`,
               }}
             >
-              {formId ? (
-                previewMode ? (
-                  <VFPreview
-                    ref={'VFPreview'}
-                    primaryKeyValue={primaryKeyValue}
-                    isDisabled={onlyRead}
-                    hasSubmit={false}
-                    formId={formId}
-                    {...{
-                      on: {
-                        submit: onSubmit,
-                        cancel: expose_hideDialog,
-                      },
-                    }}
-                  ></VFPreview>
-                ) : (
-                  <VFRuntime
-                    ref="VFRuntime"
-                    primaryKeyValue={primaryKeyValue}
-                    isDisabled={onlyRead}
-                    hasSubmit={false}
-                    formId={formId}
-                    {...{
-                      on: {
-                        submit: onSubmit,
-                        cancel: expose_hideDialog,
-                      },
-                    }}
-                  ></VFRuntime>
-                )
-              ) : null}
+              {dynamicFormVNode()}
+              {relateComponentVNode()}
             </div>
-            {!onlyRead && !previewMode ? (
+            {/* 只有非只读非预览且是动态表单才会渲染footer */}
+            {!onlyRead && !previewMode && formId ? (
               <span slot="footer">
                 <el-button
                   type="primary"
@@ -803,6 +841,13 @@ export default {
       );
     },
 
+    relateComponentVNode() {
+      if (this.relateComponent) {
+        const Component = this.relateComponent;
+        return <Component ref="relateComponent"></Component>;
+      }
+    },
+
     download(list = []) {
       this.requestDownload(
         {
@@ -836,7 +881,6 @@ export default {
       this.showPanel = !this.showPanel;
     },
     submitForm() {
-      console.log(this.$refs.VFRuntime, 'this.$refs');
       this.$refs.VFRuntime.submitForm();
     },
     handleCancel() {
@@ -867,8 +911,8 @@ export default {
       filterFieldChange,
       handleSetting,
       refresh,
-      dialogDynamicFormVNode,
       flowVNode,
+      btnRelateDialogVNode,
     } = this;
 
     const curPageListeners = {
@@ -925,7 +969,7 @@ export default {
               ) : null}
               <div class="operate">
                 <i
-                  class="el-icon-refresh-left i"
+                  class="el-icon-refresh-left i pointer"
                   {...{
                     on: {
                       click: refresh,
@@ -933,7 +977,7 @@ export default {
                   }}
                 ></i>
                 <i
-                  class="el-icon-s-tools i"
+                  class="el-icon-s-tools i pointer"
                   {...{
                     on: {
                       click: handleSetting,
@@ -987,7 +1031,7 @@ export default {
             ) : null}
           </el-container>
         </el-main>
-        {dialogDynamicFormVNode()}
+        {btnRelateDialogVNode()}
         {flowVNode()}
       </el-container>
     );

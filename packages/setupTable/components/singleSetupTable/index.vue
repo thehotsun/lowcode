@@ -4,10 +4,11 @@
     <div class="operate">
       <!-- <el-button size='small' type="primary" @click="handleAdd(1)">新增一条</el-button> -->
       <!-- <el-button size='small' type="primary" @click="handleAdd(5)">新增五条</el-button> -->
-      <el-button size='small' @click="handleShowField">{{ filterShowField ? '列出全部字段' : '列出显示字段' }}
-      </el-button>
-      <el-button size='small' type="primary" :disabled="!selected.length" @click="handleAddParent">新增父级</el-button>
-      <el-button size='small' type="danger" :disabled="!selected.length" @click="handleDelParent">删除父级</el-button>
+      <el-button size="small" type="default" :disabled="!selected.length" @click="handleAddParent">新增父级</el-button>
+      <el-button size="small" type="default" :disabled="!selected.length" @click="handleDelParent">删除父级</el-button>
+      <el-button size="small" type="default" @click="handleHideAll">隐藏所有</el-button>
+      <el-button size="small" type="default" @click="handleShowAll">显示所有</el-button>
+      <el-checkbox v-model="filterShowField" size="small" style="margin-left: 10px;">仅列出显示字段</el-checkbox>
 
       <!-- <el-button size='small' type="danger" :disabled="!selected.length" @click="handleDelete">删除</el-button> -->
       <!-- <el-button size='small' type="" :disabled="checkUpBtnDisabled()" @click="handleUpAndDwon(true)">上移</el-button>
@@ -25,7 +26,8 @@
         <!-- 注意这里的slot值要和tableOptions中配置的slotName一致 -->
         <!-- #operator是简写，详细请查阅vue文档 -->
         <template #setupWidget="{ row }">
-          <el-button :disabled="row.isSearchWidget === false" @click.stop.prevent="handleWidgetAttr(row)">
+          <el-button type="text" icon="el-icon-edit" :disabled="row.isSearchWidget === false"
+            @click.stop.prevent="handleWidgetAttr(row)">
             设置
           </el-button>
           <slot name="setupWidget" :row="row"></slot>
@@ -65,9 +67,12 @@
           </base-render-form>
           <el-form>
             <el-form-item label-width="106px" label="生成sql片段：">
-              <div class="sql">{{ suggestSQL }}</div>
+              <el-input v-model="suggestSQL" :autosize="{ minRows: 4, maxRows: 10 }" type="textarea" placeholder=""
+                readonly></el-input>
             </el-form-item>
-            <div>提示：生成的sql片段仅供参考</div>
+            <el-form-item label="">
+              <div style="color: #787878;">提示：生成的sql片段仅供参考</div>
+            </el-form-item>
           </el-form>
         </div>
         <div class="right">
@@ -96,6 +101,7 @@ import {
 } from '../../../../utils';
 import { cloneDeep } from "lodash"
 import Sortable from "sortablejs"
+import { merge } from "lodash"
 
 // TODO待完善
 const selectWidgetQuerySqlParamsMap = ['input', '', 'jy-dict-list', 'dateRadio', 'datePicker', 'jy-dict-list', 'jy-dict-list']
@@ -155,7 +161,7 @@ export default {
 
   created () {
     const that = this
-    const target = this.tableOptions.find(item => item.label === '添加查询控件')
+    const target = this.tableOptions.find(item => item.prop === 'isSearchWidget')
     target.listeners.change = (row, val) => {
       // 如果不显示查询控件，则清空当前控件配置
       if (!val) {
@@ -230,14 +236,15 @@ export default {
       const searchWidgetName = searchWidget.find((widgetitem) => widgetitem.id === row.searchWidget)?.tagName;
       this.setupFormOptions = this.composeFormOptions(searchWidgetName, row);
       const searchWidgetConfig = row.searchWidgetConfig
+      const defaultForm = this.getDefaultValueForm(searchWidgetName, row.fieldName)
       if (Object.keys(searchWidgetConfig).length) {
-        this.setupForm = cloneDeep(searchWidgetConfig)
+        this.setupForm = merge(defaultForm, cloneDeep(searchWidgetConfig))
         // 针对字典项的特殊处理
         if (typeof this.setupForm.extraOption?.labelTranslateType === 'number') {
           this.setupForm.extraOption = JSON.stringify(this.setupForm.extraOption)
         }
       } else {
-        this.setupForm = this.getDefaultValueForm(searchWidgetName, row.fieldName)
+        this.setupForm = defaultForm
       }
       const val = this.setupForm.searchWidgetType
       this.querySql(selectWidgetQuerySqlParamsMap[val])
@@ -339,7 +346,7 @@ export default {
       if (selected.length > 1) {
         return this.$warn('暂时只支持单个操作')
       }
-      let index = tableData.indexOf(selected[0])
+      const index = tableData.indexOf(selected[0])
       const prev = tableData.slice(0, index);
       const next = tableData.slice(index + 1);
       if (up) {
@@ -445,6 +452,14 @@ export default {
       this.handleCloseFrom();
       this.$emit('searchOptionsChange')
     },
+
+    handleHideAll () {
+      this.tableData.forEach(row => (row.show = false));
+    },
+
+    handleShowAll () {
+      this.tableData.forEach(row => (row.show = true));
+    }
   }
 };
 </script>

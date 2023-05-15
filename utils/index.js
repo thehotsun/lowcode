@@ -247,9 +247,12 @@ export const depthFirstSearchWithRecursive = (source) => {
 export function getWidgetDefaultVal(item, searchWidgetName) {
   switch (searchWidgetName) {
     case 'el-select':
+    case 'dictionary':
       return item.tagAttrs?.multiple ? [] : '';
     case 'el-cascader':
       return item.tagAttrs?.props?.multiple ? [] : '';
+    case 'el-date-picker-range':
+      return [];
     default:
       return '';
   }

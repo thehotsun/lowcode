@@ -1,7 +1,7 @@
 <template>
   <div class="content">
     <div class="top">
-      页面设计区
+      &nbsp;
       <div class="operate">
         <el-button size="mini" @click="showTableSetting">页面属性</el-button>
         <el-button size="mini" @click="showTableAttrs">表格属性设置</el-button>
@@ -253,6 +253,9 @@ export default {
       previewMode: true
     };
   },
+
+  inject: ['componentList'],
+
   watch: {
     showSearchFromArea (val) {
       if (val) {
@@ -260,6 +263,7 @@ export default {
       }
     }
   },
+
   async mounted () {
     this.btnsColumnDrop()
   },
@@ -507,7 +511,10 @@ export default {
     queryAuthorizeList () {
       this.requestAuthorizeList().then(res => {
         this._btnAuthorize = {
-          options: res.data, props:
+          options: res.data.concat({
+            "actionName": "所有人可操作", "actionCode": "defaultShow",
+          })
+          , props:
           {
             label: 'actionName',
             key: 'actionCode'
@@ -534,10 +541,13 @@ export default {
     // 保存按钮事件
     handleSubmitTableConfig () {
       const renderParams = this.getRenderParams();
-      const actionList = renderParams.formOptions?.map(item => {
-        return {
-          actionCode: `${this._formCode}:${item.authorize}`,
-          actionName: item.tagAttrs.value
+      const actionList = []
+      renderParams.formOptions?.map(item => {
+        if (item.authorize !== 'defaultShow') {
+          actionList.push({
+            actionCode: `${this._formCode}:${item.btnId}:${item.authorize}`,
+            actionName: item.tagAttrs.value
+          })
         }
       })
       return this.saveListConfigJSON({
@@ -561,8 +571,12 @@ export default {
         this.$refs.setupBtnConfig.expose_reductionAll();
         // 配置关联的设计列表下拉框
         this.$refs.setupBtnConfig.expose_setExtraOption(this._formListExtraOption, 'extraOption.relateFrom')
-        // 配置关联的设计列表下拉框
+        // 配置关联的流程列表下拉框
         this.$refs.setupBtnConfig.expose_setExtraOption(this._flowListExtraOption, 'extraOption.flowKey')
+        // 配置关联的组件列表下拉框
+        this.$refs.setupBtnConfig.expose_setExtraOption({
+          options: this.componentList,
+        }, 'extraOption.relateComponent')
         // 配置权限下拉框
         this.$refs.setupBtnConfig.expose_setExtraOption(this._btnAuthorize, 'authorize')
         // 获取原始按钮配置form
@@ -571,15 +585,15 @@ export default {
         // 根据不同的command填充不同的form信息
         switch (command) {
           case 'add':
-            config.tagAttrs.value = '新增'
+            config.extraOption.dialogTitle = config.tagAttrs.value = '新增'
             config.extraOption.btnType = 'add';
             break
           case 'edit':
-            config.tagAttrs.value = '编辑';
+            config.extraOption.dialogTitle = config.tagAttrs.value = '编辑';
             config.extraOption.btnType = 'edit';
             break
           case 'check':
-            config.tagAttrs.value = '查看';
+            config.extraOption.dialogTitle = config.tagAttrs.value = '查看';
             config.extraOption.btnType = 'check';
             break
           case 'download':

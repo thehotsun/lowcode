@@ -94,6 +94,7 @@ export function getElDatePickerConfig() {
     placeholder: '请选择日期',
     clearable: true,
     type: 'date',
+    'value-format': 'yyyy-MM-dd',
   };
   return composeConfig({
     tagName: 'el-date-picker',
