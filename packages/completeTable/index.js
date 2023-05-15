@@ -468,8 +468,8 @@ export default {
             searchWidgetType === 4 &&
             this.searchFrom[formField].length === 2
           ) {
-            extraParams[`${formField}Start`] = this.searchFrom[formField][0];
-            extraParams[`${formField}End`] = this.searchFrom[formField][1];
+            extraParams[`${formField}Start`] = this.searchFrom[formField][0] || '';
+            extraParams[`${formField}End`] = this.searchFrom[formField][1] || '';
           }
         });
         return {
