@@ -6,6 +6,8 @@
       <!-- <el-button size='small' type="primary" @click="handleAdd(5)">新增五条</el-button> -->
       <el-button size="small" type="default" :disabled="!selected.length" @click="handleAddParent">新增父级</el-button>
       <el-button size="small" type="default" :disabled="!selected.length" @click="handleDelParent">删除父级</el-button>
+      <el-button size="small" type="default" @click="handleFuzzySearch">设置搜索字段</el-button>
+      <el-button size="small" type="default" @click="handleSummaryRow">设置统计行</el-button>
       <el-button size="small" type="default" @click="handleHideAll">隐藏所有</el-button>
       <el-button size="small" type="default" @click="handleShowAll">显示所有</el-button>
       <el-checkbox v-model="filterShowField" size="small" style="margin-left: 10px;">仅列出显示字段</el-checkbox>
@@ -84,6 +86,40 @@
         <el-button type="primary" @click="confirmFrom">确定</el-button>
       </span>
     </el-dialog>
+
+    <el-dialog title="设置搜索字段" :visible.sync="dialogVisibleFuzzyFrom" :close-on-click-modal="false"
+      :close-on-press-escape="false" width="1450px" v-dialogDrag :before-close="handleCloseFuzzyFrom" append-to-body>
+      <div class="flex">
+        <div class="left">
+          <el-form label-position="top">
+            <el-form-item required label="搜索字段列表：">
+              <el-checkbox-group class="fieldList" v-model="fuzzyFieldSearchConfig.searchFieldList"
+                @change="fuzzySearchFieldListChange">
+                <el-checkbox v-for="row in tableData" :label="row.fieldCode" :key="row.fieldCode">{{ row.fieldName
+                }}</el-checkbox>
+              </el-checkbox-group>
+            </el-form-item>
+            <el-form-item required label="提示文本：">
+              <el-input v-model="fuzzyFieldSearchConfig.placeholder" placeholder="请输入提示文本"></el-input>
+            </el-form-item>
+            <el-form-item label-width="106px" label="生成sql片段：">
+              <el-input v-model="suggestSQL" :autosize="{ minRows: 4, maxRows: 10 }" type="textarea" placeholder=""
+                readonly></el-input>
+            </el-form-item>
+            <el-form-item label="">
+              <div style="color: #787878;">提示：生成的sql片段仅供参考</div>
+            </el-form-item>
+          </el-form>
+        </div>
+        <div class="right">
+          <code-editor ref="ace" v-model="wholeSQL"></code-editor>
+        </div>
+      </div>
+      <span slot="footer" class="dialog-footer">
+        <el-button @click="handleCloseFuzzyFrom">取消</el-button>
+        <el-button type="primary" @click="confirmFuzzyFrom">确定</el-button>
+      </span>
+    </el-dialog>
   </div>
 </template>
 
@@ -144,6 +180,11 @@ export default {
       suggestSQL: '',
       wholeSQL: '',
       filterShowField: false,
+      fuzzyFieldSearchConfig: {
+        placeholder: '',
+        searchFieldList: []
+      },
+      dialogVisibleFuzzyFrom: false
     };
   },
 
@@ -156,6 +197,10 @@ export default {
   watch: {
     rawTableData (val) {
       this.tableData = val;
+      if (!this.fuzzyFieldSearchConfig.searchFieldList.length) {
+        this.fuzzyFieldSearchConfig.searchFieldList = [val[0].fieldCode];
+        this.setFuzzySearchPlaceholder();
+      }
     },
   },
 
@@ -183,12 +228,29 @@ export default {
       return this.tableData
     },
 
+
+    expose_getFuzzyFieldSearchConfig () {
+      return this.fuzzyFieldSearchConfig
+    },
+
+
+    expose_setFuzzyFieldSearchConfig (obj) {
+      this.fuzzyFieldSearchConfig = obj
+    },
+
     expose_getFormDesignData () {
       return this.formDesignData
     },
 
     init () {
       this.tableData = []
+    },
+
+    setFuzzySearchPlaceholder () {
+      const searchFieldList = this.fuzzyFieldSearchConfig.searchFieldList
+      const fieldNameList = (searchFieldList.length > 2 ? searchFieldList.slice(0, 2) : searchFieldList).map(fieldCode => this.tableData.find(item => item.fieldCode === fieldCode).fieldName)
+      fieldNameList
+      this.fuzzyFieldSearchConfig.placeholder = `输入${fieldNameList.join('、')}${searchFieldList.length > 2 ? '等' : ''}进行搜索`
     },
 
     handleShowField () {
@@ -217,11 +279,11 @@ export default {
       // 防止用户赋值给没有声明的属性值，导致其变为非响应式数据
       this.$set(formData.request, 'url', `${value}`);
     },
-    querySql (type = 'input') {
+    querySql (type = 'input', isFuzzySearch) {
       const params = {
-        "listPageId": this.listPageId,
-        "displayDataType": type,
-        "fieldName": this.curRowData.fieldCode
+        listPageId: this.listPageId,
+        displayDataType: type,
+        fieldNameList: isFuzzySearch ? this.fuzzyFieldSearchConfig.searchFieldList : [this.curRowData.fieldCode]
       }
       this.generateQuerySql(params).then(res => {
         this.$refs.ace.codeValue = this.wholeSQL = res.data.querySql
@@ -290,16 +352,16 @@ export default {
         formOptions = getSetupFormOptions(searchWidgetName)
       }
       // 如果是输入框，则考虑关联其他字段，在这里进行填充 el-select的options
-      if (searchWidgetName === 'el-input') {
-        const target = formOptions.find(item => item.formField === 'relateOtherField')
-        const options = this.tableData.filter(item => item.fieldCode !== row.fieldCode && item.searchWidget === '' && item.show);
-        const props = { key: 'fieldCode', label: 'fieldName' }
-        target.extraOption = {
-          props,
-          // 去除自己和已存在筛选框的和未显示的
-          options: this.supplementLabel(props, options)
-        }
-      }
+      // if (searchWidgetName === 'el-input') {
+      //   const target = formOptions.find(item => item.formField === 'relateOtherField')
+      //   const options = this.tableData.filter(item => item.fieldCode !== row.fieldCode && item.searchWidget === '' && item.show);
+      //   const props = { key: 'fieldCode', label: 'fieldName' }
+      //   target.extraOption = {
+      //     props,
+      //     // 去除自己和已存在筛选框的和未显示的
+      //     options: this.supplementLabel(props, options)
+      //   }
+      // }
       // 由于查询sql接口需要区分单选多选，因此el-select el-cascader 和 dictionary 的多选按钮需要触发相应接口
       if (['el-select', 'el-cascader', 'dictionary'].includes(searchWidgetName)) {
         const target = formOptions.find(item => ['tagAttrs.multiple', 'tagAttrs.props.multiple'].includes(item.formField))
@@ -311,6 +373,17 @@ export default {
         },
         formItem: formOptions
       }];
+    },
+
+    fuzzySearchFieldListChange () {
+      this.querySql('input', true);
+      this.setFuzzySearchPlaceholder();
+    },
+    handleSummaryRow () { },
+
+    handleFuzzySearch () {
+      this.dialogVisibleFuzzyFrom = true;
+      this.querySql('input', true);
     },
 
     rowDrop () {
@@ -453,6 +526,17 @@ export default {
       this.$emit('searchOptionsChange')
     },
 
+    handleCloseFuzzyFrom () {
+      this.dialogVisibleFuzzyFrom = false;
+      this.wholeSQL = ''
+      this.suggestSQL = ''
+    },
+
+    confirmFuzzyFrom () {
+      this.saveSql(this.listPageId, this.wholeSQL);
+      this.handleCloseFuzzyFrom();
+    },
+
     handleHideAll () {
       this.tableData.forEach(row => (row.show = false));
     },
@@ -476,6 +560,13 @@ export default {
 
   .left {
     width: 500px;
+    box-sizing: border-box;
+    padding-right: 15px;
+
+    .fieldList {
+      max-height: 280px;
+      overflow: auto;
+    }
   }
 
   .right {

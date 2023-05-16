@@ -4,8 +4,7 @@ import BaseRenderForm from '../BaseRenderForm/index';
 import BaseRenderRegular from '../BaseRenderRegular/index';
 import panel from './component/panel.vue';
 import { align, searchWidget } from '../../baseConfig/tableSelectConfigs';
-import { getElBtnConfig } from '../../baseConfig/widgetBaseConfig';
-import { h } from 'vue';
+
 import {
   setPlaceholder,
   getWidgetOptions,
@@ -72,11 +71,13 @@ export default {
 
   data() {
     return {
+      fuzzySearchPlaceholder: '',
       pageLayout: '->, total,sizes, prev, pager, next,jumper',
       // 显示动态表单相关
       btnRelateDialogVisible: false,
       rule: [],
       option: {},
+      multiFieldSearch: '',
       // tabledata 属性值要做到和tableOptions中的prop相对应
       tableConfigJSON: [],
       tableOptions: [],
@@ -340,21 +341,33 @@ export default {
             searchWidgetName
           );
           const options = getWidgetOptions(searchWidgetName, item);
-          formOptions.push(
-            merge(
-              options,
-              depthFirstSearchWithRecursive(item.searchWidgetConfig)
-            )
+          const finalOptions = merge(
+            options,
+            depthFirstSearchWithRecursive(item.searchWidgetConfig)
           );
+          // 添加搜索表单得change事件，用以触发更新列表
+          if (finalOptions.listeners) {
+            const fn = finalOptions.listeners.change;
+            finalOptions.listeners.change = (...argus) => {
+              this.handleFilter(...argus);
+              fn && fn(...argus);
+            };
+          } else {
+            finalOptions.listeners = {
+              change: this.handleFilter,
+            };
+          }
+          formOptions.push(finalOptions);
         }
         // 如果循环到最后一个且存在其他筛选项，则对formOptions通过sortNumb进行排序，复制一份最原始的form,添加筛选和重置按钮
         if (length - 1 === index && formOptions.length) {
           this.rawSearchFrom = cloneDeep(this.searchFrom);
           formOptions = formOptions.sort((a, b) => a.sortNumb - b.sortNumb);
-          formOptions.push(...this.getBtnConfig());
+          // formOptions.push(...this.getBtnConfig());
           this.showSearchFrom = true;
         }
       });
+      console.log(JSON.parse(JSON.stringify(formOptions)));
       return [
         {
           elRowAttrs: {
@@ -369,37 +382,37 @@ export default {
       ];
     },
 
-    getBtnConfig() {
-      const customAttr = (contentText) =>
-        this.previewMode
-          ? {
-              contentText,
-              tagAttrs: {
-                disabled: this.previewMode,
-              },
-            }
-          : {
-              contentText,
-            };
-      const filterConfig = getElBtnConfig(
-        'primary',
-        this.handleFilter,
-        customAttr('搜索')
-      );
-      const resetConfig = getElBtnConfig(
-        '',
-        this.handleReset,
-        customAttr('重置')
-      );
-      setColSpan(filterConfig, 2);
-      setColSpan(resetConfig, 2);
-      return [
-        {
-          formItemAttrs: { 'label-width': '35px' },
-          child: [filterConfig, resetConfig],
-        },
-      ];
-    },
+    // getBtnConfig() {
+    //   const customAttr = (contentText) =>
+    //     this.previewMode
+    //       ? {
+    //           contentText,
+    //           tagAttrs: {
+    //             disabled: this.previewMode,
+    //           },
+    //         }
+    //       : {
+    //           contentText,
+    //         };
+    //   const filterConfig = getElBtnConfig(
+    //     'primary',
+    //     this.handleFilter,
+    //     customAttr('搜索')
+    //   );
+    //   const resetConfig = getElBtnConfig(
+    //     '',
+    //     this.handleReset,
+    //     customAttr('重置')
+    //   );
+    //   setColSpan(filterConfig, 2);
+    //   setColSpan(resetConfig, 2);
+    //   return [
+    //     {
+    //       formItemAttrs: { 'label-width': '35px' },
+    //       child: [filterConfig, resetConfig],
+    //     },
+    //   ];
+    // },
 
     handleFilter() {
       this.page.pageNo = 1;
@@ -448,37 +461,38 @@ export default {
     // 获取列表数据接口参数
     getParams() {
       // 去掉最后添加的按钮
+      const extraParams = {};
       if (this.formOptions?.length) {
-        const formItem = this.formOptions[0].formItem.slice(0, -1);
-        const extraParams = {};
+        const formItem = this.formOptions[0].formItem;
         formItem.map((item) => {
           // 此处要处理两个字段使用同一input的模糊搜索
           const {
-            relateOtherField = [],
+            // relateOtherField = [],
             formField = '',
             searchWidgetType,
           } = item;
-          if (searchWidgetType === 0 && relateOtherField.length) {
-            relateOtherField.map((fieldName) => {
-              extraParams[fieldName] = this.searchFrom[formField];
-            });
-          }
+          // if (searchWidgetType === 0 && relateOtherField.length) {
+          //   relateOtherField.map((fieldName) => {
+          //     extraParams[fieldName] = this.searchFrom[formField];
+          //   });
+          // }
           // 此处要处理日期选择框数组形式后端不识别，改为字段名加end和start
           if (
             searchWidgetType === 4 &&
             this.searchFrom[formField].length === 2
           ) {
-            extraParams[`${formField}Start`] = this.searchFrom[formField][0] || '';
-            extraParams[`${formField}End`] = this.searchFrom[formField][1] || '';
+            extraParams[`${formField}Start`] =
+              this.searchFrom[formField][0] || '';
+            extraParams[`${formField}End`] =
+              this.searchFrom[formField][1] || '';
           }
         });
-        return {
-          ...this.searchFrom,
-          ...extraParams,
-        };
-      } else {
-        return this.searchFrom;
       }
+      return {
+        ...this.searchFrom,
+        ...extraParams,
+        multiFieldSearch: this.multiFieldSearch,
+      };
     },
 
     queryTableData() {
@@ -504,8 +518,14 @@ export default {
     },
 
     parseTableConfig(data) {
-      const { tableOptions, formOptions, keyField } = data;
-      this.tableAttrs = setTableAttrs(data);
+      const {
+        tableOptions,
+        formOptions,
+        keyField,
+        tableAttrs,
+        fuzzyFieldSearchConfig,
+      } = data;
+      this.tableAttrs = setTableAttrs(tableAttrs);
       if (formOptions?.length) {
         this.btnRegularOptions = this.composeBtnRegularOptions(formOptions);
       } else {
@@ -513,6 +533,9 @@ export default {
       }
       this.tableConfigJSON = tableOptions;
       this.keyField = keyField;
+      if (fuzzyFieldSearchConfig?.searchFieldList?.length > 0) {
+        this.fuzzySearchPlaceholder = fuzzyFieldSearchConfig.placeholder;
+      }
     },
 
     queryTableConfig() {
@@ -913,6 +936,8 @@ export default {
       refresh,
       flowVNode,
       btnRelateDialogVNode,
+      fuzzySearchPlaceholder,
+      handleFilter,
     } = this;
 
     const curPageListeners = {
@@ -968,6 +993,17 @@ export default {
                 ></base-render-regular>
               ) : null}
               <div class="operate">
+                {fuzzySearchPlaceholder ? (
+                  <el-input
+                    style={{ width: '200px' }}
+                    size="mini"
+                    v-model={this.multiFieldSearch}
+                    placeholder={fuzzySearchPlaceholder}
+                    onChange={handleFilter}
+                  >
+                    <i slot="prefix" class="el-input__icon el-icon-search"></i>
+                  </el-input>
+                ) : null}
                 <i
                   class="el-icon-refresh-left i pointer"
                   {...{

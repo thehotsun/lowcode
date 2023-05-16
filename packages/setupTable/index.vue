@@ -40,8 +40,8 @@
     </div>
 
     <div class="tablesetup">
-      <single-setup-table ref="singleSetupTable" :generalRequest="generalRequest" :raw-table-data.sync="tableData"
-        :generateQuerySql="generateQuerySql" :saveSql="saveSql" :listPageId="listPageId" edit-mode
+      <single-setup-table ref="singleSetupTable" :general-request="generalRequest" :raw-table-data.sync="tableData"
+        :generate-query-sql="generateQuerySql" :save-sql="saveSql" :list-page-id="listPageId" edit-mode
         @searchOptionsChange="searchOptionsChange">
       </single-setup-table>
     </div>
@@ -250,7 +250,7 @@ export default {
       searchFromOptions: [],
       searchFrom: {},
       showSearchFromArea: false,
-      previewMode: true
+      previewMode: true,
     };
   },
 
@@ -267,6 +267,7 @@ export default {
   async mounted () {
     this.btnsColumnDrop()
   },
+
   methods: {
     async init (id = '', formCode) {
       console.log(id, 'id');
@@ -279,18 +280,21 @@ export default {
       // 编辑状态
       if (data) {
         const obj = JSON.parse(data);
-        const { tableOptions, formOptions, keyField, ...tableAttrs } = obj;
-        this.tableAttrs = tableAttrs
+        const { tableOptions, formOptions, keyField, tableAttrs, fuzzyFieldSearchConfig } = obj;
+        this.tableAttrs = tableAttrs;
+        if (fuzzyFieldSearchConfig && Object.keys(fuzzyFieldSearchConfig).length) {
+          this.$refs.singleSetupTable.expose_setFuzzyFieldSearchConfig(fuzzyFieldSearchConfig);
+        }
         this.keyField = keyField;
         this.tableData = tableOptions;
-        this.btnConfigArr = formOptions
+        this.btnConfigArr = formOptions;
         // 更新数据库字段，如果多了新增默认，少了去除
         await this.updateFieldList();
         this.searchFromOptions = this.composeFromOptions(tableOptions);
       } else {
         // 新增状态
         this.queryFieldList();
-        this.getPrimekey()
+        this.getPrimekey();
       }
     },
 
@@ -315,7 +319,7 @@ export default {
         onEnd: e => {
           //e.oldIndex为拖动一行原来的位置，e.newIndex为拖动后新的位置
           // 排序后要先获取最新的列表，否则下面list[e.oldIndex]取不到正确的值
-          let list = this.composeFromOptions(this.tableData)[0].formItem.slice(0, -1)
+          let list = this.composeFromOptions(this.tableData)[0].formItem
           const { newIndex, oldIndex } = e
           if (newIndex < oldIndex) {
             list[e.oldIndex].sortNumb = list[e.newIndex].sortNumb - 1
@@ -371,7 +375,7 @@ export default {
         // 如果循环到最后一个且存在其他筛选项，则对formOptions通过sortNumb进行排序且添加按钮到最后一个
         if (length - 1 === index && formOptions.length) {
           formOptions = formOptions.sort((a, b) => a.sortNumb - b.sortNumb);
-          formOptions.push(...this.getBtnConfig());
+          // formOptions.push(...this.getBtnConfig());
           this.showSearchFromArea = true;
         }
       });
@@ -530,7 +534,8 @@ export default {
     // 获取保存接口所需所需params
     getRenderParams () {
       const json = {
-        ...this.tableAttrs,
+        fuzzyFieldSearchConfig: this.$refs.singleSetupTable.expose_getFuzzyFieldSearchConfig(),
+        tableAttrs: this.tableAttrs,
         formOptions: this.btnConfigArr,
         tableOptions: this.$refs.singleSetupTable.expose_getTableData(),
         keyField: this.keyField,

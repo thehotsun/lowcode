@@ -35,11 +35,21 @@ export const searchWidget = [
     cnName: '单行文本框',
     tagName: 'el-input',
   },
+  // {
+  //   id: 1,
+  //   cnName: '计数器',
+  //   tagName: 'el-input-number',
+  // },
   {
-    id: 1,
-    cnName: '计数器',
-    tagName: 'el-input-number',
+    id: 6,
+    cnName: '字典选择器',
+    tagName: 'dictionary',
   },
+  // {
+  //   id: 7,
+  //   cnName: '列表平铺',
+  //   tagName: 'el-select',
+  // },
   {
     id: 2,
     cnName: '组合下拉框',
@@ -59,10 +69,5 @@ export const searchWidget = [
     id: 5,
     cnName: '级联选择器',
     tagName: 'el-cascader',
-  },
-  {
-    id: 6,
-    cnName: '字典选择器',
-    tagName: 'dictionary',
   },
 ];

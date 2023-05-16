@@ -81,7 +81,7 @@ export function getFormItemEmptyConfig() {
     },
     sortNumb: 0,
     formField: '',
-    relateOtherField: [],
+    // relateOtherField: [],
     renderDependFn: '',
     extraOption: {
       options: [],
@@ -388,28 +388,28 @@ export function getSetupFormOptions(searchWidgetName) {
           'tagAttrs.placeholder',
           { style: 'width: 350px' }
         ),
-        getSetupFromSingleConfig(
-          '关联其他字段：',
-          '',
-          'relateOtherField',
-          {
-            style: 'width: 350px',
-            extraOption: {
-              options: [
-                {
-                  id: '',
-                  cnName: '',
-                },
-              ],
-            },
-            tagAttrs: {
-              placeholder: '请选择关联其他字段：',
-              clearable: true,
-              multiple: true,
-            },
-          },
-          'el-select'
-        ),
+        // getSetupFromSingleConfig(
+        //   '关联其他字段：',
+        //   '',
+        //   'relateOtherField',
+        //   {
+        //     style: 'width: 350px',
+        //     extraOption: {
+        //       options: [
+        //         {
+        //           id: '',
+        //           cnName: '',
+        //         },
+        //       ],
+        //     },
+        //     tagAttrs: {
+        //       placeholder: '请选择关联其他字段：',
+        //       clearable: true,
+        //       multiple: true,
+        //     },
+        //   },
+        //   'el-select'
+        // ),
       ];
       break;
     case 'el-input-number':
@@ -532,7 +532,7 @@ export function getSetupForm(searchWidgetName) {
   switch (searchWidgetName) {
     case 'el-input':
       form = {
-        relateOtherField: [],
+        // relateOtherField: [],
         formItemAttrs: {
           label: '',
         },
