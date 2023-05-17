@@ -139,9 +139,6 @@ import { cloneDeep } from "lodash"
 import Sortable from "sortablejs"
 import { merge } from "lodash"
 
-// TODO待完善
-const selectWidgetQuerySqlParamsMap = ['input', '', 'jy-dict-list', 'dateRadio', 'datePicker', 'jy-dict-list', 'jy-dict-list']
-
 export default {
   name: 'singleSetupTable',
   components: {
@@ -267,9 +264,11 @@ export default {
     },
 
     changeWidget (val) {
-      const searchWidgetName = searchWidget.find((widgetitem) => widgetitem.id === val)?.tagName;
+      const target = searchWidget.find((widgetitem) => widgetitem.id === val);
+      const searchWidgetName = target?.tagName;
+      const sqlType = target?.sqlType;
       this.suggestSQL = ''
-      this.querySql(selectWidgetQuerySqlParamsMap[val])
+      this.querySql(sqlType)
       this.setupForm = this.getDefaultValueForm(searchWidgetName, this.curRowData.fieldName)
       this.setupFormOptions = this.composeFormOptions(searchWidgetName, this.curRowData);
     },
@@ -291,11 +290,14 @@ export default {
         this.suggestSQL = res.data.querySqlFragment;
       })
     },
+
     // 处理设置控件属性事件
     handleWidgetAttr (row) {
       this.curRowData = row;
       this.dialogVisibleFrom = true;
-      const searchWidgetName = searchWidget.find((widgetitem) => widgetitem.id === row.searchWidget)?.tagName;
+      const target = searchWidget.find((widgetitem) => widgetitem.id === row.searchWidget);
+      const searchWidgetName = target?.tagName;
+      const sqlType = target?.sqlType;
       this.setupFormOptions = this.composeFormOptions(searchWidgetName, row);
       const searchWidgetConfig = row.searchWidgetConfig
       const defaultForm = this.getDefaultValueForm(searchWidgetName, row.fieldName)
@@ -309,7 +311,7 @@ export default {
         this.setupForm = defaultForm
       }
       const val = this.setupForm.searchWidgetType
-      this.querySql(selectWidgetQuerySqlParamsMap[val])
+      this.querySql(sqlType)
     },
 
     getSortNumb () {

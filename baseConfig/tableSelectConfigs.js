@@ -34,6 +34,7 @@ export const searchWidget = [
     id: 0,
     cnName: '单行文本框',
     tagName: 'el-input',
+    sqlType: 'input',
   },
   // {
   //   id: 1,
@@ -44,30 +45,30 @@ export const searchWidget = [
     id: 6,
     cnName: '字典选择器',
     tagName: 'dictionary',
+    sqlType: 'jy-dict-list',
   },
-  // {
-  //   id: 7,
-  //   cnName: '列表平铺',
-  //   tagName: 'el-select',
-  // },
   {
     id: 2,
     cnName: '组合下拉框',
     tagName: 'el-select',
+    sqlType: 'jy-dict-list',
   },
   {
     id: 3,
     cnName: '日期选择框',
     tagName: 'el-date-picker',
+    sqlType: 'dateRadio',
   },
   {
     id: 4,
     cnName: '日期选择范围框',
     tagName: 'el-date-picker-range',
+    sqlType: 'datePicker',
   },
   {
     id: 5,
     cnName: '级联选择器',
     tagName: 'el-cascader',
+    sqlType: 'jy-dict-list',
   },
 ];
