@@ -415,6 +415,7 @@ export default {
     // },
 
     handleFilter() {
+      if (this.previewMode) return;
       this.page.pageNo = 1;
       this.queryTableData();
     },

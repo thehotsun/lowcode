@@ -297,7 +297,8 @@ export default {
       this.dialogVisibleFrom = true;
       const target = searchWidget.find((widgetitem) => widgetitem.id === row.searchWidget);
       const searchWidgetName = target?.tagName;
-      const sqlType = target?.sqlType;
+      const sqlType = target?.sqlType || 'input';
+      this.querySql(sqlType)
       this.setupFormOptions = this.composeFormOptions(searchWidgetName, row);
       const searchWidgetConfig = row.searchWidgetConfig
       const defaultForm = this.getDefaultValueForm(searchWidgetName, row.fieldName)
@@ -310,8 +311,6 @@ export default {
       } else {
         this.setupForm = defaultForm
       }
-      const val = this.setupForm.searchWidgetType
-      this.querySql(sqlType)
     },
 
     getSortNumb () {
