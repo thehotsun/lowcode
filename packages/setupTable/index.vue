@@ -32,8 +32,9 @@
           <el-dropdown-item command="add">新增按钮</el-dropdown-item>
           <el-dropdown-item command="edit">编辑按钮</el-dropdown-item>
           <el-dropdown-item command="check">查看按钮</el-dropdown-item>
-          <el-dropdown-item command="download">导出按钮</el-dropdown-item>
           <el-dropdown-item command="batchDel">批量删除按钮</el-dropdown-item>
+          <el-dropdown-item command="download">导出按钮</el-dropdown-item>
+          <el-dropdown-item command="import">导入按钮</el-dropdown-item>
           <el-dropdown-item command="custom">自定义按钮</el-dropdown-item>
         </el-dropdown-menu>
       </el-dropdown>
@@ -170,6 +171,12 @@ export default {
       type: Function,
       require: true
     },
+    // 获取可关联的业务模型 
+    requestMetaList: {
+      type: Function,
+      require: false,
+      default: () => { }
+    },
     // 获取可关联流程 
     requestFlowList: {
       type: Function,
@@ -251,6 +258,9 @@ export default {
       searchFrom: {},
       showSearchFromArea: false,
       previewMode: true,
+      _formListExtraOption: {},
+      _metaListExtraOption: {},
+      _flowListExtraOption: {}
     };
   },
 
@@ -274,6 +284,7 @@ export default {
       this._groupID = id;
       this._formCode = formCode;
       this.queryFormList()
+      this.queryMetaList()
       this.queryFlowList()
       this.queryAuthorizeList()
       const { data } = await this.requestTableConfig()
@@ -498,6 +509,24 @@ export default {
       });
     },
 
+    async queryMetaList () {
+      if (!this.requestMetaList) {
+        console.error("未配置查询业务模型的方法");
+        return;
+      }
+      const res = await this.requestMetaList(this._groupID);
+      if (!res || !res.data) {
+        return;
+      }
+      this._metaListExtraOption = {
+        options: res.data,
+        props: {
+          label: 'businessName',
+          key: 'metaNameID'
+        }
+      }
+    },
+
     queryFlowList () {
       this.requestFlowList().then(data => {
         this._flowListExtraOption = {
@@ -576,6 +605,8 @@ export default {
         this.$refs.setupBtnConfig.expose_reductionAll();
         // 配置关联的设计列表下拉框
         this.$refs.setupBtnConfig.expose_setExtraOption(this._formListExtraOption, 'extraOption.relateFrom')
+        // 配置关联的业务模型下拉框
+        this.$refs.setupBtnConfig.expose_setExtraOption(this._metaListExtraOption, 'extraOption.relateMeta')
         // 配置关联的流程列表下拉框
         this.$refs.setupBtnConfig.expose_setExtraOption(this._flowListExtraOption, 'extraOption.flowKey')
         // 配置关联的组件列表下拉框
@@ -601,17 +632,25 @@ export default {
             config.extraOption.dialogTitle = config.tagAttrs.value = '查看';
             config.extraOption.btnType = 'check';
             break
-          case 'download':
-            // 隐藏某些字段
-            this.$refs.setupBtnConfig.expose_hideSomeFieldOptions(['extraOption.fn', 'extraOption.openUrl', 'extraOption.isRefresh', 'extraOption.openType', 'extraOption.relateFrom', 'extraOption.dialogHeight', 'extraOption.dialogTitle', 'extraOption.dialogWidth']);
-            config.tagAttrs.value = '导出';
-            config.extraOption.btnType = 'download';
-            break;
           case 'batchDel':
             // 隐藏某些字段
             this.$refs.setupBtnConfig.expose_hideSomeFieldOptions(['extraOption.fn', 'extraOption.openUrl', 'extraOption.isRefresh', 'extraOption.openType', 'extraOption.relateFrom', 'extraOption.dialogHeight', 'extraOption.dialogTitle', 'extraOption.dialogWidth']);
             config.tagAttrs.value = '批量删除'
             config.extraOption.btnType = 'batchDel';
+            config.extraOption.openType = -1;
+            break;
+          case 'download':
+            // 隐藏某些字段
+            this.$refs.setupBtnConfig.expose_hideSomeFieldOptions(['extraOption.fn', 'extraOption.openUrl', 'extraOption.isRefresh', 'extraOption.openType', 'extraOption.relateFrom', 'extraOption.dialogHeight', 'extraOption.dialogTitle', 'extraOption.dialogWidth']);
+            config.tagAttrs.value = '导出';
+            config.extraOption.btnType = 'download';
+            config.extraOption.openType = -1;
+            break;
+          case 'import':
+            this.$refs.setupBtnConfig.expose_hideSomeFieldOptions(['extraOption.fn', 'extraOption.openUrl', 'extraOption.openType', 'extraOption.relateFrom']);
+            config.tagAttrs.value = '导入';
+            config.extraOption.btnType = 'import';
+            config.extraOption.openType = -1;
             break;
           case 'custom':
             config.extraOption.btnType = 'custom';

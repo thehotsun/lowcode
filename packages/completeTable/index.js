@@ -6,9 +6,7 @@ import panel from './component/panel.vue';
 import { align, searchWidget } from '../../baseConfig/tableSelectConfigs';
 
 import {
-  setPlaceholder,
   getWidgetOptions,
-  setColSpan,
   exec,
   getWidgetDefaultVal,
   str2obj,
@@ -59,12 +57,13 @@ export default {
     checkPermission: {
       type: Function,
     },
-    // pageLayout: {
-    //   type: String,
-    //   default: function () {
-    //     'total,sizes, prev, pager, next,jumper'
-    //   }
-    // },
+    /**
+     * 格式: async fn(metaId) {...}
+     */
+    openImportFn: {
+      type: Function,
+      default: null,
+    },
 
     listPageId: String,
   },
@@ -609,6 +608,7 @@ export default {
     // 处理按钮点击事件
     async handleBtnClick({
       relateFrom = '',
+      relateMeta = '',
       relateComponent = '',
       openType = '',
       openUrl = '',
@@ -632,7 +632,34 @@ export default {
       if (fn) {
         this.exec(fn);
       } else {
-        if (openType === 1) {
+        if (openType === -1) {
+          // openType为-1是固定行为，如下载 批量删除等
+          switch (btnType) {
+            case 'download':
+            case 'batchDel':
+              if (this.previewMode) return;
+              if (this.selectList.length === 0) {
+                return this.$warn('请确认只选中了一个值');
+              }
+              if (
+                [undefined, null].includes(this.selectList[0][this.keyField])
+              ) {
+                return this.$warn(
+                  '主键字段未取到值，请检查数据或重新在列表设计页面重新关联主键！'
+                );
+              }
+              (btnType === 'download' ? this.download : this.batchDel)(
+                this.selectList.map((item) => item[this.keyField])
+              );
+              break;
+            case 'import':
+              // 处理导入
+              this.dealImport(relateMeta, isRefresh);
+              break;
+            default:
+              break;
+          }
+        } else if (openType === 1) {
           // openType为1是当前页面跳转
           this.$router.push(openUrl, relateFrom);
         } else if (openType === 3) {
@@ -699,27 +726,26 @@ export default {
                 this.$warn('请确认只选中了一个值');
               }
               break;
-            case 'download':
-            case 'batchDel':
-              if (this.previewMode) return;
-              if (this.selectList.length === 0) {
-                return this.$warn('请确认只选中了一个值');
-              }
-              if (
-                [undefined, null].includes(this.selectList[0][this.keyField])
-              ) {
-                return this.$warn(
-                  '主键字段未取到值，请检查数据或重新在列表设计页面重新关联主键！'
-                );
-              }
-              (btnType === 'download' ? this.download : this.batchDel)(
-                this.selectList.map((item) => item[this.keyField])
-              );
-              break;
             default:
               break;
           }
         }
+      }
+    },
+
+    // 处理导入的实现
+    async dealImport(metaId, isRefresh) {
+      if (!metaId) {
+        this.$error('未配置关联的业务模型');
+        return;
+      }
+      if (!this.openImportFn) {
+        this.$error('未正确配置导入的处理方法, 对应的属性: openImportFn');
+        return;
+      }
+      await this.openImportFn(metaId);
+      if (isRefresh) {
+        this.queryTableData();
       }
     },
 

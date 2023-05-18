@@ -88,7 +88,8 @@ export default {
 
     expose_setBtnConfigFrom (obj) {
       this.originConfigForm = obj
-      this.btnConfigFrom = cloneDeep(obj)
+      const btnDefaultConfigFrom = new BtnConfigFrom()
+      this.btnConfigFrom = merge(btnDefaultConfigFrom, obj)
     },
 
     expose_getBtnConfigFrom () {

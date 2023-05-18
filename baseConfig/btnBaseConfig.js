@@ -165,6 +165,46 @@ export const btnConfigFormOptions = [
     },
     formItem: {
       formItemAttrs: {
+        prop: 'extraOption.relateMeta',
+        label: '业务模型：',
+        rules: {
+          required: true,
+          message: '请选择业务模型',
+          trigger: 'change',
+        },
+      },
+      tagName: 'el-select',
+      tagAttrs: {
+        placeholder: '请选择目标业务模型',
+      },
+      // 对应formData中的属性值
+      formField: 'extraOption.relateMeta',
+      extraOption: {
+        options: [],
+        props: {
+          key: 'metaNameID',
+          label: 'businessName',
+        },
+      },
+      request: {
+        require: false,
+        url: '',
+        type: 'get',
+        params: '',
+        status: 'pending',
+      },
+      renderDependFn: function(formData) {
+        return formData.extraOption.btnType === 'import';
+      },
+    },
+  },
+
+  {
+    elRowAttrs: {
+      gutter: 10,
+    },
+    formItem: {
+      formItemAttrs: {
         prop: 'extraOption.relateComponent',
         label: '选择组件：',
         rules: {
@@ -549,6 +589,7 @@ export function BtnConfigFrom(custom = {}) {
     },
     extraOption: {
       relateFrom: '',
+      relateMeta: '',
       relateComponent: '',
       openType: 0,
       openUrl: '',
