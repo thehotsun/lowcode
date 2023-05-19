@@ -1,6 +1,6 @@
 {
   "name": "@viva3la3vida/base-render",
-  "version": "1.0.65",
+  "version": "1.0.67",
   "description": "baseRender",
   "license": "MIT",
   "main": "./lib/index.min.js",

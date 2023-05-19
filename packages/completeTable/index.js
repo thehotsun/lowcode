@@ -57,14 +57,6 @@ export default {
     checkPermission: {
       type: Function,
     },
-    /**
-     * 格式: async fn(metaId) {...}
-     */
-    openImportFn: {
-      type: Function,
-      default: null,
-    },
-
     listPageId: String,
   },
 
@@ -188,7 +180,7 @@ export default {
     // this.init()
   },
 
-  inject: ['flowComp', 'queryFlowDef', 'componentList'],
+  inject: ['flowComp', 'importFileComp', 'queryFlowDef', 'componentList'],
 
   methods: {
     expose_showDialog() {
@@ -716,14 +708,10 @@ export default {
         this.$error('未配置关联的业务模型');
         return;
       }
-      if (!this.openImportFn) {
-        this.$error('未正确配置导入的处理方法, 对应的属性: openImportFn');
-        return;
-      }
-      await this.openImportFn(metaId);
-      if (isRefresh) {
-        this.queryTableData();
-      }
+      this.$refs.importFileComp.open(metaId);
+      // if (isRefresh) {
+      //   this.queryTableData();
+      // }
     },
 
     dynamicFormVNode() {
@@ -853,7 +841,6 @@ export default {
 
     flowVNode() {
       const FlowComp = this.flowComp;
-      console.log();
       return (
         <FlowComp
           ref="flowDialogSummary"
@@ -866,6 +853,11 @@ export default {
           }}
         ></FlowComp>
       );
+    },
+
+    importFileVNode() {
+      const ImportFileComp = this.importFileComp;
+      return <ImportFileComp ref="importFileComp"></ImportFileComp>;
     },
 
     relateComponentVNode() {
@@ -940,6 +932,7 @@ export default {
       refresh,
       flowVNode,
       btnRelateDialogVNode,
+      importFileVNode,
       fuzzySearchPlaceholder,
       handleFilter,
     } = this;
@@ -1073,6 +1066,7 @@ export default {
         </el-main>
         {btnRelateDialogVNode()}
         {flowVNode()}
+        {importFileVNode()}
       </el-container>
     );
   },
