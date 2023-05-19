@@ -386,7 +386,6 @@ export default {
         // 如果循环到最后一个且存在其他筛选项，则对formOptions通过sortNumb进行排序且添加按钮到最后一个
         if (length - 1 === index && formOptions.length) {
           formOptions = formOptions.sort((a, b) => a.sortNumb - b.sortNumb);
-          // formOptions.push(...this.getBtnConfig());
           this.showSearchFromArea = true;
         }
       });
@@ -411,39 +410,6 @@ export default {
         fieldCode,
         getWidgetDefaultVal(formOptions, searchWidgetName)
       );
-    },
-
-
-    getBtnConfig () {
-      const customAttr = (contentText) =>
-        this.previewMode
-          ? {
-            contentText,
-            tagAttrs: {
-              disabled: this.previewMode,
-            },
-          }
-          : {
-            contentText,
-          };
-      const filterConfig = getElBtnConfig(
-        'primary',
-        () => { },
-        customAttr('搜索')
-      );
-      const resetConfig = getElBtnConfig(
-        '',
-        () => { },
-        customAttr('重置')
-      );
-      setColSpan(filterConfig, 2);
-      setColSpan(resetConfig, 2);
-      return [
-        {
-          formItemAttrs: { 'label-width': '35px', key: Math.random() },
-          child: [filterConfig, resetConfig],
-        },
-      ];
     },
 
     requestTableConfig () {

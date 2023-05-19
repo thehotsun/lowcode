@@ -236,6 +236,7 @@ export default {
     },
 
     async init(isPreview) {
+      this.previewMode = !!isPreview;
       await this.queryTableConfig();
       if (isPreview) {
         const tableData = {};
@@ -387,38 +388,6 @@ export default {
       ];
     },
 
-    // getBtnConfig() {
-    //   const customAttr = (contentText) =>
-    //     this.previewMode
-    //       ? {
-    //           contentText,
-    //           tagAttrs: {
-    //             disabled: this.previewMode,
-    //           },
-    //         }
-    //       : {
-    //           contentText,
-    //         };
-    //   const filterConfig = getElBtnConfig(
-    //     'primary',
-    //     this.handleFilter,
-    //     customAttr('搜索')
-    //   );
-    //   const resetConfig = getElBtnConfig(
-    //     '',
-    //     this.handleReset,
-    //     customAttr('重置')
-    //   );
-    //   setColSpan(filterConfig, 2);
-    //   setColSpan(resetConfig, 2);
-    //   return [
-    //     {
-    //       formItemAttrs: { 'label-width': '35px' },
-    //       child: [filterConfig, resetConfig],
-    //     },
-    //   ];
-    // },
-
     handleFilter() {
       if (this.previewMode) return;
       this.page.pageNo = 1;
@@ -459,13 +428,13 @@ export default {
       this.queryTableData();
     },
 
-    refresh() {
-      this.queryTableData().then(() => {
+    refresh(data) {
+      this.queryTableData(data).then(() => {
         this.$success('刷新成功');
       });
     },
     // 获取列表数据接口参数
-    getParams() {
+    getParams(data) {
       // 去掉最后添加的按钮
       const extraParams = {};
       if (this.formOptions?.length) {
@@ -495,14 +464,16 @@ export default {
         });
       }
       return {
+        ...data,
         ...this.searchFrom,
         ...extraParams,
         multiFieldSearch: this.multiFieldSearch,
       };
     },
 
-    queryTableData() {
-      const params = this.getParams();
+    // data为外界组件执行某些行为触发更新的参数
+    queryTableData(data = {}) {
+      const params = this.getParams(data);
       return (this.tableAttrs.showPagination
         ? this.requestTablePaginationData(params, this.page, this.listPageId)
         : this.requestTableData(params, this.listPageId)
