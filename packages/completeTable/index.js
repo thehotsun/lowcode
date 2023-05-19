@@ -235,10 +235,16 @@ export default {
       emptyData[fieldCode] = '';
     },
 
-    async init() {
+    async init(isPreview) {
       await this.queryTableConfig();
-      this.queryTableData();
-      this.composeData();
+      if (isPreview) {
+        const tableData = {};
+        this.composeData(tableData);
+        this.tableData = [tableData];
+      } else {
+        this.queryTableData();
+        this.composeData();
+      }
     },
 
     setSingleTableOptions(item, emptyData) {
