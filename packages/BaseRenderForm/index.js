@@ -134,8 +134,9 @@ export default {
       // TODO 待添加，
       const renderFn = {
         'el-select': this.getSelectCompVNode,
-        'el-radio-group': this.getRadioGroupCompVNode,
         'el-cascader': this.getCascaderCompVNode,
+        'el-radio-group': this.getRadioGroupCompVNode,
+        'el-checkbox-group': this.getCheckboxGroupCompVNode,
       };
       return (
         renderFn[tagName] &&
@@ -237,6 +238,40 @@ export default {
             );
           })}
         </el-radio-group>
+      );
+    },
+
+    getCheckboxGroupCompVNode({
+      attrs,
+      listeners,
+      formField,
+      extraOption,
+      request,
+    }) {
+      this.disposeRequest(request, extraOption);
+      const { options = [], props = {} } = extraOption;
+      const { formData, onlyShow } = this;
+      // 基础版有个添加维护字典的功能，里面返回的字段为id和cnName，因此以此字段为默认取值
+      const { key = 'id', label = 'cnName' } = props;
+      let model = getter(formData, formField);
+      return (
+        <el-checkbox-group
+          // v-model={1 ? model : ""}
+          value={model}
+          {...{
+            attrs,
+            on: listeners,
+          }}
+          disabled={onlyShow}
+        >
+          {options.map((item) => {
+            return (
+              <el-checkbox label={item[key]} disabled={item.disabled}>
+                {item[label]}
+              </el-checkbox>
+            );
+          })}
+        </el-checkbox-group>
       );
     },
 

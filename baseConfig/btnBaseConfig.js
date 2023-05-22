@@ -338,6 +338,125 @@ export const btnConfigFormOptions = [
       },
     },
   },
+
+  {
+    elRowAttrs: {
+      gutter: 10,
+    },
+    formItem: {
+      formItemAttrs: {
+        prop: 'extraOption.deliverySelectList',
+        label: '提交列表选中数据：',
+      },
+      tagName: 'el-switch',
+      tagAttrs: {},
+      // 对应formData中的属性值
+      formField: 'extraOption.deliverySelectList',
+      extraOption: {},
+      renderDependFn: function(formData) {
+        return !['import', 'batchDel', 'download'].includes(formData.extraOption.btnType);
+      },
+    },
+  },
+
+  {
+    elRowAttrs: {
+      gutter: 10,
+    },
+    formItem: {
+      formItemAttrs: {
+        prop: 'extraOption.paramName',
+        label: '参数名称：',
+        rules: {
+          required: true,
+          message: '请输入参数名',
+          trigger: 'blur',
+        },
+      },
+      formField: 'extraOption.paramName',
+      tagName: 'el-input',
+      style: 'width: 180px',
+      tagAttrs: {
+        placeholder: '请输入参数名',
+      },
+      renderDependFn: function(formData) {
+        return formData.extraOption.deliverySelectList;
+      },
+    },
+  },
+
+  {
+    elRowAttrs: {
+      gutter: 10,
+    },
+    formItem: {
+      formItemAttrs: {
+        prop: 'extraOption.paramType',
+        label: '参数位置：',
+      },
+      // 对应formData中的属性值
+      formField: 'extraOption.paramType',
+      tagName: 'el-select',
+      tagAttrs: {
+        placeholder: '请选择参数位置',
+      },
+      extraOption: {
+        options: [
+          {
+            id: 0,
+            cnName: 'body',
+          },
+          {
+            id: 1,
+            cnName: 'url',
+          },
+        ],
+        props: {
+          key: 'id',
+          label: 'cnName',
+        },
+      },
+      renderDependFn: function(formData) {
+        return formData.extraOption.deliverySelectList;
+      },
+    },
+  },
+
+  {
+    elRowAttrs: {
+      gutter: 10,
+    },
+    formItem: {
+      formItemAttrs: {
+        prop: 'extraOption.validate',
+        label: '选中数据校验规则：',
+      },
+      // 对应formData中的属性值
+      formField: 'extraOption.validate',
+      tagName: 'el-checkbox-group',
+      tagAttrs: {},
+      extraOption: {
+        options: [
+          {
+            id: 0,
+            cnName: '无选中记录时，提示并中断操作',
+          },
+          {
+            id: 1,
+            cnName: '只允许选中一条',
+          },
+        ],
+        props: {
+          key: 'id',
+          label: 'cnName',
+        },
+      },
+      renderDependFn: function(formData) {
+        return formData.extraOption.deliverySelectList;
+      },
+    },
+  },
+
   {
     elRowAttrs: {
       gutter: 10,
@@ -599,7 +718,12 @@ export function BtnConfigFrom(custom = {}) {
       dialogTitle: '',
       dialogWidth: '900',
       dialogHeight: '600',
+      deliverySelectList: false,
+      paramName: '',
+      paramType: 0,
+      validate: [],
     },
+    // 点击按钮是否传递当前选中数据
     authorize: '',
     btnId: +new Date(),
     ...custom,

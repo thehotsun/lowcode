@@ -91,6 +91,7 @@ export default {
       showBtns: true,
       formId: '',
       primaryKeyValue: '',
+      btnDisposeParamsRule: {},
       // 按钮代表的一系列事件完毕以后是否刷新列表
       isRefresh: false,
       showPanel: false,
@@ -578,6 +579,26 @@ export default {
         ? length
         : `${length}px`;
     },
+
+    validateSelectList({ paramName, paramType, deliverySelectList, validate }) {
+      const { selectList } = this;
+      if (deliverySelectList) {
+        this.btnDisposeParamsRule = {
+          paramName,
+          paramType,
+        };
+        if (validate.includes(0) && selectList.length === 0) {
+          this.$warn('请确认选中了值！');
+          return false;
+        }
+        if (validate.includes(1) && selectList.length !== 0) {
+          this.$warn('请确认只选中了一个值');
+          return false;
+        }
+      }
+      return true;
+    },
+
     // 处理按钮点击事件
     async handleBtnClick({
       relateFrom = '',
@@ -592,7 +613,19 @@ export default {
       dialogHeight = '',
       dialogWidth = '',
       flowKey = '',
+      paramName = '',
+      paramType = 0,
+      deliverySelectList = false,
+      validate = [],
     }) {
+      const {
+        validateSelectList,
+        disposeFlowEvent,
+        disposeRelateCompEvent,
+        disposeDynamicEvent,
+        disposeDownOrDel,
+      } = this;
+      this.btnDisposeParamsRule = {};
       this.isRefresh = isRefresh;
       this.dialogHeight = dialogHeight;
       this.dialogWidth = dialogWidth;
@@ -609,20 +642,9 @@ export default {
           switch (btnType) {
             case 'download':
             case 'batchDel':
-              if (this.previewMode) return;
-              if (this.selectList.length === 0) {
-                return this.$warn('请确认只选中了一个值');
-              }
-              if (
-                [undefined, null].includes(this.selectList[0][this.keyField])
-              ) {
-                return this.$warn(
-                  '主键字段未取到值，请检查数据或重新在列表设计页面重新关联主键！'
-                );
-              }
-              (btnType === 'download' ? this.download : this.batchDel)(
-                this.selectList.map((item) => item[this.keyField])
-              );
+              disposeDownOrDel({
+                btnType,
+              });
               break;
             case 'import':
               // 处理导入
@@ -646,63 +668,119 @@ export default {
             '_blank'
           );
         } else if (openType === 4) {
-          this.expose_showDialog();
-          this.relateComponent = this.componentList.find(
-            (item) => item.id === relateComponent
-          )?.component;
+          // openType为2是打开本地关联代码
+          if (
+            validateSelectList({
+              paramName,
+              paramType,
+              deliverySelectList,
+              validate,
+            })
+          ) {
+            disposeRelateCompEvent(relateComponent);
+          }
         } else if (openType === 2) {
           // openType为2是打开流程
-          const res = await this.queryFlowDef('', '', flowKey);
-          const flowInfo = res.data;
-          flowInfo.name = flowInfo.groupName;
-          flowInfo.id = flowInfo.flowDefinitionId;
-          // 发起流程
-          if (flowInfo.startMode === 'stdNew') {
-            const query = {
-              queryMode: 'add',
-              currentVersionId: flowInfo.currentVersionId,
-            };
-            const routeUrl = this.$router.resolve({
-              path: '/examine-approve-detail',
-              query,
-            });
-            window.open(routeUrl.href, '_blank');
-          } else {
-            this.$refs.flowDialogSummary.openAddDialog(flowInfo);
+          if (
+            validateSelectList({
+              paramName,
+              paramType,
+              deliverySelectList,
+              validate,
+            })
+          ) {
+            disposeFlowEvent(flowKey);
           }
         } else if (openType === 0) {
           // openType为0是打开表单
-          switch (btnType) {
-            case 'add':
-              this.expose_showDialog();
-              this.formId = relateFrom;
-              this.onlyRead = false;
-              this.primaryKeyValue = '';
-              this.dialogTitle = dialogTitle || '新增';
-              break;
-            case 'check':
-            case 'edit':
-              if (this.selectList.length === 1) {
-                this.primaryKeyValue = this.selectList[0][this.keyField];
-                if ([undefined, null].includes(this.primaryKeyValue)) {
-                  return this.$warn(
-                    '主键字段未取到值，请检查数据或在列表设计页面重新关联主键！'
-                  );
-                }
-                this.expose_showDialog();
-                this.formId = relateFrom;
-                this.onlyRead = btnType === 'check';
-                this.dialogTitle =
-                  dialogTitle || btnType === 'check' ? '查看' : '编辑';
-              } else {
-                this.$warn('请确认只选中了一个值');
-              }
-              break;
-            default:
-              break;
+          if (
+            validateSelectList({
+              paramName,
+              paramType,
+              deliverySelectList,
+              validate,
+            })
+          ) {
+            disposeDynamicEvent({
+              btnType,
+              relateFrom,
+              dialogTitle,
+            });
           }
         }
       }
+    },
+
+    disposeRelateCompEvent(relateComponent) {
+      this.expose_showDialog();
+      this.relateComponent = this.componentList.find(
+        (item) => item.id === relateComponent
+      )?.component;
+    },
+
+    async disposeFlowEvent(flowKey) {
+      const res = await this.queryFlowDef('', '', flowKey);
+      const flowInfo = res.data;
+      flowInfo.name = flowInfo.groupName;
+      flowInfo.id = flowInfo.flowDefinitionId;
+      // 发起流程
+      if (flowInfo.startMode === 'stdNew') {
+        const query = {
+          queryMode: 'add',
+          currentVersionId: flowInfo.currentVersionId,
+        };
+        const routeUrl = this.$router.resolve({
+          path: '/examine-approve-detail',
+          query,
+        });
+        window.open(routeUrl.href, '_blank');
+      } else {
+        this.$refs.flowDialogSummary.openAddDialog(flowInfo);
+      }
+    },
+
+    disposeDynamicEvent({ btnType, relateFrom, dialogTitle }) {
+      switch (btnType) {
+        case 'add':
+          this.expose_showDialog();
+          this.formId = relateFrom;
+          this.onlyRead = false;
+          this.primaryKeyValue = '';
+          this.dialogTitle = dialogTitle || '新增';
+          break;
+        case 'check':
+        case 'edit':
+          this.primaryKeyValue =
+            this.selectList[0] && this.selectList[0][this.keyField];
+          if ([undefined, null].includes(this.primaryKeyValue)) {
+            return this.$warn(
+              '主键字段未取到值，请检查数据或在列表设计页面重新关联主键！'
+            );
+          }
+          this.expose_showDialog();
+          this.formId = relateFrom;
+          this.onlyRead = btnType === 'check';
+          this.dialogTitle =
+            dialogTitle || btnType === 'check' ? '查看' : '编辑';
+          break;
+        default:
+          break;
+      }
+    },
+
+    disposeDownOrDel({ btnType }) {
+      if (this.previewMode) return;
+      if (this.selectList.length === 0) {
+        return this.$warn('请确认只选中了一个值');
+      }
+      if ([undefined, null].includes(this.selectList[0][this.keyField])) {
+        return this.$warn(
+          '主键字段未取到值，请检查数据或重新在列表设计页面重新关联主键！'
+        );
+      }
+      (btnType === 'download' ? this.download : this.batchDel)(
+        this.selectList.map((item) => item[this.keyField])
+      );
     },
 
     // 处理导入的实现
