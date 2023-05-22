@@ -2,7 +2,8 @@ const path = require('path');
 const fs = require('fs');
 
 const targetDir =
-  process.argv[2] || 'D:prj\\commondp-web\\node_modules\\@viva3la3vida\\base-render\\lib';
+  process.argv[2] ||
+  '../../../prj/commondp-web/node_modules/@viva3la3vida/base-render/lib';
 
 const sourceDir = process.argv[3] || './lib';
 

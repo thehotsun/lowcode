@@ -62,6 +62,8 @@ export default {
 
   data() {
     return {
+      // 导入按钮关联的数据模型
+      importFileCompRelateTableName: '',
       fuzzySearchPlaceholder: '',
       pageLayout: '->, total,sizes, prev, pager, next,jumper',
       // 显示动态表单相关
@@ -496,7 +498,9 @@ export default {
       } = data;
       this.tableAttrs = setTableAttrs(tableAttrs);
       if (formOptions?.length) {
-        this.btnRegularOptions = this.composeBtnRegularOptions(formOptions);
+        this.btnRegularOptions = this.composeBtnRegularOptions(
+          cloneDeep(formOptions)
+        );
       } else {
         this.showBtns = false;
       }
@@ -583,20 +587,19 @@ export default {
       openUrl = '',
       fn = '',
       isRefresh = false,
-      defaultFn = '',
       btnType = '',
       dialogTitle = '',
       dialogHeight = '',
       dialogWidth = '',
       flowKey = '',
     }) {
-      console.log(defaultFn, 'defaultFn');
       this.isRefresh = isRefresh;
       this.dialogHeight = dialogHeight;
       this.dialogWidth = dialogWidth;
       // 只要执行点击按钮操作，先置空formid
-      this.formId = null;
-      this.relateComponent = null;
+      this.formId = '';
+      this.relateComponent = '';
+      this.importFileCompRelateTableName = '';
       // 如果有自定义事件，则执行自定义事件
       if (fn) {
         this.exec(fn);
@@ -623,7 +626,7 @@ export default {
               break;
             case 'import':
               // 处理导入
-              this.dealImport(relateMeta, isRefresh);
+              this.dealImport(relateMeta);
               break;
             default:
               break;
@@ -703,15 +706,14 @@ export default {
     },
 
     // 处理导入的实现
-    async dealImport(metaId, isRefresh) {
+    async dealImport(metaId) {
       if (!metaId) {
         this.$error('未配置关联的业务模型');
         return;
       }
-      this.$refs.importFileComp.open(metaId);
-      // if (isRefresh) {
-      //   this.queryTableData();
-      // }
+      this.importFileCompRelateTableName = metaId;
+      await this.$nextTick();
+      this.$refs.importFileComp.open();
     },
 
     dynamicFormVNode() {
@@ -857,7 +859,18 @@ export default {
 
     importFileVNode() {
       const ImportFileComp = this.importFileComp;
-      return <ImportFileComp ref="importFileComp"></ImportFileComp>;
+      const { onSubmit, importFileCompRelateTableName } = this;
+      return (
+        <ImportFileComp
+          tableName={importFileCompRelateTableName}
+          ref="importFileComp"
+          {...{
+            on: {
+              submit: onSubmit,
+            },
+          }}
+        ></ImportFileComp>
+      );
     },
 
     relateComponentVNode() {
