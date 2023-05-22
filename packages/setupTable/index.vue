@@ -589,14 +589,18 @@ export default {
           case 'add':
             config.extraOption.dialogTitle = config.tagAttrs.value = '新增'
             config.extraOption.btnType = 'add';
+            config.authorize = 'A'
             break
           case 'edit':
             config.extraOption.dialogTitle = config.tagAttrs.value = '编辑';
             config.extraOption.btnType = 'edit';
+            config.authorize = 'U'
             break
           case 'check':
             config.extraOption.dialogTitle = config.tagAttrs.value = '查看';
             config.extraOption.btnType = 'check';
+            config.authorize = 'V'
+
             break
           case 'batchDel':
             // 隐藏某些字段
@@ -604,6 +608,8 @@ export default {
             config.tagAttrs.value = '批量删除'
             config.extraOption.btnType = 'batchDel';
             config.extraOption.openType = -1;
+            config.authorize = 'D'
+
             break;
           case 'download':
             // 隐藏某些字段
@@ -611,12 +617,15 @@ export default {
             config.tagAttrs.value = '导出';
             config.extraOption.btnType = 'download';
             config.extraOption.openType = -1;
+            config.authorize = 'E'
+
             break;
           case 'import':
             this.$refs.setupBtnConfig.expose_hideSomeFieldOptions(['extraOption.fn', 'extraOption.openUrl', 'extraOption.openType', 'extraOption.relateFrom']);
             config.tagAttrs.value = '导入';
             config.extraOption.btnType = 'import';
             config.extraOption.openType = -1;
+            config.authorize = 'I'
             break;
           case 'custom':
             config.extraOption.btnType = 'custom';
