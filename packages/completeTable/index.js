@@ -591,7 +591,7 @@ export default {
           this.$warn('请确认选中了值！');
           return false;
         }
-        if (validate.includes(1) && selectList.length !== 0) {
+        if (validate.includes(1) && selectList.length !== 1) {
           this.$warn('请确认只选中了一个值');
           return false;
         }
@@ -802,6 +802,9 @@ export default {
         onlyRead,
         onSubmit,
         expose_hideDialog,
+        keyField,
+        selectList,
+        btnDisposeParamsRule,
       } = this;
       if (formId) {
         return previewMode ? (
@@ -811,6 +814,9 @@ export default {
             isDisabled={onlyRead}
             hasSubmit={false}
             formId={formId}
+            keyFieldName={keyField}
+            selectList={selectList}
+            paramsRule={btnDisposeParamsRule}
             {...{
               on: {
                 submit: onSubmit,
@@ -825,6 +831,9 @@ export default {
             isDisabled={onlyRead}
             hasSubmit={false}
             formId={formId}
+            keyFieldName={keyField}
+            selectList={selectList}
+            paramsRule={btnDisposeParamsRule}
             {...{
               on: {
                 submit: onSubmit,
@@ -920,12 +929,20 @@ export default {
     },
 
     flowVNode() {
-      const FlowComp = this.flowComp;
+      const {
+        flowComp: FlowComp,
+        selectList,
+        keyField,
+        btnDisposeParamsRule,
+      } = this;
       return (
         <FlowComp
           ref="flowDialogSummary"
           mode="add"
           view={0}
+          keyFieldName={keyField}
+          selectList={selectList}
+          paramsRule={btnDisposeParamsRule}
           {...{
             on: {
               updateTable: this.queryTableData,
@@ -936,11 +953,20 @@ export default {
     },
 
     importFileVNode() {
-      const ImportFileComp = this.importFileComp;
-      const { onSubmit, importFileCompRelateTableName } = this;
+      const {
+        importFileComp: ImportFileComp,
+        onSubmit,
+        importFileCompRelateTableName,
+        selectList,
+        keyField,
+        btnDisposeParamsRule,
+      } = this;
       return (
         <ImportFileComp
           tableName={importFileCompRelateTableName}
+          keyFieldName={keyField}
+          selectList={selectList}
+          paramsRule={btnDisposeParamsRule}
           ref="importFileComp"
           {...{
             on: {
@@ -953,8 +979,20 @@ export default {
 
     relateComponentVNode() {
       if (this.relateComponent) {
-        const Component = this.relateComponent;
-        return <Component ref="relateComponent"></Component>;
+        const {
+          relateComponent: RelateComponent,
+          keyField,
+          selectList,
+          btnDisposeParamsRule,
+        } = this;
+        return (
+          <RelateComponent
+            keyFieldName={keyField}
+            selectList={selectList}
+            paramsRule={btnDisposeParamsRule}
+            ref="relateComponent"
+          ></RelateComponent>
+        );
       }
     },
 
