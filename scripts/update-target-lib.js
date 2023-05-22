@@ -5,6 +5,19 @@ const targetDir =
   process.argv[2] ||
   '../../../prj/commondp-web/node_modules/@viva3la3vida/base-render/lib';
 
+const targetDirArr = [
+  '../../../prj/tablepro/baseConfig',
+  '../../../prj/tablepro/packages',
+  '../../../prj/tablepro/utils',
+  '../../../prj/tablepro/src',
+];
+const sourceDirArr = [
+  '../lowcode/baseConfig',
+  '../lowcode/packages',
+  '../lowcode/utils',
+  '../lowcode/src',
+];
+
 const sourceDir = process.argv[3] || './lib';
 
 const copy = (sd, td) => {
@@ -43,4 +56,28 @@ const run = async () => {
   const endTime = await new Date().getTime();
   console.log('耗时:', ((endTime - startTime) / 1000).toFixed(2) + 's');
 };
+
+const run2 = async (sourceDir, targetDir) => {
+  const startTime = await new Date().getTime();
+  console.log(!fs.existsSync(sourceDir));
+  if (!fs.existsSync(sourceDir)) {
+    throw console.error('run2 no such file or directory');
+  } else if (!fs.existsSync(targetDir)) {
+    await fs.mkdirSync(targetDir, (err) => console.log(err));
+    await copy(sourceDir, targetDir);
+  } else {
+    await copy(sourceDir, targetDir);
+  }
+
+  const endTime = await new Date().getTime();
+  console.log('run2耗时:', ((endTime - startTime) / 1000).toFixed(2) + 's');
+};
 run();
+targetDirArr.map((targetDir, index) => {
+  const sourceDir = sourceDirArr[index];
+  run2(sourceDir, targetDir);
+});
+const srcFile = path.resolve('../lowcode', 'package.json');
+const tagFile = path.resolve('../../../prj/tablepro', 'package.json');
+console.log(srcFile, tagFile);
+fs.copyFileSync(srcFile, tagFile, fs.constants.COPYFILE_FICLONE);
