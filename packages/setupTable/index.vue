@@ -47,7 +47,7 @@
       </single-setup-table>
     </div>
 
-    <el-drawer title="按钮属性设置" :visible.sync="drawer" :direction="direction">
+    <el-drawer title="按钮属性设置" :visible.sync="drawer" :direction="direction" :before-close="handleClose">
       <setupBtnConfig ref="setupBtnConfig" @onSubmit="onSubmit" @onClose="onClose"></setupBtnConfig>
     </el-drawer>
 
@@ -683,7 +683,7 @@ export default {
       })
     },
     handleClose (done) {
-      this.$confirm('确认关闭？')
+      this.$confirm('还有未保存的工作哦确定关闭吗')
         .then(_ => {
           done();
         })

@@ -103,6 +103,7 @@ export default {
       onlyRead: false,
       previewMode: false,
       relateComponent: null,
+      deliverySelectList: false,
       tableAttrs: {
         // 初始化是否显示分页
         showPagination: false,
@@ -582,6 +583,7 @@ export default {
 
     validateSelectList({ paramName, paramType, deliverySelectList, validate }) {
       const { selectList } = this;
+      this.deliverySelectList = deliverySelectList;
       if (deliverySelectList) {
         this.btnDisposeParamsRule = {
           paramName,
@@ -625,7 +627,10 @@ export default {
         disposeDynamicEvent,
         disposeDownOrDel,
       } = this;
-      this.btnDisposeParamsRule = {};
+      this.btnDisposeParamsRule = {
+        paramName: '',
+        paramType: '',
+      };
       this.isRefresh = isRefresh;
       this.dialogHeight = dialogHeight;
       this.dialogWidth = dialogWidth;
@@ -802,21 +807,19 @@ export default {
         onlyRead,
         onSubmit,
         expose_hideDialog,
-        keyField,
-        selectList,
-        btnDisposeParamsRule,
       } = this;
+      const baseAttrs = this.getExternalCompBaseAttrs();
       if (formId) {
         return previewMode ? (
           <VFPreview
             ref={'VFPreview'}
+            {...{
+              attrs: baseAttrs,
+            }}
             primaryKeyValue={primaryKeyValue}
             isDisabled={onlyRead}
             hasSubmit={false}
             formId={formId}
-            keyFieldName={keyField}
-            selectList={selectList}
-            paramsRule={btnDisposeParamsRule}
             {...{
               on: {
                 submit: onSubmit,
@@ -831,9 +834,11 @@ export default {
             isDisabled={onlyRead}
             hasSubmit={false}
             formId={formId}
-            keyFieldName={keyField}
-            selectList={selectList}
-            paramsRule={btnDisposeParamsRule}
+            {...{
+              attrs: {
+                ...baseAttrs,
+              },
+            }}
             {...{
               on: {
                 submit: onSubmit,
@@ -929,20 +934,18 @@ export default {
     },
 
     flowVNode() {
-      const {
-        flowComp: FlowComp,
-        selectList,
-        keyField,
-        btnDisposeParamsRule,
-      } = this;
+      const { flowComp: FlowComp } = this;
+      const baseAttrs = this.getExternalCompBaseAttrs();
       return (
         <FlowComp
           ref="flowDialogSummary"
           mode="add"
           view={0}
-          keyFieldName={keyField}
-          selectList={selectList}
-          paramsRule={btnDisposeParamsRule}
+          {...{
+            attrs: {
+              ...baseAttrs,
+            },
+          }}
           {...{
             on: {
               updateTable: this.queryTableData,
@@ -957,16 +960,16 @@ export default {
         importFileComp: ImportFileComp,
         onSubmit,
         importFileCompRelateTableName,
-        selectList,
-        keyField,
-        btnDisposeParamsRule,
       } = this;
+      const baseAttrs = this.getExternalCompBaseAttrs();
       return (
         <ImportFileComp
           tableName={importFileCompRelateTableName}
-          keyFieldName={keyField}
-          selectList={selectList}
-          paramsRule={btnDisposeParamsRule}
+          {...{
+            attrs: {
+              ...baseAttrs,
+            },
+          }}
           ref="importFileComp"
           {...{
             on: {
@@ -979,20 +982,38 @@ export default {
 
     relateComponentVNode() {
       if (this.relateComponent) {
-        const {
-          relateComponent: RelateComponent,
-          keyField,
-          selectList,
-          btnDisposeParamsRule,
-        } = this;
+        const { relateComponent: RelateComponent } = this;
+        const baseAttrs = this.getExternalCompBaseAttrs();
         return (
           <RelateComponent
-            keyFieldName={keyField}
-            selectList={selectList}
-            paramsRule={btnDisposeParamsRule}
+            {...{
+              attrs: {
+                ...baseAttrs,
+              },
+            }}
             ref="relateComponent"
           ></RelateComponent>
         );
+      }
+    },
+
+    getExternalCompBaseAttrs() {
+      const { selectList, keyField, btnDisposeParamsRule } = this;
+      if (this.deliverySelectList) {
+        return {
+          keyFieldName: keyField,
+          selectList,
+          paramsRule: btnDisposeParamsRule,
+        };
+      } else {
+        return {
+          keyFieldName: '',
+          selectList: [],
+          paramsRule: {
+            paramType: '',
+            paramName: '',
+          },
+        };
       }
     },
 

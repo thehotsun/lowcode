@@ -40,7 +40,6 @@ export default {
   },
 
   created () {
-    // this.setRules()
   },
 
   mounted () {
@@ -105,46 +104,46 @@ export default {
       this.btnConfigFromArr.splice(index, 1)
     },
 
-    setRules () {
-      const target1 = this.btnConfigFormOptions.find(item => item.formItem.formField === 'extraOption.relateFrom')
-      target1.formItem.formItemAttrs.rules = {
-        validator: this.validateRelateFrom,
-        trigger: 'change',
-      }
-      const target2 = this.btnConfigFormOptions.find(item => item.formItem.formField === 'extraOption.flowKey')
-      target2.formItem.formItemAttrs.rules = {
-        validator: this.validateFlowKey,
-        trigger: 'change',
-      }
-      const target3 = this.btnConfigFormOptions.find(item => item.formItem.formField === 'extraOption.openUrl')
-      target3.formItem.formItemAttrs.rules = {
-        validator: this.validateOpenUrl,
-        trigger: 'blur',
-      }
-    },
+    // setRules () {
+    //   const target1 = this.btnConfigFormOptions.find(item => item.formItem.formField === 'extraOption.relateFrom')
+    //   target1.formItem.formItemAttrs.rules = {
+    //     validator: this.validateRelateFrom,
+    //     trigger: 'change',
+    //   }
+    //   const target2 = this.btnConfigFormOptions.find(item => item.formItem.formField === 'extraOption.flowKey')
+    //   target2.formItem.formItemAttrs.rules = {
+    //     validator: this.validateFlowKey,
+    //     trigger: 'change',
+    //   }
+    //   const target3 = this.btnConfigFormOptions.find(item => item.formItem.formField === 'extraOption.openUrl')
+    //   target3.formItem.formItemAttrs.rules = {
+    //     validator: this.validateOpenUrl,
+    //     trigger: 'blur',
+    //   }
+    // },
 
-    validateRelateFrom (rule, value, callback) {
-      console.log('././');
-      if (this.btnConfigFrom.extraOption.openType === 0 && !value) {
-        callback(new Error('请选择表单'));
-      } else {
-        callback();
-      }
-    },
-    validateOpenUrl (rule, value, callback) {
-      if ([1, 3].includes(this.btnConfigFrom.extraOption.openType) && !value) {
-        callback(new Error('请输入url'));
-      } else {
-        callback();
-      }
-    },
-    validateFlowKey (rule, value, callback) {
-      if (this.btnConfigFrom.extraOption.openType === 2 && !value) {
-        callback(new Error('请选择流程'));
-      } else {
-        callback();
-      }
-    },
+    // validateRelateFrom (rule, value, callback) {
+    //   console.log('././');
+    //   if (this.btnConfigFrom.extraOption.openType === 0 && !value) {
+    //     callback(new Error('请选择表单'));
+    //   } else {
+    //     callback();
+    //   }
+    // },
+    // validateOpenUrl (rule, value, callback) {
+    //   if ([1, 3].includes(this.btnConfigFrom.extraOption.openType) && !value) {
+    //     callback(new Error('请输入url'));
+    //   } else {
+    //     callback();
+    //   }
+    // },
+    // validateFlowKey (rule, value, callback) {
+    //   if (this.btnConfigFrom.extraOption.openType === 2 && !value) {
+    //     callback(new Error('请选择流程'));
+    //   } else {
+    //     callback();
+    //   }
+    // },
 
     onSubmit (data) {
       // 如果相同则说明是编辑，不同则是新增
