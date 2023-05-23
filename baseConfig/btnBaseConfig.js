@@ -182,7 +182,7 @@ export const btnConfigFormOptions = [
       extraOption: {
         options: [],
         props: {
-          key: 'metaNameID',
+          key: 'metaId',
           label: 'businessName',
         },
       },
@@ -354,7 +354,9 @@ export const btnConfigFormOptions = [
       formField: 'extraOption.deliverySelectList',
       extraOption: {},
       renderDependFn: function(formData) {
-        return !['import', 'batchDel', 'download'].includes(formData.extraOption.btnType);
+        return !['import', 'batchDel', 'download'].includes(
+          formData.extraOption.btnType
+        );
       },
     },
   },

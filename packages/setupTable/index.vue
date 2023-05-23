@@ -217,7 +217,7 @@ export default {
       setupForm: {
       },
       setupFormOptions: [],
-      _groupID: '',
+      _groupId: '',
       btnConfigArr: [],
       formList: [],
       _options: '',
@@ -281,7 +281,7 @@ export default {
   methods: {
     async init (id = '', formCode) {
       console.log(id, 'id');
-      this._groupID = id;
+      this._groupId = id;
       this._formCode = formCode;
       this.queryFormList()
       this.queryMetaList()
@@ -413,12 +413,12 @@ export default {
     },
 
     requestTableConfig () {
-      return this.getListConfigJSON(this._groupID);
+      return this.getListConfigJSON(this._groupId);
     },
 
 
     getPrimekey () {
-      this.requestPrimekey(this._groupID).then(res => {
+      this.requestPrimekey(this._groupId).then(res => {
         this.keyField = res.data.columnName
       });
     },
@@ -438,7 +438,7 @@ export default {
 
     // 更新数据库字段，如果多了新增默认，少了去除
     updateFieldList () {
-      return this.requestFieldList(this._groupID).then(res => {
+      return this.requestFieldList(this._groupId).then(res => {
         const list = res.data;
         list.map(item => {
           if (!this.tableData.some(tableDataItem => tableDataItem.fieldCode === item.fieldName)) {
@@ -458,18 +458,18 @@ export default {
 
     // 查询元数据
     queryFieldList () {
-      this.requestFieldList(this._groupID).then(res => {
+      this.requestFieldList(this._groupId).then(res => {
         this.tableData = this.convertData(res.data);
       });
     },
 
     queryFormList () {
-      this.requestFormList(this._groupID).then(res => {
+      this.requestFormList(this._groupId).then(res => {
         this._formListExtraOption = {
           options: res.data, props:
           {
             label: 'formName',
-            key: 'formID'
+            key: 'formId'
           }
         }
       });
@@ -480,7 +480,7 @@ export default {
         console.error("未配置查询业务模型的方法");
         return;
       }
-      const res = await this.requestMetaList(this._groupID);
+      const res = await this.requestMetaList(this._groupId);
       if (!res || !res.data) {
         return;
       }
@@ -553,7 +553,7 @@ export default {
       })
       return this.saveListConfigJSON({
         json: JSON.stringify(renderParams), actionList
-      }, this._groupID).then((data) => {
+      }, this._groupId).then((data) => {
         if (data.result === "0") {
           this.$message.success("保存成功");
         } else {
