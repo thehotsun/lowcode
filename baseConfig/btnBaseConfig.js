@@ -27,12 +27,12 @@ export const openType = [
 
 export const requestTypeList = [
   {
-    id: 1,
-    label: 'get',
+    id: 0,
+    cnName: 'post',
   },
   {
-    id: 0,
-    label: 'post',
+    id: 1,
+    cnName: 'get',
   },
 ];
 
@@ -174,11 +174,11 @@ export function BtnConfigFormOptions() {
         formItemAttrs: {
           prop: 'extraOption.requestUrl',
           label: '接口地址：',
-          rules: {
-            required: true,
-            message: '请输入接口地址',
-            trigger: 'blur',
-          },
+          // rules: {
+          //   required: true,
+          //   message: '请输入接口地址',
+          //   trigger: 'blur',
+          // },
           labelSlotName: '',
           labelOptions: {
             tagName: 'el-tooltip',
@@ -193,6 +193,7 @@ export function BtnConfigFormOptions() {
             },
           },
         },
+        slotName: 'requestUrl',
         tagName: 'el-input',
         style: 'width: 180px',
         tagAttrs: {
@@ -201,7 +202,7 @@ export function BtnConfigFormOptions() {
         // 对应formData中的属性值
         formField: 'extraOption.requestUrl',
         renderDependFn: function(formData) {
-          return formData.extraOption.openType === 5;
+          return formData.extraOption.btnType !== 'download';
         },
       },
     },
@@ -214,11 +215,6 @@ export function BtnConfigFormOptions() {
         formItemAttrs: {
           prop: 'extraOption.requestType',
           label: '请求类型：',
-          rules: {
-            required: true,
-            message: '请选择请求类型',
-            trigger: 'change',
-          },
         },
         tagName: 'el-select',
         tagAttrs: {
@@ -241,7 +237,7 @@ export function BtnConfigFormOptions() {
           status: 'pending',
         },
         renderDependFn: function(formData) {
-          return formData.extraOption.openType === 5;
+          return formData.extraOption.btnType !== 'download';
         },
       },
     },
@@ -260,7 +256,7 @@ export function BtnConfigFormOptions() {
         formField: 'extraOption.requestBeforeConfirmHint',
         extraOption: {},
         renderDependFn: function(formData) {
-          return formData.extraOption.openType === 5;
+          return formData.extraOption.btnType !== 'download';
         },
       },
     },
@@ -283,7 +279,7 @@ export function BtnConfigFormOptions() {
         // 对应formData中的属性值
         formField: 'extraOption.requestBeforeConfirmText',
         renderDependFn: function(formData) {
-          return formData.extraOption.openType === 5;
+          return formData.extraOption.btnType !== 'download';
         },
       },
     },
@@ -866,9 +862,13 @@ export function BtnConfigFrom(custom = {}) {
       paramType: 0,
       validate: [],
       requestUrl: '',
-      requestType: 'post',
+      requestType: 0,
       requestBeforeConfirmHint: false,
       requestBeforeConfirmText: '',
+      requestParamsConfig: {
+        params: [],
+        data: [],
+      },
     },
     // 点击按钮是否传递当前选中数据
     authorize: '',

@@ -4,6 +4,7 @@ import BaseRenderForm from '../BaseRenderForm/index';
 import BaseRenderRegular from '../BaseRenderRegular/index';
 import panel from './component/panel.vue';
 import { align, searchWidget } from '../../baseConfig/tableSelectConfigs';
+import { requestTypeList } from '../../baseConfig/btnBaseConfig';
 
 import {
   getWidgetOptions,
@@ -619,12 +620,18 @@ export default {
       paramType = 0,
       deliverySelectList = false,
       validate = [],
+      requestUrl = '',
+      requestType = 'post',
+      requestBeforeConfirmHint = false,
+      requestBeforeConfirmText = '',
+      requestParamsConfig = {},
     }) {
       const {
         validateSelectList,
         disposeFlowEvent,
         disposeRelateCompEvent,
         disposeDynamicEvent,
+        disposeRequestEvent,
         disposeDownOrDel,
       } = this;
       this.btnDisposeParamsRule = {
@@ -683,6 +690,24 @@ export default {
             })
           ) {
             disposeRelateCompEvent(relateComponent);
+          }
+        } else if (openType === 5) {
+          // openType为5是直接调用接口
+          if (
+            validateSelectList({
+              paramName,
+              paramType,
+              deliverySelectList,
+              validate,
+            })
+          ) {
+            disposeRequestEvent({
+              requestUrl,
+              requestType,
+              requestBeforeConfirmHint,
+              requestBeforeConfirmText,
+              requestParamsConfig,
+            });
           }
         } else if (openType === 2) {
           // openType为2是打开流程
@@ -771,6 +796,32 @@ export default {
         default:
           break;
       }
+    },
+
+    async disposeRequestEvent({
+      requestUrl,
+      requestType,
+      requestBeforeConfirmHint,
+      requestBeforeConfirmText,
+      requestParamsConfig,
+    }) {
+      const params = {};
+      if (requestBeforeConfirmHint) {
+        await this.$confirm(`${requestBeforeConfirmText}`);
+      }
+      console.log(
+        'sucess2',
+        requestUrl,
+        requestTypeList.find((item) => item.id === requestType).cnName,
+        params
+      );
+      this.generalRequest(requestUrl, requestTypeList[requestType], params);
+      console.log(
+        requestUrl,
+        requestType,
+        requestBeforeConfirmHint,
+        requestBeforeConfirmText
+      );
     },
 
     disposeDownOrDel({ btnType }) {
