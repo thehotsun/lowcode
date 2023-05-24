@@ -16,7 +16,7 @@
 
 
 import BaseRenderForm from '../../../BaseRenderForm/index';
-import { btnConfigFormOptions, BtnConfigFrom } from "../../../../baseConfig/btnBaseConfig"
+import { BtnConfigFormOptions, BtnConfigFrom } from "../../../../baseConfig/btnBaseConfig"
 import { findFromOptionsIndexByfieldName } from '../../../../utils';
 import { cloneDeep, merge } from "lodash";
 
@@ -31,8 +31,7 @@ export default {
   data () {
     return {
       colorList: ['', 'primary', 'success', 'info', 'warning', 'danger'],
-      btnConfigFormOptions,
-      rawBtnConfigFormOptions: cloneDeep(btnConfigFormOptions),
+      btnConfigFormOptions: new BtnConfigFormOptions(),
       btnConfigFromArr: [],
       originConfigForm: {},
       btnConfigFrom: new BtnConfigFrom(),
@@ -40,6 +39,13 @@ export default {
   },
 
   created () {
+    // const target = this.btnConfigFormOptions.find(option => option.formItem.formField === 'authorize');
+    // if (target) {
+
+    //   target.listeners = {
+    //     change: this.handleAuthorizeChange
+    //   }
+    // }
   },
 
   mounted () {
@@ -47,7 +53,7 @@ export default {
   },
   methods: {
     expose_reductionAll () {
-      this.btnConfigFormOptions = cloneDeep(this.rawBtnConfigFormOptions);
+      this.btnConfigFormOptions = new BtnConfigFormOptions();
       this.btnConfigFrom = new BtnConfigFrom()
     },
 
@@ -74,7 +80,7 @@ export default {
     },
 
     expose_getRawBtnConfigFormOptions () {
-      return this.rawBtnConfigFormOptions
+      return new BtnConfigFormOptions()
     },
 
     expose_getBtnConfigFromArr () {
@@ -102,6 +108,18 @@ export default {
     },
     expose_delBtnConfigFromArr (index) {
       this.btnConfigFromArr.splice(index, 1)
+    },
+
+    handleAuthorizeChange (authorize) {
+      const map = {
+        A: 'add',
+        U: 'edit',
+        V: 'check',
+        D: 'batchDel',
+        E: 'download',
+        I: 'import',
+      }
+      this.btnConfigFrom.btnType = map[authorize]
     },
 
     // setRules () {

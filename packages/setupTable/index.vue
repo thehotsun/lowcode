@@ -596,13 +596,13 @@ export default {
             config.extraOption.dialogTitle = config.tagAttrs.value = '编辑';
             config.extraOption.btnType = 'edit';
             config.authorize = 'U';
-            extraOption.deliverySelectList = true;
+            config.extraOption.deliverySelectList = true;
             break
           case 'check':
             config.extraOption.dialogTitle = config.tagAttrs.value = '查看';
             config.extraOption.btnType = 'check';
             config.authorize = 'V'
-            extraOption.deliverySelectList = true;
+            config.extraOption.deliverySelectList = true;
             break
           case 'batchDel':
             // 隐藏某些字段
@@ -631,7 +631,7 @@ export default {
             break;
           case 'custom':
             config.extraOption.btnType = 'custom';
-            extraOption.deliverySelectList = true;
+            config.extraOption.deliverySelectList = true;
             break;
           default:
             break;

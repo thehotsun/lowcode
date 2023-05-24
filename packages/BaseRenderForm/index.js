@@ -7,6 +7,7 @@ import {
   str2Fn,
 } from '../../utils';
 import codemirror from '../components/codemirror';
+import { isEmpty } from 'lodash';
 export default {
   name: 'BaseRenderForm',
   components: { codemirror },
@@ -119,14 +120,7 @@ export default {
       });
     },
 
-    getCooperateComp({
-      tagName,
-      tagAttrs,
-      listeners,
-      formField,
-      extraOption,
-      request,
-    }) {
+    getCooperateComp({ tagName, ...options }) {
       if (typeof tagName !== 'string') {
         console.error('isCooperateComp方法传入的参数必须为字符串');
         return false;
@@ -137,20 +131,18 @@ export default {
         'el-cascader': this.getCascaderCompVNode,
         'el-radio-group': this.getRadioGroupCompVNode,
         'el-checkbox-group': this.getCheckboxGroupCompVNode,
+        'el-tooltip': this.getTooltipCompVNode,
       };
-      return (
-        renderFn[tagName] &&
-        renderFn[tagName]({
-          attrs: tagAttrs,
-          listeners,
-          formField,
-          extraOption,
-          request,
-        })
-      );
+      return renderFn[tagName] && renderFn[tagName](options);
     },
 
-    getSelectCompVNode({ attrs, listeners, formField, extraOption, request }) {
+    getSelectCompVNode({
+      tagAttrs: attrs,
+      listeners,
+      formField,
+      extraOption,
+      request,
+    }) {
       this.disposeRequest(request, extraOption);
       let { options = [], props = {} } = extraOption;
       const { formData, onlyShow } = this;
@@ -181,7 +173,7 @@ export default {
     },
 
     getCascaderCompVNode({
-      attrs,
+      tagAttrs: attrs,
       listeners,
       formField,
       extraOption,
@@ -208,7 +200,7 @@ export default {
     },
 
     getRadioGroupCompVNode({
-      attrs,
+      tagAttrs: attrs,
       listeners,
       formField,
       extraOption,
@@ -242,7 +234,7 @@ export default {
     },
 
     getCheckboxGroupCompVNode({
-      attrs,
+      tagAttrs: attrs,
       listeners,
       formField,
       extraOption,
@@ -272,6 +264,23 @@ export default {
             );
           })}
         </el-checkbox-group>
+      );
+    },
+
+    getTooltipCompVNode({ tagAttrs: { internalTagOption, ...attrs } }) {
+      const { getSingleCompVNode } = this;
+      return (
+        <el-tooltip
+          {...{
+            attrs,
+          }}
+        >
+          {internalTagOption.tagName ? (
+            getSingleCompVNode(internalTagOption)
+          ) : (
+            <span>{internalTagOption.content}</span>
+          )}
+        </el-tooltip>
       );
     },
 
@@ -348,11 +357,15 @@ export default {
 
     getFormItemVNode(allItemInfo = {}) {
       // 一个formItem的content也允许渲染多个组件
-      const { formItemAttrs, ...item } = allItemInfo;
+      const {
+        formItemAttrs: { labelSlotName, labelOptions, ...formItemAttrs },
+        ...item
+      } = allItemInfo;
       const { renderDependFn } = item;
       if (typeof renderDependFn === 'string' && renderDependFn?.length > 0) {
         item.renderDependFn = renderDependFn = str2Fn(renderDependFn);
       }
+      // 先判断是否存在依赖渲染，在判断是否有labelSlotName，在判断是否有labelOptions
       return renderDependFn && !renderDependFn(this.formData) ? (
         ''
       ) : (
@@ -361,6 +374,18 @@ export default {
             attrs: formItemAttrs,
           }}
         >
+          {labelSlotName || !isEmpty(labelOptions) ? (
+            <span slot="label">
+              {labelSlotName && this.$scopedSlots[labelSlotName]
+                ? this.$scopedSlots[labelSlotName]({
+                    formData: formData,
+                  })
+                : this.getSingleCompVNode(labelOptions)}
+            </span>
+          ) : (
+            ''
+          )}
+
           {item.child && Array.isArray(item.child)
             ? item.child.map((item) => this.getSingleCompVNode(item))
             : this.getSingleCompVNode(item)}

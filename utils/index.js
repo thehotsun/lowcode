@@ -9,6 +9,7 @@ import {
 } from '../baseConfig/widgetBaseConfig';
 
 import { searchWidget } from '../baseConfig/tableSelectConfigs';
+import { requestTypeList } from '../baseConfig/btnBaseConfig';
 
 import { pickBy, merge } from 'lodash';
 
@@ -335,16 +336,7 @@ export function getSetupFormOptions(searchWidgetName) {
           return formData.request.require;
         },
         extraOption: {
-          options: [
-            {
-              id: 'get',
-              label: 'get',
-            },
-            {
-              id: 'post',
-              label: 'post',
-            },
-          ],
+          options: requestTypeList,
         },
       },
       'el-select',
