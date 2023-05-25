@@ -269,16 +269,31 @@ export default {
 
     getTooltipCompVNode({ tagAttrs: { internalTagOption, ...attrs } }) {
       const { getSingleCompVNode } = this;
+      const {
+        style = '',
+        className = '',
+        tagAttrs = {},
+        content = '',
+        tagName,
+      } = internalTagOption;
       return (
         <el-tooltip
           {...{
             attrs,
           }}
         >
-          {internalTagOption.tagName ? (
+          {tagName ? (
             getSingleCompVNode(internalTagOption)
           ) : (
-            <span>{internalTagOption.content}</span>
+            <span
+              style={style}
+              class={className}
+              {...{
+                attrs: tagAttrs,
+              }}
+            >
+              {content}
+            </span>
           )}
         </el-tooltip>
       );
@@ -359,7 +374,8 @@ export default {
       // 一个formItem的content也允许渲染多个组件
       const {
         formItemAttrs: { labelSlotName, labelOptions, ...formItemAttrs },
-        renderDependFn, ...item
+        renderDependFn,
+        ...item
       } = allItemInfo;
       if (typeof renderDependFn === 'string' && renderDependFn?.length > 0) {
         item.renderDependFn = renderDependFn = str2Fn(renderDependFn);

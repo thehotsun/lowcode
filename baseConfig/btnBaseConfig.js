@@ -177,124 +177,6 @@ export function BtnConfigFormOptions() {
       },
       formItem: {
         formItemAttrs: {
-          prop: 'extraOption.requestUrl',
-          label: '接口地址：',
-          // rules: {
-          //   required: true,
-          //   message: '请输入接口地址',
-          //   trigger: 'blur',
-          // },
-          labelSlotName: '',
-          labelOptions: {
-            tagName: 'el-tooltip',
-            style: 'width: 180px',
-            tagAttrs: {
-              effect: 'dark',
-              content: '请输入相对路径，请略过url前缀如（/common/dp/api/v1）',
-              placement: 'top-start',
-              internalTagOption: {
-                content: '接口地址：',
-              },
-            },
-          },
-        },
-        slotName: 'requestUrl',
-        tagName: 'el-input',
-        style: 'width: 180px',
-        tagAttrs: {
-          placeholder: '',
-        },
-        // 对应formData中的属性值
-        formField: 'extraOption.requestUrl',
-        renderDependFn: function(formData) {
-          return formData.extraOption.btnType !== 'download';
-        },
-      },
-    },
-
-    {
-      elRowAttrs: {
-        gutter: 10,
-      },
-      formItem: {
-        formItemAttrs: {
-          prop: 'extraOption.requestType',
-          label: '请求类型：',
-        },
-        tagName: 'el-select',
-        tagAttrs: {
-          placeholder: '请选择组件',
-        },
-        // 对应formData中的属性值
-        formField: 'extraOption.requestType',
-        extraOption: {
-          options: requestTypeList,
-          props: {
-            key: 'id',
-            label: 'cnName',
-          },
-        },
-        request: {
-          require: false,
-          url: '',
-          type: 'get',
-          params: '',
-          status: 'pending',
-        },
-        renderDependFn: function(formData) {
-          return formData.extraOption.btnType !== 'download';
-        },
-      },
-    },
-    {
-      elRowAttrs: {
-        gutter: 10,
-      },
-      formItem: {
-        formItemAttrs: {
-          prop: 'extraOption.requestBeforeConfirmHint',
-          label: '提交前弹出对话框：',
-        },
-        tagName: 'el-switch',
-        tagAttrs: {},
-        // 对应formData中的属性值
-        formField: 'extraOption.requestBeforeConfirmHint',
-        extraOption: {},
-        renderDependFn: function(formData) {
-          return formData.extraOption.btnType !== 'download';
-        },
-      },
-    },
-
-    {
-      elRowAttrs: {
-        gutter: 10,
-      },
-      formItem: {
-        formItemAttrs: {
-          prop: 'extraOption.requestBeforeConfirmText',
-          label: '提示文本：',
-        },
-        tagName: 'el-input',
-        style: 'width: 180px',
-        tagAttrs: {
-          type: 'textarea',
-          placeholder: '',
-        },
-        // 对应formData中的属性值
-        formField: 'extraOption.requestBeforeConfirmText',
-        renderDependFn: function(formData) {
-          return formData.extraOption.btnType !== 'download';
-        },
-      },
-    },
-
-    {
-      elRowAttrs: {
-        gutter: 10,
-      },
-      formItem: {
-        formItemAttrs: {
           prop: 'extraOption.relateFrom',
           label: '选择表单：',
           rules: {
@@ -475,6 +357,127 @@ export function BtnConfigFormOptions() {
         formField: 'extraOption.flowKey',
         renderDependFn: function(formData) {
           return [2].includes(formData.extraOption.openType);
+        },
+      },
+    },
+
+    {
+      elRowAttrs: {
+        gutter: 10,
+      },
+      formItem: {
+        formItemAttrs: {
+          prop: 'extraOption.requestUrl',
+          label: '接口地址：',
+          // rules: {
+          //   required: true,
+          //   message: '请输入接口地址',
+          //   trigger: 'blur',
+          // },
+          labelSlotName: '',
+          labelOptions: {
+            tagName: 'el-tooltip',
+            style: 'width: 180px',
+            tagAttrs: {
+              effect: 'dark',
+              content: '请输入相对路径，请略过url前缀如（/common/dp/api/v1）',
+              placement: 'top-start',
+              internalTagOption: {
+                content: '接口地址：',
+                style: 'font-size: 14px',
+              },
+            },
+          },
+        },
+        slotName: 'requestUrl',
+        tagName: 'el-input',
+        style: 'width: 180px',
+        tagAttrs: {
+          placeholder: '',
+        },
+        // 对应formData中的属性值
+        formField: 'extraOption.requestUrl',
+        renderDependFn: function(formData) {
+          return !['download', 'batchDel'].includes(
+            formData.extraOption.btnType
+          );
+        },
+      },
+    },
+
+    {
+      elRowAttrs: {
+        gutter: 10,
+      },
+      formItem: {
+        formItemAttrs: {
+          prop: 'extraOption.requestType',
+          label: '请求类型：',
+        },
+        tagName: 'el-select',
+        tagAttrs: {
+          placeholder: '请选择组件',
+        },
+        // 对应formData中的属性值
+        formField: 'extraOption.requestType',
+        extraOption: {
+          options: requestTypeList,
+          props: {
+            key: 'id',
+            label: 'cnName',
+          },
+        },
+        request: {
+          require: false,
+          url: '',
+          type: 'get',
+          params: '',
+          status: 'pending',
+        },
+        renderDependFn: function(formData) {
+          return formData.extraOption.btnType !== 'download';
+        },
+      },
+    },
+    {
+      elRowAttrs: {
+        gutter: 10,
+      },
+      formItem: {
+        formItemAttrs: {
+          prop: 'extraOption.requestBeforeConfirmHint',
+          label: '提交前弹出对话框：',
+        },
+        tagName: 'el-switch',
+        tagAttrs: {},
+        // 对应formData中的属性值
+        formField: 'extraOption.requestBeforeConfirmHint',
+        extraOption: {},
+        renderDependFn: function(formData) {
+          return formData.extraOption.btnType !== 'download';
+        },
+      },
+    },
+
+    {
+      elRowAttrs: {
+        gutter: 10,
+      },
+      formItem: {
+        formItemAttrs: {
+          prop: 'extraOption.requestBeforeConfirmText',
+          label: '提示文本：',
+        },
+        tagName: 'el-input',
+        style: 'width: 180px',
+        tagAttrs: {
+          type: 'textarea',
+          placeholder: '',
+        },
+        // 对应formData中的属性值
+        formField: 'extraOption.requestBeforeConfirmText',
+        renderDependFn: function(formData) {
+          return formData.extraOption.btnType !== 'download';
         },
       },
     },

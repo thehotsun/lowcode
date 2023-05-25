@@ -94,6 +94,11 @@ export default {
       formId: '',
       primaryKeyValue: '',
       btnDisposeParamsRule: {},
+      requestUrl: '',
+      requestType: '',
+      requestFixedParams: {},
+      requestBeforeConfirmHint: '',
+      requestBeforeConfirmText: '',
       // 按钮代表的一系列事件完毕以后是否刷新列表
       isRefresh: false,
       showPanel: false,
@@ -592,11 +597,11 @@ export default {
           paramType,
         };
         if (validate.includes(0) && selectList.length === 0) {
-          this.$warn('请确认选中了值！');
+          this.$warn('请至少勾选一条要处理的数据');
           return false;
         }
         if (validate.includes(1) && selectList.length !== 1) {
-          this.$warn('请确认只选中了一个值');
+          this.$warn('当前操作只允许勾选一条数据');
           return false;
         }
       }
@@ -639,6 +644,11 @@ export default {
         paramName: '',
         paramType: '',
       };
+      this.requestUrl = requestUrl;
+      this.requestType = requestType;
+      this.requestFixedParams = requestParamsConfig;
+      this.requestBeforeConfirmHint = requestBeforeConfirmHint;
+      this.requestBeforeConfirmText = requestBeforeConfirmText;
       this.isRefresh = isRefresh;
       this.dialogHeight = dialogHeight;
       this.dialogWidth = dialogWidth;
@@ -646,6 +656,7 @@ export default {
       this.formId = '';
       this.relateComponent = '';
       this.importFileCompRelateTableName = '';
+      await this.$nextTick();
       // 如果有自定义事件，则执行自定义事件
       if (fn) {
         this.exec(fn);
@@ -808,47 +819,53 @@ export default {
           else return value;
         });
       } else {
+        console.warn('参数值不是字符串！');
         return '';
       }
     },
 
-    async disposeRequestEvent({
-      requestUrl,
-      requestType,
-      requestBeforeConfirmHint,
-      requestBeforeConfirmText,
-      requestParamsConfig,
-    }) {
-      const { params, data } = requestParamsConfig;
+    getRequestConfig() {
+      const { requestUrl, requestType, requestFixedParams = {} } = this;
+      const { params = [], data = [] } = requestFixedParams;
       const { transformParamsValue } = this;
-      const finalParams = {};
-      const finalData = {};
+      let finalUrl = requestUrl;
       if (params?.length) {
+        const finalParams = {};
         params.map((item) => {
           finalParams[item.name] = transformParamsValue(item.value);
         });
-        requestUrl = addQueryString(finalParams, requestUrl);
+        finalUrl = addQueryString(finalParams, requestUrl);
       }
+      const finalData = {};
       if (data?.length) {
         data.map((item) => {
           finalData[item.name] = transformParamsValue(item.value);
         });
       }
+      const finalType =
+        requestTypeList.find((item) => item.id === requestType)?.cnName || '';
+      return {
+        finalUrl,
+        finalData,
+        finalType,
+      };
+    },
+
+    async disposeRequestEvent({
+      requestBeforeConfirmHint,
+      requestBeforeConfirmText,
+    }) {
       if (requestBeforeConfirmHint) {
         await this.$confirm(`${requestBeforeConfirmText}`);
       }
-
-      this.generalRequest(
-        requestUrl,
-        requestTypeList.find((item) => item.id === requestType).cnName,
-        finalData
-      );
+      const { finalUrl, finalType, finalData } = this.getRequestConfig();
+      this.generalRequest(finalUrl, finalType, finalData);
     },
 
     disposeDownOrDel({ btnType }) {
       if (this.previewMode) return;
       if (this.selectList.length === 0) {
-        return this.$warn('请确认只选中了一个值');
+        return this.$warn('请至少勾选一条要处理的数据');
       }
       if ([undefined, null].includes(this.selectList[0][this.keyField])) {
         return this.$warn(
@@ -1070,23 +1087,41 @@ export default {
     },
 
     getExternalCompBaseAttrs() {
-      const { selectList, keyField, btnDisposeParamsRule } = this;
+      const {
+        selectList,
+        keyField,
+        btnDisposeParamsRule,
+        requestBeforeConfirmHint,
+        requestBeforeConfirmText,
+        getRequestConfig,
+      } = this;
+      const { finalUrl, finalType, finalData } = getRequestConfig();
+      let config = {
+        requestConfig: {
+          requestType: finalType,
+          requestUrl: finalUrl,
+          requestBodyData: finalData,
+          requestBeforeConfirmHint,
+          requestBeforeConfirmText,
+        },
+      };
       if (this.deliverySelectList) {
-        return {
+        config = Object.assign(config, {
           keyFieldName: keyField,
           selectList,
           paramsRule: btnDisposeParamsRule,
-        };
+        });
       } else {
-        return {
+        config = Object.assign(config, {
           keyFieldName: '',
           selectList: [],
           paramsRule: {
             paramType: '',
             paramName: '',
           },
-        };
+        });
       }
+      return config;
     },
 
     download(list = []) {

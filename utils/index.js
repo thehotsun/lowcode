@@ -27,6 +27,7 @@ export function completeFromItemOptions(data, tableItem) {
   data.formItemAttrs.prop = tableItem.fieldCode;
   data.formField = tableItem.fieldCode;
   data.formItemAttrs.label = tableItem.fieldName;
+  data.formItemAttrs.style = 'margin-right: 15px';
   data.tagAttrs.placeholder = setPlaceholder(data.tagName, tableItem.fieldName);
   // setColSpan(data, 8);
   return data;
@@ -673,7 +674,7 @@ export function setTableAttrs(data) {
 }
 
 export function getUrlQuery(_url) {
-  const url = _url ||  '';
+  const url = _url || '';
   const result = {};
   if (url === '') return result;
   const pairs = url.inderxOf('?') > -1 ? url.split('?')[1].split('&') : [];
