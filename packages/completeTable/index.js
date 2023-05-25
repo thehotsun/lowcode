@@ -238,9 +238,14 @@ export default {
       emptyData[fieldCode] = '';
     },
 
-    async init(isPreview) {
+    async init(isPreview, json) {
       this.previewMode = !!isPreview;
-      await this.queryTableConfig();
+      if (!json) {
+        await this.queryTableConfig();
+      } else {
+        this.parseTableConfig(json);
+        await this.$nextTick();
+      }
       if (isPreview) {
         const tableData = {};
         this.composeData(tableData);
