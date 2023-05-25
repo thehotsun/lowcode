@@ -605,8 +605,6 @@ export default {
             config.extraOption.deliverySelectList = true;
             break
           case 'batchDel':
-            // 隐藏某些字段
-            this.$refs.setupBtnConfig.expose_hideSomeFieldOptions(['extraOption.fn', 'extraOption.openUrl', 'extraOption.isRefresh', 'extraOption.openType', 'extraOption.relateFrom', 'extraOption.dialogHeight', 'extraOption.dialogTitle', 'extraOption.dialogWidth']);
             config.tagAttrs.value = '批量删除'
             config.extraOption.btnType = 'batchDel';
             config.extraOption.openType = -1;
@@ -614,16 +612,12 @@ export default {
 
             break;
           case 'download':
-            // 隐藏某些字段
-            this.$refs.setupBtnConfig.expose_hideSomeFieldOptions(['extraOption.fn', 'extraOption.openUrl', 'extraOption.isRefresh', 'extraOption.openType', 'extraOption.relateFrom', 'extraOption.dialogHeight', 'extraOption.dialogTitle', 'extraOption.dialogWidth']);
             config.tagAttrs.value = '导出';
             config.extraOption.btnType = 'download';
             config.extraOption.openType = -1;
             config.authorize = 'E'
-
             break;
           case 'import':
-            this.$refs.setupBtnConfig.expose_hideSomeFieldOptions(['extraOption.fn', 'extraOption.openUrl', 'extraOption.openType', 'extraOption.relateFrom']);
             config.tagAttrs.value = '导入';
             config.extraOption.btnType = 'import';
             config.extraOption.openType = -1;

@@ -163,6 +163,11 @@ export function BtnConfigFormOptions() {
             label: 'cnName',
           },
         },
+        renderDependFn: function(formData) {
+          return !['import', 'download', 'batchDel'].includes(
+            formData.extraOption.btnType
+          );
+        },
       },
     },
 
@@ -617,7 +622,7 @@ export function BtnConfigFormOptions() {
           },
         },
         renderDependFn: function(formData) {
-          return formData.extraOption.openType === 0;
+          return formData.extraOption.btnType !== 'download';
         },
       },
     },
@@ -827,6 +832,9 @@ export function BtnConfigFormOptions() {
         },
         // 对应formData中的属性值
         formField: 'extraOption.fn',
+        renderDependFn: function(formData) {
+          return ['custom'].includes(formData.extraOption.btnType);
+        },
       },
     },
   ];

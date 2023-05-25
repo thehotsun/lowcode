@@ -359,9 +359,8 @@ export default {
       // 一个formItem的content也允许渲染多个组件
       const {
         formItemAttrs: { labelSlotName, labelOptions, ...formItemAttrs },
-        ...item
+        renderDependFn, ...item
       } = allItemInfo;
-      const { renderDependFn } = item;
       if (typeof renderDependFn === 'string' && renderDependFn?.length > 0) {
         item.renderDependFn = renderDependFn = str2Fn(renderDependFn);
       }

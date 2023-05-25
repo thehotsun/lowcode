@@ -15,6 +15,7 @@ import {
   str2Fn,
   setTableAttrs,
   getSummaries,
+  addQueryString,
 } from '../../utils';
 import { cloneDeep, omit, merge } from 'lodash';
 
@@ -798,6 +799,19 @@ export default {
       }
     },
 
+    transformParamsValue(value) {
+      if ([null, undefined, ''].includes(value)) return '';
+      if (typeof value === 'string') {
+        value = value.trim();
+        return value.replace(/^\{(\w*)\}$/g, (value, $1) => {
+          if ($1) return this[$1];
+          else return value;
+        });
+      } else {
+        return '';
+      }
+    },
+
     async disposeRequestEvent({
       requestUrl,
       requestType,
@@ -805,22 +819,29 @@ export default {
       requestBeforeConfirmText,
       requestParamsConfig,
     }) {
-      const params = {};
+      const { params, data } = requestParamsConfig;
+      const { transformParamsValue } = this;
+      const finalParams = {};
+      const finalData = {};
+      if (params?.length) {
+        params.map((item) => {
+          finalParams[item.name] = transformParamsValue(item.value);
+        });
+        requestUrl = addQueryString(finalParams, requestUrl);
+      }
+      if (data?.length) {
+        data.map((item) => {
+          finalData[item.name] = transformParamsValue(item.value);
+        });
+      }
       if (requestBeforeConfirmHint) {
         await this.$confirm(`${requestBeforeConfirmText}`);
       }
-      console.log(
-        'sucess2',
+
+      this.generalRequest(
         requestUrl,
         requestTypeList.find((item) => item.id === requestType).cnName,
-        params
-      );
-      this.generalRequest(requestUrl, requestTypeList[requestType], params);
-      console.log(
-        requestUrl,
-        requestType,
-        requestBeforeConfirmHint,
-        requestBeforeConfirmText
+        finalData
       );
     },
 

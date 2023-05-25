@@ -672,6 +672,47 @@ export function setTableAttrs(data) {
   return data;
 }
 
+export function getUrlQuery(_url) {
+  const url = _url ||  '';
+  const result = {};
+  if (url === '') return result;
+  const pairs = url.inderxOf('?') > -1 ? url.split('?')[1].split('&') : [];
+  pairs.map((item) => {
+    // 只查找到第一个"＝"符号，这样就不会把token中等号也裁剪掉
+    const index = item.indexOf('=');
+    const name = item.substr(0, index);
+    const value = item.substr(index + 1);
+    value = decodeURIComponet(value);
+    result[name] = value;
+  });
+  return result;
+}
+
+export function addQueryString(param, url) {
+  if (!url) return '';
+  if (!param || !Object.keys(param).length) return url;
+  let _url = url;
+  // 有问号提出url并添加至obj，没问号用原url
+  if (url.indexOf('?') > -1) {
+    param = Object.assign(
+      {},
+      {
+        ...param,
+        ...getUrlQuery(url),
+      }
+    );
+    _url = url.split('?')[0];
+  }
+  let result = '?';
+  for (const key in param) {
+    if (param[key] !== undefined && param[key] !== null) {
+      result += `${key}=${param[key]}&`;
+    }
+  }
+  // 去除最后一个& 并返回
+  return `${_url}${result.slice(0, -1)}`;
+}
+
 export default {
   setPlaceholder,
   setFilterAndResetBtnConfig,
@@ -695,4 +736,6 @@ export default {
   setTableAttrs,
   getSummaries,
   decorator,
+  getUrlQuery,
+  addQueryString,
 };
