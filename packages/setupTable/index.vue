@@ -532,7 +532,7 @@ export default {
       const json = {
         fuzzyFieldSearchConfig: this.$refs.singleSetupTable.expose_getFuzzyFieldSearchConfig(),
         tableAttrs: this.tableAttrs,
-        formOptions: this.btnConfigArr,
+        formOptions: this.btnConfigArr.map(option => { option.tagAttrs.disabled = false; return option }),
         tableOptions: this.$refs.singleSetupTable.expose_getTableData(),
         keyField: this.keyField,
       };
@@ -676,13 +676,6 @@ export default {
         this.$refs.setupBtnConfig.expose_setBtnConfigFrom(this.btnConfigArr[index]);
       })
     },
-    handleClose (done) {
-      this.$confirm('还有未保存的工作哦确定关闭吗')
-        .then(_ => {
-          done();
-        })
-        .catch(_ => { });
-    }
   }
 
 };
