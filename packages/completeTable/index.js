@@ -361,15 +361,29 @@ export default {
           );
           // 添加搜索表单得change事件，用以触发更新列表
           if (finalOptions.listeners) {
-            const fn = finalOptions.listeners.change;
-            finalOptions.listeners.change = (...argus) => {
-              this.handleFilter(...argus);
-              fn && fn(...argus);
-            };
+            if (searchWidgetName === 'el-input') {
+              const fn = finalOptions.listeners.input;
+              finalOptions.listeners.input = (...argus) => {
+                this.handleFilter(...argus);
+                fn && fn(...argus);
+              };
+            } else {
+              const fn = finalOptions.listeners.change;
+              finalOptions.listeners.change = (...argus) => {
+                this.handleFilter(...argus);
+                fn && fn(...argus);
+              };
+            }
           } else {
-            finalOptions.listeners = {
-              change: this.handleFilter,
-            };
+            if (searchWidgetName === 'el-input') {
+              finalOptions.listeners = {
+                input: this.handleFilter,
+              };
+            } else {
+              finalOptions.listeners = {
+                change: this.handleFilter,
+              };
+            }
           }
           formOptions.push(finalOptions);
         }
@@ -1258,7 +1272,8 @@ export default {
                     size="mini"
                     v-model={this.multiFieldSearch}
                     placeholder={fuzzySearchPlaceholder}
-                    onChange={handleFilter}
+                    onInput={handleFilter}
+                    clearable={true}
                   >
                     <i slot="prefix" class="el-input__icon el-icon-search"></i>
                   </el-input>
