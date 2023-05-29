@@ -27,6 +27,8 @@ export function completeFromItemOptions(data, tableItem) {
   data.formItemAttrs.prop = tableItem.fieldCode;
   data.formField = tableItem.fieldCode;
   data.formItemAttrs.label = tableItem.fieldName;
+  if (data.formItemAttrs.labelOptions)
+    data.formItemAttrs.labelOptions.contentText = tableItem.fieldName;
   data.formItemAttrs.style = 'margin-right: 15px';
   data.tagAttrs.placeholder = setPlaceholder(data.tagName, tableItem.fieldName);
   // setColSpan(data, 8);
@@ -125,7 +127,7 @@ export function setter(obj = {}, field = '', value) {
 }
 
 export function getHandleInput(formData, formField, fn) {
-  return function(e) {
+  function handleInput(e) {
     try {
       // e可能是原生事件对象
       setter(formData, formField, e?.target?.value ?? e);
@@ -133,7 +135,9 @@ export function getHandleInput(formData, formField, fn) {
     } catch (error) {
       console.error(error);
     }
-  };
+  }
+  handleInput.isWrap = true;
+  return handleInput;
 }
 
 export function getHandleBlur(row, fn) {

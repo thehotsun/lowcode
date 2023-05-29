@@ -13,7 +13,7 @@
 
     <div v-if="showSearchFromArea" class="searchArea">
       <base-render-form ref="form" :generalRequest="generalRequest" :form-data="searchFrom"
-        :form-options="searchFromOptions" :showFooter="false" :use-dialog="false"></base-render-form>
+        :form-options="searchFromOptions" :showFooter="false" :use-dialog="false" label-width=""></base-render-form>
     </div>
 
     <div class="btnDesign">

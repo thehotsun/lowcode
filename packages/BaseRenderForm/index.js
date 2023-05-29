@@ -273,7 +273,7 @@ export default {
         style = '',
         className = '',
         tagAttrs = {},
-        content = '',
+        contentText = '',
         tagName,
       } = internalTagOption;
       return (
@@ -292,7 +292,7 @@ export default {
                 attrs: tagAttrs,
               }}
             >
-              {content}
+              {contentText}
             </span>
           )}
         </el-tooltip>
@@ -328,7 +328,10 @@ export default {
         request = {},
       } = item;
       // 取代v-model语法糖，因为它不能实现多个点深层级取值赋值操作,例如fromData['a.b']
-      listeners.input = getHandleInput(formData, formField, listeners.input);
+      // isWrap防止无限循环
+      if (!listeners?.input?.isWrap) {
+        listeners.input = getHandleInput(formData, formField, listeners.input);
+      }
       let model = getter(formData, formField);
       // tagName必须是eleui提供的已有组件或HTML已有标签,如果是只读标签，则固定使用span标签
       // Tag必须开头大写，否则会被识别为字符串
@@ -390,13 +393,13 @@ export default {
           }}
         >
           {labelSlotName || !isEmpty(labelOptions) ? (
-            <span slot="label">
+            <div slot="label">
               {labelSlotName && this.$scopedSlots[labelSlotName]
                 ? this.$scopedSlots[labelSlotName]({
                     formData: formData,
                   })
                 : this.getSingleCompVNode(labelOptions)}
-            </span>
+            </div>
           ) : (
             ''
           )}

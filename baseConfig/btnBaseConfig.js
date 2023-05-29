@@ -380,10 +380,11 @@ export function BtnConfigFormOptions() {
             style: 'width: 180px',
             tagAttrs: {
               effect: 'dark',
-              content: '请输入相对路径，请略过url前缀如（/common/dp/api/v1）',
+              content:
+                '请输入相对路径，请略过url前缀如（/common/dp/api/v1）',
               placement: 'top-start',
               internalTagOption: {
-                content: '接口地址：',
+                contentText: '接口地址：',
                 style: 'font-size: 14px',
               },
             },

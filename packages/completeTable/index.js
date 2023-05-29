@@ -7,6 +7,7 @@ import { align, searchWidget } from '../../baseConfig/tableSelectConfigs';
 import { requestTypeList } from '../../baseConfig/btnBaseConfig';
 
 import {
+  getHandleInput,
   getWidgetOptions,
   exec,
   getWidgetDefaultVal,
@@ -363,16 +364,18 @@ export default {
           if (finalOptions.listeners) {
             if (searchWidgetName === 'el-input') {
               const fn = finalOptions.listeners.input;
-              finalOptions.listeners.input = (...argus) => {
+              const inputFn = (...argus) => {
                 this.handleFilter(...argus);
                 fn && fn(...argus);
               };
+              finalOptions.listeners.input = inputFn;
             } else {
               const fn = finalOptions.listeners.change;
-              finalOptions.listeners.change = (...argus) => {
+              const changeFn = (...argus) => {
                 this.handleFilter(...argus);
                 fn && fn(...argus);
               };
+              finalOptions.listeners.change = changeFn;
             }
           } else {
             if (searchWidgetName === 'el-input') {
@@ -1248,6 +1251,7 @@ export default {
               form-options={formOptions}
               showFooter={false}
               use-dialog={false}
+              label-width=""
             ></base-render-form>
           </el-header>
         ) : null}

@@ -3,7 +3,7 @@
 // const baseStyle = 'min-width: 150px;margin-right: 10px ';
 const baseStyle = '';
 
-function composeConfig(options) {
+function composeConfig(options, labelSlot) {
   const {
     tagName = 'el-input',
     tagAttrs = {},
@@ -13,7 +13,7 @@ function composeConfig(options) {
     request = {},
     style = '',
   } = options;
-  return {
+  const baseOptions = {
     // 赋值给formitem组件的class和style
     // className: 'select',
     style: style || baseStyle,
@@ -25,6 +25,7 @@ function composeConfig(options) {
     formItemAttrs: {
       prop: '',
       label: '',
+      'label-width': 'auto',
     },
     sortNumb: 0,
     // attrs主要包含直接赋值给当前组件的属性值
@@ -40,6 +41,15 @@ function composeConfig(options) {
     // 非常用属性通过此属性传递
     ...customAttr,
   };
+  if (labelSlot) {
+    baseOptions.formItemAttrs.labelOptions = {
+      tagName: 'span',
+      // style: 'padding-right: 15px',
+      contentText: '',
+    };
+  }
+
+  return baseOptions;
 }
 
 export function getElInputConfig() {
