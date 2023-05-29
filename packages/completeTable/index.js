@@ -1252,6 +1252,7 @@ export default {
               showFooter={false}
               use-dialog={false}
               label-width=""
+              inline={true}
             ></base-render-form>
           </el-header>
         ) : null}
