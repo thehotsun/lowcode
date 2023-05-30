@@ -1,3 +1,4 @@
+import { isEmpty, cloneDeep } from 'lodash';
 import { getter, getHandleInput } from '../../utils';
 
 export default {
@@ -12,7 +13,41 @@ export default {
   data() {
     return {};
   },
-  computed: {},
+  computed: {
+    finalRenderOptions() {
+      // 对所有元素的监听事件进行处理， 使其能访问到当前组件的this
+      return (
+        this.renderOptions?.map((rowItem) => {
+          const ectype = cloneDeep(rowItem);
+          if (Array.isArray(ectype.formItem)) {
+            ectype.formItem.map((item) => {
+              if (!isEmpty(item.listeners)) {
+                Object.keys(item.listeners).map((eventName) => {
+                  if (item.listeners[eventName].isWrap) return;
+                  const originFn = item.listeners[eventName];
+                  item.listeners[eventName] = (...argus) =>
+                    originFn.call(this, ...argus);
+                });
+              }
+              return item;
+            });
+          } else {
+            const listeners = ectype.formItem.listeners;
+            if (!isEmpty(listeners)) {
+              Object.keys(listeners).map((eventName) => {
+                console.log(eventName, 'eventName');
+                if (listeners[eventName].isWrap) return;
+                const originFn = listeners[eventName];
+                ectype.formItem.listeners[eventName] = (...argus) =>
+                  originFn.call(this, ...argus);
+              });
+            }
+          }
+          return ectype;
+        }) || []
+      );
+    },
+  },
   watch: {},
   async created() {
     // this.init();
@@ -108,6 +143,8 @@ export default {
         // 需要绑定的formData的属性名
         formField = '',
         tagName,
+        contentTextFrontTagOptions = {},
+        contentTextBehindTagOptions = {},
       } = item;
       // 取代v-model语法糖，因为它不能实现多个点深层级取值赋值操作,例如fromData['a.b']
       listeners.input = getHandleInput(formData, formField, listeners.input);
@@ -134,7 +171,9 @@ export default {
             )
           ) : (
             <div style="display: inline-block">
-              <span style={frontTextStyle}>{frontText}</span>
+              {frontText ? (
+                <span style={frontTextStyle}>{frontText}</span>
+              ) : null}
               <Tag
                 value={model}
                 style={style}
@@ -144,9 +183,25 @@ export default {
                   on: listeners,
                 }}
               >
+                {isEmpty(contentTextFrontTagOptions)
+                  ? null
+                  : Array.isArray(contentTextFrontTagOptions)
+                  ? contentTextFrontTagOptions.map((options) =>
+                      this.getSingleCompVNode(options)
+                    )
+                  : this.getSingleCompVNode(contentTextFrontTagOptions)}
                 {model || tagAttrs?.value || contentText}
+                {isEmpty(contentTextBehindTagOptions)
+                  ? null
+                  : Array.isArray(contentTextBehindTagOptions)
+                  ? contentTextBehindTagOptions.map((options) =>
+                      this.getSingleCompVNode(options)
+                    )
+                  : this.getSingleCompVNode(contentTextBehindTagOptions)}
               </Tag>
-              <span style={behindTextStyle}>{behindText}</span>
+              {behindText ? (
+                <span style={behindTextStyle}>{behindText}</span>
+              ) : null}
             </div>
           )}
         </div>
@@ -196,10 +251,9 @@ export default {
 
   render() {
     const {
-      formData,
       customLayoutRender,
       rules,
-      renderOptions,
+      finalRenderOptions,
       formRef,
       $attrs,
       $listeners,
@@ -217,7 +271,7 @@ export default {
           },
         }}
       >
-        {customLayoutRender(renderOptions)}
+        {customLayoutRender(finalRenderOptions)}
       </div>
     );
   },

@@ -828,6 +828,7 @@ export function BtnConfigFormOptions() {
         },
         // 对应formData中的属性值
         formField: 'extraOption.iconPosition',
+        listeners: {},
         extraOption: {
           options: [
             { label: 'icon前置', value: 'front' },
@@ -857,6 +858,7 @@ export function BtnConfigFormOptions() {
         },
         // 对应formData中的属性值
         formField: 'style',
+        listeners: {},
       },
     },
     {
@@ -924,8 +926,8 @@ export function BtnConfigFrom(custom = {}) {
       iconPosition: 'front',
       iconName: '',
     },
-    conentTextFrontTagOptions: {},
-    conentTextBehindTagOptions: {},
+    contentTextFrontTagOptions: {},
+    contentTextBehindTagOptions: {},
     // 点击按钮是否传递当前选中数据
     authorize: '',
     btnId: +new Date(),

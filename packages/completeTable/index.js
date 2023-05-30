@@ -192,6 +192,12 @@ export default {
     // this.init()
   },
 
+  errorCaptured(err) {
+    // 看着心烦，直接屏蔽，elform计算label值得时候得问题，在beforeDestroy周期里，不影响功能
+    if (err.message === '[ElementForm]unpected width ') return false;
+    else return true;
+  },
+
   inject: ['flowComp', 'importFileComp', 'queryFlowDef', 'componentList'],
 
   methods: {
@@ -240,6 +246,8 @@ export default {
     },
 
     async init(isPreview, json) {
+      this.resetAllData();
+      await this.$nextTick();
       this.previewMode = !!isPreview;
       if (!json) {
         await this.queryTableConfig();
@@ -255,6 +263,71 @@ export default {
         this.queryTableData();
         this.composeData();
       }
+    },
+
+    // 清空数据
+    resetAllData() {
+      this.importFileCompRelateTableName = '';
+      this.fuzzySearchPlaceholder = '';
+      this.pageLayout = '->, total,sizes, prev, pager, next,jumper';
+      this.btnRelateDialogVisible = false;
+      this.rule = [];
+      this.option = {};
+      this.multiFieldSearch = '';
+      this.tableConfigJSON = [];
+      this.tableOptions = [];
+      this.tableData = [];
+      this.formOptions = [];
+      this.searchFrom = {};
+      this.rawSearchFrom = {};
+      this.dialogTitle = '表单';
+      this.dialogWidth = '';
+      this.dialogHeight = '';
+      this.btnRegularOptions = [];
+      this.showSearchFrom = true;
+      this.showBtns = true;
+      this.formId = '';
+      this.primaryKeyValue = '';
+      this.btnDisposeParamsRule = {};
+      this.requestUrl = '';
+      this.requestType = '';
+      this.requestFixedParams = {};
+      this.requestBeforeConfirmHint = '';
+      this.requestBeforeConfirmText = '';
+      this.isRefresh = false;
+      this.showPanel = false;
+      this.selectList = [];
+      this.panelData = [];
+      this.filterFiled = [];
+      this.keyField = '';
+      this.onlyRead = false;
+      this.previewMode = false;
+      this.relateComponent = null;
+      this.deliverySelectList = false;
+      this.page = {
+        pageNo: 1,
+        pageSize: 10,
+        totalCount: 0,
+      };
+      this.tableAttrs = {
+        // 初始化是否显示分页
+        showPagination: false,
+        isShowCheckbox: false,
+        isShowIndex: false,
+        index: '',
+        stripe: false,
+        border: false,
+        showSummary: false,
+        summaryMethod: getSummaries,
+        size: '',
+        isTree: false,
+        treeProps: '',
+        rowKey: '',
+        lazy: false,
+        load: '',
+        isMerge: false,
+        spanMethod: '',
+      };
     },
 
     setSingleTableOptions(item, emptyData) {
@@ -362,30 +435,20 @@ export default {
           );
           // 添加搜索表单得change事件，用以触发更新列表
           if (finalOptions.listeners) {
-            // if (searchWidgetName === 'el-input') {
-            //   const fn = finalOptions.listeners.input;
-            //   const inputFn = (...argus) => {
-            //     this.handleFilter(...argus);
-            //     fn && fn(...argus);
-            //   };
-            //   finalOptions.listeners.input = inputFn;
-            // } else {
-            // }
             const fn = finalOptions.listeners.change;
             const changeFn = (...argus) => {
               this.handleFilter(...argus);
-              fn && fn(...argus);
+              fn && fn.call(this, ...argus);
             };
+            changeFn.isWrap = true;
             finalOptions.listeners.change = changeFn;
           } else {
-            // if (searchWidgetName === 'el-input') {
-            //   finalOptions.listeners = {
-            //     input: this.handleFilter,
-            //   };
-            // } else {
-            // }
+            const changeFn = (...argus) => {
+              this.handleFilter(...argus);
+            };
+            changeFn.isWrap = true;
             finalOptions.listeners = {
-              change: this.handleFilter,
+              change: changeFn,
             };
           }
           formOptions.push(finalOptions);
@@ -460,7 +523,6 @@ export default {
     },
     // 获取列表数据接口参数
     getParams(data) {
-      // 去掉最后添加的按钮
       const extraParams = {};
       if (this.formOptions?.length) {
         const formItem = this.formOptions[0].formItem;
@@ -1244,16 +1306,18 @@ export default {
       <el-container class="CompleteTable" style="height: 100%">
         {showSearchFrom ? (
           <el-header style="margin: 20px 0 0 0;" class="flex-header-height">
-            <base-render-form
-              ref="form"
-              generalRequest={generalRequest}
-              form-data={searchFrom}
-              form-options={formOptions}
-              showFooter={false}
-              use-dialog={false}
-              label-width=""
-              inline={true}
-            ></base-render-form>
+            {formOptions?.length ? (
+              <base-render-form
+                ref="form"
+                generalRequest={generalRequest}
+                form-data={searchFrom}
+                form-options={formOptions}
+                showFooter={false}
+                use-dialog={false}
+                label-width=""
+                inline={true}
+              ></base-render-form>
+            ) : null}
           </el-header>
         ) : null}
         <el-main class="main-padding">

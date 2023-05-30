@@ -38,9 +38,9 @@ function composeConfig(options, labelSlot) {
     // 特殊组件的额外属性值例如select组件下的option组件所需的options
     extraOption: extraOption,
     request,
-    
-    conentTextFrontTagOptions: {},
-    conentTextBehindTagOptions: {},
+
+    contentTextFrontTagOptions: {},
+    contentTextBehindTagOptions: {},
     // 非常用属性通过此属性传递
     ...customAttr,
   };

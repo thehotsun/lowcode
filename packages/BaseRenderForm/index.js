@@ -7,7 +7,7 @@ import {
   str2Fn,
 } from '../../utils';
 import codemirror from '../components/codemirror';
-import { isEmpty } from 'lodash';
+import { isEmpty, cloneDeep } from 'lodash';
 export default {
   name: 'BaseRenderForm',
   components: { codemirror },
@@ -49,7 +49,41 @@ export default {
       showDialog: true,
     };
   },
-  computed: {},
+  computed: {
+    finalRenderOptions() {
+      // 对所有元素的监听事件进行处理， 使其能访问到当前组件的this
+      return (
+        this.formOptions?.map((rowItem) => {
+          const ectype = cloneDeep(rowItem);
+          if (Array.isArray(ectype.formItem)) {
+            ectype.formItem.map((item) => {
+              if (!isEmpty(item.listeners)) {
+                Object.keys(item.listeners).map((eventName) => {
+                  if (item.listeners[eventName].isWrap) return;
+                  const originFn = item.listeners[eventName];
+                  item.listeners[eventName] = (...argus) =>
+                    originFn.call(this, ...argus);
+                });
+              }
+              return item;
+            });
+          } else {
+            const listeners = ectype.formItem.listeners;
+            if (!isEmpty(listeners)) {
+              Object.keys(listeners).map((eventName) => {
+                console.log(eventName, 'eventName');
+                if (listeners[eventName].isWrap) return;
+                const originFn = listeners[eventName];
+                ectype.formItem.listeners[eventName] = (...argus) =>
+                  originFn.call(this, ...argus);
+              });
+            }
+          }
+          return ectype;
+        }) || []
+      );
+    },
+  },
   watch: {},
   async created() {
     // this.init();
@@ -326,6 +360,8 @@ export default {
         tagName,
         // 接口处理
         request = {},
+        contentTextFrontTagOptions = {},
+        contentTextBehindTagOptions = {},
       } = item;
       // 取代v-model语法糖，因为它不能实现多个点深层级取值赋值操作,例如fromData['a.b']
       // isWrap防止无限循环
@@ -367,7 +403,21 @@ export default {
                       on: listeners,
                     }}
                   >
+                    {isEmpty(contentTextFrontTagOptions)
+                      ? null
+                      : Array.isArray(contentTextFrontTagOptions)
+                      ? contentTextFrontTagOptions.map((options) =>
+                          this.getSingleCompVNode(options)
+                        )
+                      : this.getSingleCompVNode(contentTextFrontTagOptions)}
                     {model || tagAttrs?.value || contentText}
+                    {isEmpty(contentTextBehindTagOptions)
+                      ? null
+                      : Array.isArray(contentTextBehindTagOptions)
+                      ? contentTextBehindTagOptions.map((options) =>
+                          this.getSingleCompVNode(options)
+                        )
+                      : this.getSingleCompVNode(contentTextBehindTagOptions)}
                   </Tag>
 
                   {behindText ? (
@@ -418,7 +468,7 @@ export default {
     },
 
     customLayoutRender(data) {
-      // 由于此处的data为formOptions，已在props中声明为数组，因此不对data进行再次校验
+      // 由于此处的data为finalRenderOptions，已在props中声明为数组，因此不对data进行再次校验
       // 当前布局组件不提供 Bootstrap式的响应式布局属性
       return data.map((rowItem) => {
         const {
@@ -465,7 +515,7 @@ export default {
       handleSubmit,
       customLayoutRender,
       rules,
-      formOptions,
+      finalRenderOptions,
       useDialog,
       dialogTitle,
       showDialog,
@@ -511,7 +561,7 @@ export default {
                 },
               }}
             >
-              {customLayoutRender(formOptions)}
+              {customLayoutRender(finalRenderOptions)}
             </el-form>
             <div slot="footer">
               <el-button on-click={handleClose}>取消</el-button>
@@ -534,7 +584,7 @@ export default {
                 },
               }}
             >
-              {customLayoutRender(formOptions)}
+              {customLayoutRender(finalRenderOptions)}
             </el-form>
             {showFooter ? (
               <div>

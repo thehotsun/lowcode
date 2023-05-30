@@ -244,6 +244,18 @@ export default {
 
 
     onSubmit (data) {
+      const iconName = data.extraOption.iconName;
+      const val = data.extraOption.iconPosition;
+      if (val === 'front') {
+        data.tagAttrs.icon = iconName;
+        data.contentTextBehindTagOptions = {};
+      } else {
+        data.tagAttrs.icon = '';
+        data.contentTextBehindTagOptions = {
+          tagName: 'i',
+          className: iconName,
+        };
+      }
       // 如果相同则说明是编辑，不同则是新增
       if (!this.btnConfigFromArr.some(item => item === this.originConfigForm)) {
         data.renderId = Math.random()
