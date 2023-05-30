@@ -354,7 +354,10 @@ export default {
                 request,
               }) || (
                 <div style="display: inline-block">
-                  <span style={frontTextStyle}>{frontText}</span>
+                  {frontText ? (
+                    <span style={frontTextStyle}>{frontText}</span>
+                  ) : null}
+
                   <Tag
                     value={model}
                     style={style}
@@ -366,7 +369,10 @@ export default {
                   >
                     {model || tagAttrs?.value || contentText}
                   </Tag>
-                  <span style={behindTextStyle}>{behindText}</span>
+
+                  {behindText ? (
+                    <span style={behindTextStyle}>{behindText}</span>
+                  ) : null}
                 </div>
               )}
         </div>

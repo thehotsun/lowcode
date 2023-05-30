@@ -362,31 +362,31 @@ export default {
           );
           // 添加搜索表单得change事件，用以触发更新列表
           if (finalOptions.listeners) {
-            if (searchWidgetName === 'el-input') {
-              const fn = finalOptions.listeners.input;
-              const inputFn = (...argus) => {
-                this.handleFilter(...argus);
-                fn && fn(...argus);
-              };
-              finalOptions.listeners.input = inputFn;
-            } else {
-              const fn = finalOptions.listeners.change;
-              const changeFn = (...argus) => {
-                this.handleFilter(...argus);
-                fn && fn(...argus);
-              };
-              finalOptions.listeners.change = changeFn;
-            }
+            // if (searchWidgetName === 'el-input') {
+            //   const fn = finalOptions.listeners.input;
+            //   const inputFn = (...argus) => {
+            //     this.handleFilter(...argus);
+            //     fn && fn(...argus);
+            //   };
+            //   finalOptions.listeners.input = inputFn;
+            // } else {
+            // }
+            const fn = finalOptions.listeners.change;
+            const changeFn = (...argus) => {
+              this.handleFilter(...argus);
+              fn && fn(...argus);
+            };
+            finalOptions.listeners.change = changeFn;
           } else {
-            if (searchWidgetName === 'el-input') {
-              finalOptions.listeners = {
-                input: this.handleFilter,
-              };
-            } else {
-              finalOptions.listeners = {
-                change: this.handleFilter,
-              };
-            }
+            // if (searchWidgetName === 'el-input') {
+            //   finalOptions.listeners = {
+            //     input: this.handleFilter,
+            //   };
+            // } else {
+            // }
+            finalOptions.listeners = {
+              change: this.handleFilter,
+            };
           }
           formOptions.push(finalOptions);
         }
@@ -479,7 +479,7 @@ export default {
           // 此处要处理日期选择框数组形式后端不识别，改为字段名加end和start
           if (
             searchWidgetType === 4 &&
-            this.searchFrom[formField].length === 2
+            this.searchFrom[formField]?.length === 2
           ) {
             extraParams[`${formField}Start`] =
               this.searchFrom[formField][0] || '';
@@ -1277,7 +1277,7 @@ export default {
                     size="mini"
                     v-model={this.multiFieldSearch}
                     placeholder={fuzzySearchPlaceholder}
-                    onInput={handleFilter}
+                    onChange={handleFilter}
                     clearable={true}
                   >
                     <i slot="prefix" class="el-input__icon el-icon-search"></i>

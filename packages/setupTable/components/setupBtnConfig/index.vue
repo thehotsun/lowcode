@@ -17,6 +17,10 @@
           </span>
         </el-row>
       </template>
+      <template #iconName="{ formData }">
+        <icon-picker v-model="formData.extraOption.iconName"></icon-picker>
+      </template>
+
     </base-render-form>
 
     <el-dialog title="请求接口设置" :visible.sync="showParamsConfig" :close-on-click-modal="false"
@@ -93,12 +97,14 @@
 import BaseRenderForm from '../../../BaseRenderForm/index';
 import { BtnConfigFormOptions, BtnConfigFrom } from "../../../../baseConfig/btnBaseConfig"
 import { findFromOptionsIndexByfieldName } from '../../../../utils';
+import IconPicker from "./components/iconPicker";
 import { cloneDeep, merge } from "lodash";
 
 export default {
   name: 'setupBtnConfig',
   components: {
     BaseRenderForm,
+    IconPicker
   },
   props: {
     useDialog: Boolean,

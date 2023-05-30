@@ -41,14 +41,14 @@ export const showType = [
     value: 0,
     label: '纯文字',
   },
-  // {
-  //   value: 1,
-  //   label: '纯图标',
-  // },
-  // {
-  //   value: 2,
-  //   label: '图标+文字',
-  // },
+  {
+    value: 1,
+    label: '纯图标',
+  },
+  {
+    value: 2,
+    label: '图标+文字',
+  },
 ];
 
 export const size = [
@@ -380,8 +380,7 @@ export function BtnConfigFormOptions() {
             style: 'width: 180px',
             tagAttrs: {
               effect: 'dark',
-              content:
-                '请输入相对路径，请略过url前缀如（/common/dp/api/v1）',
+              content: '请输入相对路径，请略过url前缀如（/common/dp/api/v1）',
               placement: 'top-start',
               internalTagOption: {
                 contentText: '接口地址：',
@@ -694,30 +693,29 @@ export function BtnConfigFormOptions() {
       },
     },
 
-    {
-      elRowAttrs: {
-        gutter: 10,
-      },
-      formItem: {
-        formItemAttrs: {
-          prop: 'tagAttrs.showType',
-          label: '显示形式：',
-        },
-        tagName: 'el-radio-group',
-        tagAttrs: {
-          placeholder: '',
-        },
-        // TODO 没想好怎么做
-        formField: 'tagAttrs.showType',
-        extraOption: {
-          options: showType,
-          props: {
-            key: 'value',
-            label: 'label',
-          },
-        },
-      },
-    },
+    // {
+    //   elRowAttrs: {
+    //     gutter: 10,
+    //   },
+    //   formItem: {
+    //     formItemAttrs: {
+    //       prop: 'tagAttrs.showType',
+    //       label: '显示形式：',
+    //     },
+    //     tagName: 'el-radio-group',
+    //     tagAttrs: {
+    //       placeholder: '',
+    //     },
+    //     formField: 'tagAttrs.showType',
+    //     extraOption: {
+    //       options: showType,
+    //       props: {
+    //         key: 'value',
+    //         label: 'label',
+    //       },
+    //     },
+    //   },
+    // },
     {
       elRowAttrs: {
         gutter: 10,
@@ -801,6 +799,48 @@ export function BtnConfigFormOptions() {
         },
       },
     },
+
+    {
+      elRowAttrs: {
+        gutter: 10,
+      },
+      formItem: {
+        formItemAttrs: {
+          prop: 'extraOption.iconName',
+          label: '图标：',
+        },
+        slotName: 'iconName',
+      },
+    },
+
+    {
+      elRowAttrs: {
+        gutter: 10,
+      },
+      formItem: {
+        formItemAttrs: {
+          prop: 'extraOption.iconPosition',
+          label: '图标位置：',
+        },
+        tagName: 'el-radio-group',
+        tagAttrs: {
+          placeholder: '',
+        },
+        // 对应formData中的属性值
+        formField: 'extraOption.iconPosition',
+        extraOption: {
+          options: [
+            { label: 'icon前置', value: 'front' },
+            { label: 'icon后置', value: 'behind' },
+          ],
+          props: {
+            key: 'value',
+            label: 'label',
+          },
+        },
+      },
+    },
+
     {
       elRowAttrs: {
         gutter: 10,
@@ -854,7 +894,7 @@ export function BtnConfigFrom(custom = {}) {
       size: 'small',
       plain: true,
       round: false,
-      showType: 0,
+      icon: '',
     },
     extraOption: {
       btnType: '',
@@ -881,7 +921,11 @@ export function BtnConfigFrom(custom = {}) {
         params: [],
         data: [],
       },
+      iconPosition: 'front',
+      iconName: '',
     },
+    conentTextFrontTagOptions: {},
+    conentTextBehindTagOptions: {},
     // 点击按钮是否传递当前选中数据
     authorize: '',
     btnId: +new Date(),
