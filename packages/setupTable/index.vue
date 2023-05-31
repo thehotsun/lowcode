@@ -19,7 +19,8 @@
     <div class="btnDesign">
       <div class="btns">
         <span v-for="(item, index) in btnConfigArr" :key="item.renderId" style="display:inline-block">
-          <el-button type="" size="small" @click="handleBtnDetail(index)">{{ item.tagAttrs.value }}</el-button>
+          <el-button type="" size="small" :icon="item.tagAttrs.icon" @click="handleBtnDetail(index)">{{
+            item.tagAttrs.value }} <i :class="item?.contentTextBehindTagOptions?.className"></i></el-button>
           <i type="danger" class="el-icon-circle-close middle " @click="handleDelBtn(index)"></i>
         </span>
       </div>
