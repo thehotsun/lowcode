@@ -1240,7 +1240,8 @@ export default {
     filterFieldChange(val) {
       this.filterFiled = val;
     },
-    handleSetting() {
+    handleSetting(e) {
+      e.stopPropagation();
       this.showPanel = !this.showPanel;
     },
     submitForm() {
@@ -1248,6 +1249,11 @@ export default {
     },
     handleCancel() {
       this.$refs.VFRuntime.handleCancel();
+    },
+
+    handleGlobalClick() {
+      if (this.showPanel) this.showPanel = false;
+      console.log('handleGlobalClick');
     },
   },
 
@@ -1279,6 +1285,7 @@ export default {
       importFileVNode,
       fuzzySearchPlaceholder,
       handleFilter,
+      handleGlobalClick,
     } = this;
 
     const curPageListeners = {
@@ -1306,7 +1313,11 @@ export default {
     };
 
     return (
-      <el-container class="CompleteTable" style="height: 100%">
+      <el-container
+        class="CompleteTable"
+        style="height: 100%"
+        nativeOnClick={handleGlobalClick}
+      >
         {showSearchFrom ? (
           <el-header style="margin: 20px 0 0 0;" class="flex-header-height">
             {formOptions?.length ? (

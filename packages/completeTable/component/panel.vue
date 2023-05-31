@@ -1,5 +1,5 @@
 <template>
-  <div class="el-transfer-panel">
+  <div class="el-transfer-panel" @click.stop="panelClick">
     <div class="panel__body">
       <el-input class="el-transfer-panel__filter" v-model="query" size="small" :placeholder="placeholder"
         @mouseenter.native="inputHover = true" @mouseleave.native="inputHover = false">
@@ -100,6 +100,7 @@ export default {
 
 
   methods: {
+    panelClick () { },
     clearQuery () {
       if (this.inputIcon === 'circle-close') {
         this.query = '';
