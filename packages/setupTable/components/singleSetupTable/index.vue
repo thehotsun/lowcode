@@ -192,6 +192,8 @@ export default {
     }
   },
 
+  inject: ['queryGenerateMultiFieldSql'],
+
   watch: {
     rawTableData (val) {
       this.tableData = val;
@@ -379,14 +381,27 @@ export default {
     },
 
     fuzzySearchFieldListChange () {
-      this.querySql('input', true);
+      this.queryMultiFieldSql('input', true);
       this.setFuzzySearchPlaceholder();
     },
     handleSummaryRow () { },
 
     handleFuzzySearch () {
       this.dialogVisibleFuzzyFrom = true;
-      this.querySql('input', true);
+      this.queryMultiFieldSql('input', true);
+    },
+
+    queryMultiFieldSql (type = 'input') {
+      const params = {
+        listPageId: this.listPageId,
+        displayDataType: type,
+        fieldNameList: this.fuzzyFieldSearchConfig.searchFieldList
+      }
+      this.queryGenerateMultiFieldSql(params).then(res => {
+        this.$refs.ace.codeValue = this.wholeSQL = res.data.querySql
+        this.$refs.ace.aceEditor.setValue(this.wholeSQL)
+        this.suggestSQL = res.data.querySqlFragment;
+      })
     },
 
     rowDrop () {
@@ -540,7 +555,6 @@ export default {
       this.saveSql(this.listPageId, this.wholeSQL);
       this.handleCloseFuzzyFrom(false);
       this._originFuzzyFieldSearchConfig = cloneDeep(this.fuzzyFieldSearchConfig);
-      this.$emit('confirmFuzzyFrom', fuzzyFieldSearchConfig)
     },
 
     handleHideAll () {

@@ -278,6 +278,12 @@ export default {
   async mounted () {
     this.btnsColumnDrop()
   },
+  
+  errorCaptured (err) {
+    // 看着心烦，直接屏蔽，elform计算label值得时候得问题，在beforeDestroy周期里，不影响功能
+    if (err.message === '[ElementForm]unpected width ') return false;
+    else return true;
+  },
 
   methods: {
     async init (id = '', formCode) {
