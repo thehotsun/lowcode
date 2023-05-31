@@ -155,10 +155,6 @@ export default {
     },
 
     getCooperateComp({ tagName, ...options }) {
-      if (typeof tagName !== 'string') {
-        console.error('isCooperateComp方法传入的参数必须为字符串');
-        return false;
-      }
       // TODO 待添加，
       const renderFn = {
         'el-select': this.getSelectCompVNode,
@@ -333,15 +329,95 @@ export default {
       );
     },
 
+    // 配合组件是所有必须通过嵌套才能正常使用的组件
+    isCooperateComp(
+      tagName,
+      contentTextBehindTagOptions,
+      contentTextFrontTagOptions
+    ) {
+      if (typeof tagName !== 'string') {
+        console.error('isCooperateComp方法传入的参数必须为字符串');
+        return false;
+      }
+      // TODO 待添加，
+      const cooperateComp = [
+        'el-select',
+        'el-cascader',
+        'el-radio-group',
+        'el-checkbox-group',
+        'el-tooltip',
+      ];
+      return (
+        cooperateComp.indexOf(tagName) !== -1 &&
+        isEmpty(contentTextBehindTagOptions) &&
+        isEmpty(contentTextFrontTagOptions)
+      );
+    },
+
     //
     getSingleCompVNode(item) {
-      const { formData, getCooperateComp, onlyShow } = this;
+      const {
+        formData,
+        isCooperateComp,
+        getCooperateComp,
+        getPureSingleCompVNode,
+      } = this;
+      let {
+        // 自定义插槽
+        slotName,
+        // behindText和frontText为组件前后的文本，如需更复杂的自定义，请使用slotName
+        // 特殊组件的额外属性值例如select组件下的option组件所需的options
+        extraOption = {},
+        // 当前渲染组件（即Tag）所需的属性值
+        tagAttrs = {},
+        // 组件所需的监听事件
+        listeners = {},
+        // 需要绑定的formData的属性名
+        formField = '',
+        tagName,
+        // 接口处理
+        request = {},
+        contentTextFrontTagOptions = {},
+        contentTextBehindTagOptions = {},
+      } = item;
+      // isWrap防止无限循环
+      if (!listeners?.input?.isWrap) {
+        listeners.input = getHandleInput(formData, formField, listeners.input);
+      }
+      // 若tag为select这种需要别的标签配合使用的组件，则调用getCooperateComp方法
+      return (
+        <div>
+          {slotName
+            ? this.$scopedSlots[slotName]
+              ? this.$scopedSlots[slotName]({
+                  formData: formData,
+                })
+              : (console.warn(`slot : ${slotName} 未定义！`), '')
+            : isCooperateComp(
+                tagName,
+                contentTextBehindTagOptions,
+                contentTextFrontTagOptions
+              )
+            ? getCooperateComp({
+                tagName,
+                tagAttrs,
+                listeners,
+                formField,
+                extraOption,
+                request,
+              })
+            : getPureSingleCompVNode(item)}
+        </div>
+      );
+    },
+
+    // 不处理slot
+    getPureSingleCompVNode(item) {
+      const { formData, onlyShow } = this;
       let {
         // class和style不会被组件的attr所处理，会直接赋值到组件的根节点因此需要单独拿出来赋值
         className,
         style,
-        // 自定义插槽
-        slotName,
         // behindText和frontText为组件前后的文本，如需更复杂的自定义，请使用slotName
         behindText = '',
         frontText = '',
@@ -374,58 +450,35 @@ export default {
       const Tag = onlyShow ? 'span' : tagName;
       // 若tag为select这种需要别的标签配合使用的组件，则调用getCooperateComp方法
       return (
-        <div style="display: inline-block">
-          {slotName
-            ? this.$scopedSlots[slotName]
-              ? this.$scopedSlots[slotName]({
-                  formData: formData,
-                })
-              : (console.warn(`slot : ${slotName} 未定义！`), '')
-            : getCooperateComp({
-                tagName,
-                tagAttrs,
-                listeners,
-                formField,
-                extraOption,
-                request,
-              }) || (
-                <div style="display: inline-block">
-                  {frontText ? (
-                    <span style={frontTextStyle}>{frontText}</span>
-                  ) : null}
-
-                  <Tag
-                    value={model}
-                    style={style}
-                    class={className}
-                    {...{
-                      attrs: tagAttrs,
-                      on: listeners,
-                    }}
-                  >
-                    {isEmpty(contentTextFrontTagOptions)
-                      ? null
-                      : Array.isArray(contentTextFrontTagOptions)
-                      ? contentTextFrontTagOptions.map((options) =>
-                          this.getSingleCompVNode(options)
-                        )
-                      : this.getSingleCompVNode(contentTextFrontTagOptions)}
-                    {model || tagAttrs?.value || contentText}
-                    {isEmpty(contentTextBehindTagOptions)
-                      ? null
-                      : Array.isArray(contentTextBehindTagOptions)
-                      ? contentTextBehindTagOptions.map((options) =>
-                          this.getSingleCompVNode(options)
-                        )
-                      : this.getSingleCompVNode(contentTextBehindTagOptions)}
-                  </Tag>
-
-                  {behindText ? (
-                    <span style={behindTextStyle}>{behindText}</span>
-                  ) : null}
-                </div>
-              )}
-        </div>
+        <Tag
+          value={model}
+          style={style}
+          class={className}
+          {...{
+            attrs: tagAttrs,
+            on: listeners,
+          }}
+        >
+          {frontText ? <span style={frontTextStyle}>{frontText}</span> : null}
+          {isEmpty(contentTextFrontTagOptions)
+            ? null
+            : Array.isArray(contentTextFrontTagOptions)
+            ? contentTextFrontTagOptions.map((options) =>
+                this.getPureSingleCompVNode(options)
+              )
+            : this.getPureSingleCompVNode(contentTextFrontTagOptions)}
+          {contentText}
+          {isEmpty(contentTextBehindTagOptions)
+            ? null
+            : Array.isArray(contentTextBehindTagOptions)
+            ? contentTextBehindTagOptions.map((options) =>
+                this.getPureSingleCompVNode(options)
+              )
+            : this.getPureSingleCompVNode(contentTextBehindTagOptions)}
+          {behindText ? (
+            <span style={behindTextStyle}>{behindText}</span>
+          ) : null}
+        </Tag>
       );
     },
 

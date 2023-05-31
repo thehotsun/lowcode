@@ -170,39 +170,37 @@ export default {
               extraOption
             )
           ) : (
-            <div style="display: inline-block">
+            <Tag
+              value={model}
+              style={style}
+              class={className}
+              {...{
+                attrs: tagAttrs,
+                on: listeners,
+              }}
+            >
               {frontText ? (
                 <span style={frontTextStyle}>{frontText}</span>
               ) : null}
-              <Tag
-                value={model}
-                style={style}
-                class={className}
-                {...{
-                  attrs: tagAttrs,
-                  on: listeners,
-                }}
-              >
-                {isEmpty(contentTextFrontTagOptions)
-                  ? null
-                  : Array.isArray(contentTextFrontTagOptions)
-                  ? contentTextFrontTagOptions.map((options) =>
-                      this.getSingleCompVNode(options)
-                    )
-                  : this.getSingleCompVNode(contentTextFrontTagOptions)}
-                {model || tagAttrs?.value || contentText}
-                {isEmpty(contentTextBehindTagOptions)
-                  ? null
-                  : Array.isArray(contentTextBehindTagOptions)
-                  ? contentTextBehindTagOptions.map((options) =>
-                      this.getSingleCompVNode(options)
-                    )
-                  : this.getSingleCompVNode(contentTextBehindTagOptions)}
-              </Tag>
+              {isEmpty(contentTextFrontTagOptions)
+                ? null
+                : Array.isArray(contentTextFrontTagOptions)
+                ? contentTextFrontTagOptions.map((options) =>
+                    this.getSingleCompVNode(options)
+                  )
+                : this.getSingleCompVNode(contentTextFrontTagOptions)}
+              {model || tagAttrs?.value || contentText}
+              {isEmpty(contentTextBehindTagOptions)
+                ? null
+                : Array.isArray(contentTextBehindTagOptions)
+                ? contentTextBehindTagOptions.map((options) =>
+                    this.getSingleCompVNode(options)
+                  )
+                : this.getSingleCompVNode(contentTextBehindTagOptions)}
               {behindText ? (
                 <span style={behindTextStyle}>{behindText}</span>
               ) : null}
-            </div>
+            </Tag>
           )}
         </div>
       );
