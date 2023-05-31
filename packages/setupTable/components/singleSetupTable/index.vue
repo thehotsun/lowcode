@@ -181,6 +181,7 @@ export default {
         placeholder: '',
         searchFieldList: []
       },
+      _originFuzzyFieldSearchConfig: {},
       dialogVisibleFuzzyFrom: false
     };
   },
@@ -232,7 +233,8 @@ export default {
 
 
     expose_setFuzzyFieldSearchConfig (obj) {
-      this.fuzzyFieldSearchConfig = obj
+      this._originFuzzyFieldSearchConfig = obj
+      this.fuzzyFieldSearchConfig = cloneDeep(obj)
     },
 
     expose_getFormDesignData () {
@@ -527,7 +529,8 @@ export default {
       this.$emit('searchOptionsChange')
     },
 
-    handleCloseFuzzyFrom () {
+    handleCloseFuzzyFrom (resetConfig = true) {
+      if (resetConfig) this.fuzzyFieldSearchConfig = cloneDeep(this._originFuzzyFieldSearchConfig)
       this.dialogVisibleFuzzyFrom = false;
       this.wholeSQL = ''
       this.suggestSQL = ''
@@ -535,7 +538,9 @@ export default {
 
     confirmFuzzyFrom () {
       this.saveSql(this.listPageId, this.wholeSQL);
-      this.handleCloseFuzzyFrom();
+      this.handleCloseFuzzyFrom(false);
+      this._originFuzzyFieldSearchConfig = cloneDeep(this.fuzzyFieldSearchConfig);
+      this.$emit('confirmFuzzyFrom', fuzzyFieldSearchConfig)
     },
 
     handleHideAll () {
