@@ -887,7 +887,7 @@ export default {
           this.formId = relateFrom;
           this.onlyRead = btnType === 'check';
           this.dialogTitle =
-            dialogTitle || btnType === 'check' ? '查看' : '编辑';
+            dialogTitle || (btnType === 'check' ? '查看' : '编辑');
           break;
         default:
           break;
@@ -948,10 +948,10 @@ export default {
 
     disposeDownOrDel({ btnType }) {
       if (this.previewMode) return;
-      if (this.selectList.length === 0) {
+      if (this.selectList.length === 0 && btnType !== 'download') {
         return this.$warn('请至少勾选一条要处理的数据');
       }
-      if ([undefined, null].includes(this.selectList[0][this.keyField])) {
+      if ([undefined, null].includes(this.tableData[0][this.keyField])) {
         return this.$warn(
           '主键字段未取到值，请检查数据或重新在列表设计页面重新关联主键！'
         );
@@ -1227,8 +1227,11 @@ export default {
     },
 
     batchDel(list = []) {
-      this.requestBatchDel(list, this.listPageId).then((res) => {
+      this.requestBatchDel(list, this.listPageId).then(async (res) => {
         if (res.result === '0') {
+          if (this.tableData.length === list.length && this.page.pageNo > 1) {
+            this.page.pageNo--;
+          }
           this.$success('删除成功');
           this.queryTableData();
         }

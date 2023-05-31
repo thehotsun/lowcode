@@ -257,7 +257,7 @@ export function getSingleTableData() {
     searchWidget: '',
     isSearchWidget: false,
     searchWidgetConfig: {},
-    sort: false,
+    sort: true,
     'sort-method': '',
     filters: '',
     'filter-method': '',

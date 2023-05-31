@@ -625,7 +625,9 @@ export function BtnConfigFormOptions() {
           },
         },
         renderDependFn: function(formData) {
-          return formData.extraOption.btnType !== 'download';
+          return !['download', 'batchDel'].includes(
+            formData.extraOption.btnType
+          );
         },
       },
     },
