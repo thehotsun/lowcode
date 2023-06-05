@@ -665,6 +665,7 @@ export default {
 
     // 格式化高度宽度
     formatterWidthOrHeightStyle(length) {
+      length = length.trim();
       return length.slice(-2) === 'px'
         ? length
         : length.slice(-1) === '%'
