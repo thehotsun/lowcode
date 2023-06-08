@@ -107,6 +107,7 @@ export default {
       selectList: [],
       panelData: [],
       filterFiled: [],
+      externalParmas: {},
       keyField: '',
       onlyRead: false,
       previewMode: false,
@@ -522,11 +523,19 @@ export default {
       this.queryTableData();
     },
 
-    refresh(data) {
-      this.queryTableData(data).then(() => {
+    refreshData(data) {
+      this.externalParmas = data;
+      this.queryTableData().then(() => {
         this.$success('刷新成功');
       });
     },
+
+    refresh() {
+      this.queryTableData().then(() => {
+        this.$success('刷新成功');
+      });
+    },
+
     // 获取列表数据接口参数
     getParams(data) {
       const extraParams = {};
@@ -560,6 +569,7 @@ export default {
         ...data,
         ...this.searchFrom,
         ...extraParams,
+        ...this.externalParmas,
         multiFieldSearch: this.multiFieldSearch,
       };
     },
