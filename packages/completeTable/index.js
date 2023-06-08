@@ -213,9 +213,12 @@ export default {
     expose_preview(data) {
       this.previewMode = true;
       this.parseTableConfig(data);
-      const tableData = {};
-      this.composeData(tableData);
-      this.tableData = [tableData];
+      const tableSingleData = {};
+      this.composeData(tableSingleData);
+      this.tableData = [tableSingleData];
+      // for (let index = 0; index < 10; index++) {
+      //   this.tableData.push(tableSingleData);
+      // }
     },
 
     resetFromData() {
@@ -256,9 +259,12 @@ export default {
         await this.$nextTick();
       }
       if (isPreview) {
-        const tableData = {};
-        this.composeData(tableData);
-        this.tableData = [tableData];
+        const tableSingleData = {};
+        this.composeData(tableSingleData);
+        this.tableData = [];
+        for (let index = 0; index < 10; index++) {
+          this.tableData.push(tableSingleData);
+        }
       } else {
         this.queryTableData();
         this.composeData();
@@ -665,12 +671,15 @@ export default {
 
     // 格式化高度宽度
     formatterWidthOrHeightStyle(length) {
-      length = length.trim();
-      return length.slice(-2) === 'px'
-        ? length
-        : length.slice(-1) === '%'
-        ? length
-        : `${length}px`;
+      if (typeof length === 'string') length = length.trim();
+      if (/^\d+$/.test(length)) {
+        return `${length}px`;
+      } else if (/^\d+(%|px)?$/.test(length)) {
+        return length;
+      } else {
+        console.warn('输入的高度或者宽度格式不正确！');
+        return '';
+      }
     },
 
     validateSelectList({ paramName, paramType, deliverySelectList, validate }) {

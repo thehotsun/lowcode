@@ -265,7 +265,7 @@ export default {
     };
   },
 
-  inject: ['componentList'],
+  inject: ['componentDicList'],
 
   watch: {
     showSearchFromArea (val) {
@@ -278,7 +278,7 @@ export default {
   async mounted () {
     this.btnsColumnDrop()
   },
-  
+
   errorCaptured (err) {
     // 看着心烦，直接屏蔽，elform计算label值得时候得问题，在beforeDestroy周期里，不影响功能
     if (err.message === '[ElementForm]unpected width ') return false;
@@ -585,7 +585,7 @@ export default {
         this.$refs.setupBtnConfig.expose_setExtraOption(this._flowListExtraOption, 'extraOption.flowKey')
         // 配置关联的组件列表下拉框
         this.$refs.setupBtnConfig.expose_setExtraOption({
-          options: this.componentList,
+          options: this.componentDicList,
         }, 'extraOption.relateComponent')
         // 配置权限下拉框
         this.$refs.setupBtnConfig.expose_setExtraOption(this._btnAuthorize, 'authorize')
