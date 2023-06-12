@@ -33,6 +33,7 @@ export default {
     },
 
   },
+  inject: ['Ace'],
   mounted () {
     //ace.config.set('basePath', 'https://ks3-cn-beijing.ksyun.com/vform2021/ace')
     ace.config.set('basePath', 'https://ks3-cn-beijing.ksyun.com/vform2021/ace-mini')

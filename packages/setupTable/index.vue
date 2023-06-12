@@ -137,9 +137,7 @@ import {
   setColSpan
 } from '../../utils';
 import { align, searchWidget } from '../../baseConfig/tableSelectConfigs';
-import { getElBtnConfig } from '../../baseConfig/widgetBaseConfig';
 import { merge } from "lodash"
-import Sortable from "sortablejs"
 export default {
   name: 'setupTable',
   components: {
@@ -265,8 +263,7 @@ export default {
     };
   },
 
-  inject: ['componentDicList'],
-
+  inject: ['componentDicList', 'Sortable'],
   watch: {
     showSearchFromArea (val) {
       if (val) {
@@ -319,7 +316,7 @@ export default {
     btnsColumnDrop () {
       // 此时找到的元素是要拖拽元素的父容器
       const dom = document.querySelector('.btnDesign .btns');
-      Sortable.create(dom, {
+      this.Sortable.create(dom, {
         onEnd: e => {
           //e.oldIndex为拖动一行原来的位置，e.newIndex为拖动后新的位置
           const targetRow = this.btnConfigArr.splice(e.oldIndex, 1)[0];
@@ -332,7 +329,7 @@ export default {
     searchAreaDrop () {
       // 此时找到的元素是要拖拽元素的父容器
       const dom = document.querySelector('.searchArea .el-form .el-row');
-      Sortable.create(dom, {
+      this.Sortable.create(dom, {
         handle: '.el-form-item__label',
         onEnd: e => {
           //e.oldIndex为拖动一行原来的位置，e.newIndex为拖动后新的位置

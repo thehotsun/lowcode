@@ -19,7 +19,6 @@
 </template>
 
 <script>
-import Sortable from "sortablejs"
 
 export default {
   name: 'panel',
@@ -94,6 +93,8 @@ export default {
     }
   },
 
+  inject: ['Sortable'],
+
   mounted () {
     this.rowDrop()
   },
@@ -111,7 +112,7 @@ export default {
       // 此时找到的元素是要拖拽元素的父容器
       const dom = document.querySelector('.el-transfer-panel__list');
       const key = this.keyProp
-      Sortable.create(dom, {
+      this.Sortable.create(dom, {
         onEnd: e => {
           //e.oldIndex为拖动一行原来的位置，e.newIndex为拖动后新的位置
           const targetRow = this.filteredData.splice(e.oldIndex, 1)[0];

@@ -1,16 +1,12 @@
 import {
   getter,
   getHandleInput,
-  setPlaceholder,
   str2obj,
-  exec,
   str2Fn,
 } from '../../utils';
-import codemirror from '../components/codemirror';
 import { isEmpty, cloneDeep } from 'lodash';
 export default {
   name: 'BaseRenderForm',
-  components: { codemirror },
   props: {
     generalRequest: {
       type: Function,

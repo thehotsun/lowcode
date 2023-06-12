@@ -631,7 +631,7 @@ export function getSetupForm(searchWidgetName) {
   return form;
 }
 
-function getSummaries(param) {
+export function getSummaries(param) {
   const { columns, data } = param;
   const sums = [];
   columns.forEach((column, index) => {

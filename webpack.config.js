@@ -35,21 +35,21 @@ module.exports = {
     },
     extensions: ['.js', '.vue'],
   },
-  // optimization: {
-  //   minimize: true,
-  //   minimizer: [
-  //     new TerserPlugin({
-  //       // test: /\.min\.js$/,
-  //       terserOptions: {
-  //         compress: {
-  //           drop_console: true, // 去除 console
-  //           drop_debugger: true,
-  //           pure_funcs: ['console.log'], // 移除console
-  //         },
-  //       },
-  //     }),
-  //   ],
-  // },
+  optimization: {
+    minimize: true,
+    minimizer: [
+      new TerserPlugin({
+        test: /\.min\.js$/,
+        terserOptions: {
+          compress: {
+            drop_console: true, // 去除 console
+            drop_debugger: true,
+            pure_funcs: ['console.log'], // 移除console
+          },
+        },
+      }),
+    ],
+  },
   module: {
     rules: [
       {

@@ -78,7 +78,7 @@
           </el-form>
         </div>
         <div class="right">
-          <code-editor ref="ace" v-model="wholeSQL"></code-editor>
+          <sql-code-editor ref="ace" v-model="wholeSQL"></sql-code-editor>
         </div>
       </div>
       <span slot="footer" class="dialog-footer">
@@ -112,7 +112,7 @@
           </el-form>
         </div>
         <div class="right">
-          <code-editor ref="ace" v-model="wholeSQL"></code-editor>
+          <sql-code-editor ref="ace" v-model="wholeSQL"></sql-code-editor>
         </div>
       </div>
       <span slot="footer" class="dialog-footer">
@@ -129,22 +129,18 @@ import BaseRenderTable from '../../../../packages/BaseRenderTable/index';
 import BaseRenderForm from '../../../../packages/BaseRenderForm/index';
 import { getSingleTableData, editConf as tableOptions } from '../../../../baseConfig/tableBaseConfig'
 import { searchWidget } from '../../../../baseConfig/tableSelectConfigs';
-import codeEditor from '../../../components/sqlCodeMirror';
 
 import {
   str2obj, getSetupForm,
   getSetupFormOptions, setPlaceholder
 } from '../../../../utils';
-import { cloneDeep } from "lodash"
-import Sortable from "sortablejs"
-import { merge } from "lodash"
+import { cloneDeep, merge } from "lodash"
 
 export default {
   name: 'singleSetupTable',
   components: {
     BaseRenderTable,
     BaseRenderForm,
-    codeEditor
   },
   props: {
     listPageId: String,
@@ -192,7 +188,7 @@ export default {
     }
   },
 
-  inject: ['queryGenerateMultiFieldSql'],
+  inject: ['queryGenerateMultiFieldSql', 'Sortable'],
 
   watch: {
     rawTableData (val) {
@@ -407,7 +403,7 @@ export default {
     rowDrop () {
       // 此时找到的元素是要拖拽元素的父容器
       const dom = document.querySelector('.el-table__body-wrapper tbody');
-      Sortable.create(dom, {
+      this.Sortable.create(dom, {
         handle: ".renderwrap .my-handle",
         onEnd: e => {
           //e.oldIndex为拖动一行原来的位置，e.newIndex为拖动后新的位置

@@ -14,10 +14,17 @@ $ npm install @viva3la3vida/base-render
 import elementUI from "element-ui";
 import "./styles/element-variables.scss";
 Vue.use(elementUI);
-import formCreate from "@form-create/element-ui";
-Vue.use(formCreate);
-import FcDesigner from "form-create-designer";
-Vue.use(FcDesigner);
+import jsCodeEditor from "@/CommonDP/components/jsCodeEditor"
+Vue.component(jsCodeEditor.name, jsCodeEditor);
+import sqlCodeEditor from "@/CommonDP/components/sqlCodeEditor";
+Vue.component(sqlCodeEditor.name, sqlCodeEditor);
+
+// 表单预览态 全局组件
+import VFPreview from "@/CommonDP/pages/mainMg/lowcode/component/vFormRender-preview.vue";
+Vue.component("VFPreview", VFPreview);
+// 表单运行态 全局组件
+import VFRuntime from "@/CommonDP/pages/mainMg/lowcode/component/vFormRender.vue";
+Vue.component("VFRuntime", VFRuntime);
 ```
 
 <h6> 按需引入

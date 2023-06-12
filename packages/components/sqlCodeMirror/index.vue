@@ -44,11 +44,6 @@ export default {
 
   },
   mounted () {
-    //ace.config.set('basePath', 'https://ks3-cn-beijing.ksyun.com/vform2021/ace')
-    ace.config.set('basePath', 'https://ks3-cn-beijing.ksyun.com/vform2021/ace-mini')
-
-    this.addAutoCompletion(ace)  //添加自定义代码提示！！
-
     this.aceEditor = ace.edit(this.$refs.ace, {
       maxLines: 20, // 最大行数，超过会自动出现滚动条
       minLines: 5, // 最小行数，还未到最大行数时，编辑器会自动伸缩大小
@@ -98,24 +93,24 @@ export default {
   //   }
   // },
   methods: {
-    addAutoCompletion (ace) {
-      let acData = [
-        { meta: 'VForm API', caption: 'getWidgetRef', value: 'getWidgetRef()', score: 1 },
-        { meta: 'VForm API', caption: 'getFormRef', value: 'getFormRef()', score: 1 },
-        { meta: 'VForm API', caption: 'getParentFormRef', value: 'getParentFormRef()', score: 1 },
-        //TODO: 待补充！！
-      ]
-      let langTools = ace.require('ace/ext/language_tools')
-      langTools.addCompleter({
-        getCompletions: function (editor, session, pos, prefix, callback) {
-          if (prefix.length === 0) {
-            return callback(null, []);
-          } else {
-            return callback(null, acData);
-          }
-        }
-      })
-    },
+    // addAutoCompletion (ace) {
+    //   let acData = [
+    //     { meta: 'VForm API', caption: 'getWidgetRef', value: 'getWidgetRef()', score: 1 },
+    //     { meta: 'VForm API', caption: 'getFormRef', value: 'getFormRef()', score: 1 },
+    //     { meta: 'VForm API', caption: 'getParentFormRef', value: 'getParentFormRef()', score: 1 },
+    //     //TODO: 待补充！！
+    //   ]
+    //   let langTools = ace.require('ace/ext/language_tools')
+    //   langTools.addCompleter({
+    //     getCompletions: function (editor, session, pos, prefix, callback) {
+    //       if (prefix.length === 0) {
+    //         return callback(null, []);
+    //       } else {
+    //         return callback(null, acData);
+    //       }
+    //     }
+    //   })
+    // },
 
     setJsonMode () {
       this.aceEditor.getSession().setMode('ace/mode/json')

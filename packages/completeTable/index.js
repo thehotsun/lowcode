@@ -523,11 +523,10 @@ export default {
       this.queryTableData();
     },
 
+    // 持久化的外部参数存储
     refreshData(data) {
       this.externalParmas = data;
-      this.queryTableData().then(() => {
-        this.$success('刷新成功');
-      });
+      this.queryTableData();
     },
 
     refresh() {
@@ -574,7 +573,7 @@ export default {
       };
     },
 
-    // data为外界组件执行某些行为触发更新的参数
+    // data为外界组件执行某些行为触发更新的参数(一次性参数，不会存储，如果点击分页就会消失，持久化的外部参数存储请使用refreshData方法)
     queryTableData(data = {}) {
       const params = this.getParams(data);
       return (this.tableAttrs.showPagination

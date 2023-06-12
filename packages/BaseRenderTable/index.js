@@ -1,15 +1,10 @@
 import './table.less';
-import { str2obj, decorator } from '../../utils';
+import { decorator } from '../../utils';
 import { omit } from 'lodash';
-import codeEditor from '../components/codemirror';
-// import Vue from 'vue/dist/vue.min.js';
-// import ElementUI from 'element-ui';
-// import 'element-ui/lib/theme-chalk/index.css';
-// Vue.use(ElementUI);
+
 import { h } from 'vue';
 export default {
   name: 'BaseRenderTable',
-  components: { codeEditor },
   data() {
     return {
       zanwu: require('@/assets/noData.png'),
@@ -465,13 +460,13 @@ export default {
               attrs: { ...defaultDialogAttrs },
             }}
           >
-            <code-editor
+            <js-code-editor
               mode="javascript"
               readonly={false}
               value={codeValue.row[codeValue.prop]}
               ref="chEditor"
               {...{ on: codeEditorListeners }}
-            ></code-editor>
+            ></js-code-editor>
           </el-dialog>
         ) : null}
       </div>
