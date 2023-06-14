@@ -1264,7 +1264,7 @@ export default {
       if (target) {
         this.disposeDynamicEvent(target.extraOption, row);
       } else {
-        this.$warn('当前页面未配置openType为check的按钮！')
+        console.warn('当前页面未配置openType为check的按钮！');
       }
     },
   },
