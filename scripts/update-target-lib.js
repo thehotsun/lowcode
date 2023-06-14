@@ -2,8 +2,7 @@ const path = require('path');
 const fs = require('fs');
 
 const targetDir =
-  process.argv[2] ||
-  '../../../prj/commondp-web/node_modules/@viva3la3vida/base-render/lib';
+  process.argv[2] || '../../../prj/commondp-web/src/CommonDP/lib/tableDesign';
 
 const targetDirArr = [
   '../../../prj/tablepro/baseConfig',

@@ -119,6 +119,29 @@
               </el-option>
             </el-select>
           </el-form-item>
+
+          <el-form-item label="单击列展示详情" prop="clickRowShowDetialDialog">
+            <el-tooltip slot="label" class="item" effect="dark"
+              content="开启此功能后，单击列表的某行数据会调用其查看按钮相关功能（如果有），不开启此功能，则默认为双击时触发" placement="top-start">
+              <span style="cursor: pointer;font-size: 14px">单击列展示详情</span>
+            </el-tooltip>
+            <el-switch v-model="tableAttrs.clickRowShowDetialDialog" />
+          </el-form-item>
+
+          <el-form-item label="自定义样式" prop="style">
+            <el-input v-model="tableAttrs.style" type="textarea" :rows="2"
+              placeholder="请输入整体样式（包括列表、搜索区域和按钮区域）"></el-input>
+          </el-form-item>
+
+
+          <!-- <el-form-item label="列表自定义样式" prop="elTableStyle">
+            <el-tooltip slot="label" class="item" effect="dark"
+              content="开启此功能后，单击列表的某行数据会调用其查看按钮相关功能（如果有），不开启此功能，则默认为双击时触发" placement="top-start">
+              <span style="cursor: pointer;font-size: 14px"></span>
+            </el-tooltip>
+            <el-input v-model="tableAttrs.elTableStyle" type="textarea" :rows="2"
+              placeholder="请输入列表样式（包括列表、搜索区域和按钮区域）"></el-input>
+          </el-form-item> -->
         </el-form>
       </div>
     </el-dialog>
@@ -126,7 +149,7 @@
 </template>
 
 <script>
-import { getSingleTableData } from '../../baseConfig/tableBaseConfig'
+import { getSingleTableData, getTableAttrs } from '../../baseConfig/tableBaseConfig'
 import completeTable from '../completeTable';
 import setupBtnConfig from './components/setupBtnConfig';
 import singleSetupTable from './components/singleSetupTable';
@@ -223,24 +246,7 @@ export default {
       direction: 'rtl',
       drawer: false,
       rules: {},
-      tableAttrs: {
-        showPagination: true,
-        isShowIndex: true,
-        isShowCheckbox: true,
-        index: '',
-        stripe: true,
-        border: true,
-        showSummary: false,
-        summaryMethod: '',
-        size: '',
-        isTree: false,
-        treeProps: '',
-        rowKey: '',
-        lazy: false,
-        load: '',
-        isMerge: false,
-        spanMethod: ''
-      },
+      tableAttrs: getTableAttrs(),
       // 主键
       keyField: '',
       sizeOptions: [{

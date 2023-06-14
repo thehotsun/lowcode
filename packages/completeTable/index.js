@@ -6,6 +6,8 @@ import panel from './component/panel.vue';
 import { align, searchWidget } from '../../baseConfig/tableSelectConfigs';
 import { requestTypeList } from '../../baseConfig/btnBaseConfig';
 
+import { getTableAttrs } from '../../baseConfig/tableBaseConfig';
+
 import {
   getHandleInput,
   getWidgetOptions,
@@ -113,25 +115,7 @@ export default {
       previewMode: false,
       relateComponent: null,
       deliverySelectList: false,
-      tableAttrs: {
-        // 初始化是否显示分页
-        showPagination: false,
-        isShowCheckbox: false,
-        isShowIndex: false,
-        index: '',
-        stripe: false,
-        border: false,
-        showSummary: false,
-        summaryMethod: getSummaries,
-        size: '',
-        isTree: false,
-        treeProps: '',
-        rowKey: '',
-        lazy: false,
-        load: '',
-        isMerge: false,
-        spanMethod: '',
-      },
+      tableAttrs: {},
     };
   },
 
@@ -163,6 +147,9 @@ export default {
       if (!this.tableAttrs.isMerge) {
         props.push('spanMethod');
       }
+      if (!this.tableAttrs.elTableStyle) {
+        props.push('elTableStyle');
+      }
       return omit(this.tableAttrs, props);
     },
 
@@ -189,6 +176,9 @@ export default {
     },
   },
 
+  created() {
+    this.initTableAttrs();
+  },
   mounted() {
     // this.init()
   },
@@ -220,6 +210,11 @@ export default {
       // for (let index = 0; index < 10; index++) {
       //   this.tableData.push(tableSingleData);
       // }
+    },
+
+    initTableAttrs() {
+      this.tableAttrs = getTableAttrs();
+      this.tableAttrs.summaryMethod = getSummaries;
     },
 
     resetFromData() {
@@ -316,25 +311,7 @@ export default {
         pageSize: 10,
         totalCount: 0,
       };
-      this.tableAttrs = {
-        // 初始化是否显示分页
-        showPagination: false,
-        isShowCheckbox: false,
-        isShowIndex: false,
-        index: '',
-        stripe: false,
-        border: false,
-        showSummary: false,
-        summaryMethod: getSummaries,
-        size: '',
-        isTree: false,
-        treeProps: '',
-        rowKey: '',
-        lazy: false,
-        load: '',
-        isMerge: false,
-        spanMethod: '',
-      };
+      this.initTableAttrs();
     },
 
     setSingleTableOptions(item, emptyData) {
@@ -884,7 +861,7 @@ export default {
       }
     },
 
-    disposeDynamicEvent({ btnType, relateFrom, dialogTitle }) {
+    disposeDynamicEvent({ btnType, relateFrom, dialogTitle }, rowData) {
       switch (btnType) {
         case 'add':
           this.expose_showDialog();
@@ -895,8 +872,12 @@ export default {
           break;
         case 'check':
         case 'edit':
-          this.primaryKeyValue =
-            this.selectList[0] && this.selectList[0][this.keyField];
+          if (rowData) {
+            this.primaryKeyValue = rowData[this.keyField];
+          } else {
+            this.primaryKeyValue =
+              this.selectList[0] && this.selectList[0][this.keyField];
+          }
           if ([undefined, null].includes(this.primaryKeyValue)) {
             return this.$warn(
               '主键字段未取到值，请检查数据或在列表设计页面重新关联主键！'
@@ -1274,6 +1255,18 @@ export default {
       if (this.showPanel) this.showPanel = false;
       console.log('handleGlobalClick');
     },
+
+    showCheckDialog(row) {
+      console.log('showCheckDialog', row);
+      const target = this.btnRegularOptions[0]?.formItem?.find(
+        (btnOptions) => btnOptions.extraOption.btnType === 'check'
+      );
+      if (target) {
+        this.disposeDynamicEvent(target.extraOption, row);
+      } else {
+        this.$warn('当前页面未配置openType为check的按钮！')
+      }
+    },
   },
 
   render() {
@@ -1305,6 +1298,7 @@ export default {
       fuzzySearchPlaceholder,
       handleFilter,
       handleGlobalClick,
+      showCheckDialog,
     } = this;
 
     const curPageListeners = {
@@ -1314,6 +1308,19 @@ export default {
       'size-change': handleSizeChange,
       'current-change': handleCurrentChange,
     };
+    console.log(
+      tableAttrs.clickRowShowDetialDialog,
+      'tableAttrs.clickRowShowDetialDialog'
+    );
+    const tableEvent = tableAttrs.clickRowShowDetialDialog
+      ? {
+          'row-click': showCheckDialog,
+          'selection-change': selectListHandler,
+        }
+      : {
+          'row-dblclick': showCheckDialog,
+          'selection-change': selectListHandler,
+        };
 
     const scopedSlots = {
       operator: ({ row }) => {
@@ -1334,7 +1341,7 @@ export default {
     return (
       <el-container
         class="CompleteTable"
-        style="height: 100%"
+        style={tableAttrs.style}
         nativeOnClick={handleGlobalClick}
       >
         {showSearchFrom ? (
@@ -1417,7 +1424,7 @@ export default {
                 table-options={filterTableOptions}
                 {...{
                   on: {
-                    'selection-change': selectListHandler,
+                    ...tableEvent,
                   },
                 }}
                 {...{

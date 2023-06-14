@@ -1,6 +1,32 @@
 // tableOptions中的item，可以理解为传给el-table-column中的attrs，要注意区分书写格式，例如min-width不要写成驼峰格式
 
 import { align, searchWidget, fixed } from './tableSelectConfigs';
+
+export function getTableAttrs() {
+  return {
+    // 初始化是否显示分页
+    showPagination: true,
+    isShowIndex: true,
+    isShowCheckbox: true,
+    index: '',
+    stripe: true,
+    border: true,
+    showSummary: false,
+    summaryMethod: '',
+    size: '',
+    isTree: false,
+    treeProps: '',
+    rowKey: '',
+    lazy: false,
+    load: '',
+    isMerge: false,
+    spanMethod: '',
+    clickRowShowDetialDialog: false,
+    style: '',
+    elTableStyle: '',
+  };
+}
+
 const getTextareaAttrs = (placeholder) => {
   return {
     autosize: true,
@@ -237,7 +263,7 @@ function getEditConf() {
         return `<div style="display: inline-block;"><span>{{column.label}}</span><el-tooltip content="${content}"><i style="width: 20px" class="el-icon-question"/></el-tooltip></div>`;
       };
     }
-    item.listeners = {}
+    item.listeners = {};
     return item;
   });
 }
