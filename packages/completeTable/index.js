@@ -113,6 +113,9 @@ export default {
       keyField: '',
       onlyRead: false,
       previewMode: false,
+      curDialogCompRef: '',
+      useDialog: true,
+      showFooter: false,
       relateComponent: null,
       deliverySelectList: false,
       tableAttrs: {},
@@ -174,6 +177,10 @@ export default {
       );
       return [...configOptions, ...options];
     },
+  },
+
+  provide: {
+    tableRenderInstance: this,
   },
 
   created() {
@@ -711,6 +718,8 @@ export default {
       requestBeforeConfirmHint = false,
       requestBeforeConfirmText = '',
       requestParamsConfig = {},
+      useDialog = true,
+      showFooter = false,
     }) {
       const {
         validateSelectList,
@@ -736,6 +745,8 @@ export default {
       this.formId = '';
       this.relateComponent = '';
       this.importFileCompRelateTableName = '';
+      this.useDialog = true;
+      this.showFooter = false;
       await this.$nextTick();
       // 如果有自定义事件，则执行自定义事件
       if (fn) {
@@ -772,7 +783,7 @@ export default {
             '_blank'
           );
         } else if (openType === 4) {
-          // openType为2是打开本地关联代码
+          // openType为4是打开本地关联代码
           if (
             validateSelectList({
               paramName,
@@ -781,7 +792,12 @@ export default {
               validate,
             })
           ) {
-            disposeRelateCompEvent(relateComponent);
+            disposeRelateCompEvent({
+              relateComponent,
+              useDialog,
+              showFooter,
+              dialogTitle,
+            });
           }
         } else if (openType === 5) {
           // openType为5是直接调用接口
@@ -833,11 +849,30 @@ export default {
       }
     },
 
-    disposeRelateCompEvent(relateComponent) {
-      this.expose_showDialog();
+    disposeRelateCompEvent({
+      relateComponent,
+      useDialog,
+      showFooter,
+      dialogTitle,
+    }) {
+      if (!useDialog) {
+        setTimeout(() => {
+          try {
+            console.log(this.$refs);
+            this.$refs.relateComponent.expose_showDialog();
+          } catch (error) {
+            console.warn('调用本地组件的expose_showDialog方法错误', error);
+          }
+        }, 100);
+      } else {
+        this.expose_showDialog();
+      }
       this.relateComponent = this.componentList.find(
         (item) => item.id === relateComponent
       )?.component;
+      this.useDialog = useDialog;
+      this.showFooter = showFooter;
+      this.dialogTitle = dialogTitle || '新增';
     },
 
     async disposeFlowEvent(flowKey) {
@@ -983,6 +1018,7 @@ export default {
       } = this;
       const baseAttrs = this.getExternalCompBaseAttrs();
       if (formId) {
+        this.curDialogCompRef = previewMode ? 'VFPreview' : 'VFRuntime';
         return previewMode ? (
           <VFPreview
             ref={'VFPreview'}
@@ -1032,6 +1068,9 @@ export default {
         previewMode,
         onlyRead,
         formId,
+        relateComponent,
+        useDialog,
+        showFooter,
         dynamicFormVNode,
         relateComponentVNode,
         expose_hideDialog,
@@ -1039,6 +1078,11 @@ export default {
         handleCancel,
         formatterWidthOrHeightStyle,
       } = this;
+      // 如果是关联本地组件且不使用本组件提供的弹窗
+      if (relateComponent && !useDialog) {
+        console.log(relateComponent, useDialog);
+        return relateComponentVNode();
+      }
       if (btnRelateDialogVisible) {
         const visibleListeners = {
           // 关键代码 - 1
@@ -1075,8 +1119,10 @@ export default {
               {dynamicFormVNode()}
               {relateComponentVNode()}
             </div>
-            {/* 只有非只读非预览且是动态表单才会渲染footer */}
-            {!onlyRead && !previewMode && formId ? (
+            {/* 只有非只读非预览且是动态表单或本地组件且showFooter为true才会渲染footer */}
+            {!onlyRead &&
+            !previewMode &&
+            (formId || (relateComponent && showFooter)) ? (
               <span slot="footer">
                 <el-button
                   type="primary"
@@ -1154,14 +1200,29 @@ export default {
     },
 
     relateComponentVNode() {
+      console.log('........', this.relateComponent);
+
       if (this.relateComponent) {
-        const { relateComponent: RelateComponent } = this;
+        this.curDialogCompRef = 'relateComponent';
+        const {
+          relateComponent: RelateComponent,
+          expose_hideDialog,
+          onSubmit,
+          dialogTitle,
+        } = this;
         const baseAttrs = this.getExternalCompBaseAttrs();
         return (
           <RelateComponent
             {...{
               attrs: {
                 ...baseAttrs,
+              },
+            }}
+            dialogTitle={dialogTitle}
+            {...{
+              on: {
+                submit: onSubmit,
+                cancel: expose_hideDialog,
               },
             }}
             ref="relateComponent"
@@ -1188,6 +1249,8 @@ export default {
           requestBeforeConfirmHint,
           requestBeforeConfirmText,
         },
+        tableData: this.tableData,
+        externalParmas: this.externalParmas,
       };
       if (this.deliverySelectList) {
         config = Object.assign(config, {
@@ -1245,10 +1308,10 @@ export default {
       this.showPanel = !this.showPanel;
     },
     submitForm() {
-      this.$refs.VFRuntime.submitForm();
+      this.$refs[this.curDialogCompRef]?.submitForm();
     },
     handleCancel() {
-      this.$refs.VFRuntime.handleCancel();
+      this.$refs[this.curDialogCompRef]?.handleCancel();
     },
 
     handleGlobalClick() {

@@ -81,6 +81,38 @@ export const yesOrNo = [
   },
 ];
 
+const dialogAttrRenderDependFn = function(formData) {
+  return (
+    [0, 2].includes(formData.extraOption.openType) ||
+    (formData.extraOption.openType === 4 && formData.extraOption.useDialog)
+  );
+};
+
+const requestBeforeConfirmRenderDependFn = function(formData) {
+  return (
+    formData.extraOption.btnType !== 'download' &&
+    !(
+      (formData.extraOption.openType === 4 &&
+        formData.extraOption.useDialog &&
+        !formData.extraOption.showFooter) ||
+      (formData.extraOption.openType === 4 && !formData.extraOption.useDialog)
+    )
+  );
+};
+
+const deliverySelectListRenderDependFn = function(formData) {
+  return formData.extraOption.deliverySelectList;
+};
+
+const excludeDownAndDelRenderDependFn = function(formData) {
+  return !['download', 'batchDel'].includes(formData.extraOption.btnType);
+};
+
+const expectOpenTypeRenderDependFnGenerator = (openType) =>
+  function(formData) {
+    return formData.extraOption.openType === openType;
+  };
+
 export function BtnConfigFormOptions() {
   return [
     {
@@ -205,9 +237,7 @@ export function BtnConfigFormOptions() {
           params: '',
           status: 'pending',
         },
-        renderDependFn: function(formData) {
-          return formData.extraOption.openType === 0;
-        },
+        renderDependFn: expectOpenTypeRenderDependFnGenerator(0),
       },
     },
 
@@ -285,9 +315,7 @@ export function BtnConfigFormOptions() {
           params: '',
           status: 'pending',
         },
-        renderDependFn: function(formData) {
-          return formData.extraOption.openType === 4;
-        },
+        renderDependFn: expectOpenTypeRenderDependFnGenerator(4),
       },
     },
 
@@ -397,11 +425,7 @@ export function BtnConfigFormOptions() {
         },
         // 对应formData中的属性值
         formField: 'extraOption.requestUrl',
-        renderDependFn: function(formData) {
-          return !['download', 'batchDel'].includes(
-            formData.extraOption.btnType
-          );
-        },
+        renderDependFn: excludeDownAndDelRenderDependFn,
       },
     },
 
@@ -434,48 +458,6 @@ export function BtnConfigFormOptions() {
           params: '',
           status: 'pending',
         },
-        renderDependFn: function(formData) {
-          return formData.extraOption.btnType !== 'download';
-        },
-      },
-    },
-    {
-      elRowAttrs: {
-        gutter: 10,
-      },
-      formItem: {
-        formItemAttrs: {
-          prop: 'extraOption.requestBeforeConfirmHint',
-          label: '提交前弹出对话框：',
-        },
-        tagName: 'el-switch',
-        tagAttrs: {},
-        // 对应formData中的属性值
-        formField: 'extraOption.requestBeforeConfirmHint',
-        extraOption: {},
-        renderDependFn: function(formData) {
-          return formData.extraOption.btnType !== 'download';
-        },
-      },
-    },
-
-    {
-      elRowAttrs: {
-        gutter: 10,
-      },
-      formItem: {
-        formItemAttrs: {
-          prop: 'extraOption.requestBeforeConfirmText',
-          label: '提示文本：',
-        },
-        tagName: 'el-input',
-        style: 'width: 180px',
-        tagAttrs: {
-          type: 'textarea',
-          placeholder: '',
-        },
-        // 对应formData中的属性值
-        formField: 'extraOption.requestBeforeConfirmText',
         renderDependFn: function(formData) {
           return formData.extraOption.btnType !== 'download';
         },
@@ -524,9 +506,7 @@ export function BtnConfigFormOptions() {
         tagAttrs: {
           placeholder: '请输入参数名',
         },
-        renderDependFn: function(formData) {
-          return formData.extraOption.deliverySelectList;
-        },
+        renderDependFn: deliverySelectListRenderDependFn,
       },
     },
 
@@ -561,9 +541,7 @@ export function BtnConfigFormOptions() {
             label: 'cnName',
           },
         },
-        renderDependFn: function(formData) {
-          return formData.extraOption.deliverySelectList;
-        },
+        renderDependFn: deliverySelectListRenderDependFn,
       },
     },
 
@@ -596,9 +574,7 @@ export function BtnConfigFormOptions() {
             label: 'cnName',
           },
         },
-        renderDependFn: function(formData) {
-          return formData.extraOption.deliverySelectList;
-        },
+        renderDependFn: deliverySelectListRenderDependFn,
       },
     },
 
@@ -624,11 +600,85 @@ export function BtnConfigFormOptions() {
             label: 'label',
           },
         },
+        renderDependFn: excludeDownAndDelRenderDependFn,
+      },
+    },
+    {
+      elRowAttrs: {
+        gutter: 10,
+      },
+      formItem: {
+        formItemAttrs: {
+          prop: 'extraOption.useDialog',
+          label: '使用对话框：',
+        },
+        tagName: 'el-switch',
+        tagAttrs: {},
+        // 对应formData中的属性值
+        formField: 'extraOption.useDialog',
+        extraOption: {},
+        renderDependFn: expectOpenTypeRenderDependFnGenerator(4),
+      },
+    },
+    {
+      elRowAttrs: {
+        gutter: 10,
+      },
+      formItem: {
+        formItemAttrs: {
+          prop: 'extraOption.showFooter',
+          label: '展示底部按钮：',
+        },
+        tagName: 'el-switch',
+        tagAttrs: {},
+        // 对应formData中的属性值
+        formField: 'extraOption.showFooter',
+        extraOption: {},
         renderDependFn: function(formData) {
-          return !['download', 'batchDel'].includes(
-            formData.extraOption.btnType
+          return (
+            formData.extraOption.openType === 4 &&
+            formData.extraOption.useDialog
           );
         },
+      },
+    },
+
+    {
+      elRowAttrs: {
+        gutter: 10,
+      },
+      formItem: {
+        formItemAttrs: {
+          prop: 'extraOption.requestBeforeConfirmHint',
+          label: '提交前弹出对话框：',
+        },
+        tagName: 'el-switch',
+        tagAttrs: {},
+        // 对应formData中的属性值
+        formField: 'extraOption.requestBeforeConfirmHint',
+        extraOption: {},
+        renderDependFn: requestBeforeConfirmRenderDependFn,
+      },
+    },
+
+    {
+      elRowAttrs: {
+        gutter: 10,
+      },
+      formItem: {
+        formItemAttrs: {
+          prop: 'extraOption.requestBeforeConfirmText',
+          label: '提示文本：',
+        },
+        tagName: 'el-input',
+        style: 'width: 180px',
+        tagAttrs: {
+          type: 'textarea',
+          placeholder: '',
+        },
+        // 对应formData中的属性值
+        formField: 'extraOption.requestBeforeConfirmText',
+        renderDependFn: requestBeforeConfirmRenderDependFn,
       },
     },
     {
@@ -647,9 +697,7 @@ export function BtnConfigFormOptions() {
         },
         // 对应formData中的属性值
         formField: 'extraOption.dialogTitle',
-        renderDependFn: function(formData) {
-          return [0, 4, 2].includes(formData.extraOption.openType);
-        },
+        renderDependFn: dialogAttrRenderDependFn,
       },
     },
     {
@@ -668,9 +716,7 @@ export function BtnConfigFormOptions() {
         },
         // 对应formData中的属性值
         formField: 'extraOption.dialogWidth',
-        renderDependFn: function(formData) {
-          return [0, 4, 2].includes(formData.extraOption.openType);
-        },
+        renderDependFn: dialogAttrRenderDependFn,
       },
     },
     {
@@ -689,9 +735,7 @@ export function BtnConfigFormOptions() {
         },
         // 对应formData中的属性值
         formField: 'extraOption.dialogHeight',
-        renderDependFn: function(formData) {
-          return [0, 4, 2].includes(formData.extraOption.openType);
-        },
+        renderDependFn: dialogAttrRenderDependFn,
       },
     },
 
@@ -927,6 +971,8 @@ export function BtnConfigFrom(custom = {}) {
       },
       iconPosition: 'front',
       iconName: '',
+      useDialog: true,
+      showFooter: false,
     },
     contentTextFrontTagOptions: {},
     contentTextBehindTagOptions: {},
