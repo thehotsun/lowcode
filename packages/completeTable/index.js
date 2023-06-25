@@ -179,10 +179,11 @@ export default {
     },
   },
 
-  provide: {
-    tableRenderInstance: this,
+  provide() {
+    return {
+      getTableRenderInstance: () => this.expose_CompleteTableInstance(),
+    };
   },
-
   created() {
     this.initTableAttrs();
   },
@@ -199,6 +200,9 @@ export default {
   inject: ['flowComp', 'importFileComp', 'queryFlowDef', 'componentList'],
 
   methods: {
+    expose_CompleteTableInstance() {
+      return this;
+    },
     expose_showDialog() {
       this.btnRelateDialogVisible = true;
     },
