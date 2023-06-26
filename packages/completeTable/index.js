@@ -1159,6 +1159,8 @@ export default {
     flowVNode() {
       const { flowComp: FlowComp } = this;
       const baseAttrs = this.getExternalCompBaseAttrs();
+      baseAttrs.dialogHeight = this.dialogHeight;
+      baseAttrs.dialogWidth = this.dialogWidth;
       return (
         <FlowComp
           ref="flowDialogSummary"
