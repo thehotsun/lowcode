@@ -1,9 +1,4 @@
-import {
-  getter,
-  getHandleInput,
-  str2obj,
-  str2Fn,
-} from '../../utils';
+import { getter, getHandleInput, str2obj, str2Fn } from '../../utils';
 import { isEmpty, cloneDeep } from 'lodash';
 export default {
   name: 'BaseRenderForm',
@@ -114,6 +109,7 @@ export default {
             }
             extraOption.options.push(item);
           });
+        this.$forceUpdate();
       });
     },
 
@@ -124,7 +120,7 @@ export default {
         if (typeof extraOption.labelTranslateType === 'number') {
           extraOption.props = {
             key: 'dicId',
-            label: 'cnname',
+            label: 'cnName',
           };
         }
         this.requestData(request, extraOption);
@@ -162,12 +158,34 @@ export default {
       return renderFn[tagName] && renderFn[tagName](options);
     },
 
+    getFlatListVNode({ options, key, label, model, attrs, listeners }) {
+      console.log(options, 'options');
+      return (
+        <el-checkbox-group
+          value={model}
+          {...{
+            attrs,
+            on: listeners,
+          }}
+        >
+          {options.map((item) => {
+            return (
+              <el-checkbox-button key={item[key]} label={item[key]}>
+                {item[label]}
+              </el-checkbox-button>
+            );
+          })}
+        </el-checkbox-group>
+      );
+    },
+
     getSelectCompVNode({
       tagAttrs: attrs,
       listeners,
       formField,
       extraOption,
       request,
+      isFlat,
     }) {
       this.disposeRequest(request, extraOption);
       let { options = [], props = {} } = extraOption;
@@ -175,7 +193,10 @@ export default {
       // 基础版有个添加维护字典的功能，里面返回的字段为id和cnName，因此以此字段为默认取值
       const { key = 'id', label = 'cnName' } = props;
       let model = getter(formData, formField);
-      return (
+      console.log('getSelectCompVNode');
+      return isFlat ? (
+        this.getFlatListVNode({ options, key, label, model, attrs, listeners })
+      ) : (
         <el-select
           value={model}
           {...{
@@ -375,6 +396,7 @@ export default {
         request = {},
         contentTextFrontTagOptions = {},
         contentTextBehindTagOptions = {},
+        isFlat = false,
       } = item;
       // isWrap防止无限循环
       if (!listeners?.input?.isWrap) {
@@ -401,6 +423,7 @@ export default {
                 formField,
                 extraOption,
                 request,
+                isFlat,
               })
             : getPureSingleCompVNode(item)}
         </div>
@@ -485,6 +508,7 @@ export default {
         renderDependFn,
         ...item
       } = allItemInfo;
+      const { isFlat } = item;
       if (typeof renderDependFn === 'string' && renderDependFn?.length > 0) {
         item.renderDependFn = renderDependFn = str2Fn(renderDependFn);
       }
@@ -496,6 +520,7 @@ export default {
           {...{
             attrs: formItemAttrs,
           }}
+          style={isFlat ? 'width: 100%' : ''}
         >
           {labelSlotName || !isEmpty(labelOptions) ? (
             <div slot="label">

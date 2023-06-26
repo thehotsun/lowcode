@@ -297,13 +297,20 @@ export function getSetupFormOptions(searchWidgetName) {
       '标签名：',
       '请输入标签名',
       'formItemAttrs.label',
-      { style: 'width: 350px' },
+      {
+        style: 'width: 350px',
+      },
     ],
     [
       '提示语：',
       '请输入提示语',
       'tagAttrs.placeholder',
-      { style: 'width: 350px' },
+      {
+        style: 'width: 350px',
+        renderDependFn: function(formData) {
+          return !formData.isFlat;
+        },
+      },
     ],
     [
       '配置项：',
@@ -362,9 +369,39 @@ export function getSetupFormOptions(searchWidgetName) {
         },
       },
     ],
-    ['开启多选：', null, 'tagAttrs.multiple', null, 'el-switch'],
-    ['开启本地筛选：', null, 'tagAttrs.filterable', null, 'el-switch'],
-    ['开启清空：', null, 'tagAttrs.clearable', null, 'el-switch'],
+    [
+      '开启多选：',
+      null,
+      'tagAttrs.multiple',
+      {
+        renderDependFn: function(formData) {
+          return !formData.isFlat;
+        },
+      },
+      'el-switch',
+    ],
+    [
+      '开启本地筛选：',
+      null,
+      'tagAttrs.filterable',
+      {
+        renderDependFn: function(formData) {
+          return !formData.isFlat;
+        },
+      },
+      'el-switch',
+    ],
+    [
+      '开启清空：',
+      null,
+      'tagAttrs.clearable',
+      {
+        renderDependFn: function(formData) {
+          return !formData.isFlat;
+        },
+      },
+      'el-switch',
+    ],
   ];
   switch (searchWidgetName) {
     case 'el-input':
@@ -432,9 +469,9 @@ export function getSetupFormOptions(searchWidgetName) {
       ];
       break;
     case 'el-select':
-      options = complexOptions().map((item) =>
-        getSetupFromSingleConfig(...item)
-      );
+      options = complexOptions()
+        .toSpliced(1, 0, ['是否平铺：', null, 'isFlat', null, 'el-switch'])
+        .map((item) => getSetupFromSingleConfig(...item));
       break;
     case 'el-cascader':
       options = complexOptions().map((item) => {
@@ -455,6 +492,13 @@ export function getSetupFormOptions(searchWidgetName) {
           slotName: 'searchWidget',
         }),
         getSetupFromSingleConfig(
+          '是否平铺：',
+          null,
+          'isFlat',
+          null,
+          'el-switch'
+        ),
+        getSetupFromSingleConfig(
           '标签名：',
           '请输入标签名',
           'formItemAttrs.label',
@@ -464,7 +508,12 @@ export function getSetupFormOptions(searchWidgetName) {
           '提示语：',
           '请输入提示语',
           'tagAttrs.placeholder',
-          { style: 'width: 350px' }
+          {
+            style: 'width: 350px',
+            renderDependFn: function(formData) {
+              return !formData.isFlat;
+            },
+          }
         ),
         getSetupFromSingleConfig('字典项：', '请输入字典项', '', {
           style: 'width: 350px',
@@ -499,14 +548,22 @@ export function getSetupFormOptions(searchWidgetName) {
           '开启多选：',
           null,
           'tagAttrs.multiple',
-          null,
+          {
+            renderDependFn: function(formData) {
+              return !formData.isFlat;
+            },
+          },
           'el-switch'
         ),
         getSetupFromSingleConfig(
           '开启本地筛选：',
           null,
           'tagAttrs.filterable',
-          null,
+          {
+            renderDependFn: function(formData) {
+              return !formData.isFlat;
+            },
+          },
           'el-switch'
         ),
       ];
@@ -571,6 +628,7 @@ export function getSetupForm(searchWidgetName) {
           params: '',
           status: 'pending',
         },
+        isFlat: false,
         sortNumb: 0,
       };
       break;
@@ -595,6 +653,7 @@ export function getSetupForm(searchWidgetName) {
           params: '',
           status: 'pending',
         },
+        isFlat: false,
         sortNumb: 0,
       };
       break;
@@ -618,6 +677,7 @@ export function getSetupForm(searchWidgetName) {
           status: 'pending',
         },
         sortNumb: 0,
+        isFlat: false,
       };
       break;
     default:
