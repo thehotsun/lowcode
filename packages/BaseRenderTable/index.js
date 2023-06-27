@@ -277,13 +277,31 @@ export default {
       if (item.formatter && !item.cellFormatterComponent) {
         item.cellFormatterComponent = Vue.extend({
           props: { row: Object, index: Number },
-          render: Vue.compile(item.formatter()).render,
+          render: Vue.compile(item.formatter().template).render,
+          methods: item.formatter().methods || {},
+          computed: item.formatter().computed || {},
+          watch: item.formatter().watch || {},
+          data:
+            item.formatter().data ||
+            function() {
+              return {};
+            },
+          components: item.formatter().components || {},
         });
       }
       if (item.renderHeader && !item.cellHeaderFormatterComponent) {
         item.cellHeaderFormatterComponent = Vue.extend({
           props: { column: Object, index: Number },
-          render: Vue.compile(item.renderHeader()).render,
+          render: Vue.compile(item.renderHeader().template).render,
+          methods: item.renderHeader().methods || {},
+          computed: item.renderHeader().computed || {},
+          watch: item.renderHeader().watch || {},
+          data:
+            item.renderHeader().data ||
+            function() {
+              return {};
+            },
+          components: item.renderHeader().components || {},
         });
       }
       const renderHeader = (_, { column, index }) => {
