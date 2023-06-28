@@ -260,7 +260,9 @@ function getEditConf() {
     const content = addTipsProps[item.prop];
     if (content) {
       item.renderHeader = function() {
-        return `<div style="display: inline-block;"><span>{{column.label}}</span><el-tooltip content="${content}"><i style="width: 20px" class="el-icon-question"/></el-tooltip></div>`;
+        return {
+          template: `<div style="display: inline-block;"><span>{{column.label}}</span><el-tooltip content="${content}"><i style="width: 20px" class="el-icon-question"/></el-tooltip></div>`,
+        };
       };
     }
     item.listeners = {};

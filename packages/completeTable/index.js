@@ -518,9 +518,7 @@ export default {
     },
 
     refresh() {
-      this.queryTableData().then(() => {
-        this.$success('刷新成功');
-      });
+      this.queryTableData();
     },
 
     // 获取列表数据接口参数

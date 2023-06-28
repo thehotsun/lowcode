@@ -277,7 +277,7 @@ export default {
       if (item.formatter && !item.cellFormatterComponent) {
         item.cellFormatterComponent = Vue.extend({
           props: { row: Object, index: Number },
-          render: Vue.compile(item.formatter().template).render,
+          render: Vue.compile(item.formatter().template || '').render,
           methods: item.formatter().methods || {},
           computed: item.formatter().computed || {},
           watch: item.formatter().watch || {},
@@ -292,7 +292,7 @@ export default {
       if (item.renderHeader && !item.cellHeaderFormatterComponent) {
         item.cellHeaderFormatterComponent = Vue.extend({
           props: { column: Object, index: Number },
-          render: Vue.compile(item.renderHeader().template).render,
+          render: Vue.compile(item.renderHeader().template || '').render,
           methods: item.renderHeader().methods || {},
           computed: item.renderHeader().computed || {},
           watch: item.renderHeader().watch || {},
