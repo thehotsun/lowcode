@@ -494,11 +494,11 @@ export function BtnConfigFormOptions() {
         formItemAttrs: {
           prop: 'extraOption.paramName',
           label: '参数名称：',
-          rules: {
-            required: true,
-            message: '请输入参数名',
-            trigger: 'blur',
-          },
+          // rules: {
+          //   required: true,
+          //   message: '请输入参数名',
+          //   trigger: 'blur',
+          // },
         },
         formField: 'extraOption.paramName',
         tagName: 'el-input',

@@ -442,7 +442,7 @@ export default {
     // };
 
     return (
-      <div class="midd">
+      <div class="baseRenderTableMidd">
         {/* el-table对于rowkey属性并没有进行watch，导致如果一开始传入undefined。则后续传入值也不会应用树状结构 */}
         {tableOptions && tableOptions.length ? (
           <el-table

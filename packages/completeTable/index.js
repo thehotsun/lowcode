@@ -9,7 +9,6 @@ import { requestTypeList } from '../../baseConfig/btnBaseConfig';
 import { getTableAttrs } from '../../baseConfig/tableBaseConfig';
 
 import {
-  getHandleInput,
   getWidgetOptions,
   exec,
   getWidgetDefaultVal,
@@ -19,6 +18,7 @@ import {
   setTableAttrs,
   getSummaries,
   addQueryString,
+  BtnConfigs,
 } from '../../utils';
 import { cloneDeep, omit, merge } from 'lodash';
 
@@ -67,8 +67,6 @@ export default {
 
   data() {
     return {
-      // 导入按钮关联的数据模型
-      importFileCompRelateTableName: '',
       fuzzySearchPlaceholder: '',
       pageLayout: '->, total,sizes, prev, pager, next,jumper',
       // 显示动态表单相关
@@ -88,22 +86,10 @@ export default {
         pageSize: 10,
         totalCount: 0,
       },
-      dialogTitle: '表单',
-      dialogWidth: '',
-      dialogHeight: '',
       btnRegularOptions: [],
       showSearchFrom: true,
       showBtns: true,
-      formId: '',
       primaryKeyValue: '',
-      btnDisposeParamsRule: {},
-      requestUrl: '',
-      requestType: '',
-      requestFixedParams: {},
-      requestBeforeConfirmHint: '',
-      requestBeforeConfirmText: '',
-      // 按钮代表的一系列事件完毕以后是否刷新列表
-      isRefresh: false,
       showPanel: false,
       // 选中的table数据
       selectList: [],
@@ -114,11 +100,8 @@ export default {
       onlyRead: false,
       previewMode: false,
       curDialogCompRef: '',
-      useDialog: true,
-      showFooter: false,
-      relateComponent: null,
-      deliverySelectList: false,
       tableAttrs: {},
+      btnConfigs: new BtnConfigs(),
     };
   },
 
@@ -134,6 +117,7 @@ export default {
         'keyField',
         'tableOptions',
         'formOptions',
+        'style',
       ];
       if (!this.tableAttrs.isShowIndex) {
         props.push('index');
@@ -209,7 +193,7 @@ export default {
 
     expose_hideDialog() {
       this.btnRelateDialogVisible = false;
-      this.resetFromData();
+      this.resetBtnConfigs();
     },
 
     expose_preview(data) {
@@ -228,26 +212,16 @@ export default {
       this.tableAttrs.summaryMethod = getSummaries;
     },
 
-    resetFromData() {
-      // this.rule = []
-      // this.option = {}
-      this.formId = '';
+    resetBtnConfigs() {
+      this.btnConfigs = new BtnConfigs();
     },
-
-    // queryFormConfig (formId) {
-    //   this.requestFormConfig(formId).then(res => {
-    //     const { rule, option } = JSON.parse(res.data);
-    //     this.rule = rule;
-    //     this.option = option;
-    //   })
-    // },
 
     // 保存表单
     async onSubmit(data) {
       this.$emit('onSubmit', data);
       this.expose_hideDialog();
       // await this.requestFormConfirm(this.formid, data)
-      this.isRefresh && this.queryTableData();
+      this.btnConfigs.isRefresh && this.queryTableData();
     },
 
     // 预览的时候用，创建一个全为空字符串的对象
@@ -280,7 +254,6 @@ export default {
 
     // 清空数据
     resetAllData() {
-      this.importFileCompRelateTableName = '';
       this.fuzzySearchPlaceholder = '';
       this.pageLayout = '->, total,sizes, prev, pager, next,jumper';
       this.btnRelateDialogVisible = false;
@@ -293,21 +266,10 @@ export default {
       this.formOptions = [];
       this.searchFrom = {};
       this.rawSearchFrom = {};
-      this.dialogTitle = '表单';
-      this.dialogWidth = '';
-      this.dialogHeight = '';
       this.btnRegularOptions = [];
       this.showSearchFrom = true;
       this.showBtns = true;
-      this.formId = '';
       this.primaryKeyValue = '';
-      this.btnDisposeParamsRule = {};
-      this.requestUrl = '';
-      this.requestType = '';
-      this.requestFixedParams = {};
-      this.requestBeforeConfirmHint = '';
-      this.requestBeforeConfirmText = '';
-      this.isRefresh = false;
       this.showPanel = false;
       this.selectList = [];
       this.panelData = [];
@@ -315,13 +277,12 @@ export default {
       this.keyField = '';
       this.onlyRead = false;
       this.previewMode = false;
-      this.relateComponent = null;
-      this.deliverySelectList = false;
       this.page = {
         pageNo: 1,
         pageSize: 10,
         totalCount: 0,
       };
+      this.btnConfigs = new BtnConfigs();
       this.initTableAttrs();
     },
 
@@ -456,7 +417,7 @@ export default {
           this.showSearchFrom = true;
         }
       });
-      console.log(JSON.parse(JSON.stringify(formOptions)));
+
       return [
         {
           elRowAttrs: {
@@ -679,9 +640,9 @@ export default {
 
     validateSelectList({ paramName, paramType, deliverySelectList, validate }) {
       const { selectList } = this;
-      this.deliverySelectList = deliverySelectList;
+      this.btnConfigs.deliverySelectList = deliverySelectList;
       if (deliverySelectList) {
-        this.btnDisposeParamsRule = {
+        this.btnConfigs.btnDisposeParamsRule = {
           paramName,
           paramType,
         };
@@ -731,24 +692,18 @@ export default {
         disposeRequestEvent,
         disposeDownOrDel,
       } = this;
-      this.btnDisposeParamsRule = {
-        paramName: '',
-        paramType: '',
-      };
-      this.requestUrl = requestUrl;
-      this.requestType = requestType;
-      this.requestFixedParams = requestParamsConfig;
-      this.requestBeforeConfirmHint = requestBeforeConfirmHint;
-      this.requestBeforeConfirmText = requestBeforeConfirmText;
-      this.isRefresh = isRefresh;
-      this.dialogHeight = dialogHeight;
-      this.dialogWidth = dialogWidth;
-      // 只要执行点击按钮操作，先置空formid
-      this.formId = '';
-      this.relateComponent = '';
-      this.importFileCompRelateTableName = '';
-      this.useDialog = true;
-      this.showFooter = false;
+      // 只btnConfigs.要执行点击按钮操作，先置空formid
+      this.btnConfigs = new BtnConfigs();
+      this.btnConfigs.requestUrl = requestUrl;
+      this.btnConfigs.requestType = requestType;
+      this.btnConfigs.requestFixedParams = requestParamsConfig;
+      this.btnConfigs.requestBeforeConfirmHint = requestBeforeConfirmHint;
+      this.btnConfigs.requestBeforeConfirmText = requestBeforeConfirmText;
+      this.btnConfigs.isRefresh = isRefresh;
+      this.btnConfigs.btnType = btnType;
+      this.btnConfigs.openType = openType;
+      this.btnConfigs.dialogHeight = dialogHeight;
+      this.btnConfigs.dialogWidth = dialogWidth;
       await this.$nextTick();
       // 如果有自定义事件，则执行自定义事件
       if (fn) {
@@ -812,11 +767,8 @@ export default {
             })
           ) {
             disposeRequestEvent({
-              requestUrl,
-              requestType,
               requestBeforeConfirmHint,
               requestBeforeConfirmText,
-              requestParamsConfig,
             });
           }
         } else if (openType === 2) {
@@ -829,7 +781,7 @@ export default {
               validate,
             })
           ) {
-            disposeFlowEvent(flowKey);
+            disposeFlowEvent({ flowKey, btnType });
           }
         } else if (openType === 0) {
           // openType为0是打开表单
@@ -851,17 +803,14 @@ export default {
       }
     },
 
-    disposeRelateCompEvent({
-      relateComponent,
-      useDialog,
-      showFooter,
-      dialogTitle,
-    }) {
+    disposeRelateCompEvent(
+      { relateComponent, useDialog, showFooter, dialogTitle },
+      row
+    ) {
       if (!useDialog) {
         setTimeout(() => {
           try {
-            console.log(this.$refs);
-            this.$refs.relateComponent.expose_showDialog();
+            this.$refs.relateComponent.expose_showDialog(row);
           } catch (error) {
             console.warn('调用本地组件的expose_showDialog方法错误', error);
           }
@@ -869,32 +818,40 @@ export default {
       } else {
         this.expose_showDialog();
       }
-      this.relateComponent = this.componentList.find(
+      this.btnConfigs.relateComponent = this.componentList.find(
         (item) => item.id === relateComponent
       )?.component;
-      this.useDialog = useDialog;
-      this.showFooter = showFooter;
-      this.dialogTitle = dialogTitle || '新增';
+      this.btnConfigs.useDialog = useDialog;
+      this.btnConfigs.showFooter = showFooter;
+      this.btnConfigs.dialogTitle = dialogTitle || '新增';
     },
 
-    async disposeFlowEvent(flowKey) {
-      const res = await this.queryFlowDef('', '', flowKey);
-      const flowInfo = res.data;
-      flowInfo.name = flowInfo.groupName;
-      flowInfo.id = flowInfo.flowDefinitionId;
-      // 发起流程
-      if (flowInfo.startMode === 'stdNew') {
-        const query = {
-          queryMode: 'add',
-          currentVersionId: flowInfo.currentVersionId,
-        };
-        const routeUrl = this.$router.resolve({
-          path: '/examine-approve-detail',
-          query,
-        });
-        window.open(routeUrl.href, '_blank');
+    async disposeFlowEvent({ flowKey, btnType }, row) {
+      if (btnType === 'check') {
+        const res = await this.generalRequest(
+          `/flow/instance/config/${(row || this.selectList[0])[this.keyField]}`,
+          'get'
+        );
+        this.$refs.flowDialogSummary.openEditDialog(res.data);
       } else {
-        this.$refs.flowDialogSummary.openAddDialog(flowInfo);
+        const res = await this.queryFlowDef('', '', flowKey);
+        const flowInfo = res.data;
+        flowInfo.name = flowInfo.groupName;
+        flowInfo.id = flowInfo.flowDefinitionId;
+        // 发起流程
+        if (flowInfo.startMode === 'stdNew') {
+          const query = {
+            queryMode: 'add',
+            currentVersionId: flowInfo.currentVersionId,
+          };
+          const routeUrl = this.$router.resolve({
+            path: '/examine-approve-detail',
+            query,
+          });
+          window.open(routeUrl.href, '_blank');
+        } else {
+          this.$refs.flowDialogSummary.openAddDialog(flowInfo);
+        }
       }
     },
 
@@ -902,10 +859,10 @@ export default {
       switch (btnType) {
         case 'add':
           this.expose_showDialog();
-          this.formId = relateFrom;
+          this.btnConfigs.formId = relateFrom;
           this.onlyRead = false;
           this.primaryKeyValue = '';
-          this.dialogTitle = dialogTitle || '新增';
+          this.btnConfigs.dialogTitle = dialogTitle || '新增';
           break;
         case 'check':
         case 'edit':
@@ -921,9 +878,9 @@ export default {
             );
           }
           this.expose_showDialog();
-          this.formId = relateFrom;
+          this.btnConfigs.formId = relateFrom;
           this.onlyRead = btnType === 'check';
-          this.dialogTitle =
+          this.btnConfigs.dialogTitle =
             dialogTitle || (btnType === 'check' ? '查看' : '编辑');
           break;
         default:
@@ -946,7 +903,9 @@ export default {
     },
 
     getRequestConfig() {
-      const { requestUrl, requestType, requestFixedParams = {} } = this;
+      const {
+        btnConfigs: { requestUrl, requestType, requestFixedParams = {} },
+      } = this;
       const { params = [], data = [] } = requestFixedParams;
       const { transformParamsValue } = this;
       let finalUrl = requestUrl;
@@ -1004,14 +963,14 @@ export default {
         this.$error('未配置关联的业务模型');
         return;
       }
-      this.importFileCompRelateTableName = metaId;
+      this.btnConfigs.importFileCompRelateTableName = metaId;
       await this.$nextTick();
       this.$refs.importFileComp.open();
     },
 
     dynamicFormVNode() {
       const {
-        formId,
+        btnConfigs: { formId },
         previewMode,
         primaryKeyValue,
         onlyRead,
@@ -1064,15 +1023,17 @@ export default {
     btnRelateDialogVNode() {
       const {
         btnRelateDialogVisible,
-        dialogTitle,
-        dialogWidth,
-        dialogHeight,
         previewMode,
         onlyRead,
-        formId,
-        relateComponent,
-        useDialog,
-        showFooter,
+        btnConfigs: {
+          showFooter,
+          useDialog,
+          relateComponent,
+          formId,
+          dialogTitle,
+          dialogWidth,
+          dialogHeight,
+        },
         dynamicFormVNode,
         relateComponentVNode,
         expose_hideDialog,
@@ -1082,7 +1043,6 @@ export default {
       } = this;
       // 如果是关联本地组件且不使用本组件提供的弹窗
       if (relateComponent && !useDialog) {
-        console.log(relateComponent, useDialog);
         return relateComponentVNode();
       }
       if (btnRelateDialogVisible) {
@@ -1155,15 +1115,18 @@ export default {
     },
 
     flowVNode() {
-      const { flowComp: FlowComp } = this;
+      const {
+        flowComp: FlowComp,
+        btnConfigs: { dialogHeight, dialogWidth, btnType },
+      } = this;
       const baseAttrs = this.getExternalCompBaseAttrs();
-      baseAttrs.dialogHeight = this.dialogHeight;
-      baseAttrs.dialogWidth = this.dialogWidth;
+      baseAttrs.dialogHeight = dialogHeight;
+      baseAttrs.dialogWidth = dialogWidth;
       return (
         <FlowComp
           ref="flowDialogSummary"
-          mode="add"
-          view={0}
+          mode={btnType === 'check' ? 'edit' : 'add'}
+          view={btnType === 'check' ? 2 : 0}
           {...{
             attrs: {
               ...baseAttrs,
@@ -1182,7 +1145,7 @@ export default {
       const {
         importFileComp: ImportFileComp,
         onSubmit,
-        importFileCompRelateTableName,
+        btnConfigs: { importFileCompRelateTableName },
       } = this;
       const baseAttrs = this.getExternalCompBaseAttrs();
       return (
@@ -1204,15 +1167,12 @@ export default {
     },
 
     relateComponentVNode() {
-      console.log('........', this.relateComponent);
-
-      if (this.relateComponent) {
+      if (this.btnConfigs.relateComponent) {
         this.curDialogCompRef = 'relateComponent';
         const {
-          relateComponent: RelateComponent,
+          btnConfigs: { relateComponent: RelateComponent, dialogTitle },
           expose_hideDialog,
           onSubmit,
-          dialogTitle,
         } = this;
         const baseAttrs = this.getExternalCompBaseAttrs();
         return (
@@ -1239,9 +1199,12 @@ export default {
       const {
         selectList,
         keyField,
-        btnDisposeParamsRule,
-        requestBeforeConfirmHint,
-        requestBeforeConfirmText,
+        btnConfigs: {
+          btnDisposeParamsRule,
+          requestBeforeConfirmHint,
+          requestBeforeConfirmText,
+          deliverySelectList,
+        },
         getRequestConfig,
       } = this;
       const { finalUrl, finalType, finalData } = getRequestConfig();
@@ -1256,7 +1219,7 @@ export default {
         tableData: this.tableData,
         externalParmas: this.externalParmas,
       };
-      if (this.deliverySelectList) {
+      if (deliverySelectList) {
         config = Object.assign(config, {
           keyFieldName: keyField,
           selectList,
@@ -1329,9 +1292,25 @@ export default {
         (btnOptions) => btnOptions.extraOption.btnType === 'check'
       );
       if (target) {
-        this.disposeDynamicEvent(target.extraOption, row);
+        switch (target.extraOption.openType) {
+          case 0:
+            this.disposeDynamicEvent(target.extraOption, row);
+            break;
+          case 2:
+            this.btnConfigs.btnType = 'check';
+            this.disposeFlowEvent({ btnType: 'check' }, row);
+            break;
+          case 4:
+            this.disposeRelateCompEvent(target.extraOption, row);
+            break;
+          default:
+            console.warn(
+              '当前页面未配置openType为流程或表单或本地组件的按钮！'
+            );
+            break;
+        }
       } else {
-        console.warn('当前页面未配置openType为check的按钮！');
+        console.warn('当前页面未配置btnType为check的按钮！');
       }
     },
   },

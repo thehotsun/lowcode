@@ -778,6 +778,30 @@ export function addQueryString(param, url) {
   return `${_url}${result.slice(0, -1)}`;
 }
 
+export function BtnConfigs() {
+  return {
+    relateComponent: null,
+    useDialog: true,
+    showFooter: false,
+    // 导入按钮关联的数据模型
+    importFileCompRelateTableName: '',
+    formId: '',
+    dialogTitle: '表单',
+    dialogWidth: '',
+    dialogHeight: '',
+    // 按钮代表的一系列事件完毕以后是否刷新列表
+    isRefresh: false,
+    requestBeforeConfirmHint: '',
+    requestBeforeConfirmText: '',
+    requestFixedParams: {},
+    requestUrl: '',
+    requestType: '',
+    deliverySelectList: false,
+    btnDisposeParamsRule: {},
+    btnType: '',
+  };
+}
+
 export default {
   setPlaceholder,
   setFilterAndResetBtnConfig,
@@ -803,4 +827,5 @@ export default {
   decorator,
   getUrlQuery,
   addQueryString,
+  BtnConfigs,
 };
