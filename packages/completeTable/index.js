@@ -829,7 +829,7 @@ export default {
     async disposeFlowEvent({ flowKey, btnType }, row) {
       if (btnType === 'check') {
         const res = await this.generalRequest(
-          `/flow/instance/config/${(row || this.selectList[0])[this.keyField]}`,
+          `/flow/business/${(row || this.selectList[0])[this.keyField]}`,
           'get'
         );
         this.$refs.flowDialogSummary.openEditDialog(res.data);
