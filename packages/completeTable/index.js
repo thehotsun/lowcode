@@ -292,7 +292,7 @@ export default {
       emptyData && this.setEmptyTableData(emptyData, item.fieldCode);
       obj.label = item.fieldName;
       obj.align = align.find((alignitem) => alignitem.id === item.align).value;
-      obj['min-width'] = item.width;
+      obj['min-width'] = item.columnWidth;
       obj.sortable = !!item.sort;
       obj['show-overflow-tooltip'] = item['show-overflow-tooltip'];
       if (item.fixed) obj.fixed = item.fixed;
