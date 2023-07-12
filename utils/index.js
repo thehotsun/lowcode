@@ -186,7 +186,7 @@ export function str2Fn(strFn) {
   try {
     return new Function(`return ${strFn}`)();
   } catch (error) {
-    console.error(error);
+    console.error(`报错的strFn: ${strFn}`, `error: ${error}`);
   }
   return () => {};
 }
