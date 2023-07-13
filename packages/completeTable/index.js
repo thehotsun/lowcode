@@ -31,9 +31,6 @@ export default {
     panel,
   },
   props: {
-    pageCode: {
-      type: String,
-    },
     requestTableData: {
       type: Function,
     },
@@ -63,6 +60,7 @@ export default {
       type: Function,
     },
     listPageId: String,
+    rawlistPageId: String,
   },
 
   data() {
@@ -602,7 +600,7 @@ export default {
         config = config.filter((item) => {
           return (
             this.checkPermission(
-              `${this.pageCode}:${item.btnId}:${item.authorize}`
+              `${this.rawlistPageId}:${item.btnId}:${item.authorize}`
             ) || item.authorize === 'defaultShow'
           );
         });
