@@ -1,77 +1,66 @@
-import './index.less';
-import BaseRenderTable from '../BaseRenderTable/index';
-import BaseRenderForm from '../BaseRenderForm/index';
-import BaseRenderRegular from '../BaseRenderRegular/index';
-import panel from './component/panel.vue';
-import { align, searchWidget } from '../../baseConfig/tableSelectConfigs';
-import { requestTypeList } from '../../baseConfig/btnBaseConfig';
+import "./index.less";
+import BaseRenderTable from "../BaseRenderTable/index";
+import BaseRenderForm from "../BaseRenderForm/index";
+import BaseRenderRegular from "../BaseRenderRegular/index";
+import panel from "./component/panel.vue";
+import { align, searchWidget } from "../../baseConfig/tableSelectConfigs";
+import { requestTypeList } from "../../baseConfig/btnBaseConfig";
 
-import { getTableAttrs } from '../../baseConfig/tableBaseConfig';
+import { getTableAttrs } from "../../baseConfig/tableBaseConfig";
 
-import {
-  getWidgetOptions,
-  exec,
-  getWidgetDefaultVal,
-  str2obj,
-  depthFirstSearchWithRecursive,
-  str2Fn,
-  setTableAttrs,
-  getSummaries,
-  addQueryString,
-  BtnConfigs,
-} from '../../utils';
-import { cloneDeep, omit, merge } from 'lodash';
+import { getWidgetOptions, exec, getWidgetDefaultVal, str2obj, depthFirstSearchWithRecursive, str2Fn, setTableAttrs, getSummaries, addQueryString, BtnConfigs } from "../../utils";
+import { cloneDeep, omit, merge } from "lodash";
 
 export default {
-  name: 'completeTable',
+  name: "completeTable",
   components: {
     BaseRenderTable,
     BaseRenderForm,
     BaseRenderRegular,
-    panel,
+    panel
   },
   props: {
     requestTableData: {
-      type: Function,
+      type: Function
     },
     requestTablePaginationData: {
-      type: Function,
+      type: Function
     },
     requestFormData: {
-      type: Function,
+      type: Function
     },
     requestTableConfig: {
       type: Function,
-      require: true,
+      require: true
     },
     requestFormConfig: {
-      type: Function,
+      type: Function
     },
     requestDownload: {
-      type: Function,
+      type: Function
     },
     requestBatchDel: {
-      type: Function,
+      type: Function
     },
     generalRequest: {
-      type: Function,
+      type: Function
     },
     checkPermission: {
-      type: Function,
+      type: Function
     },
     listPageId: String,
-    rawlistPageId: String,
+    rawlistPageId: String
   },
 
   data() {
     return {
-      fuzzySearchPlaceholder: '',
-      pageLayout: '->, total,sizes, prev, pager, next,jumper',
+      fuzzySearchPlaceholder: "",
+      pageLayout: "->, total,sizes, prev, pager, next,jumper",
       // 显示动态表单相关
       btnRelateDialogVisible: false,
       rule: [],
       option: {},
-      multiFieldSearch: '',
+      multiFieldSearch: "",
       // tabledata 属性值要做到和tableOptions中的prop相对应
       tableConfigJSON: [],
       tableOptions: [],
@@ -82,58 +71,47 @@ export default {
       page: {
         pageNo: 1,
         pageSize: 10,
-        totalCount: 0,
+        totalCount: 0
       },
       btnRegularOptions: [],
       showSearchFrom: true,
       showBtns: true,
-      primaryKeyValue: '',
+      primaryKeyValue: "",
       showPanel: false,
       // 选中的table数据
       selectList: [],
       panelData: [],
       filterFiled: [],
       externalParmas: {},
-      keyField: '',
+      keyField: "",
       onlyRead: false,
       previewMode: false,
-      curDialogCompRef: '',
+      curDialogCompRef: "",
       tableAttrs: {},
-      btnConfigs: new BtnConfigs(),
+      btnConfigs: new BtnConfigs()
     };
   },
 
   computed: {
     attrs() {
-      const props = [
-        'isTree',
-        'isMerge',
-        'isShowIndex',
-        'showPagination',
-        'isShowIndex',
-        'isShowCheckbox',
-        'keyField',
-        'tableOptions',
-        'formOptions',
-        'style',
-      ];
+      const props = ["isTree", "isMerge", "isShowIndex", "showPagination", "isShowIndex", "isShowCheckbox", "keyField", "tableOptions", "formOptions", "style"];
       if (!this.tableAttrs.isShowIndex) {
-        props.push('index');
+        props.push("index");
       }
       if (!this.tableAttrs.showSummary || !this.tableAttrs.summaryMethod) {
-        props.push('summaryMethod');
+        props.push("summaryMethod");
       }
       if (!this.tableAttrs.isTree) {
-        props.push('treeProps', 'rowKey', 'load', 'lazy');
+        props.push("treeProps", "rowKey", "load", "lazy");
       }
-      if (!this.tableAttrs.lazy && props.indexOf('load') !== -1) {
-        props.push('load');
+      if (!this.tableAttrs.lazy && props.indexOf("load") !== -1) {
+        props.push("load");
       }
       if (!this.tableAttrs.isMerge) {
-        props.push('spanMethod');
+        props.push("spanMethod");
       }
       if (!this.tableAttrs.elTableStyle) {
-        props.push('elTableStyle');
+        props.push("elTableStyle");
       }
       return omit(this.tableAttrs, props);
     },
@@ -142,28 +120,20 @@ export default {
       const { tableOptions, filterFiled } = this;
       if (tableOptions?.length === 0) return [];
       let configOptions = [];
-      if (
-        tableOptions[1]?.type === 'selection' ||
-        tableOptions[1]?.type === 'index'
-      ) {
+      if (tableOptions[1]?.type === "selection" || tableOptions[1]?.type === "index") {
         configOptions = tableOptions.slice(0, 2);
-      } else if (
-        tableOptions[0]?.type === 'selection' ||
-        tableOptions[0]?.type === 'index'
-      ) {
+      } else if (tableOptions[0]?.type === "selection" || tableOptions[0]?.type === "index") {
         configOptions = tableOptions.slice(0, 1);
       }
 
-      const options = filterFiled.map((field) =>
-        tableOptions.find((rawitem) => rawitem.prop === field)
-      );
+      const options = filterFiled.map(field => tableOptions.find(rawitem => rawitem.prop === field));
       return [...configOptions, ...options];
-    },
+    }
   },
 
   provide() {
     return {
-      getTableRenderInstance: () => this.expose_CompleteTableInstance(),
+      getTableRenderInstance: () => this.expose_CompleteTableInstance()
     };
   },
   created() {
@@ -175,11 +145,11 @@ export default {
 
   errorCaptured(err) {
     // 看着心烦，直接屏蔽，elform计算label值得时候得问题，在beforeDestroy周期里，不影响功能
-    if (err.message === '[ElementForm]unpected width ') return false;
+    if (err.message === "[ElementForm]unpected width ") return false;
     else return true;
   },
 
-  inject: ['flowComp', 'importFileComp', 'queryFlowDef', 'componentList'],
+  inject: ["flowComp", "importFileComp", "queryFlowDef", "componentList"],
 
   methods: {
     expose_CompleteTableInstance() {
@@ -216,7 +186,7 @@ export default {
 
     // 保存表单
     async onSubmit(data) {
-      this.$emit('onSubmit', data);
+      this.$emit("onSubmit", data);
       this.expose_hideDialog();
       // await this.requestFormConfirm(this.formid, data)
       this.btnConfigs.isRefresh && this.queryTableData();
@@ -224,7 +194,7 @@ export default {
 
     // 预览的时候用，创建一个全为空字符串的对象
     setEmptyTableData(emptyData = {}, fieldCode) {
-      emptyData[fieldCode] = '';
+      emptyData[fieldCode] = "";
     },
 
     async init(isPreview, json) {
@@ -252,12 +222,12 @@ export default {
 
     // 清空数据
     resetAllData() {
-      this.fuzzySearchPlaceholder = '';
-      this.pageLayout = '->, total,sizes, prev, pager, next,jumper';
+      this.fuzzySearchPlaceholder = "";
+      this.pageLayout = "->, total,sizes, prev, pager, next,jumper";
       this.btnRelateDialogVisible = false;
       this.rule = [];
       this.option = {};
-      this.multiFieldSearch = '';
+      this.multiFieldSearch = "";
       this.tableConfigJSON = [];
       this.tableOptions = [];
       this.tableData = [];
@@ -267,18 +237,18 @@ export default {
       this.btnRegularOptions = [];
       this.showSearchFrom = true;
       this.showBtns = true;
-      this.primaryKeyValue = '';
+      this.primaryKeyValue = "";
       this.showPanel = false;
       this.selectList = [];
       this.panelData = [];
       this.filterFiled = [];
-      this.keyField = '';
+      this.keyField = "";
       this.onlyRead = false;
       this.previewMode = false;
       this.page = {
         pageNo: 1,
         pageSize: 10,
-        totalCount: 0,
+        totalCount: 0
       };
       this.btnConfigs = new BtnConfigs();
       this.initTableAttrs();
@@ -289,28 +259,26 @@ export default {
       obj.prop = item.fieldCode;
       emptyData && this.setEmptyTableData(emptyData, item.fieldCode);
       obj.label = item.fieldName;
-      obj.align = align.find((alignitem) => alignitem.id === item.align).value;
-      obj['min-width'] = item.columnWidth;
+      obj.align = align.find(alignitem => alignitem.id === item.align).value;
+      obj["min-width"] = item.columnWidth;
       obj.sortable = !!item.sort;
-      obj['show-overflow-tooltip'] = item['show-overflow-tooltip'];
+      obj["show-overflow-tooltip"] = item["show-overflow-tooltip"];
       if (item.fixed) obj.fixed = item.fixed;
       if (item.filters) obj.filters = str2obj(item.filters);
 
       // 某些函数转换
-      const fnProps = ['sort-method', 'formatter', 'renderHeader'];
+      const fnProps = ["sort-method", "formatter", "renderHeader"];
       if (obj.filters && obj.filters.length) {
-        fnProps.push('filter-method');
+        fnProps.push("filter-method");
       }
-      fnProps.map((prop) => {
+      fnProps.map(prop => {
         if (item[prop]) {
           obj[prop] = str2Fn(item[prop]);
         }
       });
 
       if (item.children) {
-        obj.children = item.children.map((item) =>
-          this.setSingleTableOptions(item, emptyData)
-        );
+        obj.children = item.children.map(item => this.setSingleTableOptions(item, emptyData));
       }
       return obj;
     },
@@ -319,25 +287,25 @@ export default {
       this.formOptions = this.composeFromOptions(this.tableConfigJSON);
       this.filterFiled = [];
       this.tableOptions = this.tableConfigJSON
-        .filter((item) => item.show)
-        .map((item) => {
+        .filter(item => item.show)
+        .map(item => {
           this.filterFiled.push(item.fieldCode);
           return this.setSingleTableOptions(item, emptyData);
         });
 
-      this.panelData = this.tableOptions.map((item) => {
+      this.panelData = this.tableOptions.map(item => {
         return {
           key: item.prop,
-          label: item.label,
+          label: item.label
         };
       });
 
       if (this.tableAttrs.isShowIndex) {
         const obj = {
-          type: 'index',
-          width: '50',
-          label: '序号',
-          align: 'center',
+          type: "index",
+          width: "50",
+          label: "序号",
+          align: "center"
         };
         if (this.tableAttrs.index) {
           obj.index = this.tableAttrs.index;
@@ -346,20 +314,16 @@ export default {
       }
       if (this.tableAttrs.isShowCheckbox) {
         this.tableOptions.unshift({
-          type: 'selection',
-          width: '46',
-          align: 'center',
+          type: "selection",
+          width: "46",
+          align: "center"
         });
       }
     },
 
     // 由数据组成searchFrom
     setFromField(source, fieldCode, formOptions, searchWidgetName) {
-      this.$set(
-        source,
-        fieldCode,
-        getWidgetDefaultVal(formOptions, searchWidgetName)
-      );
+      this.$set(source, fieldCode, getWidgetDefaultVal(formOptions, searchWidgetName));
     },
 
     // 设置searchFrom和装配fromOptions
@@ -370,23 +334,13 @@ export default {
       let formOptions = [];
       const length = tableData.length;
       tableData.map((item, index) => {
-        const searchWidgetName = searchWidget.find(
-          (widgetitem) => widgetitem.id === item.searchWidget
-        )?.tagName;
+        const searchWidgetName = searchWidget.find(widgetitem => widgetitem.id === item.searchWidget)?.tagName;
         // 只有搜索控件有值且开启了搜索项，才会添加到options中
         if (searchWidgetName && item.isSearchWidget) {
           // this.$set(this.searchFrom, item.fieldCode, '');
-          setFromField(
-            this.searchFrom,
-            item.fieldCode,
-            item.searchWidgetConfig,
-            searchWidgetName
-          );
+          setFromField(this.searchFrom, item.fieldCode, item.searchWidgetConfig, searchWidgetName);
           const options = getWidgetOptions(searchWidgetName, item);
-          const finalOptions = merge(
-            options,
-            depthFirstSearchWithRecursive(item.searchWidgetConfig)
-          );
+          const finalOptions = merge(options, depthFirstSearchWithRecursive(item.searchWidgetConfig));
           // 添加搜索表单得change事件，用以触发更新列表
           if (finalOptions.listeners) {
             const fn = finalOptions.listeners.change;
@@ -402,7 +356,7 @@ export default {
             };
             changeFn.isWrap = true;
             finalOptions.listeners = {
-              change: changeFn,
+              change: changeFn
             };
           }
           formOptions.push(finalOptions);
@@ -420,13 +374,13 @@ export default {
         {
           elRowAttrs: {
             gutter: 10,
-            type: 'flex',
-            align: 'middle',
-            justify: 'start',
+            type: "flex",
+            align: "middle",
+            justify: "start"
           },
-          style: 'flex-wrap: wrap',
-          formItem: formOptions,
-        },
+          style: "flex-wrap: wrap",
+          formItem: formOptions
+        }
       ];
     },
 
@@ -454,7 +408,7 @@ export default {
     },
 
     selectListHandler(val) {
-      this.$emit('selectListHandler', val);
+      this.$emit("selectListHandler", val);
       console.log(val);
       this.selectList = val;
     },
@@ -485,12 +439,12 @@ export default {
       const extraParams = {};
       if (this.formOptions?.length) {
         const formItem = this.formOptions[0].formItem;
-        formItem.map((item) => {
+        formItem.map(item => {
           // 此处要处理两个字段使用同一input的模糊搜索
           const {
             // relateOtherField = [],
-            formField = '',
-            searchWidgetType,
+            formField = "",
+            searchWidgetType
           } = item;
           // if (searchWidgetType === 0 && relateOtherField.length) {
           //   relateOtherField.map((fieldName) => {
@@ -498,14 +452,9 @@ export default {
           //   });
           // }
           // 此处要处理日期选择框数组形式后端不识别，改为字段名加end和start
-          if (
-            searchWidgetType === 4 &&
-            this.searchFrom[formField]?.length === 2
-          ) {
-            extraParams[`${formField}Start`] =
-              this.searchFrom[formField][0] || '';
-            extraParams[`${formField}End`] =
-              this.searchFrom[formField][1] || '';
+          if (searchWidgetType === 4 && this.searchFrom[formField]?.length === 2) {
+            extraParams[`${formField}Start`] = this.searchFrom[formField][0] || "";
+            extraParams[`${formField}End`] = this.searchFrom[formField][1] || "";
           }
         });
       }
@@ -514,19 +463,16 @@ export default {
         ...this.searchFrom,
         ...extraParams,
         ...this.externalParmas,
-        multiFieldSearch: this.multiFieldSearch,
+        multiFieldSearch: this.multiFieldSearch
       };
     },
 
     // data为外界组件执行某些行为触发更新的参数(一次性参数，不会存储，如果点击分页就会消失，持久化的外部参数存储请使用refreshData方法)
     queryTableData(data = {}) {
       const params = this.getParams(data);
-      return (this.tableAttrs.showPagination
-        ? this.requestTablePaginationData(params, this.page, this.listPageId)
-        : this.requestTableData(params, this.listPageId)
-      )
-        .then((res) => {
-          if (res.result === '0') {
+      return (this.tableAttrs.showPagination ? this.requestTablePaginationData(params, this.page, this.listPageId) : this.requestTableData(params, this.listPageId))
+        .then(res => {
+          if (res.result === "0") {
             this.tableData = res.data;
             if (this.tableAttrs.showPagination) {
               this.page.totalCount = res.totalCount;
@@ -535,25 +481,17 @@ export default {
             console.error(`queryTableData message: ${res.message}`);
           }
         })
-        .catch((e) => {
+        .catch(e => {
           console.error(`queryTableData error: ${e}`);
           throw new Error(e);
         });
     },
 
     parseTableConfig(data) {
-      const {
-        tableOptions,
-        formOptions,
-        keyField,
-        tableAttrs,
-        fuzzyFieldSearchConfig,
-      } = data;
+      const { tableOptions, formOptions, keyField, tableAttrs, fuzzyFieldSearchConfig } = data;
       this.tableAttrs = setTableAttrs(tableAttrs);
       if (formOptions?.length) {
-        this.btnRegularOptions = this.composeBtnRegularOptions(
-          cloneDeep(formOptions)
-        );
+        this.btnRegularOptions = this.composeBtnRegularOptions(cloneDeep(formOptions));
       } else {
         this.showBtns = false;
       }
@@ -566,15 +504,15 @@ export default {
 
     queryTableConfig() {
       return this.requestTableConfig()
-        .then((res) => {
-          if (res.result === '0') {
+        .then(res => {
+          if (res.result === "0") {
             const data = JSON.parse(res.data);
             this.parseTableConfig(data);
           } else {
             console.error(`queryTableConfig message: ${res}`);
           }
         })
-        .catch((e) => {
+        .catch(e => {
           console.error(`queryTableConfig error: ${e}`);
         });
     },
@@ -582,14 +520,12 @@ export default {
     // 构成按钮设计区的options
     composeBtnRegularOptions(config) {
       if (this.previewMode) {
-        config.map((item) => {
+        config.map(item => {
           if (item.tagAttrs) {
-            item.tagAttrs.disabled = !['新增', '查看', '编辑'].includes(
-              item.tagAttrs.value
-            );
+            item.tagAttrs.disabled = !["新增", "查看", "编辑"].includes(item.tagAttrs.value);
           } else {
             item.tagAttrs = {
-              disabled: !['新增', '查看', '编辑'].includes(item.tagAttrs.value),
+              disabled: !["新增", "查看", "编辑"].includes(item.tagAttrs.value)
             };
           }
         });
@@ -597,12 +533,8 @@ export default {
       this.showBtns = true;
       // 根据权限筛选
       if (!this.previewMode) {
-        config = config.filter((item) => {
-          return (
-            this.checkPermission(
-              `${this.rawlistPageId}:${item.btnId}:${item.authorize}`
-            ) || item.authorize === 'defaultShow'
-          );
+        config = config.filter(item => {
+          return this.checkPermission(`${this.rawlistPageId}:${item.btnId}:${item.authorize}`) || item.authorize === "defaultShow";
         });
         if (config.length === 0) this.showBtns = false;
       }
@@ -611,13 +543,13 @@ export default {
         {
           elRowAttrs: {
             gutter: 10,
-            type: 'flex',
-            align: 'middle',
-            justify: 'start',
+            type: "flex",
+            align: "middle",
+            justify: "start"
           },
-          style: 'padding-left: 5px',
-          formItem: config,
-        },
+          style: "padding-left: 5px",
+          formItem: config
+        }
       ];
     },
 
@@ -625,14 +557,14 @@ export default {
 
     // 格式化高度宽度
     formatterWidthOrHeightStyle(length) {
-      if (typeof length === 'string') length = length.trim();
+      if (typeof length === "string") length = length.trim();
       if (/^\d+$/.test(length)) {
         return `${length}px`;
       } else if (/^\d+(%|px)?$/.test(length)) {
         return length;
       } else {
-        console.warn('输入的高度或者宽度格式不正确！');
-        return '';
+        console.warn("输入的高度或者宽度格式不正确！");
+        return "";
       }
     },
 
@@ -642,14 +574,14 @@ export default {
       if (deliverySelectList) {
         this.btnConfigs.btnDisposeParamsRule = {
           paramName,
-          paramType,
+          paramType
         };
         if (validate.includes(0) && selectList.length === 0) {
-          this.$warn('请至少勾选一条要处理的数据');
+          this.$warn("请至少勾选一条要处理的数据");
           return false;
         }
         if (validate.includes(1) && selectList.length !== 1) {
-          this.$warn('当前操作只允许勾选一条数据');
+          this.$warn("当前操作只允许勾选一条数据");
           return false;
         }
       }
@@ -658,38 +590,32 @@ export default {
 
     // 处理按钮点击事件
     async handleBtnClick({
-      relateFrom = '',
-      relateMeta = '',
-      relateComponent = '',
-      openType = '',
-      openUrl = '',
-      fn = '',
+      relateFrom = "",
+      relateMeta = "",
+      relateComponent = "",
+      openType = "",
+      openUrl = "",
+      fn = "",
       isRefresh = false,
-      btnType = '',
-      dialogTitle = '',
-      dialogHeight = '',
-      dialogWidth = '',
-      flowKey = '',
-      paramName = '',
+      btnType = "",
+      dialogTitle = "",
+      dialogHeight = "",
+      dialogWidth = "",
+      flowKey = "",
+      paramName = "",
       paramType = 0,
       deliverySelectList = false,
       validate = [],
-      requestUrl = '',
-      requestType = 'post',
+      requestUrl = "",
+      requestType = "post",
       requestBeforeConfirmHint = false,
-      requestBeforeConfirmText = '',
+      requestBeforeConfirmText = "",
       requestParamsConfig = {},
       useDialog = true,
       showFooter = false,
+      validateFn = ""
     }) {
-      const {
-        validateSelectList,
-        disposeFlowEvent,
-        disposeRelateCompEvent,
-        disposeDynamicEvent,
-        disposeRequestEvent,
-        disposeDownOrDel,
-      } = this;
+      const { validateSelectList, disposeFlowEvent, disposeRelateCompEvent, disposeDynamicEvent, disposeRequestEvent, disposeDownOrDel } = this;
       // 只btnConfigs.要执行点击按钮操作，先置空formid
       this.btnConfigs = new BtnConfigs();
       this.btnConfigs.requestUrl = requestUrl;
@@ -703,150 +629,138 @@ export default {
       this.btnConfigs.dialogHeight = dialogHeight;
       this.btnConfigs.dialogWidth = dialogWidth;
       await this.$nextTick();
-      // 如果有自定义事件，则执行自定义事件
-      if (fn) {
-        this.exec(fn);
-      } else {
-        if (openType === -1) {
-          // openType为-1是固定行为，如下载 批量删除等
-          switch (btnType) {
-            case 'download':
-            case 'batchDel':
-              disposeDownOrDel({
-                btnType,
+      // 执行任何操作之前都先进行校验
+      if (validateFn && str2Fn(validateFn)(this.selectList)) {
+        // 如果有自定义事件，则执行自定义事件
+        if (fn) {
+          this.exec(fn);
+        } else {
+          if (openType === -1) {
+            // openType为-1是固定行为，如下载 批量删除等
+            switch (btnType) {
+              case "download":
+              case "batchDel":
+                disposeDownOrDel({
+                  btnType
+                });
+                break;
+              case "import":
+                // 处理导入
+                this.dealImport(relateMeta);
+                break;
+              default:
+                break;
+            }
+          } else if (openType === 1) {
+            // openType为1是当前页面跳转
+            this.$router.push(openUrl, relateFrom);
+          } else if (openType === 3) {
+            // openType为3是新窗口打开;
+            var reg = /http(s)?:\/\/([\w-]+\.)+[\w-]+(\/[\w- .\/?%&=]*)?/;
+            window.open(reg.test(openUrl) ? openUrl : `${window.location.origin}${openUrl.at(0) === "/" ? "" : "/"}${openUrl}`, "_blank");
+          } else if (openType === 4) {
+            // openType为4是打开本地关联代码
+            if (
+              validateSelectList({
+                paramName,
+                paramType,
+                deliverySelectList,
+                validate
+              })
+            ) {
+              disposeRelateCompEvent({
+                relateComponent,
+                useDialog,
+                showFooter,
+                dialogTitle
               });
-              break;
-            case 'import':
-              // 处理导入
-              this.dealImport(relateMeta);
-              break;
-            default:
-              break;
-          }
-        } else if (openType === 1) {
-          // openType为1是当前页面跳转
-          this.$router.push(openUrl, relateFrom);
-        } else if (openType === 3) {
-          // openType为3是新窗口打开;
-          var reg = /http(s)?:\/\/([\w-]+\.)+[\w-]+(\/[\w- .\/?%&=]*)?/;
-          window.open(
-            reg.test(openUrl)
-              ? openUrl
-              : `${window.location.origin}${
-                  openUrl.at(0) === '/' ? '' : '/'
-                }${openUrl}`,
-            '_blank'
-          );
-        } else if (openType === 4) {
-          // openType为4是打开本地关联代码
-          if (
-            validateSelectList({
-              paramName,
-              paramType,
-              deliverySelectList,
-              validate,
-            })
-          ) {
-            disposeRelateCompEvent({
-              relateComponent,
-              useDialog,
-              showFooter,
-              dialogTitle,
-            });
-          }
-        } else if (openType === 5) {
-          // openType为5是直接调用接口
-          if (
-            validateSelectList({
-              paramName,
-              paramType,
-              deliverySelectList,
-              validate,
-            })
-          ) {
-            disposeRequestEvent({
-              requestBeforeConfirmHint,
-              requestBeforeConfirmText,
-            });
-          }
-        } else if (openType === 2) {
-          // openType为2是打开流程
-          if (
-            validateSelectList({
-              paramName,
-              paramType,
-              deliverySelectList,
-              validate,
-            })
-          ) {
-            disposeFlowEvent({ flowKey, btnType });
-          }
-        } else if (openType === 0) {
-          // openType为0是打开表单
-          if (
-            validateSelectList({
-              paramName,
-              paramType,
-              deliverySelectList,
-              validate,
-            })
-          ) {
-            disposeDynamicEvent({
-              btnType,
-              relateFrom,
-              dialogTitle,
-            });
+            }
+          } else if (openType === 5) {
+            // openType为5是直接调用接口
+            if (
+              validateSelectList({
+                paramName,
+                paramType,
+                deliverySelectList,
+                validate
+              })
+            ) {
+              disposeRequestEvent({
+                requestBeforeConfirmHint,
+                requestBeforeConfirmText
+              });
+            }
+          } else if (openType === 2) {
+            // openType为2是打开流程
+            if (
+              validateSelectList({
+                paramName,
+                paramType,
+                deliverySelectList,
+                validate
+              })
+            ) {
+              disposeFlowEvent({ flowKey, btnType });
+            }
+          } else if (openType === 0) {
+            // openType为0是打开表单
+            if (
+              validateSelectList({
+                paramName,
+                paramType,
+                deliverySelectList,
+                validate
+              })
+            ) {
+              disposeDynamicEvent({
+                btnType,
+                relateFrom,
+                dialogTitle
+              });
+            }
           }
         }
       }
     },
 
-    disposeRelateCompEvent(
-      { relateComponent, useDialog, showFooter, dialogTitle },
-      row
-    ) {
+    disposeRelateCompEvent({ relateComponent, useDialog, showFooter, dialogTitle }, row) {
       if (!useDialog) {
         setTimeout(() => {
           try {
             this.$refs.relateComponent.expose_showDialog(row);
           } catch (error) {
-            console.warn('调用本地组件的expose_showDialog方法错误', error);
+            console.warn("调用本地组件的expose_showDialog方法错误", error);
           }
         }, 100);
       } else {
         this.expose_showDialog();
       }
-      this.btnConfigs.relateComponent = this.componentList.find(
-        (item) => item.id === relateComponent
-      )?.component;
+      this.btnConfigs.relateComponent = this.componentList.find(item => item.id === relateComponent)?.component;
       this.btnConfigs.useDialog = useDialog;
       this.btnConfigs.showFooter = showFooter;
-      this.btnConfigs.dialogTitle = dialogTitle || '新增';
+      this.btnConfigs.dialogTitle = dialogTitle || "新增";
     },
 
     async disposeFlowEvent({ flowKey, btnType }, row) {
-      if (btnType === 'check') {
-        const res = await this.generalRequest(
-          `/flow/business/${(row || this.selectList[0])[this.keyField]}`,
-          'get'
-        );
+      if (btnType === "check") {
+        const res = await this.generalRequest(`/flow/business/${(row || this.selectList[0])[this.keyField]}`, "get");
         this.$refs.flowDialogSummary.openEditDialog(res.data);
       } else {
-        const res = await this.queryFlowDef('', '', flowKey);
+        const res = await this.queryFlowDef("", "", flowKey);
         const flowInfo = res.data;
         flowInfo.name = flowInfo.groupName;
         flowInfo.id = flowInfo.flowDefinitionId;
         // 发起流程
-        if (flowInfo.startMode === 'stdNew') {
+        if (flowInfo.startMode === "stdNew") {
           const query = {
-            queryMode: 'add',
-            currentVersionId: flowInfo.currentVersionId,
+            queryMode: "add",
+            currentVersionId: flowInfo.currentVersionId
           };
           const routeUrl = this.$router.resolve({
-            path: '/examine-approve-detail',
-            query,
+            path: "/examine-approve-detail",
+            query
           });
-          window.open(routeUrl.href, '_blank');
+          window.open(routeUrl.href, "_blank");
         } else {
           this.$refs.flowDialogSummary.openAddDialog(flowInfo);
         }
@@ -855,31 +769,27 @@ export default {
 
     disposeDynamicEvent({ btnType, relateFrom, dialogTitle }, rowData) {
       switch (btnType) {
-        case 'add':
+        case "add":
           this.expose_showDialog();
           this.btnConfigs.formId = relateFrom;
           this.onlyRead = false;
-          this.primaryKeyValue = '';
-          this.btnConfigs.dialogTitle = dialogTitle || '新增';
+          this.primaryKeyValue = "";
+          this.btnConfigs.dialogTitle = dialogTitle || "新增";
           break;
-        case 'check':
-        case 'edit':
+        case "check":
+        case "edit":
           if (rowData) {
             this.primaryKeyValue = rowData[this.keyField];
           } else {
-            this.primaryKeyValue =
-              this.selectList[0] && this.selectList[0][this.keyField];
+            this.primaryKeyValue = this.selectList[0] && this.selectList[0][this.keyField];
           }
           if ([undefined, null].includes(this.primaryKeyValue)) {
-            return this.$warn(
-              '主键字段未取到值，请检查数据或在列表设计页面重新关联主键！'
-            );
+            return this.$warn("主键字段未取到值，请检查数据或在列表设计页面重新关联主键！");
           }
           this.expose_showDialog();
           this.btnConfigs.formId = relateFrom;
-          this.onlyRead = btnType === 'check';
-          this.btnConfigs.dialogTitle =
-            dialogTitle || (btnType === 'check' ? '查看' : '编辑');
+          this.onlyRead = btnType === "check";
+          this.btnConfigs.dialogTitle = dialogTitle || (btnType === "check" ? "查看" : "编辑");
           break;
         default:
           break;
@@ -887,52 +797,48 @@ export default {
     },
 
     transformParamsValue(value) {
-      if ([null, undefined, ''].includes(value)) return '';
-      if (typeof value === 'string') {
+      if ([null, undefined, ""].includes(value)) return "";
+      if (typeof value === "string") {
         value = value.trim();
         return value.replace(/^\{(\w*)\}$/g, (value, $1) => {
           if ($1) return this[$1];
           else return value;
         });
       } else {
-        console.warn('参数值不是字符串！');
-        return '';
+        console.warn("参数值不是字符串！");
+        return "";
       }
     },
 
     getRequestConfig() {
       const {
-        btnConfigs: { requestUrl, requestType, requestFixedParams = {} },
+        btnConfigs: { requestUrl, requestType, requestFixedParams = {} }
       } = this;
       const { params = [], data = [] } = requestFixedParams;
       const { transformParamsValue } = this;
       let finalUrl = requestUrl;
       if (params?.length) {
         const finalParams = {};
-        params.map((item) => {
+        params.map(item => {
           finalParams[item.name] = transformParamsValue(item.value);
         });
         finalUrl = addQueryString(finalParams, requestUrl);
       }
       const finalData = {};
       if (data?.length) {
-        data.map((item) => {
+        data.map(item => {
           finalData[item.name] = transformParamsValue(item.value);
         });
       }
-      const finalType =
-        requestTypeList.find((item) => item.id === requestType)?.cnName || '';
+      const finalType = requestTypeList.find(item => item.id === requestType)?.cnName || "";
       return {
         finalUrl,
         finalData,
-        finalType,
+        finalType
       };
     },
 
-    async disposeRequestEvent({
-      requestBeforeConfirmHint,
-      requestBeforeConfirmText,
-    }) {
+    async disposeRequestEvent({ requestBeforeConfirmHint, requestBeforeConfirmText }) {
       if (requestBeforeConfirmHint) {
         await this.$confirm(`${requestBeforeConfirmText}`);
       }
@@ -942,23 +848,19 @@ export default {
 
     disposeDownOrDel({ btnType }) {
       if (this.previewMode) return;
-      if (this.selectList.length === 0 && btnType !== 'download') {
-        return this.$warn('请至少勾选一条要处理的数据');
+      if (this.selectList.length === 0 && btnType !== "download") {
+        return this.$warn("请至少勾选一条要处理的数据");
       }
       if ([undefined, null].includes(this.tableData[0][this.keyField])) {
-        return this.$warn(
-          '主键字段未取到值，请检查数据或重新在列表设计页面重新关联主键！'
-        );
+        return this.$warn("主键字段未取到值，请检查数据或重新在列表设计页面重新关联主键！");
       }
-      (btnType === 'download' ? this.download : this.batchDel)(
-        this.selectList.map((item) => item[this.keyField])
-      );
+      (btnType === "download" ? this.download : this.batchDel)(this.selectList.map(item => item[this.keyField]));
     },
 
     // 处理导入的实现
     async dealImport(metaId) {
       if (!metaId) {
-        this.$error('未配置关联的业务模型');
+        this.$error("未配置关联的业务模型");
         return;
       }
       this.btnConfigs.importFileCompRelateTableName = metaId;
@@ -973,16 +875,16 @@ export default {
         primaryKeyValue,
         onlyRead,
         onSubmit,
-        expose_hideDialog,
+        expose_hideDialog
       } = this;
       const baseAttrs = this.getExternalCompBaseAttrs();
       if (formId) {
-        this.curDialogCompRef = previewMode ? 'VFPreview' : 'VFRuntime';
+        this.curDialogCompRef = previewMode ? "VFPreview" : "VFRuntime";
         return previewMode ? (
           <VFPreview
-            ref={'VFPreview'}
+            ref={"VFPreview"}
             {...{
-              attrs: baseAttrs,
+              attrs: baseAttrs
             }}
             primaryKeyValue={primaryKeyValue}
             isDisabled={onlyRead}
@@ -991,8 +893,8 @@ export default {
             {...{
               on: {
                 submit: onSubmit,
-                cancel: expose_hideDialog,
-              },
+                cancel: expose_hideDialog
+              }
             }}
           ></VFPreview>
         ) : (
@@ -1004,14 +906,14 @@ export default {
             formId={formId}
             {...{
               attrs: {
-                ...baseAttrs,
-              },
+                ...baseAttrs
+              }
             }}
             {...{
               on: {
                 submit: onSubmit,
-                cancel: expose_hideDialog,
-              },
+                cancel: expose_hideDialog
+              }
             }}
           ></VFRuntime>
         );
@@ -1023,21 +925,13 @@ export default {
         btnRelateDialogVisible,
         previewMode,
         onlyRead,
-        btnConfigs: {
-          showFooter,
-          useDialog,
-          relateComponent,
-          formId,
-          dialogTitle,
-          dialogWidth,
-          dialogHeight,
-        },
+        btnConfigs: { showFooter, useDialog, relateComponent, formId, dialogTitle, dialogWidth, dialogHeight },
         dynamicFormVNode,
         relateComponentVNode,
         expose_hideDialog,
         submitForm,
         handleCancel,
-        formatterWidthOrHeightStyle,
+        formatterWidthOrHeightStyle
       } = this;
       // 如果是关联本地组件且不使用本组件提供的弹窗
       if (relateComponent && !useDialog) {
@@ -1046,14 +940,12 @@ export default {
       if (btnRelateDialogVisible) {
         const visibleListeners = {
           // 关键代码 - 1
-          'update:visible': (val) => {
+          "update:visible": val => {
             this.btnRelateDialogVisible = val;
           },
-          'before-close': expose_hideDialog,
+          "before-close": expose_hideDialog
         };
-        const width = dialogWidth
-          ? formatterWidthOrHeightStyle(dialogWidth)
-          : '1200px';
+        const width = dialogWidth ? formatterWidthOrHeightStyle(dialogWidth) : "1200px";
         return (
           <el-dialog
             title={dialogTitle}
@@ -1063,34 +955,28 @@ export default {
             close-on-press-escape={false}
             append-to-body
             v-draggable
-            width={
-              dialogWidth ? formatterWidthOrHeightStyle(dialogWidth) : '1200px'
-            }
+            width={dialogWidth ? formatterWidthOrHeightStyle(dialogWidth) : "1200px"}
           >
             <div
               style={{
-                height: dialogHeight
-                  ? formatterWidthOrHeightStyle(dialogHeight)
-                  : '650px',
-                overflow: 'auto',
-                width: `calc(${width} - '40px')`,
+                height: dialogHeight ? formatterWidthOrHeightStyle(dialogHeight) : "650px",
+                overflow: "auto",
+                width: `calc(${width} - '40px')`
               }}
             >
               {dynamicFormVNode()}
               {relateComponentVNode()}
             </div>
             {/* 只有非只读非预览且是动态表单或本地组件且showFooter为true才会渲染footer */}
-            {!onlyRead &&
-            !previewMode &&
-            (formId || (relateComponent && showFooter)) ? (
+            {!onlyRead && !previewMode && (formId || (relateComponent && showFooter)) ? (
               <span slot="footer">
                 <el-button
                   type="primary"
                   size="small"
                   {...{
                     on: {
-                      click: submitForm,
-                    },
+                      click: submitForm
+                    }
                   }}
                 >
                   提 交
@@ -1099,8 +985,8 @@ export default {
                   size="small"
                   {...{
                     on: {
-                      click: handleCancel,
-                    },
+                      click: handleCancel
+                    }
                   }}
                 >
                   取 消
@@ -1115,7 +1001,7 @@ export default {
     flowVNode() {
       const {
         flowComp: FlowComp,
-        btnConfigs: { dialogHeight, dialogWidth, btnType },
+        btnConfigs: { dialogHeight, dialogWidth, btnType }
       } = this;
       const baseAttrs = this.getExternalCompBaseAttrs();
       baseAttrs.dialogHeight = dialogHeight;
@@ -1123,17 +1009,17 @@ export default {
       return (
         <FlowComp
           ref="flowDialogSummary"
-          mode={btnType === 'check' ? 'edit' : 'add'}
-          view={btnType === 'check' ? 2 : 0}
+          mode={btnType === "check" ? "edit" : "add"}
+          view={btnType === "check" ? 2 : 0}
           {...{
             attrs: {
-              ...baseAttrs,
-            },
+              ...baseAttrs
+            }
           }}
           {...{
             on: {
-              updateTable: this.queryTableData,
-            },
+              updateTable: this.queryTableData
+            }
           }}
         ></FlowComp>
       );
@@ -1143,7 +1029,7 @@ export default {
       const {
         importFileComp: ImportFileComp,
         onSubmit,
-        btnConfigs: { importFileCompRelateTableName },
+        btnConfigs: { importFileCompRelateTableName }
       } = this;
       const baseAttrs = this.getExternalCompBaseAttrs();
       return (
@@ -1151,14 +1037,14 @@ export default {
           tableName={importFileCompRelateTableName}
           {...{
             attrs: {
-              ...baseAttrs,
-            },
+              ...baseAttrs
+            }
           }}
           ref="importFileComp"
           {...{
             on: {
-              submit: onSubmit,
-            },
+              submit: onSubmit
+            }
           }}
         ></ImportFileComp>
       );
@@ -1166,26 +1052,26 @@ export default {
 
     relateComponentVNode() {
       if (this.btnConfigs.relateComponent) {
-        this.curDialogCompRef = 'relateComponent';
+        this.curDialogCompRef = "relateComponent";
         const {
           btnConfigs: { relateComponent: RelateComponent, dialogTitle },
           expose_hideDialog,
-          onSubmit,
+          onSubmit
         } = this;
         const baseAttrs = this.getExternalCompBaseAttrs();
         return (
           <RelateComponent
             {...{
               attrs: {
-                ...baseAttrs,
-              },
+                ...baseAttrs
+              }
             }}
             dialogTitle={dialogTitle}
             {...{
               on: {
                 submit: onSubmit,
-                cancel: expose_hideDialog,
-              },
+                cancel: expose_hideDialog
+              }
             }}
             ref="relateComponent"
           ></RelateComponent>
@@ -1197,13 +1083,8 @@ export default {
       const {
         selectList,
         keyField,
-        btnConfigs: {
-          btnDisposeParamsRule,
-          requestBeforeConfirmHint,
-          requestBeforeConfirmText,
-          deliverySelectList,
-        },
-        getRequestConfig,
+        btnConfigs: { btnDisposeParamsRule, requestBeforeConfirmHint, requestBeforeConfirmText, deliverySelectList },
+        getRequestConfig
       } = this;
       const { finalUrl, finalType, finalData } = getRequestConfig();
       let config = {
@@ -1212,25 +1093,25 @@ export default {
           requestUrl: finalUrl,
           requestBodyData: finalData,
           requestBeforeConfirmHint,
-          requestBeforeConfirmText,
+          requestBeforeConfirmText
         },
         tableData: this.tableData,
-        externalParmas: this.externalParmas,
+        externalParmas: this.externalParmas
       };
       if (deliverySelectList) {
         config = Object.assign(config, {
           keyFieldName: keyField,
           selectList,
-          paramsRule: btnDisposeParamsRule,
+          paramsRule: btnDisposeParamsRule
         });
       } else {
         config = Object.assign(config, {
-          keyFieldName: '',
+          keyFieldName: "",
           selectList: [],
           paramsRule: {
-            paramType: '',
-            paramName: '',
-          },
+            paramType: "",
+            paramName: ""
+          }
         });
       }
       return config;
@@ -1239,15 +1120,15 @@ export default {
     download(list = []) {
       this.requestDownload(
         {
-          [this.keyField]: list.length ? list : [],
+          [this.keyField]: list.length ? list : []
         },
         this.listPageId
-      ).then((response) => {
-        const link = document.createElement('a');
+      ).then(response => {
+        const link = document.createElement("a");
         const blob = response;
-        link.style.display = 'none';
+        link.style.display = "none";
         link.href = URL.createObjectURL(blob);
-        link.setAttribute('download', '导出表格');
+        link.setAttribute("download", "导出表格");
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
@@ -1255,12 +1136,12 @@ export default {
     },
 
     batchDel(list = []) {
-      this.requestBatchDel(list, this.listPageId).then(async (res) => {
-        if (res.result === '0') {
+      this.requestBatchDel(list, this.listPageId).then(async res => {
+        if (res.result === "0") {
           if (this.tableData.length === list.length && this.page.pageNo > 1) {
             this.page.pageNo--;
           }
-          this.$success('删除成功');
+          this.$success("删除成功");
           this.queryTableData();
         }
       });
@@ -1281,36 +1162,32 @@ export default {
 
     handleGlobalClick() {
       if (this.showPanel) this.showPanel = false;
-      console.log('handleGlobalClick');
+      console.log("handleGlobalClick");
     },
 
     showCheckDialog(row) {
-      console.log('showCheckDialog', row);
-      const target = this.btnRegularOptions[0]?.formItem?.find(
-        (btnOptions) => btnOptions.extraOption.btnType === 'check'
-      );
+      console.log("showCheckDialog", row);
+      const target = this.btnRegularOptions[0]?.formItem?.find(btnOptions => btnOptions.extraOption.btnType === "check");
       if (target) {
         switch (target.extraOption.openType) {
           case 0:
             this.disposeDynamicEvent(target.extraOption, row);
             break;
           case 2:
-            this.btnConfigs.btnType = 'check';
-            this.disposeFlowEvent({ btnType: 'check' }, row);
+            this.btnConfigs.btnType = "check";
+            this.disposeFlowEvent({ btnType: "check" }, row);
             break;
           case 4:
             this.disposeRelateCompEvent(target.extraOption, row);
             break;
           default:
-            console.warn(
-              '当前页面未配置openType为流程或表单或本地组件的按钮！'
-            );
+            console.warn("当前页面未配置openType为流程或表单或本地组件的按钮！");
             break;
         }
       } else {
-        console.warn('当前页面未配置btnType为check的按钮！');
+        console.warn("当前页面未配置btnType为check的按钮！");
       }
-    },
+    }
   },
 
   render() {
@@ -1342,28 +1219,25 @@ export default {
       fuzzySearchPlaceholder,
       handleFilter,
       handleGlobalClick,
-      showCheckDialog,
+      showCheckDialog
     } = this;
 
     const curPageListeners = {
-      'update:currentPage': (val) => {
+      "update:currentPage": val => {
         this.page.pageNo = val;
       },
-      'size-change': handleSizeChange,
-      'current-change': handleCurrentChange,
+      "size-change": handleSizeChange,
+      "current-change": handleCurrentChange
     };
-    console.log(
-      tableAttrs.clickRowShowDetialDialog,
-      'tableAttrs.clickRowShowDetialDialog'
-    );
+    console.log(tableAttrs.clickRowShowDetialDialog, "tableAttrs.clickRowShowDetialDialog");
     const tableEvent = tableAttrs.clickRowShowDetialDialog
       ? {
-          'row-click': showCheckDialog,
-          'selection-change': selectListHandler,
+          "row-click": showCheckDialog,
+          "selection-change": selectListHandler
         }
       : {
-          'row-dblclick': showCheckDialog,
-          'selection-change': selectListHandler,
+          "row-dblclick": showCheckDialog,
+          "selection-change": selectListHandler
         };
 
     const scopedSlots = {
@@ -1372,22 +1246,18 @@ export default {
           <el-button
             {...{
               on: {
-                click: onSave(row),
-              },
+                click: onSave(row)
+              }
             }}
           >
             保存
           </el-button>
         ) : null;
-      },
+      }
     };
 
     return (
-      <el-container
-        class="CompleteTable"
-        style={tableAttrs.style}
-        nativeOnClick={handleGlobalClick}
-      >
+      <el-container class="CompleteTable" style={tableAttrs.style} nativeOnClick={handleGlobalClick}>
         {showSearchFrom ? (
           <el-header style="margin: 20px 0 0 0;" class="flex-header-height">
             {formOptions?.length ? (
@@ -1413,21 +1283,14 @@ export default {
                   render-options={btnRegularOptions}
                   {...{
                     on: {
-                      btnClick: handleBtnClick,
-                    },
+                      btnClick: handleBtnClick
+                    }
                   }}
                 ></base-render-regular>
               ) : null}
               <div class="operate">
                 {fuzzySearchPlaceholder ? (
-                  <el-input
-                    style={{ width: '200px' }}
-                    size="mini"
-                    v-model={this.multiFieldSearch}
-                    placeholder={fuzzySearchPlaceholder}
-                    onChange={handleFilter}
-                    clearable={true}
-                  >
+                  <el-input style={{ width: "200px" }} size="mini" v-model={this.multiFieldSearch} placeholder={fuzzySearchPlaceholder} onChange={handleFilter} clearable={true}>
                     <i slot="prefix" class="el-input__icon el-icon-search"></i>
                   </el-input>
                 ) : null}
@@ -1435,26 +1298,26 @@ export default {
                   class="el-icon-refresh-left i pointer"
                   {...{
                     on: {
-                      click: refresh,
-                    },
+                      click: refresh
+                    }
                   }}
                 ></i>
                 <i
                   class="el-icon-s-tools i pointer"
                   {...{
                     on: {
-                      click: handleSetting,
-                    },
+                      click: handleSetting
+                    }
                   }}
                 ></i>
 
-                <div class={['custom', 'absolute', showPanel ? '' : 'none']}>
+                <div class={["custom", "absolute", showPanel ? "" : "none"]}>
                   <panel
                     data={panelData}
                     {...{
                       on: {
-                        checkedChange: filterFieldChange,
-                      },
+                        checkedChange: filterFieldChange
+                      }
                     }}
                   ></panel>
                 </div>
@@ -1468,13 +1331,13 @@ export default {
                 table-options={filterTableOptions}
                 {...{
                   on: {
-                    ...tableEvent,
-                  },
+                    ...tableEvent
+                  }
                 }}
                 {...{
                   attrs: {
-                    ...attrs,
-                  },
+                    ...attrs
+                  }
                 }}
                 scopedSlots={scopedSlots}
               ></base-render-table>
@@ -1499,5 +1362,5 @@ export default {
         {importFileVNode()}
       </el-container>
     );
-  },
+  }
 };

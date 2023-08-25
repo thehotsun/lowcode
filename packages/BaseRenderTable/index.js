@@ -1,19 +1,19 @@
-import './table.less';
-import { decorator } from '../../utils';
-import { omit } from 'lodash';
+import "./table.less";
+import { decorator } from "../../utils";
+import { omit } from "lodash";
 
-import { h } from 'vue';
+import { h } from "vue";
 export default {
-  name: 'BaseRenderTable',
+  name: "BaseRenderTable",
   data() {
     return {
-      zanwu: require('@/assets/noData.png'),
+      zanwu: require("@/assets/noData.png"),
       seletionList: [],
       curRow: {},
-      tableRef: 'elTable',
-      curCellProperty: '',
+      tableRef: "elTable",
+      curCellProperty: "",
       showCodeEditor: false,
-      codeValue: {},
+      codeValue: {}
       // pageLayout: 'total,sizes, prev, pager, next,jumper', // 分页组件
     };
   },
@@ -23,15 +23,15 @@ export default {
       required: true,
       default() {
         return [];
-      },
+      }
     },
     tableOptions: {
       type: Array,
       default() {
         return [];
-      },
+      }
     },
-    editMode: Boolean,
+    editMode: Boolean
     // page: {
     //   type: Object,
     //   default() {
@@ -61,7 +61,7 @@ export default {
     },
 
     expose_clearCurCellPro() {
-      this.curCellProperty = '';
+      this.curCellProperty = "";
     },
 
     rowClick(row) {
@@ -74,11 +74,11 @@ export default {
     },
 
     rowStyle() {
-      return 'height:40px';
+      return "height:40px";
     },
 
     headerStyle() {
-      return 'background-color: #F7F9FF;color:#2E384D;padding:6px 0;height:54px;border-top:1px solid #EFF0F9';
+      return "background-color: #F7F9FF;color:#2E384D;padding:6px 0;height:54px;border-top:1px solid #EFF0F9";
     },
 
     // /** 鼠标移入cell */
@@ -97,7 +97,7 @@ export default {
     /** 点击cell */
     handleCellClick(row, column, cell, event) {
       if (this.editMode) {
-        this.tableData.map((item) => this.$set(item, '$edit', false));
+        this.tableData.map(item => this.$set(item, "$edit", false));
         row.$edit = true;
         this.curCellProperty = column.property;
       }
@@ -106,7 +106,7 @@ export default {
     getCooperateComp(tagName, attrs, listeners, formField, extraOption, data) {
       // TODO 待添加，
       const renderFn = {
-        'el-select': this.getSelectCompVNode,
+        "el-select": this.getSelectCompVNode
       };
       return renderFn[tagName](attrs, listeners, formField, extraOption, data);
     },
@@ -118,19 +118,19 @@ export default {
     },
 
     isCooperateComp(tagName) {
-      if (typeof tagName !== 'string') {
-        console.warn('isCooperateComp方法传入的参数必须为字符串');
+      if (typeof tagName !== "string") {
+        console.warn("isCooperateComp方法传入的参数必须为字符串");
         return false;
       }
       // TODO 待添加，
-      const cooperateComp = ['el-select'];
+      const cooperateComp = ["el-select"];
       return cooperateComp.indexOf(tagName) !== -1;
     },
 
     getSelectCompVNode(attrs, listeners, formField, extraOption, data) {
       const { options = [], props = {} } = extraOption;
       // 基础版有个添加维护字典的功能，里面返回的字段为id和cnName，因此以此字段为默认取值
-      const { key = 'id', label = 'cnName' } = props;
+      const { key = "id", label = "cnName" } = props;
       // const disabled = !(
       //   this.editMode &&
       //   data.$edit &&
@@ -143,18 +143,11 @@ export default {
           v-model={data[formField]}
           {...{
             attrs,
-            on: listeners,
+            on: listeners
           }}
         >
-          {options.map((item) => {
-            return (
-              <el-option
-                key={item[key]}
-                label={item[label]}
-                value={item[key]}
-                disabled={item.disabled}
-              ></el-option>
-            );
+          {options.map(item => {
+            return <el-option key={item[key]} label={item[label]} value={item[key]} disabled={item.disabled}></el-option>;
           })}
         </el-select>
       );
@@ -171,17 +164,17 @@ export default {
     cellRender(row, options) {
       const {
         // class和style不会被组件的attr所处理，会直接赋值到组件的根节点因此需要单独拿出来赋值
-        className = '',
-        style = '',
+        className = "",
+        style = "",
         // 自定义插槽
-        slotName = '',
+        slotName = "",
         // behindText和frontText为组件前后的文本，如需更复杂的自定义，请使用slotName
-        behindText = '',
-        frontText = '',
-        behindTextStyle = '',
-        frontTextStyle = '',
+        behindText = "",
+        frontText = "",
+        behindTextStyle = "",
+        frontTextStyle = "",
         // 如不需要使用formData中的值而只是需要固定文本则可使用此字段
-        contentText = '',
+        contentText = "",
         // 特殊组件的额外属性值例如select组件下的option组件所需的options
         extraOption = {},
         // 当前渲染组件（即Tag）所需的属性值
@@ -189,20 +182,20 @@ export default {
         // 组件所需的监听事件
         listeners = {},
         // 需要绑定的formData的属性名
-        prop = '',
-        tagName = 'span',
+        prop = "",
+        tagName = "span",
         disabled,
-        showCodeEditor = false,
+        showCodeEditor = false
       } = options;
 
       const finalListeners = {};
-      Object.keys(listeners).map((key) => {
+      Object.keys(listeners).map(key => {
         finalListeners[key] = (...arr) => {
           listeners[key](row, ...arr);
         };
       });
 
-      if (showCodeEditor && tagName === 'el-input') {
+      if (showCodeEditor && tagName === "el-input") {
         finalListeners.focus = decorator(() => {
           this.showCodeEditor = true;
           this.codeValue = { row, prop };
@@ -225,11 +218,8 @@ export default {
       // Tag必须开头大写，否则会被识别为字符串
       let Tag;
       // 如果当前option中disabled为true且在编辑模式且是输入框格式的，此时应该显示文本
-      if (
-        disabled &&
-        (tagName === 'el-input' || tagName === 'el-input-number')
-      ) {
-        Tag = 'span';
+      if (disabled && (tagName === "el-input" || tagName === "el-input-number")) {
+        Tag = "span";
       } else {
         // 其余组件是否禁用取决于当前是否为编辑模式
         Tag = tagName;
@@ -242,14 +232,7 @@ export default {
       return (
         <div style="display: inline-block">
           {isCooperateComp(tagName) ? (
-            getCooperateComp(
-              tagName,
-              tagAttrs,
-              finalListeners,
-              prop,
-              extraOption,
-              row
-            )
+            getCooperateComp(tagName, tagAttrs, finalListeners, prop, extraOption, row)
           ) : (
             <div style="display: inline-block">
               <span style={frontTextStyle}>{frontText}</span>
@@ -260,7 +243,7 @@ export default {
                 class={className}
                 {...{
                   attrs: tagAttrs,
-                  on: finalListeners,
+                  on: finalListeners
                 }}
               >
                 {value || tagAttrs?.value || contentText}
@@ -277,40 +260,42 @@ export default {
       if (item.formatter && !item.cellFormatterComponent) {
         item.cellFormatterComponent = Vue.extend({
           props: { row: Object, index: Number },
-          render: Vue.compile(item.formatter().template || '').render,
+          render: Vue.compile(item.formatter().template || "").render,
           methods: item.formatter().methods || {},
           computed: item.formatter().computed || {},
           watch: item.formatter().watch || {},
+          // eslint-disable-next-line
           data:
             item.formatter().data ||
             function() {
               return {};
             },
-          components: item.formatter().components || {},
+          components: item.formatter().components || {}
         });
       }
       if (item.renderHeader && !item.cellHeaderFormatterComponent) {
         item.cellHeaderFormatterComponent = Vue.extend({
           props: { column: Object, index: Number },
-          render: Vue.compile(item.renderHeader().template || '').render,
+          render: Vue.compile(item.renderHeader().template || "").render,
           methods: item.renderHeader().methods || {},
           computed: item.renderHeader().computed || {},
           watch: item.renderHeader().watch || {},
+          // eslint-disable-next-line
           data:
             item.renderHeader().data ||
             function() {
               return {};
             },
-          components: item.renderHeader().components || {},
+          components: item.renderHeader().components || {}
         });
       }
       const renderHeader = (_, { column, index }) => {
         if (item.cellHeaderFormatterComponent) {
           return h(item.cellHeaderFormatterComponent, {
-            props: { column, index },
+            props: { column, index }
           });
         } else {
-          return h('span', [`${column.label}`]);
+          return h("span", [`${column.label}`]);
         }
       };
 
@@ -318,24 +303,17 @@ export default {
         return item.slotName
           ? this.$scopedSlots[item.slotName]
             ? this.$scopedSlots[item.slotName]({
-                row: row,
+                row: row
               })
-            : (console.warn(`slot : ${item.slotName} 未定义！`), '')
+            : (console.warn(`slot : ${item.slotName} 未定义！`), "")
           : item.formatter
           ? h(item.cellFormatterComponent, {
-              props: { row, index },
+              props: { row, index }
             })
           : getCellRender(row, item);
       };
 
-      const attr = omit(item, [
-        'className',
-        'style',
-        'formatter',
-        'cellFormatterComponent',
-        'renderHeader',
-        'cellHeaderFormatterComponent',
-      ]);
+      const attr = omit(item, ["className", "style", "formatter", "cellFormatterComponent", "renderHeader", "cellHeaderFormatterComponent"]);
 
       return (
         <el-table-column
@@ -344,13 +322,12 @@ export default {
               ...attr,
               key: item?.prop || item.type,
               formatter,
-              renderHeader,
-            },
+              renderHeader
+            }
           }}
-          
         >
           {item.children && item.children.length
-            ? item.children.map((child) => {
+            ? item.children.map(child => {
                 return tableColumnRender(child);
               })
             : null}
@@ -375,7 +352,7 @@ export default {
     // },
     handleClose() {
       this.showCodeEditor = false;
-    },
+    }
   },
 
   render() {
@@ -394,36 +371,37 @@ export default {
       tableColumnRender,
       codeValue,
       showCodeEditor,
-      handleClose,
+      handleClose
     } = this;
     const defaultTableAttrs = {
-      'row-style': rowStyle,
-      'header-cell-style': headerStyle,
-      'highlight-current-row': true,
+      "row-style": rowStyle,
+      "header-cell-style": headerStyle,
+      "highlight-current-row": true,
       // height: '100%',
-      data: tableData,
+      data: tableData
     };
 
     const defaultTableEvent = {
-      'selection-change': selectListHandler,
-      'row-click': rowClick,
-      'cell-click': handleCellClick,
+      "selection-change": selectListHandler,
+      "row-click": rowClick,
+      "cell-click": handleCellClick
       // 'cell-mouse-enter': handleCellEnter,
       // 'cell-mouse-leave': handleCellLeave,
     };
 
     const defaultDialogAttrs = {
       beforeClose: handleClose,
-      title: '代码编写',
+      title: "代码编写",
       visible: showCodeEditor,
-      width: '900px',
+      width: "900px",
+      appendToBody: true
     };
 
     const codeEditorListeners = {
-      input: (val) => {
-        console.log(val, 'codeEditorListeners');
+      input: val => {
+        console.log(val, "codeEditorListeners");
         codeValue.row[codeValue.prop] = val;
-      },
+      }
     };
     // const defaultPageAttrs = {
     //   'current-page': page.pageNum,
@@ -451,24 +429,22 @@ export default {
             {...{
               attrs: {
                 ...defaultTableAttrs,
-                ...$attrs,
+                ...$attrs
               },
               on: {
                 ...defaultTableEvent,
-                ...$listeners,
-              },
+                ...$listeners
+              }
             }}
           >
             {tableOptions && tableOptions.length > 0 ? (
-              tableOptions.map((item) => {
+              tableOptions.map(item => {
                 return tableColumnRender(item);
               })
             ) : (
               <div slot="empty">
                 <img src={zanwu} alt="" />
-                <p style="font-size: 16px; color: #000; margin-top: 36px">
-                  暂无数据
-                </p>
+                <p style="font-size: 16px; color: #000; margin-top: 36px">暂无数据</p>
               </div>
             )}
           </el-table>
@@ -476,19 +452,13 @@ export default {
         {showCodeEditor ? (
           <el-dialog
             {...{
-              attrs: { ...defaultDialogAttrs },
+              attrs: { ...defaultDialogAttrs }
             }}
           >
-            <js-code-editor
-              mode="javascript"
-              readonly={false}
-              value={codeValue.row[codeValue.prop]}
-              ref="chEditor"
-              {...{ on: codeEditorListeners }}
-            ></js-code-editor>
+            <js-code-editor mode="javascript" readonly={false} value={codeValue.row[codeValue.prop]} ref="chEditor" {...{ on: codeEditorListeners }}></js-code-editor>
           </el-dialog>
         ) : null}
       </div>
     );
-  },
+  }
 };

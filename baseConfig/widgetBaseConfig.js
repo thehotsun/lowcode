@@ -1,18 +1,10 @@
 // 各个组件的相关定义，通过函数可以更灵活的进行每个组件的自定义。因为es6的export导出的值是地址引用，会存在各种问题
 
 // const baseStyle = 'min-width: 150px;margin-right: 10px ';
-const baseStyle = '';
+const baseStyle = "";
 
 function composeConfig(options, labelSlot) {
-  const {
-    tagName = 'el-input',
-    tagAttrs = {},
-    listeners = {},
-    extraOption = {},
-    customAttr = {},
-    request = {},
-    style = '',
-  } = options;
+  const { tagName = "el-input", tagAttrs = {}, listeners = {}, extraOption = {}, customAttr = {}, request = {}, style = "" } = options;
   const baseOptions = {
     // 赋值给formitem组件的class和style
     // className: 'select',
@@ -20,12 +12,12 @@ function composeConfig(options, labelSlot) {
     // tagName必须是eleui提供的已有组件或HTML已有标签
     tagName: tagName,
     // 对应的formData的具体属性值，用于赋值组件的v-model
-    formField: '',
+    formField: "",
     // formitem的对应属性
     formItemAttrs: {
-      prop: '',
-      label: '',
-      'label-width': 'auto',
+      prop: "",
+      label: "",
+      "label-width": "auto"
     },
     sortNumb: 0,
     // attrs主要包含直接赋值给当前组件的属性值
@@ -42,13 +34,13 @@ function composeConfig(options, labelSlot) {
     contentTextFrontTagOptions: {},
     contentTextBehindTagOptions: {},
     // 非常用属性通过此属性传递
-    ...customAttr,
+    ...customAttr
   };
   if (labelSlot) {
     baseOptions.formItemAttrs.labelOptions = {
-      tagName: 'span',
+      tagName: "span",
       // style: 'padding-right: 15px',
-      contentText: '',
+      contentText: ""
     };
   }
 
@@ -57,113 +49,108 @@ function composeConfig(options, labelSlot) {
 
 export function getElInputConfig() {
   const tagAttrs = {
-    placeholder: '请输入',
-    maxlength: '',
-    clearable: true,
+    placeholder: "请输入",
+    maxlength: "",
+    clearable: true
     // 注意不要写为驼峰形式
     // 'show-password': true,
   };
   return composeConfig({
-    tagName: 'el-input',
-    tagAttrs,
+    tagName: "el-input",
+    tagAttrs
   });
 }
 
 export function getElInputNumberConfig() {
   const tagAttrs = {
-    label: '请输入',
+    label: "请输入"
     // 注意不要写为驼峰形式
     // 'show-password': true,
   };
   return composeConfig({
-    tagName: 'el-input-number',
-    tagAttrs,
+    tagName: "el-input-number",
+    tagAttrs
   });
 }
 
 export function getElSelectConfig() {
   const tagAttrs = {
-    placeholder: '请选择',
-    clearable: true,
+    placeholder: "请选择",
+    clearable: true
   };
   const extraOption = {
     options: [],
     props: {
-      key: 'id',
-      label: 'cnName',
-    },
+      key: "id",
+      label: "cnName"
+    }
   };
-  const request = { url: '', status: 'pending' };
+  const request = { url: "", status: "pending" };
 
   return composeConfig({
-    tagName: 'el-select',
+    tagName: "el-select",
     tagAttrs,
     extraOption,
-    request,
+    request
   });
 }
 export function getElDatePickerConfig() {
   const tagAttrs = {
-    placeholder: '请选择日期',
+    placeholder: "请选择日期",
     clearable: true,
-    type: 'date',
-    'value-format': 'yyyy-MM-dd',
+    type: "date",
+    "value-format": "yyyy-MM-dd"
   };
   return composeConfig({
-    tagName: 'el-date-picker',
-    tagAttrs,
+    tagName: "el-date-picker",
+    tagAttrs
   });
 }
 
 export function getElDatePickerRangeConfig() {
   const config = getElDatePickerConfig();
-  config.tagAttrs.type = 'daterange';
-  config.tagAttrs['range-separato'] = '至';
-  config.tagAttrs['start-placeholder'] = '开始日期';
-  config.tagAttrs['end-placeholder'] = '结束日期';
+  config.tagAttrs.type = "daterange";
+  config.tagAttrs["range-separato"] = "至";
+  config.tagAttrs["start-placeholder"] = "开始日期";
+  config.tagAttrs["end-placeholder"] = "结束日期";
   return config;
 }
 
-export function getElBtnConfig(
-  type = 'primary',
-  fn,
-  customAttr,
-  extraOption = {}
-) {
+export function getElBtnConfig(type = "primary", fn, customAttr, extraOption = {}) {
   const tagAttrs = {
-    size: 'small',
-    type,
+    size: "small",
+    type
   };
   const listeners = {
-    click: fn,
+    click: fn
   };
   return composeConfig({
-    style: 'margin-left: 20px',
-    tagName: 'el-button',
+    style: "margin-left: 20px",
+    tagName: "el-button",
     tagAttrs,
     listeners,
     customAttr,
-    extraOption,
+    extraOption
   });
 }
 
 export function getElCascaderConfig() {
   const tagAttrs = {
-    placeholder: '请选择',
-    props: { expandTrigger: 'hover' },
+    placeholder: "请选择",
+    props: { expandTrigger: "hover" }
   };
   const extraOption = {
     options: [],
     props: {
-      key: 'id',
-      label: 'cnName',
-    },
+      key: "id",
+      label: "cnName"
+    }
   };
-  const request = { url: '', status: 'pending' };
+  const request = { url: "", status: "pending" };
   return composeConfig({
-    tagName: 'el-cascader',
+    tagName: "el-cascader",
     tagAttrs,
     extraOption,
-    request,
+    request
   });
 }

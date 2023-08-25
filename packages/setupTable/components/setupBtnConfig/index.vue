@@ -1,8 +1,14 @@
 <template>
   <div class="wrap">
-
-    <base-render-form ref="form" :form-data="btnConfigFrom" :form-options="btnConfigFormOptions" @onSubmit="onSubmit"
-      @onClose="onClose" :useDialog="useDialog" style="background: #fff;padding:30px 20px">
+    <base-render-form
+      ref="form"
+      :form-data="btnConfigFrom"
+      :form-options="btnConfigFormOptions"
+      @onSubmit="onSubmit"
+      @onClose="onClose"
+      :useDialog="useDialog"
+      style="background: #fff;padding:30px 20px"
+    >
       <template #requestUrl="{ formData }">
         <div>
           <el-input v-model="formData.extraOption.requestUrl" style="width: 180px" placeholder="请输入接口地址"></el-input>
@@ -12,19 +18,16 @@
       <template #color>
         <el-row>
           <span v-for="item in colorList" :key="item">
-            <el-button :type="item" @click="setBtnType(item)"></el-button> <i v-if="btnConfigFrom.tagAttrs.type === item"
-              class="el-icon-check middle"></i>
+            <el-button :type="item" @click="setBtnType(item)"></el-button> <i v-if="btnConfigFrom.tagAttrs.type === item" class="el-icon-check middle"></i>
           </span>
         </el-row>
       </template>
       <template #iconName="{ formData }">
         <icon-picker v-model="formData.extraOption.iconName"></icon-picker>
       </template>
-
     </base-render-form>
 
-    <el-dialog title="请求接口设置" :visible.sync="showParamsConfig" :close-on-click-modal="false"
-      :close-on-press-escape="false" width="40%" append-to-body>
+    <el-dialog title="请求接口设置" :visible.sync="showParamsConfig" :close-on-click-modal="false" :close-on-press-escape="false" width="40%" append-to-body>
       <template>
         <el-form :model="paramsConfig" ref="dsForm" label-width="0px" label-position="left" class="ds-form">
           <div class="config">
@@ -47,8 +50,7 @@
               </el-row>
               <el-row>
                 <el-col :span="6">
-                  <el-button type="text" icon="el-icon-plus" @click="addRequestParam">
-                    新增请求参数</el-button>
+                  <el-button type="text" icon="el-icon-plus" @click="addRequestParam"> 新增请求参数</el-button>
                 </el-col>
               </el-row>
             </div>
@@ -77,10 +79,7 @@
                 </el-col>
               </el-row>
             </div>
-
           </div>
-
-
         </el-form>
       </template>
       <span slot="footer" class="dialog-footer">
@@ -92,188 +91,181 @@
 </template>
 
 <script>
-
-
-import BaseRenderForm from '../../../BaseRenderForm/index';
-import { BtnConfigFormOptions, BtnConfigFrom } from "../../../../baseConfig/btnBaseConfig"
-import { findFromOptionsIndexByfieldName } from '../../../../utils';
+import BaseRenderForm from "../../../BaseRenderForm/index";
+import { BtnConfigFormOptions, BtnConfigFrom } from "../../../../baseConfig/btnBaseConfig";
+import { findFromOptionsIndexByfieldName } from "../../../../utils";
 import IconPicker from "./components/iconPicker";
 import { cloneDeep, merge } from "lodash";
 
 export default {
-  name: 'setupBtnConfig',
+  name: "SetupBtnConfig",
   components: {
     BaseRenderForm,
     IconPicker
   },
   props: {
-    useDialog: Boolean,
+    useDialog: Boolean
   },
-  data () {
+  data() {
     return {
-      colorList: ['', 'primary', 'success', 'info', 'warning', 'danger'],
+      colorList: ["", "primary", "success", "info", "warning", "danger"],
       btnConfigFormOptions: new BtnConfigFormOptions(),
       btnConfigFromArr: [],
       originConfigForm: {},
       btnConfigFrom: new BtnConfigFrom(),
       showParamsConfig: false,
       paramsConfig: {
-        params: [
-        ],
-        data: [
-        ],
-      },
+        params: [],
+        data: []
+      }
       // nameRules: { required: true, trigger: ['blur', 'change'], message: '请输入名称' },
-
     };
   },
 
-  created () {
+  created() {
     // const target = this.btnConfigFormOptions.find(option => option.formItem.formField === 'authorize');
     // if (target) {
-
     //   target.listeners = {
     //     change: this.handleAuthorizeChange
     //   }
     // }
   },
 
-  mounted () {
+  mounted() {
     // this.init()
   },
   methods: {
-    expose_reductionAll () {
+    expose_reductionAll() {
       this.btnConfigFormOptions = new BtnConfigFormOptions();
-      this.btnConfigFrom = new BtnConfigFrom()
+      this.btnConfigFrom = new BtnConfigFrom();
     },
 
-    expose_hideSomeFieldOptions (fieldName) {
-      if (typeof fieldName === 'string') {
-        fieldName = [fieldName]
+    expose_hideSomeFieldOptions(fieldName) {
+      if (typeof fieldName === "string") {
+        fieldName = [fieldName];
       } else if (Array.isArray(fieldName)) {
         fieldName.map(item => {
           const index = findFromOptionsIndexByfieldName(this.btnConfigFormOptions, item);
-          console.log(index, 'index');
-          index !== -1 && this.btnConfigFormOptions.splice(index, 1)
-        })
+          console.log(index, "index");
+          index !== -1 && this.btnConfigFormOptions.splice(index, 1);
+        });
       } else {
-        console.error('expose_hideSomeFieldOptions只能接受字符串或者数组');
+        console.error("expose_hideSomeFieldOptions只能接受字符串或者数组");
       }
     },
 
-    expose_setBtnConfigFormOptions (options) {
-      this.btnConfigFormOptions = options
+    expose_setBtnConfigFormOptions(options) {
+      this.btnConfigFormOptions = options;
     },
 
-    expose_getBtnConfigFormOptions () {
-      return this.btnConfigFormOptions
+    expose_getBtnConfigFormOptions() {
+      return this.btnConfigFormOptions;
     },
 
-    expose_getRawBtnConfigFormOptions () {
-      return new BtnConfigFormOptions()
+    expose_getRawBtnConfigFormOptions() {
+      return new BtnConfigFormOptions();
     },
 
-    expose_getBtnConfigFromArr () {
-      return this.btnConfigFromArr
+    expose_getBtnConfigFromArr() {
+      return this.btnConfigFromArr;
     },
 
-    expose_setBtnConfigFromArr (arr) {
-      this.btnConfigFromArr = arr
+    expose_setBtnConfigFromArr(arr) {
+      this.btnConfigFromArr = arr;
     },
 
-    expose_setBtnConfigFrom (obj) {
-      this.originConfigForm = obj
-      const btnDefaultConfigFrom = new BtnConfigFrom()
-      this.btnConfigFrom = merge(btnDefaultConfigFrom, obj)
+    expose_setBtnConfigFrom(obj) {
+      this.originConfigForm = obj;
+      const btnDefaultConfigFrom = new BtnConfigFrom();
+      this.btnConfigFrom = merge(btnDefaultConfigFrom, obj);
     },
 
-    expose_getBtnConfigFrom () {
-      return this.btnConfigFrom
+    expose_getBtnConfigFrom() {
+      return this.btnConfigFrom;
     },
 
-    expose_setExtraOption (options, field) {
-      const target = this.btnConfigFormOptions.find(item => item.formItem.formField === field)
-      console.log(target, 'target');
-      if (target) target.formItem.extraOption = options
+    expose_setExtraOption(options, field) {
+      const target = this.btnConfigFormOptions.find(item => item.formItem.formField === field);
+      console.log(target, "target");
+      if (target) target.formItem.extraOption = options;
     },
-    expose_delBtnConfigFromArr (index) {
-      this.btnConfigFromArr.splice(index, 1)
+    expose_delBtnConfigFromArr(index) {
+      this.btnConfigFromArr.splice(index, 1);
     },
 
-    handleRequestParamsConfigEdit () {
+    handleRequestParamsConfigEdit() {
       this.showParamsConfig = true;
-      // const 
+      // const
       // if (Object.prototype.toString(this.btnConfigFrom.requestParamsConfig) === '[object Object]') {
 
       // }
-      this.paramsConfig = cloneDeep(this.btnConfigFrom.extraOption.requestParamsConfig)
+      this.paramsConfig = cloneDeep(this.btnConfigFrom.extraOption.requestParamsConfig);
     },
 
-    addRequestParam () {
+    addRequestParam() {
       this.paramsConfig.params.push({
-        name: '',
-        value: ''
-      })
+        name: "",
+        value: ""
+      });
     },
 
-    deleteRequestParam (idx) {
-      this.paramsConfig.params.splice(idx, 1)
+    deleteRequestParam(idx) {
+      this.paramsConfig.params.splice(idx, 1);
     },
 
-    addRequestData () {
+    addRequestData() {
       this.paramsConfig.data.push({
-        name: '',
-        value: ''
-      })
+        name: "",
+        value: ""
+      });
     },
 
-    deleteRequestData (idx) {
-      this.paramsConfig.data.splice(idx, 1)
+    deleteRequestData(idx) {
+      this.paramsConfig.data.splice(idx, 1);
     },
 
-    handleConfirm () {
+    handleConfirm() {
       this.$refs.dsForm.validate((valid, fields) => {
         if (!valid) {
-          this.$message.error('请求接口设置存在错误，请修改')
-          return
+          this.$message.error("请求接口设置存在错误，请修改");
+          return;
         }
-        this.showParamsConfig = false
-        this.btnConfigFrom.extraOption.requestParamsConfig = this.paramsConfig
-      })
+        this.showParamsConfig = false;
+        this.btnConfigFrom.extraOption.requestParamsConfig = this.paramsConfig;
+      });
     },
 
-
-    onSubmit (data) {
+    onSubmit(data) {
       const iconName = data.extraOption.iconName;
       const val = data.extraOption.iconPosition;
-      if (val === 'front') {
+      if (val === "front") {
         data.tagAttrs.icon = iconName;
         data.contentTextBehindTagOptions = {};
       } else {
-        data.tagAttrs.icon = '';
+        data.tagAttrs.icon = "";
         data.contentTextBehindTagOptions = {
-          tagName: 'i',
-          className: iconName,
+          tagName: "i",
+          className: iconName
         };
       }
       // 如果相同则说明是编辑，不同则是新增
       if (!this.btnConfigFromArr.some(item => item === this.originConfigForm)) {
-        data.renderId = Math.random()
-        this.btnConfigFromArr.push(data)
+        data.renderId = Math.random();
+        this.btnConfigFromArr.push(data);
       } else {
-        merge(this.originConfigForm, data)
+        merge(this.originConfigForm, data);
       }
-      this.$emit('onSubmit')
-      this.btnConfigFrom = new BtnConfigFrom()
+      this.$emit("onSubmit");
+      this.btnConfigFrom = new BtnConfigFrom();
     },
-    onClose () {
-      this.$emit('onClose');
-      this.originConfigForm = {}
-      this.btnConfigFrom = new BtnConfigFrom()
+    onClose() {
+      this.$emit("onClose");
+      this.originConfigForm = {};
+      this.btnConfigFrom = new BtnConfigFrom();
     },
-    setBtnType (type) {
-      this.btnConfigFrom.tagAttrs.type = type
-    },
+    setBtnType(type) {
+      this.btnConfigFrom.tagAttrs.type = type;
+    }
 
     // handleAuthorizeChange (authorize) {
     //   const map = {
@@ -327,10 +319,9 @@ export default {
     //     callback();
     //   }
     // },
-
   }
 };
-</script>  
+</script>
 
 <style lang="less" scoped>
 .wrap {

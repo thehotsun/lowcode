@@ -1,59 +1,60 @@
-import { getter, getHandleInput, str2obj, str2Fn } from '../../utils';
-import { isEmpty, cloneDeep } from 'lodash';
+import { getter, getHandleInput, str2obj, str2Fn, decorator, setter } from "../../utils";
+import { isEmpty, cloneDeep } from "lodash";
 export default {
-  name: 'BaseRenderForm',
+  name: "BaseRenderForm",
   props: {
     generalRequest: {
-      type: Function,
+      type: Function
     },
     rules: {
-      type: Object,
+      type: Object
     },
     formOptions: {
-      type: Array,
+      type: Array
     },
     formData: {
-      type: Object,
+      type: Object
     },
     useDialog: {
       type: Boolean,
       default() {
         return true;
-      },
+      }
     },
     dialogTitle: String,
     dialogOptions: {
-      type: Object,
+      type: Object
     },
     onlyShow: Boolean,
     showFooter: {
       type: Boolean,
       default() {
         return true;
-      },
-    },
+      }
+    }
   },
   data() {
     return {
-      formRef: 'elForm',
-      dialogRef: 'elDialog',
+      formRef: "elForm",
+      dialogRef: "elDialog",
       showDialog: true,
+      showCodeEditor: false,
+      codeValue: {}
     };
   },
   computed: {
     finalRenderOptions() {
       // 对所有元素的监听事件进行处理， 使其能访问到当前组件的this
       return (
-        this.formOptions?.map((rowItem) => {
+        this.formOptions?.map(rowItem => {
           const ectype = cloneDeep(rowItem);
           if (Array.isArray(ectype.formItem)) {
-            ectype.formItem.map((item) => {
+            ectype.formItem.map(item => {
               if (!isEmpty(item.listeners)) {
-                Object.keys(item.listeners).map((eventName) => {
+                Object.keys(item.listeners).map(eventName => {
                   if (item.listeners[eventName].isWrap) return;
                   const originFn = item.listeners[eventName];
-                  item.listeners[eventName] = (...argus) =>
-                    originFn.call(this, ...argus);
+                  item.listeners[eventName] = (...argus) => originFn.call(this, ...argus);
                 });
               }
               return item;
@@ -61,19 +62,18 @@ export default {
           } else {
             const listeners = ectype.formItem.listeners;
             if (!isEmpty(listeners)) {
-              Object.keys(listeners).map((eventName) => {
-                console.log(eventName, 'eventName');
+              Object.keys(listeners).map(eventName => {
+                console.log(eventName, "eventName");
                 if (listeners[eventName].isWrap) return;
                 const originFn = listeners[eventName];
-                ectype.formItem.listeners[eventName] = (...argus) =>
-                  originFn.call(this, ...argus);
+                ectype.formItem.listeners[eventName] = (...argus) => originFn.call(this, ...argus);
               });
             }
           }
           return ectype;
         }) || []
       );
-    },
+    }
   },
   watch: {},
   async created() {
@@ -88,7 +88,7 @@ export default {
     // 可以通过调用此组件的这个方法获取el-dialog的实例
     expose_getElDialogInstance() {
       if (this.useDialog) return this.$refs[this.dialogRef];
-      else console.error('请将porps useDialog设置为true');
+      else console.error("请将porps useDialog设置为true");
     },
 
     // 设置showDialog
@@ -96,16 +96,14 @@ export default {
       this.showDialog = bool;
     },
 
-    requestData({ url = '', type = 'get', params = '' }, extraOption) {
+    requestData({ url = "", type = "get", params = "" }, extraOption) {
       params = str2obj(params);
-      this.generalRequest(url, type, params).then((res) => {
+      this.generalRequest(url, type, params).then(res => {
         res.data
           .sort((a, b) => a.sortNum - b.sortNum)
-          .map((item) => {
+          .map(item => {
             if (extraOption.labelTranslateType === 1) {
-              item[extraOption.props.label] = `${item[extraOption.props.key]}-${
-                item[extraOption.props.label]
-              }`;
+              item[extraOption.props.label] = `${item[extraOption.props.key]}-${item[extraOption.props.label]}`;
             }
             extraOption.options.push(item);
           });
@@ -114,33 +112,33 @@ export default {
     },
 
     disposeRequest(request, extraOption) {
-      if (request?.require && request?.url && request.status === 'pending') {
+      if (request?.require && request?.url && request.status === "pending") {
         extraOption.options = [];
         // 这个有值代表是字典类型得，字典类型默认props为此
-        if (typeof extraOption.labelTranslateType === 'number') {
+        if (typeof extraOption.labelTranslateType === "number") {
           extraOption.props = {
-            key: 'dicId',
-            label: 'cnName',
+            key: "dicId",
+            label: "cnName"
           };
         }
         this.requestData(request, extraOption);
-        request.status = 'finish';
+        request.status = "finish";
         // exec(request);
       }
     },
 
     handleClose() {
       this.showDialog = false;
-      this.$emit('onClose');
+      this.$emit("onClose");
     },
 
     async handleSubmit() {
-      this.expose_getElFormInstance().validate((valid) => {
+      this.expose_getElFormInstance().validate(valid => {
         if (valid) {
-          this.$emit('onSubmit', this.formData);
+          this.$emit("onSubmit", this.formData);
           this.handleClose();
         } else {
-          console.log('error submit!!');
+          console.log("error submit!!");
           return false;
         }
       });
@@ -149,26 +147,26 @@ export default {
     getCooperateComp({ tagName, ...options }) {
       // TODO 待添加，
       const renderFn = {
-        'el-select': this.getSelectCompVNode,
-        'el-cascader': this.getCascaderCompVNode,
-        'el-radio-group': this.getRadioGroupCompVNode,
-        'el-checkbox-group': this.getCheckboxGroupCompVNode,
-        'el-tooltip': this.getTooltipCompVNode,
+        "el-select": this.getSelectCompVNode,
+        "el-cascader": this.getCascaderCompVNode,
+        "el-radio-group": this.getRadioGroupCompVNode,
+        "el-checkbox-group": this.getCheckboxGroupCompVNode,
+        "el-tooltip": this.getTooltipCompVNode
       };
       return renderFn[tagName] && renderFn[tagName](options);
     },
 
     getFlatListVNode({ options, key, label, model, attrs, listeners }) {
-      console.log(options, 'options');
+      console.log(options, "options");
       return (
         <el-checkbox-group
           value={model}
           {...{
             attrs,
-            on: listeners,
+            on: listeners
           }}
         >
-          {options.map((item) => {
+          {options.map(item => {
             return (
               <el-checkbox-button key={item[key]} label={item[key]}>
                 {item[label]}
@@ -179,21 +177,13 @@ export default {
       );
     },
 
-    getSelectCompVNode({
-      tagAttrs: attrs,
-      listeners,
-      formField,
-      extraOption,
-      request,
-      isFlat,
-    }) {
+    getSelectCompVNode({ tagAttrs: attrs, listeners, formField, extraOption, request, isFlat }) {
       this.disposeRequest(request, extraOption);
       let { options = [], props = {} } = extraOption;
       const { formData, onlyShow } = this;
       // 基础版有个添加维护字典的功能，里面返回的字段为id和cnName，因此以此字段为默认取值
-      const { key = 'id', label = 'cnName' } = props;
+      const { key = "id", label = "cnName" } = props;
       let model = getter(formData, formField);
-      console.log('getSelectCompVNode');
       return isFlat ? (
         this.getFlatListVNode({ options, key, label, model, attrs, listeners })
       ) : (
@@ -201,35 +191,22 @@ export default {
           value={model}
           {...{
             attrs,
-            on: listeners,
+            on: listeners
           }}
           disabled={onlyShow}
         >
-          {options.map((item) => {
-            return (
-              <el-option
-                key={item[key]}
-                label={item[label]}
-                value={item[key]}
-                disabled={item.disabled}
-              ></el-option>
-            );
+          {options.map(item => {
+            return <el-option key={item[key]} label={item[label]} value={item[key]} disabled={item.disabled}></el-option>;
           })}
         </el-select>
       );
     },
 
-    getCascaderCompVNode({
-      tagAttrs: attrs,
-      listeners,
-      formField,
-      extraOption,
-      request,
-    }) {
+    getCascaderCompVNode({ tagAttrs: attrs, listeners, formField, extraOption, request }) {
       this.disposeRequest(request, extraOption);
       const { options = [], props = {} } = extraOption;
       const { formData, onlyShow } = this;
-      console.log(props, 'props');
+      console.log(props, "props");
       attrs.options = options;
       attrs.props = props;
       attrs.props.value = props.key;
@@ -239,25 +216,19 @@ export default {
           value={model}
           {...{
             attrs,
-            on: listeners,
+            on: listeners
           }}
           disabled={onlyShow}
         ></el-cascader>
       );
     },
 
-    getRadioGroupCompVNode({
-      tagAttrs: attrs,
-      listeners,
-      formField,
-      extraOption,
-      request,
-    }) {
+    getRadioGroupCompVNode({ tagAttrs: attrs, listeners, formField, extraOption, request }) {
       this.disposeRequest(request, extraOption);
       const { options = [], props = {} } = extraOption;
       const { formData, onlyShow } = this;
       // 基础版有个添加维护字典的功能，里面返回的字段为id和cnName，因此以此字段为默认取值
-      const { key = 'id', label = 'cnName' } = props;
+      const { key = "id", label = "cnName" } = props;
       let model = getter(formData, formField);
       return (
         <el-radio-group
@@ -265,11 +236,11 @@ export default {
           value={model}
           {...{
             attrs,
-            on: listeners,
+            on: listeners
           }}
           disabled={onlyShow}
         >
-          {options.map((item) => {
+          {options.map(item => {
             return (
               <el-radio label={item[key]} disabled={item.disabled}>
                 {item[label]}
@@ -280,18 +251,12 @@ export default {
       );
     },
 
-    getCheckboxGroupCompVNode({
-      tagAttrs: attrs,
-      listeners,
-      formField,
-      extraOption,
-      request,
-    }) {
+    getCheckboxGroupCompVNode({ tagAttrs: attrs, listeners, formField, extraOption, request }) {
       this.disposeRequest(request, extraOption);
       const { options = [], props = {} } = extraOption;
       const { formData, onlyShow } = this;
       // 基础版有个添加维护字典的功能，里面返回的字段为id和cnName，因此以此字段为默认取值
-      const { key = 'id', label = 'cnName' } = props;
+      const { key = "id", label = "cnName" } = props;
       let model = getter(formData, formField);
       return (
         <el-checkbox-group
@@ -299,11 +264,11 @@ export default {
           value={model}
           {...{
             attrs,
-            on: listeners,
+            on: listeners
           }}
           disabled={onlyShow}
         >
-          {options.map((item) => {
+          {options.map(item => {
             return (
               <el-checkbox label={item[key]} disabled={item.disabled}>
                 {item[label]}
@@ -316,17 +281,11 @@ export default {
 
     getTooltipCompVNode({ tagAttrs: { internalTagOption, ...attrs } }) {
       const { getSingleCompVNode } = this;
-      const {
-        style = '',
-        className = '',
-        tagAttrs = {},
-        contentText = '',
-        tagName,
-      } = internalTagOption;
+      const { style = "", className = "", tagAttrs = {}, contentText = "", tagName } = internalTagOption;
       return (
         <el-tooltip
           {...{
-            attrs,
+            attrs
           }}
         >
           {tagName ? (
@@ -336,7 +295,7 @@ export default {
               style={style}
               class={className}
               {...{
-                attrs: tagAttrs,
+                attrs: tagAttrs
               }}
             >
               {contentText}
@@ -347,38 +306,19 @@ export default {
     },
 
     // 配合组件是所有必须通过嵌套才能正常使用的组件
-    isCooperateComp(
-      tagName,
-      contentTextBehindTagOptions,
-      contentTextFrontTagOptions
-    ) {
-      if (typeof tagName !== 'string') {
-        console.error('isCooperateComp方法传入的参数必须为字符串');
+    isCooperateComp(tagName, contentTextBehindTagOptions, contentTextFrontTagOptions) {
+      if (typeof tagName !== "string") {
+        console.error("isCooperateComp方法传入的参数必须为字符串");
         return false;
       }
       // TODO 待添加，
-      const cooperateComp = [
-        'el-select',
-        'el-cascader',
-        'el-radio-group',
-        'el-checkbox-group',
-        'el-tooltip',
-      ];
-      return (
-        cooperateComp.indexOf(tagName) !== -1 &&
-        isEmpty(contentTextBehindTagOptions) &&
-        isEmpty(contentTextFrontTagOptions)
-      );
+      const cooperateComp = ["el-select", "el-cascader", "el-radio-group", "el-checkbox-group", "el-tooltip"];
+      return cooperateComp.indexOf(tagName) !== -1 && isEmpty(contentTextBehindTagOptions) && isEmpty(contentTextFrontTagOptions);
     },
 
     //
     getSingleCompVNode(item) {
-      const {
-        formData,
-        isCooperateComp,
-        getCooperateComp,
-        getPureSingleCompVNode,
-      } = this;
+      const { formData, isCooperateComp, getCooperateComp, getPureSingleCompVNode } = this;
       let {
         // 自定义插槽
         slotName,
@@ -390,13 +330,13 @@ export default {
         // 组件所需的监听事件
         listeners = {},
         // 需要绑定的formData的属性名
-        formField = '',
+        formField = "",
         tagName,
         // 接口处理
         request = {},
         contentTextFrontTagOptions = {},
         contentTextBehindTagOptions = {},
-        isFlat = false,
+        isFlat = false
       } = item;
       // isWrap防止无限循环
       if (!listeners?.input?.isWrap) {
@@ -408,14 +348,10 @@ export default {
           {slotName
             ? this.$scopedSlots[slotName]
               ? this.$scopedSlots[slotName]({
-                  formData: formData,
+                  formData: formData
                 })
-              : (console.warn(`slot : ${slotName} 未定义！`), '')
-            : isCooperateComp(
-                tagName,
-                contentTextBehindTagOptions,
-                contentTextFrontTagOptions
-              )
+              : (console.warn(`slot : ${slotName} 未定义！`), "")
+            : isCooperateComp(tagName, contentTextBehindTagOptions, contentTextFrontTagOptions)
             ? getCooperateComp({
                 tagName,
                 tagAttrs,
@@ -423,7 +359,7 @@ export default {
                 formField,
                 extraOption,
                 request,
-                isFlat,
+                isFlat
               })
             : getPureSingleCompVNode(item)}
         </div>
@@ -438,12 +374,12 @@ export default {
         className,
         style,
         // behindText和frontText为组件前后的文本，如需更复杂的自定义，请使用slotName
-        behindText = '',
-        frontText = '',
-        behindTextStyle = '',
-        frontTextStyle = '',
+        behindText = "",
+        frontText = "",
+        behindTextStyle = "",
+        frontTextStyle = "",
         // 如不需要使用formData中的值而只是需要固定文本则可使用此字段
-        contentText = '',
+        contentText = "",
         // 特殊组件的额外属性值例如select组件下的option组件所需的options
         extraOption = {},
         // 当前渲染组件（即Tag）所需的属性值
@@ -451,22 +387,31 @@ export default {
         // 组件所需的监听事件
         listeners = {},
         // 需要绑定的formData的属性名
-        formField = '',
+        formField = "",
         tagName,
         // 接口处理
         request = {},
         contentTextFrontTagOptions = {},
         contentTextBehindTagOptions = {},
+        showCodeEditor = false
       } = item;
       // 取代v-model语法糖，因为它不能实现多个点深层级取值赋值操作,例如fromData['a.b']
       // isWrap防止无限循环
       if (!listeners?.input?.isWrap) {
         listeners.input = getHandleInput(formData, formField, listeners.input);
+        if (showCodeEditor && tagName === "el-input") {
+          listeners.focus = decorator(() => {
+            this.codeValue = { formField };
+            this.$nextTick().then(() => {
+              this.showCodeEditor = true;
+            });
+          }, listeners.focus);
+        }
       }
       let model = getter(formData, formField);
       // tagName必须是eleui提供的已有组件或HTML已有标签,如果是只读标签，则固定使用span标签
       // Tag必须开头大写，否则会被识别为字符串
-      const Tag = onlyShow ? 'span' : tagName;
+      const Tag = onlyShow ? "span" : tagName;
       // 若tag为select这种需要别的标签配合使用的组件，则调用getCooperateComp方法
       return (
         <Tag
@@ -475,28 +420,22 @@ export default {
           class={className}
           {...{
             attrs: tagAttrs,
-            on: listeners,
+            on: listeners
           }}
         >
           {frontText ? <span style={frontTextStyle}>{frontText}</span> : null}
           {isEmpty(contentTextFrontTagOptions)
             ? null
             : Array.isArray(contentTextFrontTagOptions)
-            ? contentTextFrontTagOptions.map((options) =>
-                this.getPureSingleCompVNode(options)
-              )
+            ? contentTextFrontTagOptions.map(options => this.getPureSingleCompVNode(options))
             : this.getPureSingleCompVNode(contentTextFrontTagOptions)}
           {contentText}
           {isEmpty(contentTextBehindTagOptions)
             ? null
             : Array.isArray(contentTextBehindTagOptions)
-            ? contentTextBehindTagOptions.map((options) =>
-                this.getPureSingleCompVNode(options)
-              )
+            ? contentTextBehindTagOptions.map(options => this.getPureSingleCompVNode(options))
             : this.getPureSingleCompVNode(contentTextBehindTagOptions)}
-          {behindText ? (
-            <span style={behindTextStyle}>{behindText}</span>
-          ) : null}
+          {behindText ? <span style={behindTextStyle}>{behindText}</span> : null}
         </Tag>
       );
     },
@@ -509,34 +448,32 @@ export default {
         ...item
       } = allItemInfo;
       const { isFlat } = item;
-      if (typeof renderDependFn === 'string' && renderDependFn?.length > 0) {
+      if (typeof renderDependFn === "string" && renderDependFn?.length > 0) {
         item.renderDependFn = renderDependFn = str2Fn(renderDependFn);
       }
       // 先判断是否存在依赖渲染，在判断是否有labelSlotName，在判断是否有labelOptions
       return renderDependFn && !renderDependFn(this.formData) ? (
-        ''
+        ""
       ) : (
         <el-form-item
           {...{
-            attrs: formItemAttrs,
+            attrs: formItemAttrs
           }}
-          style={isFlat ? 'width: 100%' : ''}
+          style={isFlat ? "width: 100%" : ""}
         >
           {labelSlotName || !isEmpty(labelOptions) ? (
             <div slot="label">
               {labelSlotName && this.$scopedSlots[labelSlotName]
                 ? this.$scopedSlots[labelSlotName]({
-                    formData: formData,
+                    formData: formData
                   })
                 : this.getSingleCompVNode(labelOptions)}
             </div>
           ) : (
-            ''
+            ""
           )}
 
-          {item.child && Array.isArray(item.child)
-            ? item.child.map((item) => this.getSingleCompVNode(item))
-            : this.getSingleCompVNode(item)}
+          {item.child && Array.isArray(item.child) ? item.child.map(item => this.getSingleCompVNode(item)) : this.getSingleCompVNode(item)}
         </el-form-item>
       );
     },
@@ -544,28 +481,23 @@ export default {
     customLayoutRender(data) {
       // 由于此处的data为finalRenderOptions，已在props中声明为数组，因此不对data进行再次校验
       // 当前布局组件不提供 Bootstrap式的响应式布局属性
-      return data.map((rowItem) => {
-        const {
-          elRowAttrs = {},
-          formItem = {},
-          style = '',
-          className = '',
-        } = rowItem;
+      return data.map(rowItem => {
+        const { elRowAttrs = {}, formItem = {}, style = "", className = "" } = rowItem;
         return (
           <el-row
             {...{
-              attrs: elRowAttrs,
+              attrs: elRowAttrs
             }}
             style={style}
             class={className}
           >
             {Array.isArray(formItem)
-              ? rowItem.formItem.map((item) => {
+              ? rowItem.formItem.map(item => {
                   const { elColAttrs = {}, ...formItemAttrs } = item;
                   return elColAttrs?.span ? (
                     <el-col
                       {...{
-                        attrs: elColAttrs,
+                        attrs: elColAttrs
                       }}
                     >
                       {this.getFormItemVNode(formItemAttrs)}
@@ -579,6 +511,9 @@ export default {
         );
       });
     },
+    handleCodeEditorClose() {
+      this.showCodeEditor = false;
+    }
   },
 
   render() {
@@ -598,29 +533,50 @@ export default {
       dialogOptions,
       $attrs,
       $listeners,
+      codeValue,
+      showCodeEditor,
+      handleCodeEditorClose
     } = this;
 
     const defaultFormAttrs = {
       rules,
       model: formData,
-      size: 'mini',
-      'label-width': 'auto',
+      size: "mini",
+      "label-width": "auto"
     };
 
     const defaultDialogAttrs = {
       beforeClose: handleClose,
-      title: dialogTitle || '弹窗',
+      title: dialogTitle || "弹窗",
       visible: showDialog,
-      width: '800px',
+      width: "800px",
+      appendToBody: true
     };
 
+    const defaultCodeEditorDialogAttrs = {
+      beforeClose: handleCodeEditorClose,
+      title: "代码编写",
+      visible: showCodeEditor,
+      width: "900px",
+      appendToBody: true
+    };
+
+    const codeEditorListeners = {
+      input: val => {
+        console.log(val, "codeEditorListeners");
+        setter(formData, codeValue.formField, val);
+      }
+    };
+
+    const model = getter(formData, this.codeValue.formField);
+    console.log('baseformrender');
     return (
       <div>
         {useDialog ? (
           <el-dialog
             ref={dialogRef}
             {...{
-              attrs: { ...defaultDialogAttrs, ...dialogOptions },
+              attrs: { ...defaultDialogAttrs, ...dialogOptions }
             }}
           >
             <el-form
@@ -628,11 +584,11 @@ export default {
               {...{
                 attrs: {
                   ...defaultFormAttrs,
-                  ...$attrs,
+                  ...$attrs
                 },
                 on: {
-                  ...$listeners,
-                },
+                  ...$listeners
+                }
               }}
             >
               {customLayoutRender(finalRenderOptions)}
@@ -651,11 +607,11 @@ export default {
               {...{
                 attrs: {
                   ...defaultFormAttrs,
-                  ...$attrs,
+                  ...$attrs
                 },
                 on: {
-                  ...$listeners,
-                },
+                  ...$listeners
+                }
               }}
             >
               {customLayoutRender(finalRenderOptions)}
@@ -670,11 +626,20 @@ export default {
                 </el-button>
               </div>
             ) : (
-              ''
+              ""
             )}
           </div>
         )}
+        {showCodeEditor ? (
+          <el-dialog
+            {...{
+              attrs: { ...defaultCodeEditorDialogAttrs }
+            }}
+          >
+            <js-code-editor mode="javascript" readonly={false} value={model} ref="chEditor" {...{ on: codeEditorListeners }}></js-code-editor>
+          </el-dialog>
+        ) : null}
       </div>
     );
-  },
+  }
 };
