@@ -310,7 +310,7 @@ export default {
       console.log(id, 'id');
       this._groupId = id;
       this._formCode = formCode;
-      this.queryFormListAndTableList();
+      // this.queryFormListAndTableList();
       this.queryFormList();
       this.queryMetaList();
       this.queryFlowList();
