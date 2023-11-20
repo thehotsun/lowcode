@@ -12,7 +12,7 @@ import { getWidgetOptions, exec, getWidgetDefaultVal, str2obj, depthFirstSearchW
 import { cloneDeep, omit, merge } from 'lodash';
 
 export default {
-  name: 'completeTable',
+  name: 'CompleteTable',
   components: {
     BaseRenderTable,
     BaseRenderForm,
@@ -187,9 +187,9 @@ export default {
     // 保存表单
     async onSubmit(data) {
       this.$emit('onSubmit', data);
+      this.btnConfigs.isRefresh && this.queryTableData();
       this.expose_hideDialog();
       // await this.requestFormConfirm(this.formid, data)
-      this.btnConfigs.isRefresh && this.queryTableData();
     },
 
     // 预览的时候用，创建一个全为空字符串的对象
@@ -403,7 +403,7 @@ export default {
     },
 
     rowClick(val) {
-      this.$emit(rowClick, val);
+      this.$emit('rowClick', val);
       console.log(val);
     },
 
@@ -780,8 +780,10 @@ export default {
         case 'edit':
           if (rowData) {
             this.primaryKeyValue = rowData[this.keyField];
-          } else {
+          } else if (this.selectList.length) {
             this.primaryKeyValue = this.selectList[0] && this.selectList[0][this.keyField];
+          } else {
+            return this.$warn('请至少勾选一条要处理的数据！');
           }
           if ([undefined, null].includes(this.primaryKeyValue)) {
             return this.$warn('主键字段未取到值，请检查数据或在列表设计页面重新关联主键！');
@@ -1169,23 +1171,27 @@ export default {
       console.log('showCheckDialog', row);
       const target = this.btnRegularOptions[0]?.formItem?.find(btnOptions => btnOptions.extraOption.btnType === 'check');
       if (target) {
-        switch (target.extraOption.openType) {
-          case 0:
-            this.disposeDynamicEvent(target.extraOption, row);
-            break;
-          case 2:
-            this.btnConfigs.btnType = 'check';
-            this.disposeFlowEvent({ btnType: 'check' }, row);
-            break;
-          case 4:
-            this.disposeRelateCompEvent(target.extraOption, row);
-            break;
-          default:
-            console.warn('当前页面未配置openType为流程或表单或本地组件的按钮！');
-            break;
+        const validateFn = target.extraOption.validateFn;
+        console.log(target.extraOption);
+        if (!validateFn || (validateFn && str2Fn(validateFn)(this.selectList))) {
+          switch (target.extraOption.openType) {
+            case 0:
+              this.disposeDynamicEvent(target.extraOption, row);
+              break;
+            case 2:
+              this.btnConfigs.btnType = 'check';
+              this.disposeFlowEvent({ btnType: 'check' }, row);
+              break;
+            case 4:
+              this.disposeRelateCompEvent(target.extraOption, row);
+              break;
+            default:
+              console.warn('当前页面未配置openType为流程或表单或本地组件的按钮！');
+              break;
+          }
+        } else {
+          console.warn('当前页面未配置btnType为check的按钮！');
         }
-      } else {
-        console.warn('当前页面未配置btnType为check的按钮！');
       }
     }
   },
