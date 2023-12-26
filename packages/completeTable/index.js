@@ -187,9 +187,9 @@ export default {
     // 保存表单
     async onSubmit(data) {
       this.$emit('onSubmit', data);
+      // await this.requestFormConfirm(this.formid, data)
       this.btnConfigs.isRefresh && this.queryTableData();
       this.expose_hideDialog();
-      // await this.requestFormConfirm(this.formid, data)
     },
 
     // 预览的时候用，创建一个全为空字符串的对象
@@ -388,6 +388,16 @@ export default {
       if (this.previewMode) return;
       this.page.pageNo = 1;
       this.queryTableData();
+    },
+    handleNativeFilter(e) {
+      if (this.previewMode) return;
+      const keyCode = window.event ? e.keyCode : e.which;
+      //  console.log('回车搜索',keyCode,e);
+      console.log(keyCode);
+      if (keyCode === 13) {
+        this.page.pageNo = 1;
+        this.queryTableData();
+      }
     },
 
     handleReset() {
@@ -1218,7 +1228,7 @@ export default {
       panelData,
       filterFieldChange,
       handleSetting,
-      refresh,
+      handleNativeFilter,
       flowVNode,
       btnRelateDialogVNode,
       importFileVNode,
@@ -1296,18 +1306,39 @@ export default {
               ) : null}
               <div class="operate">
                 {fuzzySearchPlaceholder ? (
-                  <el-input style={{ width: '200px' }} size="mini" v-model={this.multiFieldSearch} placeholder={fuzzySearchPlaceholder} onChange={handleFilter} clearable={true}>
-                    <i slot="prefix" class="el-input__icon el-icon-search"></i>
-                  </el-input>
+                  <div class="inlineBlock">
+                    <el-input
+                      style={{ width: '200px' }}
+                      size="mini"
+                      v-model={this.multiFieldSearch}
+                      placeholder={fuzzySearchPlaceholder}
+                      nativeOnkeydown={handleNativeFilter}
+                      clearable={true}
+                    >
+                      <i slot="prefix" class="el-input__icon el-icon-search"></i>
+                    </el-input>
+                    <el-button
+                      type="primary"
+                      size="mini"
+                      style="margin-left: 10px"
+                      {...{
+                        on: {
+                          click: handleFilter
+                        }
+                      }}
+                    >
+                      搜 索
+                    </el-button>
+                  </div>
                 ) : null}
-                <i
+                {/* <i
                   class="el-icon-refresh-left i pointer"
                   {...{
                     on: {
                       click: refresh
                     }
                   }}
-                ></i>
+                ></i> */}
                 <i
                   class="el-icon-s-tools i pointer"
                   {...{

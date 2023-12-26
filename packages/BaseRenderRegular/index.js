@@ -1,3 +1,4 @@
+import './index.less';
 import { isEmpty, cloneDeep } from 'lodash';
 import { getter, getHandleInput } from '../../utils';
 
@@ -5,10 +6,10 @@ export default {
   name: 'BaseRenderRegular',
   props: {
     renderOptions: {
-      type: Array,
+      type: Array
     },
     onlyShow: Boolean,
-    formData: Object,
+    formData: Object
   },
   data() {
     return {};
@@ -17,16 +18,15 @@ export default {
     finalRenderOptions() {
       // 对所有元素的监听事件进行处理， 使其能访问到当前组件的this
       return (
-        this.renderOptions?.map((rowItem) => {
+        this.renderOptions?.map(rowItem => {
           const ectype = cloneDeep(rowItem);
           if (Array.isArray(ectype.formItem)) {
-            ectype.formItem.map((item) => {
+            ectype.formItem.map(item => {
               if (!isEmpty(item.listeners)) {
-                Object.keys(item.listeners).map((eventName) => {
+                Object.keys(item.listeners).map(eventName => {
                   if (item.listeners[eventName].isWrap) return;
                   const originFn = item.listeners[eventName];
-                  item.listeners[eventName] = (...argus) =>
-                    originFn.call(this, ...argus);
+                  item.listeners[eventName] = (...argus) => originFn.call(this, ...argus);
                 });
               }
               return item;
@@ -34,19 +34,18 @@ export default {
           } else {
             const listeners = ectype.formItem.listeners;
             if (!isEmpty(listeners)) {
-              Object.keys(listeners).map((eventName) => {
+              Object.keys(listeners).map(eventName => {
                 console.log(eventName, 'eventName');
                 if (listeners[eventName].isWrap) return;
                 const originFn = listeners[eventName];
-                ectype.formItem.listeners[eventName] = (...argus) =>
-                  originFn.call(this, ...argus);
+                ectype.formItem.listeners[eventName] = (...argus) => originFn.call(this, ...argus);
               });
             }
           }
           return ectype;
         }) || []
       );
-    },
+    }
   },
   watch: {},
   async created() {
@@ -54,11 +53,11 @@ export default {
   },
   methods: {
     btnClick(extraOption) {
-      return (e) => {
+      return e => {
         try {
           this.$emit('btnClick', {
             ...extraOption,
-            e,
+            e
           });
         } catch (error) {
           console.error(error);
@@ -68,7 +67,7 @@ export default {
     getCooperateComp(tagName, attrs, listeners, formField, extraOption) {
       // TODO 待添加，
       const renderFn = {
-        'el-select': this.getSelectCompVNode,
+        'el-select': this.getSelectCompVNode
       };
       return renderFn[tagName](attrs, listeners, formField, extraOption);
     },
@@ -89,38 +88,25 @@ export default {
       const { formData, onlyShow } = this;
       // 基础版有个添加维护字典的功能，里面返回的字段为id和cnName，因此以此字段为默认取值
       const { key = 'id', label = 'cnName' } = props;
-      let model = getter(formData, formField);
+      const model = getter(formData, formField);
       return (
         <el-select
           value={model}
           {...{
             attrs,
-            on: listeners,
+            on: listeners
           }}
           disabled={onlyShow}
         >
-          {options.map((item) => {
-            return (
-              <el-option
-                key={item[key]}
-                label={item[label]}
-                value={item[key]}
-                disabled={item.disabled}
-              ></el-option>
-            );
+          {options.map(item => {
+            return <el-option key={item[key]} label={item[label]} value={item[key]} disabled={item.disabled}></el-option>;
           })}
         </el-select>
       );
     },
 
     getSingleCompVNode(item) {
-      const {
-        formData,
-        isCooperateComp,
-        getCooperateComp,
-        onlyShow,
-        btnClick,
-      } = this;
+      const { formData, isCooperateComp, getCooperateComp, onlyShow, btnClick } = this;
       const {
         // class和style不会被组件的attr所处理，会直接赋值到组件的根节点因此需要单独拿出来赋值
         className,
@@ -144,13 +130,13 @@ export default {
         formField = '',
         tagName,
         contentTextFrontTagOptions = {},
-        contentTextBehindTagOptions = {},
+        contentTextBehindTagOptions = {}
       } = item;
       // 取代v-model语法糖，因为它不能实现多个点深层级取值赋值操作,例如fromData['a.b']
       listeners.input = getHandleInput(formData, formField, listeners.input);
       // 暂时只针对按钮的点击事件
       listeners.click = btnClick(extraOption);
-      let model = getter(formData, formField);
+      const model = getter(formData, formField);
       // tagName必须是eleui提供的已有组件或HTML已有标签,如果是只读标签，则固定使用span标签
       // Tag必须开头大写，否则会被识别为字符串
       const Tag = onlyShow ? 'span' : tagName;
@@ -159,16 +145,10 @@ export default {
         <div style="display: inline-block">
           {slotName ? (
             this.$scopedSlots[item.slotName]({
-              formData: formData,
+              formData: formData
             })
           ) : isCooperateComp(tagName) ? (
-            getCooperateComp(
-              tagName,
-              tagAttrs,
-              listeners,
-              formField,
-              extraOption
-            )
+            getCooperateComp(tagName, tagAttrs, listeners, formField, extraOption)
           ) : (
             <Tag
               value={model}
@@ -176,30 +156,22 @@ export default {
               class={className}
               {...{
                 attrs: tagAttrs,
-                on: listeners,
+                on: listeners
               }}
             >
-              {frontText ? (
-                <span style={frontTextStyle}>{frontText}</span>
-              ) : null}
+              {frontText ? <span style={frontTextStyle}>{frontText}</span> : null}
               {isEmpty(contentTextFrontTagOptions)
                 ? null
                 : Array.isArray(contentTextFrontTagOptions)
-                ? contentTextFrontTagOptions.map((options) =>
-                    this.getSingleCompVNode(options)
-                  )
+                ? contentTextFrontTagOptions.map(options => this.getSingleCompVNode(options))
                 : this.getSingleCompVNode(contentTextFrontTagOptions)}
               {model || tagAttrs?.value || contentText}
               {isEmpty(contentTextBehindTagOptions)
                 ? null
                 : Array.isArray(contentTextBehindTagOptions)
-                ? contentTextBehindTagOptions.map((options) =>
-                    this.getSingleCompVNode(options)
-                  )
+                ? contentTextBehindTagOptions.map(options => this.getSingleCompVNode(options))
                 : this.getSingleCompVNode(contentTextBehindTagOptions)}
-              {behindText ? (
-                <span style={behindTextStyle}>{behindText}</span>
-              ) : null}
+              {behindText ? <span style={behindTextStyle}>{behindText}</span> : null}
             </Tag>
           )}
         </div>
@@ -210,28 +182,23 @@ export default {
       // 由于此处的data为formOptions，已在props中声明为数组，因此不对data进行再次校验
       // 当前布局组件不提供 Bootstrap式的响应式布局属性
       console.log(data);
-      return data.map((rowItem) => {
-        const {
-          elRowAttrs = {},
-          formItem = {},
-          style = '',
-          className = '',
-        } = rowItem;
+      return data.map(rowItem => {
+        const { elRowAttrs = {}, formItem = {}, style = '', className = '' } = rowItem;
         return (
           <el-row
             {...{
-              attrs: elRowAttrs,
+              attrs: elRowAttrs
             }}
             style={style}
-            class={className}
+            class={'row ' + className}
           >
             {Array.isArray(formItem)
-              ? rowItem.formItem.map((item) => {
+              ? rowItem.formItem.map(item => {
                   const { elColAttrs = {}, ...formItemAttrs } = item;
                   return elColAttrs?.span ? (
                     <el-col
                       {...{
-                        attrs: elColAttrs,
+                        attrs: elColAttrs
                       }}
                     >
                       {this.getSingleCompVNode(formItemAttrs)}
@@ -244,33 +211,27 @@ export default {
           </el-row>
         );
       });
-    },
+    }
   },
 
   render() {
-    const {
-      customLayoutRender,
-      rules,
-      finalRenderOptions,
-      formRef,
-      $attrs,
-      $listeners,
-    } = this;
+    const { customLayoutRender, finalRenderOptions, formRef, $attrs, $listeners } = this;
 
     return (
       <div
+        class="baseRenderRegular"
         ref={formRef}
         {...{
           attrs: {
-            ...$attrs,
+            ...$attrs
           },
           on: {
-            ...$listeners,
-          },
+            ...$listeners
+          }
         }}
       >
         {customLayoutRender(finalRenderOptions)}
       </div>
     );
-  },
+  }
 };

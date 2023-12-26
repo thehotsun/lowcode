@@ -10,20 +10,25 @@
   }
 
   .absolute-header-height {
-    height: 30px !important
+    height: initial !important;
+    min-height: 30px;
+  }
+
+  .inlineBlock {
+    display: inline-block;
   }
 
   .none {
-    display: none
+    display: none;
   }
   .flex-header-height {
-    height: fit-content !important
+    height: fit-content !important;
   }
 
   .main-padding {
     padding: 10px 20px 20px 20px;
   }
-  
+
   .edit {
     position: fixed;
     top: 20%;
@@ -31,25 +36,25 @@
     right: 0;
     z-index: 999;
   }
-  
+
   .flex {
     display: flex;
     align-items: center;
   }
-  
+
   .between {
     justify-content: space-between;
   }
-    .relative {
-      position: relative;
-    }
+  .relative {
+    position: relative;
+  }
 
   .absolute {
     position: absolute;
   }
   .custom {
-        left: 157px;
-          top: 30px;
+    left: 157px;
+    top: 30px;
   }
   .operate {
     position: absolute;
