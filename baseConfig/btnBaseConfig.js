@@ -460,7 +460,9 @@ export function BtnConfigFormOptions() {
         },
         // 对应formData中的属性值
         formField: 'extraOption.requestUrl',
-        renderDependFn: excludeDownAndDelRenderDependFn
+        renderDependFn: function(formData) {
+          return formData.extraOption.openType === 5;
+        }
       }
     },
 
@@ -494,7 +496,7 @@ export function BtnConfigFormOptions() {
           status: 'pending'
         },
         renderDependFn: function(formData) {
-          return formData.extraOption.btnType !== 'download';
+          return formData.extraOption.openType === 5;
         }
       }
     },

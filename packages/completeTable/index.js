@@ -824,9 +824,20 @@ export default {
 
     getRequestConfig() {
       const {
-        btnConfigs: { requestUrl, requestType, requestFixedParams = {} }
+        selectList,
+        keyField,
+        btnConfigs: {
+          requestUrl,
+          requestType,
+          requestFixedParams = {},
+          deliverySelectList,
+          btnDisposeParamsRule: { paramType, paramName }
+        }
       } = this;
-      const { params = [], data = [] } = requestFixedParams;
+
+      // 这里提交的是用户自己设置的固定参数
+      const { params = [], data = [], headers = [] } = requestFixedParams;
+      // 这里提交的是列表选中的数据
       const { transformParamsValue } = this;
       let finalUrl = requestUrl;
       if (params?.length) {
@@ -842,11 +853,25 @@ export default {
           finalData[item.name] = transformParamsValue(item.value);
         });
       }
+      if (deliverySelectList) {
+        const selectListId = selectList.map(item => item[keyField]);
+        if (paramType === 1) {
+          finalUrl = addQueryString(
+            {
+              [paramName]: selectListId.join(',')
+            },
+            finalUrl
+          );
+        } else if (paramType === 0) {
+          finalData[paramName] = selectListId;
+        }
+      }
       const finalType = requestTypeList.find(item => item.id === requestType)?.cnName || '';
       return {
         finalUrl,
         finalData,
-        finalType
+        finalType,
+        headers
       };
     },
 
@@ -854,8 +879,13 @@ export default {
       if (requestBeforeConfirmHint) {
         await this.$confirm(`${requestBeforeConfirmText}`);
       }
-      const { finalUrl, finalType, finalData } = this.getRequestConfig();
-      this.generalRequest(finalUrl, finalType, finalData);
+      const { finalUrl, finalType, finalData, headers } = this.getRequestConfig();
+      const requestHeaders = {};
+      headers.map(item => {
+        const headerFieldNameRegex = /^[\w-]+$/;
+        if (headerFieldNameRegex.test(item.name)) requestHeaders[item.name] = item.value;
+      });
+      this.generalRequest(finalUrl, finalType, finalData, requestHeaders);
     },
 
     disposeDownOrDel({ btnType }) {
@@ -1098,12 +1128,13 @@ export default {
         btnConfigs: { btnDisposeParamsRule, requestBeforeConfirmHint, requestBeforeConfirmText, deliverySelectList },
         getRequestConfig
       } = this;
-      const { finalUrl, finalType, finalData } = getRequestConfig();
+      const { finalUrl, finalType, finalData, headers } = getRequestConfig();
       let config = {
         requestConfig: {
           requestType: finalType,
           requestUrl: finalUrl,
           requestBodyData: finalData,
+          requestHeader: headers,
           requestBeforeConfirmHint,
           requestBeforeConfirmText
         },

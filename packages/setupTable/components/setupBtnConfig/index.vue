@@ -50,7 +50,7 @@
               </el-row>
               <el-row>
                 <el-col :span="6">
-                  <el-button type="text" icon="el-icon-plus" @click="addRequestParam"> 新增请求参数</el-button>
+                  <el-button type="text" icon="el-icon-plus" @click="addRequestParam">新增请求参数</el-button>
                 </el-col>
               </el-row>
             </div>
@@ -80,6 +80,31 @@
               </el-row>
             </div>
           </div>
+          <div class="config">
+            <div class="configLeft">请求头</div>
+            <div class="configRight">
+              <el-row v-for="(rd, dIdx) in paramsConfig.headers" :key="dIdx" class="rd-row" :gutter="8">
+                <el-col :span="7">
+                  <el-form-item :required="true">
+                    <el-input v-model="rd.name" placeholder="请输入名称"></el-input>
+                  </el-form-item>
+                </el-col>
+                <el-col :span="8">
+                  <el-form-item>
+                    <el-input v-model="rd.value" placeholder="请输入值"></el-input>
+                  </el-form-item>
+                </el-col>
+                <el-col :span="3">
+                  <el-button icon="el-icon-delete" plain circle @click="deleteHeaderData(dIdx)"></el-button>
+                </el-col>
+              </el-row>
+              <el-row>
+                <el-col :span="6">
+                  <el-button type="text" icon="el-icon-plus" @click="addHeaderData">新增请求头</el-button>
+                </el-col>
+              </el-row>
+            </div>
+          </div>
         </el-form>
       </template>
       <span slot="footer" class="dialog-footer">
@@ -91,14 +116,14 @@
 </template>
 
 <script>
-import BaseRenderForm from "../../../BaseRenderForm/index";
-import { BtnConfigFormOptions, BtnConfigFrom } from "../../../../baseConfig/btnBaseConfig";
-import { findFromOptionsIndexByfieldName } from "../../../../utils";
-import IconPicker from "./components/iconPicker";
-import { cloneDeep, merge } from "lodash";
+import BaseRenderForm from '../../../BaseRenderForm/index';
+import { BtnConfigFormOptions, BtnConfigFrom } from '../../../../baseConfig/btnBaseConfig';
+import { findFromOptionsIndexByfieldName } from '../../../../utils';
+import IconPicker from './components/iconPicker';
+import { cloneDeep, merge } from 'lodash';
 
 export default {
-  name: "SetupBtnConfig",
+  name: 'SetupBtnConfig',
   components: {
     BaseRenderForm,
     IconPicker
@@ -108,7 +133,7 @@ export default {
   },
   data() {
     return {
-      colorList: ["", "primary", "success", "info", "warning", "danger"],
+      colorList: ['', 'primary', 'success', 'info', 'warning', 'danger'],
       btnConfigFormOptions: new BtnConfigFormOptions(),
       btnConfigFromArr: [],
       originConfigForm: {},
@@ -116,7 +141,8 @@ export default {
       showParamsConfig: false,
       paramsConfig: {
         params: [],
-        data: []
+        data: [],
+        headers: []
       }
       // nameRules: { required: true, trigger: ['blur', 'change'], message: '请输入名称' },
     };
@@ -141,16 +167,16 @@ export default {
     },
 
     expose_hideSomeFieldOptions(fieldName) {
-      if (typeof fieldName === "string") {
+      if (typeof fieldName === 'string') {
         fieldName = [fieldName];
       } else if (Array.isArray(fieldName)) {
         fieldName.map(item => {
           const index = findFromOptionsIndexByfieldName(this.btnConfigFormOptions, item);
-          console.log(index, "index");
+          console.log(index, 'index');
           index !== -1 && this.btnConfigFormOptions.splice(index, 1);
         });
       } else {
-        console.error("expose_hideSomeFieldOptions只能接受字符串或者数组");
+        console.error('expose_hideSomeFieldOptions只能接受字符串或者数组');
       }
     },
 
@@ -186,7 +212,7 @@ export default {
 
     expose_setExtraOption(options, field) {
       const target = this.btnConfigFormOptions.find(item => item.formItem.formField === field);
-      console.log(target, "target");
+      console.log(target, 'target');
       if (target) target.formItem.extraOption = options;
     },
     expose_delBtnConfigFromArr(index) {
@@ -199,13 +225,16 @@ export default {
       // if (Object.prototype.toString(this.btnConfigFrom.requestParamsConfig) === '[object Object]') {
 
       // }
-      this.paramsConfig = cloneDeep(this.btnConfigFrom.extraOption.requestParamsConfig);
+      this.paramsConfig = {
+        ...this.paramsConfig,
+        ...cloneDeep(this.btnConfigFrom.extraOption.requestParamsConfig)
+      };
     },
 
     addRequestParam() {
       this.paramsConfig.params.push({
-        name: "",
-        value: ""
+        name: '',
+        value: ''
       });
     },
 
@@ -215,8 +244,8 @@ export default {
 
     addRequestData() {
       this.paramsConfig.data.push({
-        name: "",
-        value: ""
+        name: '',
+        value: ''
       });
     },
 
@@ -224,10 +253,21 @@ export default {
       this.paramsConfig.data.splice(idx, 1);
     },
 
+    addHeaderData() {
+      this.paramsConfig.headers.push({
+        name: '',
+        value: ''
+      });
+    },
+
+    deleteHeaderData(idx) {
+      this.paramsConfig.headers.splice(idx, 1);
+    },
+
     handleConfirm() {
       this.$refs.dsForm.validate((valid, fields) => {
         if (!valid) {
-          this.$message.error("请求接口设置存在错误，请修改");
+          this.$message.error('请求接口设置存在错误，请修改');
           return;
         }
         this.showParamsConfig = false;
@@ -238,13 +278,13 @@ export default {
     onSubmit(data) {
       const iconName = data.extraOption.iconName;
       const val = data.extraOption.iconPosition;
-      if (val === "front") {
+      if (val === 'front') {
         data.tagAttrs.icon = iconName;
         data.contentTextBehindTagOptions = {};
       } else {
-        data.tagAttrs.icon = "";
+        data.tagAttrs.icon = '';
         data.contentTextBehindTagOptions = {
-          tagName: "i",
+          tagName: 'i',
           className: iconName
         };
       }
@@ -255,11 +295,11 @@ export default {
       } else {
         merge(this.originConfigForm, data);
       }
-      this.$emit("onSubmit");
+      this.$emit('onSubmit');
       this.btnConfigFrom = new BtnConfigFrom();
     },
     onClose() {
-      this.$emit("onClose");
+      this.$emit('onClose');
       this.originConfigForm = {};
       this.btnConfigFrom = new BtnConfigFrom();
     },
