@@ -149,7 +149,7 @@ export default {
     else return true;
   },
 
-  inject: ["openFlow", "importFileComp", "queryFlowDef", "componentList", "enterpriseId"],
+  inject: ["openFlow", "importFileComp", "queryFlowDef", "componentList", "enterpriseId", "prjInfo"],
 
   methods: {
     expose_CompleteTableInstance() {
@@ -473,7 +473,9 @@ export default {
         ...this.searchFrom,
         ...extraParams,
         ...this.externalParmas,
-        multiFieldSearch: this.multiFieldSearch
+        multiFieldSearch: this.multiFieldSearch,
+        prjId: this.prjInfo.prjId,
+        enterpriseId: this.enterpriseId
       };
     },
 
