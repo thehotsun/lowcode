@@ -77,7 +77,7 @@
       width="900px"
       :before-close="handleCloseTableAttrs"
     >
-      <div style="min-width: 60px;background: #fff;padding: 10px; margn-top: 60px;margin-bottom: 60px;">
+      <div style="min-width: 60px;background: #fff;padding: 10px; margin-top: 60px;margin-bottom: 60px;">
         <el-form :model="tableAttrs" :rules="rules" ref="ruleForm" label-width="130px" style="padding-bottom: 20px">
           <el-form-item label="分页" prop="showPagination">
             <el-switch v-model="tableAttrs.showPagination" />
