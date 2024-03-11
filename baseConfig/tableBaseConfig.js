@@ -6,6 +6,7 @@ export function getTableAttrs() {
   return {
     // 初始化是否显示分页
     showPagination: true,
+    paginationSize: 20,
     isShowIndex: true,
     isShowCheckbox: true,
     index: "",

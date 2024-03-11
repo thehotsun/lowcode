@@ -70,7 +70,7 @@ export default {
       rawSearchFrom: {},
       page: {
         pageNo: 1,
-        pageSize: 10,
+        pageSize: 20,
         totalCount: 0
       },
       btnRegularOptions: [],
@@ -94,7 +94,7 @@ export default {
 
   computed: {
     attrs() {
-      const props = ["isTree", "isMerge", "isShowIndex", "showPagination", "isShowIndex", "isShowCheckbox", "keyField", "tableOptions", "formOptions", "style"];
+      const props = ["isTree", "isMerge", "isShowIndex", "showPagination", "isShowIndex", "isShowCheckbox", "keyField", "tableOptions", "formOptions", "style", "paginationSize"];
       if (!this.tableAttrs.isShowIndex) {
         props.push("index");
       }
@@ -247,7 +247,7 @@ export default {
       this.previewMode = false;
       this.page = {
         pageNo: 1,
-        pageSize: 10,
+        pageSize: 20,
         totalCount: 0
       };
       this.btnConfigs = new BtnConfigs();
@@ -501,7 +501,8 @@ export default {
 
     parseTableConfig(data) {
       const { tableOptions, formOptions, keyField, tableAttrs, fuzzyFieldSearchConfig } = data;
-      this.tableAttrs = setTableAttrs(tableAttrs);
+      this.tableAttrs = setTableAttrs(merge({}, this.tableAttrs, tableAttrs));
+      this.page.pageSize = this.tableAttrs.paginationSize;
       if (formOptions?.length) {
         this.btnRegularOptions = this.composeBtnRegularOptions(cloneDeep(formOptions));
       } else {
@@ -1395,7 +1396,7 @@ export default {
               ></base-render-table>
             </el-main>
             {tableAttrs.showPagination ? (
-              <el-footer>
+              <el-footer style="height:30px;">
                 <el-pagination
                   class="el-pagination"
                   layout={pageLayout}

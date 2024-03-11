@@ -82,6 +82,11 @@
           <el-form-item label="分页" prop="showPagination">
             <el-switch v-model="tableAttrs.showPagination" />
           </el-form-item>
+          <el-form-item v-show="tableAttrs.showPagination" label="分页显示条数" prop="showPagination">
+            <el-select v-model="tableAttrs.paginationSize" placeholder="请选择">
+              <el-option v-for="item in paginationSizeOptions" :key="item.value" :label="item.label" :value="item.value"> </el-option>
+            </el-select>
+          </el-form-item>
           <el-form-item label="显示序号" prop="isShowIndex">
             <el-switch v-model="tableAttrs.isShowIndex" />
           </el-form-item>
@@ -163,15 +168,15 @@
 </template>
 
 <script>
-import { getSingleTableData, getTableAttrs } from '../../baseConfig/tableBaseConfig';
-import completeTable from '../completeTable';
-import setupBtnConfig from './components/setupBtnConfig';
-import singleSetupTable from './components/singleSetupTable';
-import { getWidgetOptions, getWidgetDefaultVal, depthFirstSearchWithRecursive, setColSpan } from '../../utils';
-import { align, searchWidget } from '../../baseConfig/tableSelectConfigs';
-import { merge } from 'lodash';
+import { getSingleTableData, getTableAttrs } from "../../baseConfig/tableBaseConfig";
+import completeTable from "../completeTable";
+import setupBtnConfig from "./components/setupBtnConfig";
+import singleSetupTable from "./components/singleSetupTable";
+import { getWidgetOptions, getWidgetDefaultVal, depthFirstSearchWithRecursive, setColSpan } from "../../utils";
+import { align, searchWidget } from "../../baseConfig/tableSelectConfigs";
+import { merge } from "lodash";
 export default {
-  name: 'setupTable',
+  name: "setupTable",
   components: {
     completeTable,
     singleSetupTable,
@@ -245,34 +250,52 @@ export default {
   },
   data() {
     return {
+      paginationSizeOptions: [
+        {
+          label: "10条/页",
+          value: 10
+        },
+        {
+          label: "20条/页",
+          value: 20
+        },
+        {
+          label: "50条/页",
+          value: 50
+        },
+        {
+          label: "100条/页",
+          value: 100
+        }
+      ],
       dialogVisibleBtnConfig: false,
       dialogVisiblePreview: false,
       dialogVisibleTableAttrs: false,
       tableData: [],
       setupForm: {},
       setupFormOptions: [],
-      _groupId: '',
+      _groupId: "",
       btnConfigArr: [],
       formList: [],
-      _options: '',
-      direction: 'rtl',
+      _options: "",
+      direction: "rtl",
       drawer: false,
       rules: {},
       tableAttrs: getTableAttrs(),
       // 主键
-      keyField: '',
+      keyField: "",
       sizeOptions: [
         {
-          value: 'medium',
-          label: '中等'
+          value: "medium",
+          label: "中等"
         },
         {
-          value: 'small',
-          label: '小'
+          value: "small",
+          label: "小"
         },
         {
-          value: 'mimi',
-          label: '迷你'
+          value: "mimi",
+          label: "迷你"
         }
       ],
       searchFromOptions: [],
@@ -286,7 +309,7 @@ export default {
     };
   },
 
-  inject: ['componentDicList', 'Sortable'],
+  inject: ["componentDicList", "Sortable"],
   watch: {
     showSearchFromArea(val) {
       if (val) {
@@ -301,13 +324,13 @@ export default {
 
   errorCaptured(err) {
     // 看着心烦，直接屏蔽，elform计算label值得时候得问题，在beforeDestroy周期里，不影响功能
-    if (err.message === '[ElementForm]unpected width ') return false;
+    if (err.message === "[ElementForm]unpected width ") return false;
     else return true;
   },
 
   methods: {
-    async init(id = '', formCode) {
-      console.log(id, 'id');
+    async init(id = "", formCode) {
+      console.log(id, "id");
       this._groupId = id;
       this._formCode = formCode;
       // this.queryFormListAndTableList();
@@ -320,7 +343,7 @@ export default {
       if (data) {
         const obj = JSON.parse(data);
         const { tableOptions, formOptions, keyField, tableAttrs, fuzzyFieldSearchConfig } = obj;
-        this.tableAttrs = tableAttrs;
+        this.tableAttrs = merge({}, this.tableAttrs, tableAttrs);
         if (fuzzyFieldSearchConfig && Object.keys(fuzzyFieldSearchConfig).length) {
           this.$refs.singleSetupTable.expose_setFuzzyFieldSearchConfig(fuzzyFieldSearchConfig);
         }
@@ -339,7 +362,7 @@ export default {
 
     btnsColumnDrop() {
       // 此时找到的元素是要拖拽元素的父容器
-      const dom = document.querySelector('.btnDesign .btns');
+      const dom = document.querySelector(".btnDesign .btns");
       this.Sortable.create(dom, {
         onEnd: e => {
           //e.oldIndex为拖动一行原来的位置，e.newIndex为拖动后新的位置
@@ -352,9 +375,9 @@ export default {
 
     searchAreaDrop() {
       // 此时找到的元素是要拖拽元素的父容器
-      const dom = document.querySelector('.searchArea .el-form .el-row');
+      const dom = document.querySelector(".searchArea .el-form .el-row");
       this.Sortable.create(dom, {
-        handle: '.el-form-item__label',
+        handle: ".el-form-item__label",
         onEnd: e => {
           //e.oldIndex为拖动一行原来的位置，e.newIndex为拖动后新的位置
           // 排序后要先获取最新的列表，否则下面list[e.oldIndex]取不到正确的值
@@ -409,11 +432,11 @@ export default {
         {
           elRowAttrs: {
             gutter: 10,
-            type: 'flex',
-            align: 'middle',
-            justify: 'start'
+            type: "flex",
+            align: "middle",
+            justify: "start"
           },
-          style: 'flex-wrap: wrap',
+          style: "flex-wrap: wrap",
           formItem: formOptions
         }
       ];
@@ -476,12 +499,12 @@ export default {
 
     queryFormList() {
       this.requestFormList(this._groupId).then(res => {
-        console.log(res.data, 'queryFormList');
+        console.log(res.data, "queryFormList");
         this._formListExtraOption = {
           options: res.data,
           props: {
-            label: 'formName',
-            key: 'formId'
+            label: "formName",
+            key: "formId"
           }
         };
       });
@@ -490,7 +513,7 @@ export default {
     queryFormListAndTableList() {
       this.requestTableListAndFormList(this._groupId).then(res => {
         const { formList, listPageList } = res.data;
-        console.log(formList, listPageList, 'queryFormListAndTableList');
+        console.log(formList, listPageList, "queryFormListAndTableList");
         // this.formList = this.convartFormList(formList);
         // this.tableList = this.convartTableList(listPageList);
         // this._formListExtraOption = {
@@ -512,7 +535,7 @@ export default {
 
     async queryMetaList() {
       if (!this.requestMetaList) {
-        console.error('未配置查询业务模型的方法');
+        console.error("未配置查询业务模型的方法");
         return;
       }
       const res = await this.requestMetaList(this._groupId);
@@ -523,8 +546,8 @@ export default {
       this._metaListExtraOption = {
         options: res.data,
         props: {
-          label: 'businessName',
-          key: 'tableName'
+          label: "businessName",
+          key: "tableName"
         }
       };
     },
@@ -534,9 +557,9 @@ export default {
         this._flowListExtraOption = {
           options: data,
           props: {
-            label: 'name',
-            key: 'flowKey',
-            children: 'flowDefinitionDtoList',
+            label: "name",
+            key: "flowKey",
+            children: "flowDefinitionDtoList",
             emitPath: false
           }
         };
@@ -547,12 +570,12 @@ export default {
       this.requestAuthorizeList().then(res => {
         this._btnAuthorize = {
           options: res.data.concat({
-            actionName: '所有人可操作',
-            actionCode: 'defaultShow'
+            actionName: "所有人可操作",
+            actionCode: "defaultShow"
           }),
           props: {
-            label: 'actionName',
-            key: 'actionCode'
+            label: "actionName",
+            key: "actionCode"
           }
         };
       });
@@ -560,7 +583,7 @@ export default {
 
     async confirm() {
       await this.handleSubmitTableConfig();
-      this.$emit('onSave');
+      this.$emit("onSave");
     },
     // 获取保存接口所需所需params
     getRenderParams() {
@@ -582,7 +605,7 @@ export default {
       const renderParams = this.getRenderParams();
       const actionList = [];
       renderParams.formOptions?.map(item => {
-        if (item.authorize !== 'defaultShow') {
+        if (item.authorize !== "defaultShow") {
           actionList.push({
             actionCode: `${this._formCode}:${item.btnId}:${item.authorize}`,
             actionName: item.tagAttrs.value
@@ -596,10 +619,10 @@ export default {
         },
         this._groupId
       ).then(data => {
-        if (data.result === '0') {
-          this.$message.success('保存成功');
+        if (data.result === "0") {
+          this.$message.success("保存成功");
         } else {
-          this.$message.warning('保存失败');
+          this.$message.warning("保存失败");
         }
       });
     },
@@ -613,65 +636,65 @@ export default {
         // 还原form配置
         this.$refs.setupBtnConfig.expose_reductionAll();
         // 配置关联的设计表格下拉框
-        this.$refs.setupBtnConfig.expose_setExtraOption(this._formListExtraOption, 'extraOption.relateFrom');
+        this.$refs.setupBtnConfig.expose_setExtraOption(this._formListExtraOption, "extraOption.relateFrom");
         // 配置关联的设计列表下拉框
-        this.$refs.setupBtnConfig.expose_setExtraOption(this._tableListExtraOption, 'extraOption.relateTable');
+        this.$refs.setupBtnConfig.expose_setExtraOption(this._tableListExtraOption, "extraOption.relateTable");
         // 配置关联的业务模型下拉框
-        this.$refs.setupBtnConfig.expose_setExtraOption(this._metaListExtraOption, 'extraOption.relateMeta');
+        this.$refs.setupBtnConfig.expose_setExtraOption(this._metaListExtraOption, "extraOption.relateMeta");
         // 配置关联的流程列表下拉框
-        this.$refs.setupBtnConfig.expose_setExtraOption(this._flowListExtraOption, 'extraOption.flowKey');
+        this.$refs.setupBtnConfig.expose_setExtraOption(this._flowListExtraOption, "extraOption.flowKey");
         // 配置关联的组件列表下拉框
         this.$refs.setupBtnConfig.expose_setExtraOption(
           {
             options: this.componentDicList
           },
-          'extraOption.relateComponent'
+          "extraOption.relateComponent"
         );
         // 配置权限下拉框
-        this.$refs.setupBtnConfig.expose_setExtraOption(this._btnAuthorize, 'authorize');
+        this.$refs.setupBtnConfig.expose_setExtraOption(this._btnAuthorize, "authorize");
         // 获取原始按钮配置form
         const config = this.$refs.setupBtnConfig.expose_getBtnConfigFrom();
         console.log(command);
         // 根据不同的command填充不同的form信息
         switch (command) {
-          case 'add':
-            config.extraOption.dialogTitle = config.tagAttrs.value = '新增';
-            config.extraOption.btnType = 'add';
-            config.authorize = 'A';
+          case "add":
+            config.extraOption.dialogTitle = config.tagAttrs.value = "新增";
+            config.extraOption.btnType = "add";
+            config.authorize = "A";
             break;
-          case 'edit':
-            config.extraOption.dialogTitle = config.tagAttrs.value = '编辑';
-            config.extraOption.btnType = 'edit';
-            config.authorize = 'U';
+          case "edit":
+            config.extraOption.dialogTitle = config.tagAttrs.value = "编辑";
+            config.extraOption.btnType = "edit";
+            config.authorize = "U";
             config.extraOption.deliverySelectList = true;
             break;
-          case 'check':
-            config.extraOption.dialogTitle = config.tagAttrs.value = '查看';
-            config.extraOption.btnType = 'check';
-            config.authorize = 'V';
+          case "check":
+            config.extraOption.dialogTitle = config.tagAttrs.value = "查看";
+            config.extraOption.btnType = "check";
+            config.authorize = "V";
             config.extraOption.deliverySelectList = true;
             break;
-          case 'batchDel':
-            config.tagAttrs.value = '批量删除';
-            config.extraOption.btnType = 'batchDel';
+          case "batchDel":
+            config.tagAttrs.value = "批量删除";
+            config.extraOption.btnType = "batchDel";
             config.extraOption.openType = -1;
-            config.authorize = 'D';
+            config.authorize = "D";
 
             break;
-          case 'download':
-            config.tagAttrs.value = '导出';
-            config.extraOption.btnType = 'download';
+          case "download":
+            config.tagAttrs.value = "导出";
+            config.extraOption.btnType = "download";
             config.extraOption.openType = -1;
-            config.authorize = 'E';
+            config.authorize = "E";
             break;
-          case 'import':
-            config.tagAttrs.value = '导入';
-            config.extraOption.btnType = 'import';
+          case "import":
+            config.tagAttrs.value = "导入";
+            config.extraOption.btnType = "import";
             config.extraOption.openType = -1;
-            config.authorize = 'I';
+            config.authorize = "I";
             break;
-          case 'custom':
-            config.extraOption.btnType = 'custom';
+          case "custom":
+            config.extraOption.btnType = "custom";
             config.extraOption.deliverySelectList = true;
             break;
           default:
@@ -702,7 +725,7 @@ export default {
     },
 
     showTableSetting() {
-      this.$emit('showTableSetting');
+      this.$emit("showTableSetting");
     },
 
     // 按钮设计的提交事件
