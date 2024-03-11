@@ -49,7 +49,8 @@ export default {
       type: Function
     },
     listPageId: String,
-    rawlistPageId: String
+    rawlistPageId: String,
+    wrapHeight: [Number, String]
   },
 
   data() {
@@ -88,7 +89,8 @@ export default {
       previewMode: false,
       curDialogCompRef: "",
       tableAttrs: {},
-      btnConfigs: new BtnConfigs()
+      btnConfigs: new BtnConfigs(),
+      headerHeight: 0
     };
   },
 
@@ -128,6 +130,21 @@ export default {
 
       const options = filterFiled.map(field => tableOptions.find(rawitem => rawitem.prop === field));
       return [...configOptions, ...options];
+    },
+
+    tableHeight() {
+      if (this.wrapHeight && this.headerHeight) {
+        let height = "";
+        try {
+          // 最后额外减去10 防止多个滚动条出现
+          height = this.wrapHeight - 30 - 30 - this.headerHeight - 40 - 10;
+        } catch (error) {
+          console.error("设置低代码table高度报错，报错信息：", error);
+        }
+        return height;
+      } else {
+        return "auto";
+      }
     }
   },
 
@@ -218,6 +235,16 @@ export default {
         this.queryTableData();
         this.composeData();
       }
+      setTimeout(() => {
+        try {
+          this.headerHeight =
+            parseFloat(window.getComputedStyle(this.$refs.elHeader.$el).height) +
+            (this.showSearchFrom ? parseFloat(window.getComputedStyle(this.$refs.elHeaderSearchFrom.$el).height) + 20 : 0);
+          console.log(this.headerHeight, " this.headerHeight");
+        } catch (error) {
+          console.error("获取低代码table header高度报错，报错信息：", error);
+        }
+      }, 1000);
     },
 
     // 清空数据
@@ -1225,6 +1252,7 @@ export default {
 
   render() {
     const {
+      tableHeight,
       generalRequest,
       showSearchFrom,
       searchFrom,
@@ -1291,7 +1319,7 @@ export default {
     return (
       <el-container class="CompleteTable" style={tableAttrs.style} nativeOnClick={handleGlobalClick}>
         {showSearchFrom ? (
-          <el-header style="margin: 20px 0 0 0;" class="flex-header-height">
+          <el-header ref="elHeaderSearchFrom" style="margin: 20px 0 0 0;" class="flex-header-height">
             {formOptions?.length ? (
               <base-render-form
                 ref="form"
@@ -1308,7 +1336,7 @@ export default {
         ) : null}
         <el-main class="main-padding">
           <el-container style="height: 100%">
-            <el-header class="flex between relative absolute-header-height">
+            <el-header ref="elHeader" class="flex between relative absolute-header-height">
               {showBtns ? (
                 <base-render-regular
                   ref="btnForm"
@@ -1380,6 +1408,7 @@ export default {
             <el-main>
               <base-render-table
                 ref="table"
+                height={tableHeight}
                 table-data={tableData}
                 table-options={filterTableOptions}
                 {...{
