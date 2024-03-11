@@ -6,21 +6,21 @@ import {
   getElCascaderConfig,
   getElInputNumberConfig,
   getElBtnConfig
-} from '../baseConfig/widgetBaseConfig';
+} from "../baseConfig/widgetBaseConfig";
 
-import { searchWidget } from '../baseConfig/tableSelectConfigs';
-import { requestTypeList } from '../baseConfig/btnBaseConfig';
+import { searchWidget } from "../baseConfig/tableSelectConfigs";
+import { requestTypeList } from "../baseConfig/btnBaseConfig";
 
-import { pickBy, merge } from 'lodash';
+import { pickBy, merge } from "lodash";
 
 export function setPlaceholder(tagName, fieldName) {
-  const inputs = ['el-input', 'el-input-number'];
-  return `请${inputs.includes(tagName) ? '输入' : '选择'}${fieldName}`;
+  const inputs = ["el-input", "el-input-number"];
+  return `请${inputs.includes(tagName) ? "输入" : "选择"}${fieldName}`;
 }
 
 export function setFilterAndResetBtnConfig(handleFilter, handleReset) {
-  const inputs = ['el-input', 'el-input-number'];
-  return `请${inputs.includes(tagName) ? '输入' : '选择'}${fieldName}`;
+  const inputs = ["el-input", "el-input-number"];
+  return `请${inputs.includes(tagName) ? "输入" : "选择"}${fieldName}`;
 }
 
 export function completeFromItemOptions(data, tableItem) {
@@ -28,7 +28,7 @@ export function completeFromItemOptions(data, tableItem) {
   data.formField = tableItem.fieldCode;
   data.formItemAttrs.label = tableItem.fieldName;
   if (data.formItemAttrs.labelOptions) data.formItemAttrs.labelOptions.contentText = tableItem.fieldName;
-  data.formItemAttrs.style = 'margin-right: 15px';
+  data.formItemAttrs.style = "margin-right: 15px";
   data.tagAttrs.placeholder = setPlaceholder(data.tagName, tableItem.fieldName);
   // setColSpan(data, 8);
   return data;
@@ -36,19 +36,19 @@ export function completeFromItemOptions(data, tableItem) {
 
 export function getWidgetOptions(searchWidgetName, item) {
   switch (searchWidgetName) {
-    case 'el-input':
+    case "el-input":
       return completeFromItemOptions(getElInputConfig(), item);
-    case 'el-input-number':
+    case "el-input-number":
       return completeFromItemOptions(getElInputNumberConfig(), item);
-    case 'el-select':
+    case "el-select":
       return completeFromItemOptions(getElSelectConfig(), item);
-    case 'el-date-picker':
+    case "el-date-picker":
       return completeFromItemOptions(getElDatePickerConfig(), item);
-    case 'el-date-picker-range':
+    case "el-date-picker-range":
       return completeFromItemOptions(getElDatePickerRangeConfig(), item);
-    case 'el-cascader':
+    case "el-cascader":
       return completeFromItemOptions(getElCascaderConfig(), item);
-    case 'dictionary':
+    case "dictionary":
       return completeFromItemOptions(getElSelectConfig(), item);
     default:
       console.warn(`您输入的标签 ${searchWidgetName} 暂不支持！`);
@@ -68,29 +68,29 @@ export function setColSpan(data, span) {
 
 export function getFormItemEmptyConfig() {
   return {
-    className: '',
-    style: '',
+    className: "",
+    style: "",
     formItemAttrs: {
-      prop: '',
-      label: '',
+      prop: "",
+      label: "",
       required: false
     },
-    tagName: '',
-    behindText: '',
-    frontText: '',
+    tagName: "",
+    behindText: "",
+    frontText: "",
     tagAttrs: {
-      placeholder: '',
+      placeholder: "",
       clearable: true
     },
     sortNumb: 0,
-    formField: '',
+    formField: "",
     // relateOtherField: [],
-    renderDependFn: '',
+    renderDependFn: "",
     extraOption: {
       options: [],
       props: {
-        key: 'id',
-        label: 'cnName'
+        key: "id",
+        label: "cnName"
       }
     },
     listeners: {}
@@ -98,24 +98,24 @@ export function getFormItemEmptyConfig() {
 }
 
 export function str2obj(str) {
-  if (str === '') return {};
+  if (str === "") return {};
   try {
-    return new Function('return' + str)();
+    return new Function("return" + str)();
   } catch (error) {
     console.error(error);
   }
   return {};
 }
 
-export function getter(obj = {}, field = '') {
-  const arr = field.split('.');
+export function getter(obj = {}, field = "") {
+  const arr = field.split(".");
   return arr.reduce((prev, item) => {
     return prev[item];
   }, obj);
 }
 
-export function setter(obj = {}, field = '', value) {
-  const arr = field.split('.');
+export function setter(obj = {}, field = "", value) {
+  const arr = field.split(".");
   let len = arr.length;
   return arr.reduce((prev, item, index) => {
     if (index === len - 1) {
@@ -165,7 +165,7 @@ export function decorator(customfn, fn) {
 export function btnClick(extraOption, emit) {
   return function(e) {
     try {
-      emit('btnClick', extraOption);
+      emit("btnClick", extraOption);
     } catch (error) {
       console.error(error);
     }
@@ -181,7 +181,7 @@ export function exec(fn) {
 }
 
 export function str2Fn(strFn) {
-  if (strFn === '') return () => {};
+  if (strFn === "") return () => {};
   try {
     return new Function(`return ${strFn}`)();
   } catch (error) {
@@ -190,7 +190,7 @@ export function str2Fn(strFn) {
   return () => {};
 }
 
-export function findFromOptionsIndexByfieldName(options = [], fieldName = '') {
+export function findFromOptionsIndexByfieldName(options = [], fieldName = "") {
   return options.findIndex(item => item.formItem.formField === fieldName);
 }
 
@@ -198,7 +198,7 @@ export function filterObj(obj) {
   pickBy(obj);
 }
 
-const isObj = val => Object.prototype.toString.call(val) === '[object Object]';
+const isObj = val => Object.prototype.toString.call(val) === "[object Object]";
 
 const isArray = source => Array.isArray(source);
 
@@ -210,7 +210,7 @@ const isEmytyRefer = (source, key) => {
   } else if (isObj(val)) {
     return !Object.keys(val).length;
   } else {
-    return val === '' || val === undefined || val === null;
+    return val === "" || val === undefined || val === null;
   }
 };
 
@@ -250,25 +250,25 @@ export const depthFirstSearchWithRecursive = source => {
 
 export function getWidgetDefaultVal(item, searchWidgetName) {
   switch (searchWidgetName) {
-    case 'el-select':
-    case 'dictionary':
-      return item.tagAttrs?.multiple ? [] : '';
-    case 'el-cascader':
-      return item.tagAttrs?.props?.multiple ? [] : '';
-    case 'el-date-picker-range':
+    case "el-select":
+    case "dictionary":
+      return item.tagAttrs?.multiple ? [] : "";
+    case "el-cascader":
+      return item.tagAttrs?.props?.multiple ? [] : "";
+    case "el-date-picker-range":
       return [];
     default:
-      return '';
+      return "";
   }
 }
 
-export function getSetupFromSingleConfig(label, placeholder, formField, customAttr = {}, tagName = 'el-input') {
+export function getSetupFromSingleConfig(label, placeholder, formField, customAttr = {}, tagName = "el-input") {
   const baseConfig = getFormItemEmptyConfig();
   baseConfig.formField = formField;
   baseConfig.tagName = tagName;
   baseConfig.formItemAttrs.label = label;
   baseConfig.tagAttrs.placeholder = placeholder;
-  baseConfig.formItemAttrs['label-width'] = '110px';
+  baseConfig.formItemAttrs["label-width"] = "110px";
   return merge(baseConfig, customAttr);
 }
 
@@ -277,64 +277,64 @@ export function getSetupFormOptions(searchWidgetName) {
   let options = [];
   const complexOptions = () => [
     [
-      '控件类型：',
-      '请选择控件类型',
-      '',
+      "控件类型：",
+      "请选择控件类型",
+      "",
       {
-        style: 'width: 350px',
-        slotName: 'searchWidget'
+        style: "width: 350px",
+        slotName: "searchWidget"
       }
     ],
     [
-      '标签名：',
-      '请输入标签名',
-      'formItemAttrs.label',
+      "标签名：",
+      "请输入标签名",
+      "formItemAttrs.label",
       {
-        style: 'width: 350px'
+        style: "width: 350px"
       }
     ],
     [
-      '提示语：',
-      '请输入提示语',
-      'tagAttrs.placeholder',
+      "提示语：",
+      "请输入提示语",
+      "tagAttrs.placeholder",
       {
-        style: 'width: 350px',
+        style: "width: 350px",
         renderDependFn: function(formData) {
           return !formData.isFlat;
         }
       }
     ],
     [
-      '配置项：',
-      '请输入配置项',
-      'extraOption',
+      "配置项：",
+      "请输入配置项",
+      "extraOption",
       {
-        style: 'width: 350px',
+        style: "width: 350px",
         tagAttrs: {
           autosize: true,
-          type: 'textarea',
+          type: "textarea",
           placeholder: '请输入类似{options: [],props: {key: "id",label: "cnName"}}的结构'
         }
       }
     ],
-    ['接口获取数据：', null, 'request.require', null, 'el-switch'],
+    ["接口获取数据：", null, "request.require", null, "el-switch"],
     [
-      '接口地址：',
+      "接口地址：",
       null,
-      'request.url',
+      "request.url",
       {
-        style: 'width: 350px',
+        style: "width: 350px",
         renderDependFn: function(formData) {
           return formData.request.require;
         }
       }
     ],
     [
-      '请求方式：',
+      "请求方式：",
       null,
-      'request.type',
+      "request.type",
       {
-        style: 'width: 350px',
+        style: "width: 350px",
         renderDependFn: function(formData) {
           return formData.request.require;
         },
@@ -342,67 +342,67 @@ export function getSetupFormOptions(searchWidgetName) {
           options: requestTypeList
         }
       },
-      'el-select'
+      "el-select"
     ],
     [
-      '参数：',
+      "参数：",
       null,
-      'request.params',
+      "request.params",
       {
-        style: 'width: 350px',
+        style: "width: 350px",
         renderDependFn: function(formData) {
           return formData.request.require;
         },
         tagAttrs: {
           autosize: true,
-          type: 'textarea',
-          placeholder: '请输入参数'
+          type: "textarea",
+          placeholder: "请输入参数"
         }
       }
     ],
     [
-      '开启多选：',
+      "开启多选：",
       null,
-      'tagAttrs.multiple',
+      "tagAttrs.multiple",
       {
         renderDependFn: function(formData) {
           return !formData.isFlat;
         }
       },
-      'el-switch'
+      "el-switch"
     ],
     [
-      '开启本地筛选：',
+      "开启本地筛选：",
       null,
-      'tagAttrs.filterable',
+      "tagAttrs.filterable",
       {
         renderDependFn: function(formData) {
           return !formData.isFlat;
         }
       },
-      'el-switch'
+      "el-switch"
     ],
     [
-      '开启清空：',
+      "开启清空：",
       null,
-      'tagAttrs.clearable',
+      "tagAttrs.clearable",
       {
         renderDependFn: function(formData) {
           return !formData.isFlat;
         }
       },
-      'el-switch'
+      "el-switch"
     ]
   ];
   switch (searchWidgetName) {
-    case 'el-input':
+    case "el-input":
       options = [
-        getSetupFromSingleConfig('控件类型：', '请选择控件类型', '', {
-          style: 'width: 350px',
-          slotName: 'searchWidget'
+        getSetupFromSingleConfig("控件类型：", "请选择控件类型", "", {
+          style: "width: 350px",
+          slotName: "searchWidget"
         }),
-        getSetupFromSingleConfig('标签名：', '请输入标签名', 'formItemAttrs.label', { style: 'width: 350px' }),
-        getSetupFromSingleConfig('提示语：', '请输入提示语', 'tagAttrs.placeholder', { style: 'width: 350px' })
+        getSetupFromSingleConfig("标签名：", "请输入标签名", "formItemAttrs.label", { style: "width: 350px" }),
+        getSetupFromSingleConfig("提示语：", "请输入提示语", "tagAttrs.placeholder", { style: "width: 350px" })
         // getSetupFromSingleConfig(
         //   '关联其他字段：',
         //   '',
@@ -427,98 +427,98 @@ export function getSetupFormOptions(searchWidgetName) {
         // ),
       ];
       break;
-    case 'el-input-number':
-    case 'el-date-picker':
-    case 'el-date-picker-range':
+    case "el-input-number":
+    case "el-date-picker":
+    case "el-date-picker-range":
       options = [
-        getSetupFromSingleConfig('控件类型：', '请选择控件类型', '', {
-          style: 'width: 350px',
-          slotName: 'searchWidget'
+        getSetupFromSingleConfig("控件类型：", "请选择控件类型", "", {
+          style: "width: 350px",
+          slotName: "searchWidget"
         }),
-        getSetupFromSingleConfig('标签名：', '请输入标签名', 'formItemAttrs.label', { style: 'width: 350px' }),
-        getSetupFromSingleConfig('提示语：', '请输入提示语', 'tagAttrs.placeholder', { style: 'width: 350px' })
+        getSetupFromSingleConfig("标签名：", "请输入标签名", "formItemAttrs.label", { style: "width: 350px" }),
+        getSetupFromSingleConfig("提示语：", "请输入提示语", "tagAttrs.placeholder", { style: "width: 350px" })
       ];
       break;
-    case 'el-select':
+    case "el-select":
       options = complexOptions()
-        .toSpliced(1, 0, ['是否平铺：', null, 'isFlat', null, 'el-switch'])
+        .toSpliced(1, 0, ["是否平铺：", null, "isFlat", null, "el-switch"])
         .map(item => getSetupFromSingleConfig(...item));
       break;
-    case 'el-cascader':
+    case "el-cascader":
       options = complexOptions().map(item => {
-        if (item[2] === 'tagAttrs.multiple') {
-          item[2] = 'tagAttrs.props.multiple';
+        if (item[2] === "tagAttrs.multiple") {
+          item[2] = "tagAttrs.props.multiple";
         }
-        if (item[2] === 'extraOption') {
+        if (item[2] === "extraOption") {
           item[3].tagAttrs.placeholder = '请输入类似{options: [],props: {key: "id",label: "cnName", children: "children"}}的结构';
         }
         return getSetupFromSingleConfig(...item);
       });
       break;
-    case 'dictionary':
+    case "dictionary":
       options = [
-        getSetupFromSingleConfig('控件类型：', '请选择控件类型', '', {
-          style: 'width: 350px',
-          slotName: 'searchWidget'
+        getSetupFromSingleConfig("控件类型：", "请选择控件类型", "", {
+          style: "width: 350px",
+          slotName: "searchWidget"
         }),
-        getSetupFromSingleConfig('是否平铺：', null, 'isFlat', null, 'el-switch'),
-        getSetupFromSingleConfig('标签名：', '请输入标签名', 'formItemAttrs.label', { style: 'width: 350px' }),
-        getSetupFromSingleConfig('提示语：', '请输入提示语', 'tagAttrs.placeholder', {
-          style: 'width: 350px',
+        getSetupFromSingleConfig("是否平铺：", null, "isFlat", null, "el-switch"),
+        getSetupFromSingleConfig("标签名：", "请输入标签名", "formItemAttrs.label", { style: "width: 350px" }),
+        getSetupFromSingleConfig("提示语：", "请输入提示语", "tagAttrs.placeholder", {
+          style: "width: 350px",
           renderDependFn: function(formData) {
             return !formData.isFlat;
           }
         }),
-        getSetupFromSingleConfig('字典项：', '请输入字典项', '', {
-          style: 'width: 350px',
-          slotName: 'selectDic'
+        getSetupFromSingleConfig("字典项：", "请输入字典项", "", {
+          style: "width: 350px",
+          slotName: "selectDic"
         }),
         getSetupFromSingleConfig(
-          '数据格式：',
-          '请输入数据格式',
-          'extraOption',
+          "数据格式：",
+          "请输入数据格式",
+          "extraOption",
           {
-            style: 'width: 350px',
+            style: "width: 350px",
             extraOption: {
               options: [
                 {
                   id: '{"labelTranslateType":0}',
-                  cnName: '仅文本'
+                  cnName: "仅文本"
                 },
                 {
                   id: '{"labelTranslateType":1}',
-                  cnName: '编号-文本'
+                  cnName: "编号-文本"
                 }
               ]
             },
             tagAttrs: {
-              placeholder: '',
+              placeholder: "",
               clearable: false
             }
           },
-          'el-select'
+          "el-select"
         ),
         getSetupFromSingleConfig(
-          '开启多选：',
+          "开启多选：",
           null,
-          'tagAttrs.multiple',
+          "tagAttrs.multiple",
           {
             renderDependFn: function(formData) {
               return !formData.isFlat;
             }
           },
-          'el-switch'
+          "el-switch"
         ),
         getSetupFromSingleConfig(
-          '开启本地筛选：',
+          "开启本地筛选：",
           null,
-          'tagAttrs.filterable',
+          "tagAttrs.filterable",
           {
             renderDependFn: function(formData) {
               return !formData.isFlat;
             }
           },
-          'el-switch'
+          "el-switch"
         )
       ];
       break;
@@ -538,86 +538,86 @@ export function getSetupFormOptions(searchWidgetName) {
 export function getSetupForm(searchWidgetName) {
   let form;
   switch (searchWidgetName) {
-    case 'el-input':
+    case "el-input":
       form = {
         // relateOtherField: [],
         formItemAttrs: {
-          label: ''
+          label: ""
         },
         tagAttrs: {
-          placeholder: ''
+          placeholder: ""
         },
         sortNumb: 0
       };
       break;
-    case 'el-input-number':
-    case 'el-date-picker':
-    case 'el-date-picker-range':
+    case "el-input-number":
+    case "el-date-picker":
+    case "el-date-picker-range":
       form = {
         formItemAttrs: {
-          label: ''
+          label: ""
         },
         tagAttrs: {
-          placeholder: ''
+          placeholder: ""
         },
         sortNumb: 0
       };
       break;
-    case 'el-select':
+    case "el-select":
       form = {
         formItemAttrs: {
-          label: ''
+          label: ""
         },
         tagAttrs: {
-          placeholder: '',
+          placeholder: "",
           multiple: true,
           filterable: false,
           clearable: true
         },
-        extraOption: '',
+        extraOption: "",
         request: {
           require: false,
-          url: '',
-          type: 'get',
-          params: '',
-          status: 'pending'
+          url: "",
+          type: "get",
+          params: "",
+          status: "pending"
         },
         isFlat: false,
         sortNumb: 0
       };
       break;
-    case 'el-cascader':
+    case "el-cascader":
       form = {
         formItemAttrs: {
-          label: ''
+          label: ""
         },
         tagAttrs: {
-          placeholder: '',
+          placeholder: "",
           filterable: false,
           clearable: true,
           props: {
             multiple: true
           }
         },
-        extraOption: '',
+        extraOption: "",
         request: {
           require: false,
-          url: '',
-          type: 'get',
-          params: '',
-          status: 'pending'
+          url: "",
+          type: "get",
+          params: "",
+          status: "pending"
         },
         isFlat: false,
         sortNumb: 0
       };
       break;
-    case 'dictionary':
+    case "dictionary":
       form = {
         formItemAttrs: {
-          label: ''
+          label: ""
         },
         tagAttrs: {
-          placeholder: '',
+          placeholder: "",
           filterable: false,
           clearable: true,
           multiple: true
@@ -625,10 +625,10 @@ export function getSetupForm(searchWidgetName) {
         extraOption: { labelTranslateType: 0 },
         request: {
           require: true,
-          url: '',
-          type: 'get',
-          params: '',
-          status: 'pending'
+          url: "",
+          type: "get",
+          params: "",
+          status: "pending"
         },
         sortNumb: 0,
         isFlat: false
@@ -648,7 +648,7 @@ export function getSummaries(param) {
   const sums = [];
   columns.forEach((column, index) => {
     if (index === 0) {
-      sums[index] = '合计';
+      sums[index] = "合计";
       return;
     }
     const values = data.map(item => Number(item[column.property]));
@@ -662,7 +662,7 @@ export function getSummaries(param) {
         }
       }, 0);
     } else {
-      sums[index] = '';
+      sums[index] = "";
     }
   });
 
@@ -670,7 +670,7 @@ export function getSummaries(param) {
 }
 
 export function setTableAttrs(data) {
-  const fnTranslate = ['summaryMethod', 'index', 'load', 'spanMethod'];
+  const fnTranslate = ["summaryMethod", "index", "load", "spanMethod"];
   fnTranslate.map(field => {
     if (data[field]) {
       data[field] = str2Fn(data[field]);
@@ -678,7 +678,7 @@ export function setTableAttrs(data) {
       delete data[field];
     }
   });
-  const objTranslate = ['treeProps'];
+  const objTranslate = ["treeProps"];
   objTranslate.map(field => {
     if (data[field]) {
       data[field] = str2obj(data[field]);
@@ -690,13 +690,13 @@ export function setTableAttrs(data) {
 }
 
 export function getUrlQuery(_url) {
-  const url = _url || '';
+  const url = _url || "";
   const result = {};
-  if (url === '') return result;
-  const pairs = url.indexOf('?') > -1 ? url.split('?')[1].split('&') : [];
+  if (url === "") return result;
+  const pairs = url.indexOf("?") > -1 ? url.split("?")[1].split("&") : [];
   pairs.map(item => {
     // 只查找到第一个"＝"符号，这样就不会把token中等号也裁剪掉
-    const index = item.indexOf('=');
+    const index = item.indexOf("=");
     const name = item.substr(0, index);
     let value = item.substr(index + 1);
     value = decodeURIComponent(value);
@@ -706,11 +706,11 @@ export function getUrlQuery(_url) {
 }
 
 export function addQueryString(param, url) {
-  if (!url) return '';
+  if (!url) return "";
   if (!param || !Object.keys(param).length) return url;
   let _url = url;
   // 有问号提出url并添加至obj，没问号用原url
-  if (url.indexOf('?') > -1) {
+  if (url.indexOf("?") > -1) {
     param = Object.assign(
       {},
       {
@@ -718,9 +718,9 @@ export function addQueryString(param, url) {
         ...getUrlQuery(url)
       }
     );
-    _url = url.split('?')[0];
+    _url = url.split("?")[0];
   }
-  let result = '?';
+  let result = "?";
   for (const key in param) {
     if (param[key] !== undefined && param[key] !== null) {
       result += `${key}=${param[key]}&`;
@@ -736,22 +736,53 @@ export function BtnConfigs() {
     useDialog: true,
     showFooter: false,
     // 导入按钮关联的数据模型
-    importFileCompRelateTableName: '',
-    formId: '',
-    dialogTitle: '表单',
-    dialogWidth: '',
-    dialogHeight: '',
+    importFileCompRelateTableName: "",
+    formId: "",
+    tableId: "",
+    dialogTitle: "表单",
+    dialogWidth: "",
+    dialogHeight: "",
     // 按钮代表的一系列事件完毕以后是否刷新列表
     isRefresh: false,
-    requestBeforeConfirmHint: '',
-    requestBeforeConfirmText: '',
+    requestBeforeConfirmHint: "",
+    requestBeforeConfirmText: "",
     requestFixedParams: {},
-    requestUrl: '',
-    requestType: '',
+    requestUrl: "",
+    requestType: "",
     deliverySelectList: false,
     btnDisposeParamsRule: {},
-    btnType: ''
+    btnType: ""
   };
+}
+
+export function transformParamsValue(value) {
+  if ([null, undefined, ""].includes(value)) return "";
+  if (typeof value === "string") {
+    value = value.trim();
+    return value.replace(/^\{(\w*)\}$/g, (value, $1) => {
+      if ($1) return this[$1];
+      else return value;
+    });
+  } else {
+    console.warn("参数值不是字符串！");
+    return "";
+  }
+}
+// 格式化高度宽度
+export function formatterWidthOrHeightStyle(length) {
+  if (typeof length === "string") length = length.trim();
+  if (/^\d+$/.test(length)) {
+    return `${length}px`;
+  } else if (/^\d+(%|px)?$/.test(length)) {
+    return length;
+  } else {
+    console.warn("输入的高度或者宽度格式不正确！");
+    return "";
+  }
+}
+// 预览的时候用，创建一个全为空字符串的对象
+export function setEmptyTableData(emptyData = {}, fieldCode) {
+  emptyData[fieldCode] = "";
 }
 
 export default {
@@ -779,5 +810,8 @@ export default {
   decorator,
   getUrlQuery,
   addQueryString,
-  BtnConfigs
+  BtnConfigs,
+  transformParamsValue,
+  formatterWidthOrHeightStyle,
+  setEmptyTableData
 };

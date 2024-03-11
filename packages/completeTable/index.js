@@ -8,7 +8,21 @@ import { requestTypeList } from "../../baseConfig/btnBaseConfig";
 
 import { getTableAttrs } from "../../baseConfig/tableBaseConfig";
 
-import { getWidgetOptions, exec, getWidgetDefaultVal, str2obj, depthFirstSearchWithRecursive, str2Fn, setTableAttrs, getSummaries, addQueryString, BtnConfigs } from "../../utils";
+import {
+  getWidgetOptions,
+  exec,
+  getWidgetDefaultVal,
+  str2obj,
+  depthFirstSearchWithRecursive,
+  str2Fn,
+  setTableAttrs,
+  getSummaries,
+  addQueryString,
+  BtnConfigs,
+  transformParamsValue,
+  formatterWidthOrHeightStyle,
+  setEmptyTableData
+} from "../../utils";
 import { cloneDeep, omit, merge } from "lodash";
 
 export default {
@@ -20,31 +34,6 @@ export default {
     panel
   },
   props: {
-    requestTableData: {
-      type: Function
-    },
-    requestTablePaginationData: {
-      type: Function
-    },
-    requestFormData: {
-      type: Function
-    },
-    requestTableConfig: {
-      type: Function,
-      require: true
-    },
-    requestFormConfig: {
-      type: Function
-    },
-    requestDownload: {
-      type: Function
-    },
-    requestBatchDel: {
-      type: Function
-    },
-    generalRequest: {
-      type: Function
-    },
     checkPermission: {
       type: Function
     },
@@ -166,7 +155,21 @@ export default {
     else return true;
   },
 
-  inject: ["openFlow", "importFileComp", "queryFlowDef", "componentList", "enterpriseId", "prjInfo"],
+  inject: [
+    "openFlow",
+    "importFileComp",
+    "queryFlowDef",
+    "componentList",
+    "enterpriseId",
+    "prjInfo",
+    "generalRequest",
+    "requestTableData",
+    "requestTablePaginationData",
+    "requestTableConfig",
+    "requestDownload",
+    "requestBatchDel",
+    "checkPermission"
+  ],
 
   methods: {
     expose_CompleteTableInstance() {
@@ -207,11 +210,6 @@ export default {
       // await this.requestFormConfirm(this.formid, data)
       this.btnConfigs.isRefresh && this.queryTableData();
       this.expose_hideDialog();
-    },
-
-    // 预览的时候用，创建一个全为空字符串的对象
-    setEmptyTableData(emptyData = {}, fieldCode) {
-      emptyData[fieldCode] = "";
     },
 
     async init(isPreview, json) {
@@ -284,7 +282,7 @@ export default {
     setSingleTableOptions(item, emptyData) {
       const obj = {};
       obj.prop = item.fieldCode;
-      emptyData && this.setEmptyTableData(emptyData, item.fieldCode);
+      emptyData && setEmptyTableData(emptyData, item.fieldCode);
       obj.label = item.fieldName;
       obj.align = align.find(alignitem => alignitem.id === item.align).value;
       obj["min-width"] = item.columnWidth;
@@ -595,19 +593,6 @@ export default {
 
     exec,
 
-    // 格式化高度宽度
-    formatterWidthOrHeightStyle(length) {
-      if (typeof length === "string") length = length.trim();
-      if (/^\d+$/.test(length)) {
-        return `${length}px`;
-      } else if (/^\d+(%|px)?$/.test(length)) {
-        return length;
-      } else {
-        console.warn("输入的高度或者宽度格式不正确！");
-        return "";
-      }
-    },
-
     validateSelectList({ paramName, paramType, deliverySelectList, validate }) {
       const { selectList } = this;
       this.btnConfigs.deliverySelectList = deliverySelectList;
@@ -633,6 +618,7 @@ export default {
       relateFrom = "",
       relateMeta = "",
       relateComponent = "",
+      relateTable = "",
       openType = "",
       openUrl = "",
       fn = "",
@@ -655,7 +641,7 @@ export default {
       showFooter = false,
       validateFn = ""
     }) {
-      const { validateSelectList, disposeFlowEvent, disposeRelateCompEvent, disposeDynamicEvent, disposeRequestEvent, disposeDownOrDel } = this;
+      const { validateSelectList, disposeFlowEvent, disposeRelateCompEvent, disposeDynamicFormEvent, disposeDynamicTableEvent, disposeRequestEvent, disposeDownOrDel } = this;
       // 只btnConfigs.要执行点击按钮操作，先置空formid
       this.btnConfigs = new BtnConfigs();
       this.btnConfigs.requestUrl = requestUrl;
@@ -752,9 +738,25 @@ export default {
                 validate
               })
             ) {
-              disposeDynamicEvent({
+              disposeDynamicFormEvent({
                 btnType,
                 relateFrom,
+                dialogTitle
+              });
+            }
+          } else if (openType === 6) {
+            // openType为0是打开列表
+            if (
+              validateSelectList({
+                paramName,
+                paramType,
+                deliverySelectList,
+                validate
+              })
+            ) {
+              disposeDynamicTableEvent({
+                btnType,
+                relateTable,
                 dialogTitle
               });
             }
@@ -817,7 +819,7 @@ export default {
       }
     },
 
-    disposeDynamicEvent({ btnType, relateFrom, dialogTitle }, rowData) {
+    disposeDynamicFormEvent({ btnType, relateFrom, dialogTitle }, rowData) {
       switch (btnType) {
         case "add":
           this.expose_showDialog();
@@ -848,18 +850,11 @@ export default {
       }
     },
 
-    transformParamsValue(value) {
-      if ([null, undefined, ""].includes(value)) return "";
-      if (typeof value === "string") {
-        value = value.trim();
-        return value.replace(/^\{(\w*)\}$/g, (value, $1) => {
-          if ($1) return this[$1];
-          else return value;
-        });
-      } else {
-        console.warn("参数值不是字符串！");
-        return "";
-      }
+    disposeDynamicTableEvent({ btnType, relateTable, dialogTitle }, rowData) {
+      this.expose_showDialog();
+      this.btnConfigs.tableId = "relateTable";
+      this.onlyRead = true;
+      this.btnConfigs.dialogTitle = dialogTitle || (btnType === "check" ? "查看" : "编辑");
     },
 
     getRequestConfig() {
@@ -878,7 +873,6 @@ export default {
       // 这里提交的是用户自己设置的固定参数
       const { params = [], data = [], headers = [] } = requestFixedParams;
       // 这里提交的是列表选中的数据
-      const { transformParamsValue } = this;
       let finalUrl = requestUrl;
       if (params?.length) {
         const finalParams = {};
@@ -1001,6 +995,14 @@ export default {
         );
       }
     },
+    dynamicTableVNode() {
+      const {
+        btnConfigs: { tableId, dialogHeight }
+      } = this;
+      if (tableId) {
+        return <complete-table listPageId={tableId} rawlistPageId="rawRelateId" wrap-height={dialogHeight ? formatterWidthOrHeightStyle(dialogHeight) : "650px"}></complete-table>;
+      }
+    },
 
     btnRelateDialogVNode() {
       const {
@@ -1009,11 +1011,11 @@ export default {
         onlyRead,
         btnConfigs: { showFooter, useDialog, relateComponent, formId, dialogTitle, dialogWidth, dialogHeight },
         dynamicFormVNode,
+        dynamicTableVNode,
         relateComponentVNode,
         expose_hideDialog,
         submitForm,
-        handleCancel,
-        formatterWidthOrHeightStyle
+        handleCancel
       } = this;
       // 如果是关联本地组件且不使用本组件提供的弹窗
       if (relateComponent && !useDialog) {
@@ -1047,6 +1049,7 @@ export default {
               }}
             >
               {dynamicFormVNode()}
+              {dynamicTableVNode()}
               {relateComponentVNode()}
             </div>
             {/* 只有非只读非预览且是动态表单或本地组件且showFooter为true才会渲染footer */}
@@ -1230,7 +1233,7 @@ export default {
         if (!validateFn || (validateFn && str2Fn(validateFn)(this.selectList))) {
           switch (target.extraOption.openType) {
             case 0:
-              this.disposeDynamicEvent(target.extraOption, row);
+              this.disposeDynamicFormEvent(target.extraOption, row);
               break;
             case 2:
               this.btnConfigs.btnType = "check";
