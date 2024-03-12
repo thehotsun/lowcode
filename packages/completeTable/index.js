@@ -643,9 +643,19 @@ export default {
       requestParamsConfig = {},
       useDialog = true,
       showFooter = false,
-      validateFn = ""
+      validateFn = "",
+      command = ""
     }) {
-      const { validateSelectList, disposeFlowEvent, disposeRelateCompEvent, disposeDynamicFormEvent, disposeDynamicTableEvent, disposeRequestEvent, disposeDownOrDel } = this;
+      const {
+        validateSelectList,
+        disposeFlowEvent,
+        disposeRelateCompEvent,
+        disposeDynamicFormEvent,
+        disposeDynamicTableEvent,
+        disposeRequestEvent,
+        disposeDown,
+        disposeDel
+      } = this;
       // 只btnConfigs.要执行点击按钮操作，先置空formid
       this.btnConfigs = new BtnConfigs();
       this.btnConfigs.requestUrl = requestUrl;
@@ -669,8 +679,13 @@ export default {
             // openType为-1是固定行为，如下载 批量删除等
             switch (btnType) {
               case "download":
+                disposeDown({
+                  btnType,
+                  command
+                });
+                break;
               case "batchDel":
-                disposeDownOrDel({
+                disposeDel({
                   btnType
                 });
                 break;
@@ -941,8 +956,9 @@ export default {
       });
       this.generalRequest(finalUrl, finalType, finalData, requestHeaders);
     },
-
-    disposeDownOrDel({ btnType }) {
+    // TODO
+    disposeDown({ btnType, command }) {
+      console.log(command, "command");
       if (this.previewMode) return;
       if (this.selectList.length === 0 && btnType !== "download") {
         return this.$warn("请至少勾选一条要处理的数据");
@@ -950,7 +966,18 @@ export default {
       if ([undefined, null].includes(this.tableData[0][this.keyField])) {
         return this.$warn("主键字段未取到值，请检查数据或重新在列表设计页面重新关联主键！");
       }
-      (btnType === "download" ? this.download : this.batchDel)(this.selectList.map(item => item[this.keyField]));
+      this.download(this.selectList.map(item => item[this.keyField]));
+    },
+
+    disposeDel({ btnType }) {
+      if (this.previewMode) return;
+      if (this.selectList.length === 0 && btnType !== "download") {
+        return this.$warn("请至少勾选一条要处理的数据");
+      }
+      if ([undefined, null].includes(this.tableData[0][this.keyField])) {
+        return this.$warn("主键字段未取到值，请检查数据或重新在列表设计页面重新关联主键！");
+      }
+      this.batchDel(this.selectList.map(item => item[this.keyField]));
     },
 
     // 处理导入的实现

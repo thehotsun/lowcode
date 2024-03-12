@@ -1,9 +1,9 @@
-import './index.less';
-import { isEmpty, cloneDeep } from 'lodash';
-import { getter, getHandleInput } from '../../utils';
+import "./index.less";
+import { isEmpty, cloneDeep } from "lodash";
+import { getter, getHandleInput } from "../../utils";
 
 export default {
-  name: 'BaseRenderRegular',
+  name: "BaseRenderRegular",
   props: {
     renderOptions: {
       type: Array
@@ -35,7 +35,7 @@ export default {
             const listeners = ectype.formItem.listeners;
             if (!isEmpty(listeners)) {
               Object.keys(listeners).map(eventName => {
-                console.log(eventName, 'eventName');
+                console.log(eventName, "eventName");
                 if (listeners[eventName].isWrap) return;
                 const originFn = listeners[eventName];
                 ectype.formItem.listeners[eventName] = (...argus) => originFn.call(this, ...argus);
@@ -55,7 +55,7 @@ export default {
     btnClick(extraOption) {
       return e => {
         try {
-          this.$emit('btnClick', {
+          this.$emit("btnClick", {
             ...extraOption,
             e
           });
@@ -67,27 +67,59 @@ export default {
     getCooperateComp(tagName, attrs, listeners, formField, extraOption) {
       // TODO 待添加，
       const renderFn = {
-        'el-select': this.getSelectCompVNode
+        "el-select": this.getSelectCompVNode
       };
       return renderFn[tagName](attrs, listeners, formField, extraOption);
     },
 
     // 配合组件是所有必须通过嵌套才能正常使用的组件
     isCooperateComp(tagName) {
-      if (typeof tagName !== 'string') {
-        console.error('isCooperateComp方法传入的参数必须为字符串');
+      if (typeof tagName !== "string") {
+        console.error("isCooperateComp方法传入的参数必须为字符串");
         return false;
       }
       // TODO 待添加，
-      const cooperateComp = ['el-select'];
+      const cooperateComp = ["el-select"];
       return cooperateComp.indexOf(tagName) !== -1;
+    },
+    handleCommand(command, extraOption) {
+      this.$emit("btnClick", { ...extraOption, command });
+    },
+
+    getDropdownCompVNode(item) {
+      const { handleCommand, getSingleCompVNode } = this;
+      const options = [
+        {
+          command: "curSelect",
+          label: "当前选中"
+        },
+        {
+          command: "curPage",
+          label: "当前页"
+        },
+        {
+          command: "all",
+          label: "全部"
+        }
+      ];
+      // 基础版有个添加维护字典的功能，里面返回的字段为id和cnName，因此以此字段为默认取值
+      return (
+        <el-dropdown nativeOnClick={e => e.stopPropagation()} oncommand={e => handleCommand(e, item.extraOption)}>
+          {getSingleCompVNode(item, false)}
+          <el-dropdown-menu slot="dropdown">
+            {options.map(elDropdownItem => {
+              return <el-dropdown-item command={elDropdownItem.command}>{elDropdownItem.label}</el-dropdown-item>;
+            })}
+          </el-dropdown-menu>
+        </el-dropdown>
+      );
     },
 
     getSelectCompVNode(attrs, listeners, formField, extraOption) {
       const { options = [], props = {} } = extraOption;
       const { formData, onlyShow } = this;
       // 基础版有个添加维护字典的功能，里面返回的字段为id和cnName，因此以此字段为默认取值
-      const { key = 'id', label = 'cnName' } = props;
+      const { key = "id", label = "cnName" } = props;
       const model = getter(formData, formField);
       return (
         <el-select
@@ -105,8 +137,8 @@ export default {
       );
     },
 
-    getSingleCompVNode(item) {
-      const { formData, isCooperateComp, getCooperateComp, onlyShow, btnClick } = this;
+    getSingleCompVNode(item, bindEvent = true, bindVal = true) {
+      const { formData, isCooperateComp, getCooperateComp, onlyShow, btnClick, getDropdownCompVNode } = this;
       const {
         // class和style不会被组件的attr所处理，会直接赋值到组件的根节点因此需要单独拿出来赋值
         className,
@@ -114,12 +146,12 @@ export default {
         // 自定义插槽
         slotName,
         // behindText和frontText为组件前后的文本，如需更复杂的自定义，请使用slotName
-        behindText = '',
-        frontText = '',
-        behindTextStyle = '',
-        frontTextStyle = '',
+        behindText = "",
+        frontText = "",
+        behindTextStyle = "",
+        frontTextStyle = "",
         // 如不需要使用formData中的值而只是需要固定文本则可使用此字段
-        contentText = '',
+        contentText = "",
         // 特殊组件的额外属性值例如select组件下的option组件所需的options
         extraOption = {},
         // 当前渲染组件（即Tag）所需的属性值
@@ -127,19 +159,24 @@ export default {
         // 组件所需的监听事件
         listeners = {},
         // 需要绑定的formData的属性名
-        formField = '',
+        formField = "",
         tagName,
         contentTextFrontTagOptions = {},
-        contentTextBehindTagOptions = {}
+        contentTextBehindTagOptions = {},
+        authorize
       } = item;
       // 取代v-model语法糖，因为它不能实现多个点深层级取值赋值操作,例如fromData['a.b']
-      listeners.input = getHandleInput(formData, formField, listeners.input);
+      if (bindVal) {
+        listeners.input = getHandleInput(formData, formField, listeners.input);
+      }
       // 暂时只针对按钮的点击事件
-      listeners.click = btnClick(extraOption);
+      if (bindEvent) {
+        listeners.click = btnClick(extraOption);
+      }
       const model = getter(formData, formField);
       // tagName必须是eleui提供的已有组件或HTML已有标签,如果是只读标签，则固定使用span标签
       // Tag必须开头大写，否则会被识别为字符串
-      const Tag = onlyShow ? 'span' : tagName;
+      const Tag = onlyShow ? "span" : tagName;
       // 若tag为select这种需要别的标签配合使用的组件，则调用getCooperateComp方法
       return (
         <div style="display: inline-block">
@@ -149,6 +186,9 @@ export default {
             })
           ) : isCooperateComp(tagName) ? (
             getCooperateComp(tagName, tagAttrs, listeners, formField, extraOption)
+          ) : authorize === "E" && bindEvent ? (
+            // 导出按钮特殊处理
+            getDropdownCompVNode(item)
           ) : (
             <Tag
               value={model}
@@ -183,14 +223,14 @@ export default {
       // 当前布局组件不提供 Bootstrap式的响应式布局属性
       console.log(data);
       return data.map(rowItem => {
-        const { elRowAttrs = {}, formItem = {}, style = '', className = '' } = rowItem;
+        const { elRowAttrs = {}, formItem = {}, style = "", className = "" } = rowItem;
         return (
           <el-row
             {...{
               attrs: elRowAttrs
             }}
             style={style}
-            class={'row ' + className}
+            class={"row " + className}
           >
             {Array.isArray(formItem)
               ? rowItem.formItem.map(item => {
