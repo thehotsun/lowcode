@@ -212,7 +212,7 @@ export default {
       this.expose_hideDialog();
     },
 
-    async init(isPreview, json) {
+    async init(isPreview, json, externalParmas) {
       this.resetAllData();
       await this.$nextTick();
       this.previewMode = !!isPreview;
@@ -230,7 +230,11 @@ export default {
           this.tableData.push(tableSingleData);
         }
       } else {
-        this.queryTableData();
+        if (externalParmas) {
+          this.refreshData(externalParmas);
+        } else {
+          this.queryTableData();
+        }
         this.composeData();
       }
       setTimeout(() => {
@@ -850,11 +854,27 @@ export default {
       }
     },
 
-    disposeDynamicTableEvent({ btnType, relateTable, dialogTitle }, rowData) {
+    async disposeDynamicTableEvent({ btnType, relateTable, dialogTitle }, rowData) {
+      let externalParmas;
+      if (rowData) {
+        externalParmas = rowData;
+      } else {
+        if (this.selectList.length === 0) {
+          this.$warn("请至少勾选一条要处理的数据");
+          return;
+        }
+        if (this.selectList.length !== 1) {
+          this.$warn("当前操作只允许勾选一条数据");
+          return;
+        }
+        externalParmas = this.selectList[0];
+      }
       this.expose_showDialog();
-      this.btnConfigs.tableId = "relateTable";
+      this.btnConfigs.tableId = relateTable;
       this.onlyRead = true;
       this.btnConfigs.dialogTitle = dialogTitle || (btnType === "check" ? "查看" : "编辑");
+      await this.$nextTick();
+      this.$refs.nestedTable.init(false, null, externalParmas);
     },
 
     getRequestConfig() {
@@ -1000,7 +1020,14 @@ export default {
         btnConfigs: { tableId, dialogHeight }
       } = this;
       if (tableId) {
-        return <complete-table listPageId={tableId} rawlistPageId="rawRelateId" wrap-height={dialogHeight ? formatterWidthOrHeightStyle(dialogHeight) : "650px"}></complete-table>;
+        return (
+          <complete-table
+            ref="nestedTable"
+            listPageId={tableId}
+            rawlistPageId="rawRelateId"
+            wrap-height={dialogHeight ? formatterWidthOrHeightStyle(dialogHeight) : "650px"}
+          ></complete-table>
+        );
       }
     },
 
@@ -1282,7 +1309,8 @@ export default {
       fuzzySearchPlaceholder,
       handleFilter,
       handleGlobalClick,
-      showCheckDialog
+      showCheckDialog,
+      onSave
     } = this;
 
     const curPageListeners = {

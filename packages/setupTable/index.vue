@@ -207,7 +207,7 @@ export default {
       type: Function,
       require: true
     },
-    requestTableListAndFormList: {
+    requestTableList: {
       type: Function,
       require: true
     },
@@ -333,7 +333,7 @@ export default {
       console.log(id, "id");
       this._groupId = id;
       this._formCode = formCode;
-      // this.queryFormListAndTableList();
+      this.queryTableList();
       this.queryFormList();
       this.queryMetaList();
       this.queryFlowList();
@@ -510,26 +510,19 @@ export default {
       });
     },
 
-    queryFormListAndTableList() {
-      this.requestTableListAndFormList(this._groupId).then(res => {
-        const { formList, listPageList } = res.data;
-        console.log(formList, listPageList, "queryFormListAndTableList");
-        // this.formList = this.convartFormList(formList);
-        // this.tableList = this.convartTableList(listPageList);
-        // this._formListExtraOption = {
-        //   options: formList,
-        //   props: {
-        //     label: 'formName',
-        //     key: 'formId'
-        //   }
-        // };
-        // this._tableListExtraOption = {
-        //   options: listPageList,
-        //   props: {
-        //     label: 'formName',
-        //     key: 'formId'
-        //   }
-        // };
+    queryTableList() {
+      this.requestTableList(this._groupId).then(res => {
+        const { listPageList } = res.data;
+        this.tableList = this.convartTableList(listPageList);
+        this._tableListExtraOption = {
+          props: {
+            emitPath: false,
+            value: "flowKey",
+            label: "name",
+            children: "flowDefinitionDtoList"
+          },
+          options: listPageList
+        };
       });
     },
 

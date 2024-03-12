@@ -4,8 +4,7 @@ import {
   getElInputConfig,
   getElSelectConfig,
   getElCascaderConfig,
-  getElInputNumberConfig,
-  getElBtnConfig
+  getElInputNumberConfig
 } from "../baseConfig/widgetBaseConfig";
 
 import { searchWidget } from "../baseConfig/tableSelectConfigs";
@@ -14,11 +13,6 @@ import { requestTypeList } from "../baseConfig/btnBaseConfig";
 import { pickBy, merge } from "lodash";
 
 export function setPlaceholder(tagName, fieldName) {
-  const inputs = ["el-input", "el-input-number"];
-  return `请${inputs.includes(tagName) ? "输入" : "选择"}${fieldName}`;
-}
-
-export function setFilterAndResetBtnConfig(handleFilter, handleReset) {
   const inputs = ["el-input", "el-input-number"];
   return `请${inputs.includes(tagName) ? "输入" : "选择"}${fieldName}`;
 }
@@ -116,7 +110,7 @@ export function getter(obj = {}, field = "") {
 
 export function setter(obj = {}, field = "", value) {
   const arr = field.split(".");
-  let len = arr.length;
+  const len = arr.length;
   return arr.reduce((prev, item, index) => {
     if (index === len - 1) {
       prev[item] = value;
@@ -787,7 +781,6 @@ export function setEmptyTableData(emptyData = {}, fieldCode) {
 
 export default {
   setPlaceholder,
-  setFilterAndResetBtnConfig,
   completeFromItemOptions,
   getWidgetOptions,
   setColSpan,
