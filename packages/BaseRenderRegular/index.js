@@ -105,7 +105,7 @@ export default {
       // 基础版有个添加维护字典的功能，里面返回的字段为id和cnName，因此以此字段为默认取值
       return (
         <el-dropdown nativeOnClick={e => e.stopPropagation()} oncommand={e => handleCommand(e, item.extraOption)}>
-          {getSingleCompVNode(item, false)}
+          {getSingleCompVNode(item, false, false)}
           <el-dropdown-menu slot="dropdown">
             {options.map(elDropdownItem => {
               return <el-dropdown-item command={elDropdownItem.command}>{elDropdownItem.label}</el-dropdown-item>;

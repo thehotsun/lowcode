@@ -545,7 +545,7 @@ export default {
     },
 
     queryTableConfig() {
-      return this.requestTableConfig()
+      return this.requestTableConfig(this.listPageId)
         .then(res => {
           if (res.result === "0") {
             const data = JSON.parse(res.data);
@@ -1295,6 +1295,9 @@ export default {
               break;
             case 4:
               this.disposeRelateCompEvent(target.extraOption, row);
+              break;
+            case 6:
+              this.disposeDynamicTableEvent(target.extraOption, row);
               break;
             default:
               console.warn("当前页面未配置openType为流程或表单或本地组件的按钮！");

@@ -511,17 +511,15 @@ export default {
     },
 
     queryTableList() {
-      this.requestTableList(this._groupId).then(res => {
-        const { listPageList } = res.data;
-        this.tableList = this.convartTableList(listPageList);
+      this.requestTableList().then(res => {
         this._tableListExtraOption = {
           props: {
             emitPath: false,
-            value: "flowKey",
-            label: "name",
-            children: "flowDefinitionDtoList"
+            key: "groupId",
+            label: "groupName",
+            children: "children"
           },
-          options: listPageList
+          options: res.data
         };
       });
     },

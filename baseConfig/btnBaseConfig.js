@@ -247,9 +247,9 @@ export function BtnConfigFormOptions() {
           options: [],
           props: {
             emitPath: false,
-            value: "flowKey",
-            label: "name",
-            children: "flowDefinitionDtoList"
+            key: "groupId",
+            label: "groupName",
+            children: "children"
           }
         },
         request: {
@@ -276,7 +276,7 @@ export function BtnConfigFormOptions() {
         // 对应formData中的属性值
         formField: "extraOption.relateTable",
         renderDependFn: function(formData) {
-          return [2].includes(formData.extraOption.openType);
+          return [6].includes(formData.extraOption.openType);
         }
       }
     },
@@ -395,7 +395,7 @@ export function BtnConfigFormOptions() {
           options: [],
           props: {
             emitPath: false,
-            value: "flowKey",
+            key: "flowKey",
             label: "name",
             children: "flowDefinitionDtoList"
           }
