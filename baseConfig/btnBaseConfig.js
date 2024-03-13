@@ -614,7 +614,7 @@ export function BtnConfigFormOptions() {
             label: "cnName"
           }
         },
-        renderDependFn: deliverySelectListRenderDependFn
+        renderDependFn: formData => formData.extraOption.deliverySelectList
       }
     },
 

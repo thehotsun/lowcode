@@ -23,7 +23,7 @@ import {
   formatterWidthOrHeightStyle,
   setEmptyTableData
 } from "../../utils";
-import { cloneDeep, omit, merge } from "lodash";
+import { cloneDeep, omit, merge, isEmpty } from "lodash";
 
 export default {
   name: "CompleteTable",
@@ -72,7 +72,7 @@ export default {
       selectList: [],
       panelData: [],
       filterFiled: [],
-      externalParmas: {},
+      externalParams: {},
       keyField: "",
       onlyRead: false,
       previewMode: false,
@@ -212,11 +212,11 @@ export default {
       this.expose_hideDialog();
     },
 
-    async init(isPreview, json, externalParmas) {
+    async init(isPreview, json, externalParams) {
       this.resetAllData();
       await this.$nextTick();
       this.previewMode = !!isPreview;
-      if (!json) {
+      if (!json || isEmpty(json)) {
         await this.queryTableConfig();
       } else {
         this.parseTableConfig(json);
@@ -230,8 +230,8 @@ export default {
           this.tableData.push(tableSingleData);
         }
       } else {
-        if (externalParmas) {
-          this.refreshData(externalParmas);
+        if (externalParams) {
+          this.refreshData(externalParams);
         } else {
           this.queryTableData();
         }
@@ -358,7 +358,7 @@ export default {
     // 设置searchFrom和装配fromOptions
     composeFromOptions(tableData) {
       this.showSearchFrom = false;
-      if (!tableData.length) return [];
+      if (!tableData || !tableData.length) return [];
       const { setFromField } = this;
       let formOptions = [];
       const length = tableData.length;
@@ -465,7 +465,7 @@ export default {
 
     // 持久化的外部参数存储
     refreshData(data) {
-      this.externalParmas = data;
+      this.externalParams = data;
       this.queryTableData();
     },
 
@@ -501,7 +501,7 @@ export default {
         ...data,
         ...this.searchFrom,
         ...extraParams,
-        ...this.externalParmas,
+        ...this.externalParams,
         multiFieldSearch: this.multiFieldSearch,
         prjId: this.prjInfo.prjId,
         enterpriseId: this.enterpriseId
@@ -760,7 +760,8 @@ export default {
               disposeDynamicFormEvent({
                 btnType,
                 relateFrom,
-                dialogTitle
+                dialogTitle,
+                deliverySelectList
               });
             }
           } else if (openType === 6) {
@@ -776,7 +777,8 @@ export default {
               disposeDynamicTableEvent({
                 btnType,
                 relateTable,
-                dialogTitle
+                dialogTitle,
+                deliverySelectList
               });
             }
           }
@@ -838,7 +840,7 @@ export default {
       }
     },
 
-    disposeDynamicFormEvent({ btnType, relateFrom, dialogTitle }, rowData) {
+    disposeDynamicFormEvent({ btnType, relateFrom, dialogTitle, deliverySelectList }, rowData) {
       switch (btnType) {
         case "add":
           this.expose_showDialog();
@@ -869,27 +871,22 @@ export default {
       }
     },
 
-    async disposeDynamicTableEvent({ btnType, relateTable, dialogTitle }, rowData) {
-      let externalParmas;
-      if (rowData) {
-        externalParmas = rowData;
-      } else {
-        if (this.selectList.length === 0) {
-          this.$warn("请至少勾选一条要处理的数据");
-          return;
+    async disposeDynamicTableEvent({ btnType, relateTable, dialogTitle, deliverySelectList }, rowData) {
+      let externalParams = {};
+      if (deliverySelectList) {
+        if (rowData) {
+          externalParams = rowData;
+        } else {
+          externalParams = this.selectList[0] || {};
         }
-        if (this.selectList.length !== 1) {
-          this.$warn("当前操作只允许勾选一条数据");
-          return;
-        }
-        externalParmas = this.selectList[0];
       }
+
       this.expose_showDialog();
       this.btnConfigs.tableId = relateTable;
       this.onlyRead = true;
       this.btnConfigs.dialogTitle = dialogTitle || (btnType === "check" ? "查看" : "编辑");
       await this.$nextTick();
-      this.$refs.nestedTable.init(false, null, externalParmas);
+      this.$refs.nestedTable.init(false, null, externalParams);
     },
 
     getRequestConfig() {
@@ -1093,7 +1090,7 @@ export default {
             close-on-press-escape={false}
             append-to-body
             v-draggable
-            width={dialogWidth ? formatterWidthOrHeightStyle(dialogWidth) : "1200px"}
+            width={width}
           >
             <div
               style={{
@@ -1209,7 +1206,7 @@ export default {
           requestBeforeConfirmText
         },
         tableData: this.tableData,
-        externalParmas: this.externalParmas
+        externalParams: this.externalParams
       };
       if (deliverySelectList) {
         config = Object.assign(config, {

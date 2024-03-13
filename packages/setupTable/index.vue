@@ -25,8 +25,16 @@
 
     <div class="btnDesign">
       <div class="btns">
-        <span v-for="(item, index) in btnConfigArr" :key="item.renderId" style="display:inline-block">
-          <el-button type="" size="small" :icon="item.tagAttrs.icon" @click="handleBtnDetail(index)"
+        <span v-for="(item, index) in btnConfigArr" :key="item.renderId" style="display:inline-block; position: relative;">
+          <el-dropdown v-if="item.authorize === 'EE'">
+            <el-button type="" size="small" :icon="item.tagAttrs.icon" @click="handleBtnDetail(index)"
+              >{{ item.tagAttrs.value }} <i :class="item?.contentTextBehindTagOptions?.className"></i
+            ></el-button>
+            <el-dropdown-menu slot="dropdown">
+              <el-dropdown-item v-for="(elDropdownItem, index) in elDropdownOptions" :key="index">{{ elDropdownItem.label }}</el-dropdown-item>
+            </el-dropdown-menu>
+          </el-dropdown>
+          <el-button v-else type="" size="small" :icon="item.tagAttrs.icon" @click="handleBtnDetail(index)"
             >{{ item.tagAttrs.value }} <i :class="item?.contentTextBehindTagOptions?.className"></i
           ></el-button>
           <i type="danger" class="el-icon-circle-close middle " @click="handleDelBtn(index)"></i>
@@ -250,6 +258,20 @@ export default {
   },
   data() {
     return {
+      elDropdownOptions: [
+        {
+          command: "curSelect",
+          label: "当前选中"
+        },
+        {
+          command: "curPage",
+          label: "当前页"
+        },
+        {
+          command: "all",
+          label: "全部"
+        }
+      ],
       paginationSizeOptions: [
         {
           label: "10条/页",
@@ -778,6 +800,14 @@ export default {
   position: relative;
 }
 
+.btns {
+  display: flex;
+  align-items: center;
+  span {
+    margin-right: 10px;
+  }
+}
+
 .btnDesign {
   // margin: -6px 56px 10px 56px;
   background: #fff;
@@ -789,9 +819,9 @@ export default {
 }
 
 .middle {
-  position: relative;
-  left: -12px;
-  top: -16px;
+  position: absolute;
+  right: -7px;
+  top: -10px;
   font-size: 16px;
 }
 
