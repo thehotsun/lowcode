@@ -124,13 +124,14 @@ export default {
     tableHeight() {
       if (this.wrapHeight && this.headerHeight) {
         let height = "";
+        const wrapHeight = parseFloat(this.wrapHeight);
         try {
           // 最后额外减去10 防止多个滚动条出现
-          height = this.wrapHeight - 30 - 30 - this.headerHeight - 40 - 10;
+          height = wrapHeight - 30 - 30 - this.headerHeight - 40 - 10;
         } catch (error) {
           console.error("设置低代码table高度报错，报错信息：", error);
         }
-        return height;
+        return `${height}px`;
       } else {
         return "auto";
       }
@@ -1252,7 +1253,8 @@ export default {
         const blob = response;
         link.style.display = "none";
         link.href = URL.createObjectURL(blob);
-        link.setAttribute("download", "导出表格");
+        link.setAttribute("download", "导出表格.xlsx");
+        console.log(link, "link");
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);

@@ -31,6 +31,7 @@ export default {
         return [];
       }
     },
+    height: String,
     editMode: Boolean
     // page: {
     //   type: Object,
@@ -371,14 +372,15 @@ export default {
       tableColumnRender,
       codeValue,
       showCodeEditor,
-      handleClose
+      handleClose,
+      height
     } = this;
     const defaultTableAttrs = {
       "row-style": rowStyle,
       "header-cell-style": headerStyle,
       "highlight-current-row": true,
-      // height: '100%',
-      data: tableData
+      data: tableData,
+      height
     };
 
     const defaultTableEvent = {
