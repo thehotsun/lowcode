@@ -26,7 +26,7 @@
     <div class="btnDesign">
       <div class="btns">
         <span v-for="(item, index) in btnConfigArr" :key="item.renderId" style="display:inline-block; position: relative;">
-          <el-dropdown v-if="item.authorize === 'EE'">
+          <el-dropdown v-if="item.authorize === 'E'">
             <el-button type="" size="small" :icon="item.tagAttrs.icon" @click="handleBtnDetail(index)"
               >{{ item.tagAttrs.value }} <i :class="item?.contentTextBehindTagOptions?.className"></i
             ></el-button>

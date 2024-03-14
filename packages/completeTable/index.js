@@ -963,7 +963,30 @@ export default {
       if ([undefined, null].includes(this.tableData[0][this.keyField])) {
         return this.$warn("主键字段未取到值，请检查数据或重新在列表设计页面重新关联主键！");
       }
-      this.download(this.selectList.map(item => item[this.keyField]));
+      const params = {
+        prjId: this.prjInfo.prjId,
+        enterpriseId: this.enterpriseId
+      };
+      switch (command) {
+        case "curSelect":
+          if (!this.selectList.length) {
+            return this.$warn("当前未选中任何数据，无法下载！");
+          }
+          params[this.keyField] = this.selectList.map(item => item[this.keyField]);
+          break;
+        case "curPage":
+          if (!this.tableData.length) {
+            return this.$warn("当前页面无数据，无法下载！");
+          }
+          params[this.keyField] = this.tableData.map(item => item[this.keyField]);
+          break;
+        case "all":
+          params.multiFieldSearch = this.multiFieldSearch;
+          break;
+        default:
+          break;
+      }
+      this.download(params);
     },
 
     disposeDel({ btnType }) {
@@ -1227,13 +1250,8 @@ export default {
       return config;
     },
 
-    download(list = []) {
-      this.requestDownload(
-        {
-          [this.keyField]: list.length ? list : []
-        },
-        this.listPageId
-      ).then(response => {
+    download(params) {
+      this.requestDownload(params, this.listPageId).then(response => {
         const link = document.createElement("a");
         const blob = response;
         link.style.display = "none";
