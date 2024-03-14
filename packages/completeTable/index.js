@@ -574,7 +574,8 @@ export default {
       }
       this.showBtns = true;
       // 根据权限筛选
-      if (!this.previewMode) {
+      // 兼容通过弹窗展示的列表，此时rawlistPageId为空，不进行权限校验
+      if (!this.previewMode && this.rawlistPageId) {
         config = config.filter(item => {
           return this.checkPermission(`${this.rawlistPageId}:${item.btnId}:${item.authorize}`) || item.authorize === "defaultShow";
         });
@@ -1068,12 +1069,7 @@ export default {
       } = this;
       if (tableId) {
         return (
-          <complete-table
-            ref="nestedTable"
-            listPageId={tableId}
-            rawlistPageId="rawRelateId"
-            wrap-height={dialogHeight ? formatterWidthOrHeightStyle(dialogHeight) : "650px"}
-          ></complete-table>
+          <complete-table ref="nestedTable" listPageId={tableId} rawlistPageId="" wrap-height={dialogHeight ? formatterWidthOrHeightStyle(dialogHeight) : "650px"}></complete-table>
         );
       }
     },
