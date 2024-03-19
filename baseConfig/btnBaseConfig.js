@@ -482,7 +482,7 @@ export function BtnConfigFormOptions() {
         },
         tagName: "el-select",
         tagAttrs: {
-          placeholder: "请选择组件"
+          placeholder: "请选择请求类型"
         },
         // 对应formData中的属性值
         formField: "extraOption.requestType",
