@@ -231,12 +231,12 @@ export default {
           this.tableData.push(tableSingleData);
         }
       } else {
+        this.composeData();
         if (externalParams) {
           this.refreshData(externalParams);
         } else {
           this.queryTableData();
         }
-        this.composeData();
       }
       setTimeout(() => {
         try {
