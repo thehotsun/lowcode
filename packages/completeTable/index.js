@@ -85,7 +85,20 @@ export default {
 
   computed: {
     attrs() {
-      const props = ["isTree", "isMerge", "isShowIndex", "showPagination", "isShowIndex", "isShowCheckbox", "keyField", "tableOptions", "formOptions", "style", "paginationSize"];
+      const props = [
+        "isTree",
+        "isMerge",
+        "isShowIndex",
+        "showPagination",
+        "isShowIndex",
+        "isShowCheckbox",
+        "keyField",
+        "tableOptions",
+        "formOptions",
+        "style",
+        "paginationSize",
+        "dataTransitionFn"
+      ];
       if (!this.tableAttrs.isShowIndex) {
         props.push("index");
       }
@@ -515,7 +528,16 @@ export default {
       return (this.tableAttrs.showPagination ? this.requestTablePaginationData(params, this.page, this.listPageId) : this.requestTableData(params, this.listPageId))
         .then(res => {
           if (res.result === "0") {
-            this.tableData = res.data;
+            if (this.tableAttrs.isTree && this.tableAttrs.dataTransitionFn) {
+              try {
+                this.tableData = this.tableAttrs.dataTransitionFn(res.data);
+              } catch (error) {
+                console.error(error);
+                this.tableData = res.data;
+              }
+            } else {
+              this.tableData = res.data;
+            }
             if (this.tableAttrs.showPagination) {
               this.page.totalCount = res.totalCount;
             }

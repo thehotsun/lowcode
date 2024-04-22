@@ -664,7 +664,7 @@ export function getSummaries(param) {
 }
 
 export function setTableAttrs(data) {
-  const fnTranslate = ["summaryMethod", "index", "load", "spanMethod"];
+  const fnTranslate = ["summaryMethod", "index", "load", "spanMethod", "dataTransitionFn"];
   fnTranslate.map(field => {
     if (data[field]) {
       data[field] = str2Fn(data[field]);

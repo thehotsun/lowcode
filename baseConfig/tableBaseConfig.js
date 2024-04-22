@@ -24,7 +24,8 @@ export function getTableAttrs() {
     spanMethod: "",
     clickRowShowDetialDialog: false,
     style: "",
-    elTableStyle: ""
+    elTableStyle: "",
+    dataTransitionFn: ""
   };
 }
 

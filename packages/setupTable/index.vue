@@ -129,7 +129,19 @@
             <el-input v-model="tableAttrs.treeProps" type="textarea" :rows="2" placeholder="请输入{children, hasChildren}格式"></el-input>
           </el-form-item>
           <el-form-item label="指定row-key" prop="filterMethod" v-if="tableAttrs.isTree">
-            <el-input v-model="tableAttrs.rowKey" type="textarea" :rows="2" placeholder="请输入充当key的字段名"></el-input>
+            <el-input v-model="tableAttrs.rowKey" placeholder="请输入充当key的字段名"></el-input>
+          </el-form-item>
+          <el-form-item label="数据转换函数" prop="filterMethod" v-if="tableAttrs.isTree">
+            <el-tooltip
+              slot="label"
+              class="item"
+              effect="dark"
+              content="由于当前通过sql查询很难直接生成树形结构所需的数据结构，因为通过此函数进行数据结构转换"
+              placement="top-start"
+            >
+              <span style="cursor: pointer;font-size: 14px">数据转换函数</span>
+            </el-tooltip>
+            <el-input v-model="tableAttrs.dataTransitionFn" @focus="handleShow" placeholder="请输入数据转换函数"></el-input>
           </el-form-item>
           <el-form-item label="懒加载" prop="lazy" v-if="tableAttrs.isTree">
             <el-switch v-model="tableAttrs.lazy" />
@@ -170,6 +182,9 @@
               placeholder="请输入列表样式（包括列表、搜索区域和按钮区域）"></el-input>
           </el-form-item> -->
         </el-form>
+        <el-dialog :beforeClose="handleClose" title="代码编写" :visible="showCodeEditor" width="900px" :appendToBody="true">
+          <js-code-editor mode="javascript" :readonly="false" :value="tableAttrs.dataTransitionFn" ref="chEditor" @input="handleEditorInput"></js-code-editor>
+        </el-dialog>
       </div>
     </el-dialog>
   </div>
@@ -258,6 +273,7 @@ export default {
   },
   data() {
     return {
+      showCodeEditor: false,
       elDropdownOptions: [
         {
           command: "curSelect",
@@ -758,6 +774,15 @@ export default {
       this.$nextTick(() => {
         this.$refs.setupBtnConfig.expose_setBtnConfigFrom(this.btnConfigArr[index]);
       });
+    },
+    handleClose() {
+      this.showCodeEditor = false;
+    },
+    handleShow() {
+      this.showCodeEditor = true;
+    },
+    handleEditorInput(val) {
+      this.tableAttrs.dataTransitionFn = val;
     }
   }
 };
