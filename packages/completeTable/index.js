@@ -147,9 +147,9 @@ export default {
         return `${height}px`;
       } else if (this.headerHeight) {
         let height = "";
-        const wrapHeight = parseFloat(window.getComputedStyle(document.querySelector(".dialogContent")).height);
-        console.log(wrapHeight, "wrapHeight");
         try {
+          const wrapHeight = parseFloat(window.getComputedStyle(document.querySelector(".dialogContent")).height);
+          console.log(wrapHeight, "wrapHeight");
           // 最后额外减去10 防止多个滚动条出现
           height = wrapHeight - 30 - 30 - this.headerHeight - 40 - 10;
         } catch (error) {
