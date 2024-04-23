@@ -99,7 +99,7 @@
             <el-switch v-model="tableAttrs.isShowIndex" />
           </el-form-item>
           <el-form-item label="自定义索引函数" prop="filterMethod" v-if="tableAttrs.isShowIndex">
-            <el-input v-model="tableAttrs.index" type="textarea" :rows="2" placeholder="请输入function(index){ return index}格式"></el-input>
+            <el-input v-model="tableAttrs.index" @focus="handleShow('index', $event)" placeholder="请输入function(index){ return index}格式"></el-input>
           </el-form-item>
           <el-form-item label="多选" prop="isShowCheckbox">
             <el-switch v-model="tableAttrs.isShowCheckbox" />
@@ -114,13 +114,17 @@
             <el-switch v-model="tableAttrs.showSummary" />
           </el-form-item>
           <el-form-item label="合计函数" prop="summaryMethod" v-if="tableAttrs.showSummary">
-            <el-input v-model="tableAttrs.summaryMethod" type="textarea" :rows="2" placeholder="请输入格式为Function({ columns, data })"></el-input>
+            <el-input v-model="tableAttrs.summaryMethod" @focus="handleShow('summaryMethod', $event)" placeholder="请输入格式为Function({ columns, data })"></el-input>
           </el-form-item>
           <el-form-item label="合并" prop="isMerge">
             <el-switch v-model="tableAttrs.isMerge" />
           </el-form-item>
           <el-form-item label="合并函数" prop="spanMethod" v-if="tableAttrs.isMerge">
-            <el-input v-model="tableAttrs.spanMethod" type="textarea" :rows="2" placeholder="请输入格式为Function({ row, column, rowIndex, columnIndex })"></el-input>
+            <el-input
+              v-model="tableAttrs.spanMethod"
+              @focus="handleShow('spanMethod', $event)"
+              placeholder="请输入格式为Function({ row, column, rowIndex, columnIndex })"
+            ></el-input>
           </el-form-item>
           <el-form-item label="树类型数据" prop="isTree">
             <el-switch v-model="tableAttrs.isTree" />
@@ -141,7 +145,7 @@
             >
               <span style="cursor: pointer;font-size: 14px">数据转换函数</span>
             </el-tooltip>
-            <el-input v-model="tableAttrs.dataTransitionFn" @focus="handleShow" placeholder="请输入数据转换函数"></el-input>
+            <el-input v-model="tableAttrs.dataTransitionFn" @focus="handleShow('dataTransitionFn', $event)" placeholder="请输入数据转换函数"></el-input>
           </el-form-item>
           <el-form-item label="懒加载" prop="lazy" v-if="tableAttrs.isTree">
             <el-switch v-model="tableAttrs.lazy" />
@@ -183,7 +187,7 @@
           </el-form-item> -->
         </el-form>
         <el-dialog :beforeClose="handleClose" title="代码编写" :visible="showCodeEditor" width="900px" :appendToBody="true">
-          <js-code-editor mode="javascript" :readonly="false" :value="tableAttrs.dataTransitionFn" ref="chEditor" @input="handleEditorInput"></js-code-editor>
+          <js-code-editor mode="javascript" :readonly="false" :value="tableAttrs[curFn]" ref="chEditor" @input="handleEditorInput"></js-code-editor>
         </el-dialog>
       </div>
     </el-dialog>
@@ -273,6 +277,7 @@ export default {
   },
   data() {
     return {
+      curFn: "",
       showCodeEditor: false,
       elDropdownOptions: [
         {
@@ -778,11 +783,17 @@ export default {
     handleClose() {
       this.showCodeEditor = false;
     },
-    handleShow() {
+    async handleShow(field) {
+      this.curFn = field;
       this.showCodeEditor = true;
+      await this.$nextTick();
+      this.$refs.chEditor.aceEditor.setOptions({
+        value: this.tableAttrs[this.curFn]
+      });
+      this.$refs.chEditor.codeValue = this.tableAttrs[this.curFn];
     },
     handleEditorInput(val) {
-      this.tableAttrs.dataTransitionFn = val;
+      this.tableAttrs[this.curFn] = val;
     }
   }
 };
@@ -838,6 +849,7 @@ export default {
   background: #fff;
   height: 65px;
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   margin-top: 10px;
   padding-left: 20px;
