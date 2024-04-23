@@ -145,6 +145,17 @@ export default {
           console.error("设置低代码table高度报错，报错信息：", error);
         }
         return `${height}px`;
+      } else if (this.headerHeight) {
+        let height = "";
+        const wrapHeight = parseFloat(window.getComputedStyle(document.querySelector(".dialogContent")).height);
+        console.log(wrapHeight, "wrapHeight");
+        try {
+          // 最后额外减去10 防止多个滚动条出现
+          height = wrapHeight - 30 - 30 - this.headerHeight - 40 - 10;
+        } catch (error) {
+          console.error("设置低代码table高度报错，报错信息：", error);
+        }
+        return `${height}px`;
       } else {
         return "auto";
       }
@@ -1091,9 +1102,7 @@ export default {
         btnConfigs: { tableId, dialogHeight }
       } = this;
       if (tableId) {
-        return (
-          <complete-table ref="nestedTable" listPageId={tableId} rawlistPageId="" wrap-height={dialogHeight ? formatterWidthOrHeightStyle(dialogHeight) : "650px"}></complete-table>
-        );
+        return <complete-table ref="nestedTable" listPageId={tableId} rawlistPageId=""></complete-table>;
       }
     },
 
@@ -1123,8 +1132,14 @@ export default {
           "before-close": expose_hideDialog
         };
         const width = dialogWidth ? formatterWidthOrHeightStyle(dialogWidth) : "1200px";
+        const height = dialogHeight ? formatterWidthOrHeightStyle(dialogHeight, true) : "650px";
+        this.$nextTick().then(() => {
+          console.log(height, "height");
+          this.$refs.eldialog.$el.querySelector(".el-dialog").style.height = height;
+        });
         return (
           <el-dialog
+            ref="eldialog"
             title={dialogTitle}
             visible={btnRelateDialogVisible}
             {...{ on: visibleListeners }}
@@ -1135,8 +1150,9 @@ export default {
             width={width}
           >
             <div
+              class="dialogContent"
               style={{
-                height: dialogHeight ? formatterWidthOrHeightStyle(dialogHeight) : "650px",
+                height: "100%",
                 overflow: "auto",
                 width: `calc(${width} - '40px')`
               }}

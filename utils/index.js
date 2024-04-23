@@ -763,12 +763,18 @@ export function transformParamsValue(value) {
   }
 }
 // 格式化高度宽度
-export function formatterWidthOrHeightStyle(length) {
+export function formatterWidthOrHeightStyle(length, isHeight) {
   if (typeof length === "string") length = length.trim();
   if (/^\d+$/.test(length)) {
     return `${length}px`;
-  } else if (/^\d+(%|px)?$/.test(length)) {
+  } else if (/^\d+px?$/.test(length)) {
     return length;
+  } else if (/^\d+%?$/.test(length)) {
+    if (isHeight) {
+      return length.replace("%", "vh");
+    } else {
+      return length;
+    }
   } else {
     console.warn("输入的高度或者宽度格式不正确！");
     return "";
