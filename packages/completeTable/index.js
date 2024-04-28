@@ -1355,7 +1355,7 @@ export default {
               break;
           }
         } else {
-          console.warn("当前页面未配置btnType为check的按钮！");
+          console.warn("当前页面未配置btnType为check的按钮或校验函数为返回为false！");
         }
       }
     }
