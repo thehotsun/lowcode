@@ -1335,7 +1335,7 @@ export default {
       if (target) {
         const validateFn = target.extraOption.validateFn;
         console.log(target.extraOption);
-        if (!validateFn || (validateFn && str2Fn(validateFn)(this.selectList))) {
+        if (!validateFn || (validateFn && str2Fn(validateFn).call(this, this.selectList))) {
           switch (target.extraOption.openType) {
             case 0:
               this.disposeDynamicFormEvent(target.extraOption, row);
