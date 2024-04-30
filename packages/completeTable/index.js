@@ -209,9 +209,13 @@ export default {
       this.resetBtnConfigs();
     },
 
-    expose_preview(data) {
+    async expose_preview(data) {
       this.previewMode = true;
-      this.parseTableConfig(data);
+      if (data) {
+        this.parseTableConfig(data);
+      } else {
+        await this.queryTableConfig();
+      }
       const tableSingleData = {};
       this.composeData(tableSingleData);
       this.tableData = [tableSingleData];
