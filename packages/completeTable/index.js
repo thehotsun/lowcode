@@ -187,6 +187,7 @@ export default {
     "componentList",
     "enterpriseId",
     "prjInfo",
+    "userInfo",
     "generalRequest",
     "requestTableData",
     "requestTablePaginationData",
@@ -602,10 +603,10 @@ export default {
       if (this.previewMode) {
         config.map(item => {
           if (item.tagAttrs) {
-            item.tagAttrs.disabled = !["新增", "查看", "编辑"].includes(item.tagAttrs.value);
+            item.tagAttrs.disabled = !["add", "edit", "check"].includes(item.extraOption.btnType);
           } else {
             item.tagAttrs = {
-              disabled: !["新增", "查看", "编辑"].includes(item.tagAttrs.value)
+              disabled: !["add", "edit", "check"].includes(item.extraOption.btnType)
             };
           }
         });
