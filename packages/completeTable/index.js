@@ -693,6 +693,7 @@ export default {
         disposeDynamicFormEvent,
         disposeDynamicTableEvent,
         disposeRequestEvent,
+        disposeThisPageJump,
         disposeDown,
         disposeDel
       } = this;
@@ -738,7 +739,16 @@ export default {
             }
           } else if (openType === 1) {
             // openType为1是当前页面跳转
-            this.$router.push(openUrl, relateFrom);
+            if (
+              validateSelectList({
+                paramName,
+                paramType,
+                deliverySelectList,
+                validate
+              })
+            ) {
+              disposeThisPageJump({ openUrl, relateFrom, deliverySelectList });
+            }
           } else if (openType === 3) {
             // openType为3是新窗口打开;
             var reg = /http(s)?:\/\/([\w-]+\.)+[\w-]+(\/[\w- .\/?%&=]*)?/;
@@ -912,21 +922,40 @@ export default {
     },
 
     async disposeDynamicTableEvent({ btnType, relateTable, dialogTitle, deliverySelectList }, rowData) {
-      let externalParams = {};
-      if (deliverySelectList) {
-        if (rowData) {
-          externalParams = rowData;
-        } else {
-          externalParams = this.selectList[0] || {};
-        }
-      }
-
+      const externalParams = rowData || this.formatSelectListParams(deliverySelectList);
       this.expose_showDialog();
       this.btnConfigs.tableId = relateTable;
       this.onlyRead = true;
       this.btnConfigs.dialogTitle = dialogTitle || (btnType === "check" ? "查看" : "编辑");
       await this.$nextTick();
       this.$refs.nestedTable.init(false, null, externalParams);
+    },
+
+    disposeThisPageJump({ openUrl, relateFrom, deliverySelectList }, rowData) {
+      // TODO 调用接口看是否需要更改prjid
+      // ??
+      const params = rowData || this.formatSelectListParams(deliverySelectList);
+      this.$router.push(openUrl, relateFrom, params);
+    },
+
+    formatSelectListParams(deliverySelectList) {
+      let params = {};
+      if (deliverySelectList) {
+        if (this.selectList.length > 1) {
+          this.selectList.map(row => {
+            for (const [key, value] of Object.entries(row)) {
+              if (params[`${key}s`]) {
+                params[`${key}s`].push(value);
+              } else {
+                params[`${key}s`] = [value];
+              }
+            }
+          });
+        } else if (this.selectList.length === 1) {
+          params = this.selectList[0];
+        }
+      }
+      return params;
     },
 
     getRequestConfig() {
@@ -1344,6 +1373,9 @@ export default {
           switch (target.extraOption.openType) {
             case 0:
               this.disposeDynamicFormEvent(target.extraOption, row);
+              break;
+            case 1:
+              this.disposeThisPageJump(target.extraOption, row);
               break;
             case 2:
               this.btnConfigs.btnType = "check";
