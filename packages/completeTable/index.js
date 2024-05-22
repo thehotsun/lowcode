@@ -187,6 +187,7 @@ export default {
     "componentList",
     "enterpriseId",
     "prjInfo",
+    "updatePrj",
     "userInfo",
     "generalRequest",
     "requestTableData",
@@ -261,8 +262,21 @@ export default {
         }
       } else {
         this.composeData();
-        if (externalParams) {
+        try {
+          // 有些参数通过sessionStorage传递
+          var jumpParams = JSON.parse(sessionStorage.getItem("lowcodeTableThisPageJumpParams"));
+          // 只接受对象参数
+          var isObj = Object.prototype.toString.call(jumpParams) === "[object Object]";
+          sessionStorage.removeItem("lowcodeTableThisPageJumpParams");
+        } catch (error) {
+          console.error(error);
+        }
+        if (externalParams && isObj) {
+          this.refreshData({ ...externalParams, ...jumpParams });
+        } else if (externalParams) {
           this.refreshData(externalParams);
+        } else if (isObj) {
+          this.refreshData(jumpParams);
         } else {
           this.queryTableData();
         }
@@ -933,9 +947,11 @@ export default {
 
     disposeThisPageJump({ openUrl, relateFrom, deliverySelectList }, rowData) {
       // TODO 调用接口看是否需要更改prjid
-      // ??
+      // this.updatePrj()
       const params = rowData || this.formatSelectListParams(deliverySelectList);
-      this.$router.push(openUrl, relateFrom, params);
+      // 通过sessionStorage传递参数
+      sessionStorage.setItem("lowcodeTableThisPageJumpParams", JSON.stringify(params));
+      this.$router.push(openUrl);
     },
 
     formatSelectListParams(deliverySelectList) {
