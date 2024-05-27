@@ -195,7 +195,7 @@ export function BtnConfigFormOptions() {
           }
         },
         renderDependFn: function(formData) {
-          return !["import", "download", "batchDel"].includes(formData.extraOption.btnType);
+          return !["import", "importRefresh", "download", "batchDel"].includes(formData.extraOption.btnType);
         }
       }
     },
@@ -521,7 +521,7 @@ export function BtnConfigFormOptions() {
         formField: "extraOption.deliverySelectList",
         extraOption: {},
         renderDependFn: function(formData) {
-          return !["import", "batchDel", "download"].includes(formData.extraOption.btnType);
+          return !["import", "importRefresh", "batchDel", "download"].includes(formData.extraOption.btnType);
         }
       }
     },

@@ -50,6 +50,7 @@
           <el-dropdown-item command="batchDel">批量删除按钮</el-dropdown-item>
           <el-dropdown-item command="download">导出按钮</el-dropdown-item>
           <el-dropdown-item command="import">导入按钮</el-dropdown-item>
+          <el-dropdown-item command="importRefresh">导入更新按钮</el-dropdown-item>
           <el-dropdown-item command="custom">自定义按钮</el-dropdown-item>
         </el-dropdown-menu>
       </el-dropdown>
@@ -724,6 +725,12 @@ export default {
           case "import":
             config.tagAttrs.value = "导入";
             config.extraOption.btnType = "import";
+            config.extraOption.openType = -1;
+            config.authorize = "I";
+            break;
+          case "importRefresh":
+            config.tagAttrs.value = "导入更新";
+            config.extraOption.btnType = "importRefresh";
             config.extraOption.openType = -1;
             config.authorize = "I";
             break;

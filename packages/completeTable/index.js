@@ -748,6 +748,10 @@ export default {
                 // 处理导入
                 this.dealImport(relateMeta);
                 break;
+              case "importRefresh":
+                // 处理导入
+                this.dealImportRefresh(relateMeta);
+                break;
               default:
                 break;
             }
@@ -1096,6 +1100,12 @@ export default {
       this.$refs.importFileComp.open();
     },
 
+    // 处理导入更新的实现
+    async dealImportRefresh() {
+      // TODO
+      this.$refs.importFileComp.open();
+    },
+
     dynamicFormVNode() {
       const {
         btnConfigs: { formId },
@@ -1251,13 +1261,13 @@ export default {
       const baseAttrs = this.getExternalCompBaseAttrs();
       return (
         <ImportFileComp
+          ref="importFileComp"
           tableName={importFileCompRelateTableName}
           {...{
             attrs: {
               ...baseAttrs
             }
           }}
-          ref="importFileComp"
           {...{
             on: {
               submit: onSubmit
