@@ -183,6 +183,7 @@ export default {
   inject: [
     "openFlow",
     "importFileComp",
+    "importRefreshComp",
     "queryFlowDef",
     "componentList",
     "enterpriseId",
@@ -195,6 +196,7 @@ export default {
     "requestTableConfig",
     "requestDownload",
     "requestBatchDel",
+    "requestBatchFlowDoc",
     "checkPermission"
   ],
 
@@ -709,8 +711,11 @@ export default {
         disposeRequestEvent,
         disposeThisPageJump,
         disposeDown,
-        disposeDel
+        disposeFlowDocDown,
+        disposeDel,
+        previewMode
       } = this;
+      if (previewMode) return;
       // 只btnConfigs.要执行点击按钮操作，先置空formid
       this.btnConfigs = new BtnConfigs();
       this.btnConfigs.requestUrl = requestUrl;
@@ -735,14 +740,14 @@ export default {
             switch (btnType) {
               case "download":
                 disposeDown({
-                  btnType,
                   command
                 });
                 break;
+              case "flowDocDownload":
+                disposeFlowDocDown();
+                break;
               case "batchDel":
-                disposeDel({
-                  btnType
-                });
+                disposeDel();
                 break;
               case "import":
                 // 处理导入
@@ -750,7 +755,7 @@ export default {
                 break;
               case "importRefresh":
                 // 处理导入
-                this.dealImportRefresh(relateMeta);
+                this.dealImportRefresh({ requestBeforeConfirmHint, requestBeforeConfirmText });
                 break;
               default:
                 break;
@@ -765,7 +770,7 @@ export default {
                 validate
               })
             ) {
-              disposeThisPageJump({ openUrl, relateFrom, deliverySelectList });
+              disposeThisPageJump({ openUrl, deliverySelectList });
             }
           } else if (openType === 3) {
             // openType为3是新窗口打开;
@@ -949,7 +954,7 @@ export default {
       this.$refs.nestedTable.init(false, null, externalParams);
     },
 
-    disposeThisPageJump({ openUrl, relateFrom, deliverySelectList }, rowData) {
+    disposeThisPageJump({ openUrl, deliverySelectList }, rowData) {
       // TODO 调用接口看是否需要更改prjid
       // this.updatePrj()
       const params = rowData || this.formatSelectListParams(deliverySelectList);
@@ -964,10 +969,10 @@ export default {
         if (this.selectList.length > 1) {
           this.selectList.map(row => {
             for (const [key, value] of Object.entries(row)) {
-              if (params[`${key}s`]) {
-                params[`${key}s`].push(value);
+              if (params[`${key}Array`]) {
+                params[`${key}Array`].push(value);
               } else {
-                params[`${key}s`] = [value];
+                params[`${key}Array`] = [value];
               }
             }
           });
@@ -1043,10 +1048,9 @@ export default {
       this.generalRequest(finalUrl, finalType, finalData, requestHeaders);
     },
     // TODO
-    disposeDown({ btnType, command }) {
+    disposeDown({ command }) {
       console.log(command, "command");
-      if (this.previewMode) return;
-      if (this.selectList.length === 0 && btnType !== "download") {
+      if (this.selectList.length === 0) {
         return this.$warn("请至少勾选一条要处理的数据");
       }
       if ([undefined, null].includes(this.tableData[0][this.keyField])) {
@@ -1078,9 +1082,18 @@ export default {
       this.download(params);
     },
 
-    disposeDel({ btnType }) {
-      if (this.previewMode) return;
-      if (this.selectList.length === 0 && btnType !== "download") {
+    disposeFlowDocDown() {
+      if (this.selectList.length === 0) {
+        return this.$warn("请至少勾选一条要处理的数据");
+      }
+      if ([undefined, null].includes(this.tableData[0][this.keyField])) {
+        return this.$warn("主键字段未取到值，请检查数据或重新在列表设计页面重新关联主键！");
+      }
+      this.requestBatchFlowDoc(this.selectList.map(item => item[this.keyField]));
+    },
+
+    disposeDel() {
+      if (this.selectList.length === 0) {
         return this.$warn("请至少勾选一条要处理的数据");
       }
       if ([undefined, null].includes(this.tableData[0][this.keyField])) {
@@ -1101,9 +1114,12 @@ export default {
     },
 
     // 处理导入更新的实现
-    async dealImportRefresh() {
+    async dealImportRefresh({ requestBeforeConfirmHint, requestBeforeConfirmText }) {
       // TODO
-      this.$refs.importFileComp.open();
+      if (requestBeforeConfirmHint) {
+        await this.$confirm(`${requestBeforeConfirmText}`);
+      }
+      this.$refs.importRefreshComp.open({ refresh: this.queryTableData, listPageId: this.listPageId });
     },
 
     dynamicFormVNode() {
@@ -1277,6 +1293,25 @@ export default {
       );
     },
 
+    importRefreshVNode() {
+      const {
+        importRefreshComp: ImportRefreshComp,
+        btnConfigs: { importFileCompRelateTableName }
+      } = this;
+      const baseAttrs = this.getExternalCompBaseAttrs();
+      return (
+        <ImportRefreshComp
+          ref="importRefreshComp"
+          tableName={importFileCompRelateTableName}
+          {...{
+            attrs: {
+              ...baseAttrs
+            }
+          }}
+        ></ImportRefreshComp>
+      );
+    },
+
     relateComponentVNode() {
       if (this.btnConfigs.relateComponent) {
         this.curDialogCompRef = "relateComponent";
@@ -1391,6 +1426,7 @@ export default {
 
     showCheckDialog(row) {
       console.log("showCheckDialog", row);
+      if (this.previewMode) return;
       const target = this.btnRegularOptions[0]?.formItem?.find(btnOptions => btnOptions.extraOption.btnType === "check");
       if (target) {
         const validateFn = target.extraOption.validateFn;
@@ -1450,6 +1486,7 @@ export default {
       handleNativeFilter,
       btnRelateDialogVNode,
       importFileVNode,
+      importRefreshVNode,
       fuzzySearchPlaceholder,
       handleFilter,
       handleGlobalClick,
@@ -1616,6 +1653,7 @@ export default {
         </el-main>
         {btnRelateDialogVNode()}
         {importFileVNode()}
+        {importRefreshVNode()}
       </el-container>
     );
   }

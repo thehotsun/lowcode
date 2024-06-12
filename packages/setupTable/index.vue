@@ -49,6 +49,7 @@
           <el-dropdown-item command="check">查看按钮</el-dropdown-item>
           <el-dropdown-item command="batchDel">批量删除按钮</el-dropdown-item>
           <el-dropdown-item command="download">导出按钮</el-dropdown-item>
+          <el-dropdown-item command="flowDocDownload">流程文档导出按钮</el-dropdown-item>
           <el-dropdown-item command="import">导入按钮</el-dropdown-item>
           <el-dropdown-item command="importRefresh">导入更新按钮</el-dropdown-item>
           <el-dropdown-item command="custom">自定义按钮</el-dropdown-item>
@@ -722,6 +723,12 @@ export default {
             config.extraOption.openType = -1;
             config.authorize = "E";
             break;
+          case "flowDocDownload":
+            config.tagAttrs.value = "流程文档导出";
+            config.extraOption.btnType = "flowDocDownload";
+            config.extraOption.openType = -1;
+            config.authorize = "E";
+            break;
           case "import":
             config.tagAttrs.value = "导入";
             config.extraOption.btnType = "import";
@@ -732,7 +739,7 @@ export default {
             config.tagAttrs.value = "导入更新";
             config.extraOption.btnType = "importRefresh";
             config.extraOption.openType = -1;
-            config.authorize = "I";
+            config.authorize = "U";
             break;
           case "custom":
             config.extraOption.btnType = "custom";

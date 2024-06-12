@@ -85,13 +85,17 @@ export const yesOrNo = [
   }
 ];
 
+const staticBtn = ["import", "importRefresh", "download", "flowDocDownload", "batchDel"];
+
+const downBtn = ["download", "flowDocDownload"];
+
 const dialogAttrRenderDependFn = function(formData) {
   return [0, 2, 6].includes(formData.extraOption.openType) || (formData.extraOption.openType === 4 && formData.extraOption.useDialog);
 };
 
 const requestBeforeConfirmRenderDependFn = function(formData) {
   return (
-    formData.extraOption.btnType !== "download" &&
+    !downBtn.includes(formData.extraOption.btnType) &&
     !(
       (formData.extraOption.openType === 4 && formData.extraOption.useDialog && !formData.extraOption.showFooter) ||
       (formData.extraOption.openType === 4 && !formData.extraOption.useDialog)
@@ -104,7 +108,7 @@ const deliverySelectListRenderDependFn = function(formData) {
 };
 
 const excludeDownAndDelRenderDependFn = function(formData) {
-  return !["download", "batchDel"].includes(formData.extraOption.btnType);
+  return !downBtn.concat("batchDel").includes(formData.extraOption.btnType);
 };
 
 const expectOpenTypeRenderDependFnGenerator = openType =>
@@ -195,7 +199,7 @@ export function BtnConfigFormOptions() {
           }
         },
         renderDependFn: function(formData) {
-          return !["import", "importRefresh", "download", "batchDel"].includes(formData.extraOption.btnType);
+          return !staticBtn.includes(formData.extraOption.btnType);
         }
       }
     },
@@ -521,7 +525,7 @@ export function BtnConfigFormOptions() {
         formField: "extraOption.deliverySelectList",
         extraOption: {},
         renderDependFn: function(formData) {
-          return !["import", "importRefresh", "batchDel", "download"].includes(formData.extraOption.btnType);
+          return !staticBtn.includes(formData.extraOption.btnType);
         }
       }
     },

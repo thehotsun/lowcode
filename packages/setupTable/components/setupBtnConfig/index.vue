@@ -31,7 +31,7 @@
       <template>
         <el-form ref="dsForm" :model="paramsConfig" label-width="0px" label-position="left" class="ds-form">
           <div class="config">
-            <div class="configLeft">参数（queryString）</div>
+            <div class="configLeft">url参数（queryString）</div>
             <div class="configRight">
               <el-row v-for="(rp, pIdx) in paramsConfig.params" :key="pIdx" class="rd-row" :gutter="8">
                 <el-col :span="7">
@@ -56,7 +56,7 @@
             </div>
           </div>
           <div class="config">
-            <div class="configLeft">参数（queryString）</div>
+            <div class="configLeft">body参数（data）</div>
             <div class="configRight">
               <el-row v-for="(rd, dIdx) in paramsConfig.data" :key="dIdx" class="rd-row" :gutter="8">
                 <el-col :span="7">
@@ -293,7 +293,7 @@ export default {
         data.renderId = Math.random();
         this.btnConfigFromArr.push(data);
       } else {
-        merge(this.originConfigForm, data);
+        Object.assign(this.originConfigForm, data);
       }
       this.$emit("onSubmit");
       this.btnConfigFrom = new BtnConfigFrom();
