@@ -186,7 +186,7 @@ export default {
             })
           ) : isCooperateComp(tagName) ? (
             getCooperateComp(tagName, tagAttrs, listeners, formField, extraOption)
-          ) : authorize === "E" && bindEvent ? (
+          ) : authorize === "E" && extraOption.btnType === "download" && bindEvent ? (
             // 导出按钮特殊处理
             getDropdownCompVNode(item)
           ) : (
