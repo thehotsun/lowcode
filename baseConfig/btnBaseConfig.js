@@ -110,7 +110,11 @@ const requestBeforeConfirmTextRenderDependFn = function(formData) {
 };
 
 const deliverySelectListRenderDependFn = function(formData) {
-  return formData.extraOption.deliverySelectList && formData.extraOption.openType !== 6;
+  return formData.extraOption.deliverySelectList && ![1, 6].includes(formData.extraOption.openType);
+};
+
+const deliverySelectListFieldsRenderDependFn = function(formData) {
+  return formData.extraOption.deliverySelectList && [1, 6].includes(formData.extraOption.openType);
 };
 
 const excludeDownAndDelRenderDependFn = function(formData) {
@@ -558,7 +562,7 @@ export function BtnConfigFormOptions() {
             label: "cnName"
           }
         },
-        renderDependFn: deliverySelectListRenderDependFn
+        renderDependFn: deliverySelectListFieldsRenderDependFn
       }
     },
 
