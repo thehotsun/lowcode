@@ -10,7 +10,6 @@ import { getTableAttrs } from "../../baseConfig/tableBaseConfig";
 
 import {
   getWidgetOptions,
-  exec,
   getWidgetDefaultVal,
   str2obj,
   depthFirstSearchWithRecursive,
@@ -651,8 +650,6 @@ export default {
       ];
     },
 
-    exec,
-
     validateSelectList({ paramName, paramType, deliverySelectList, validate }) {
       const { selectList } = this;
       this.btnConfigs.deliverySelectList = deliverySelectList;
@@ -691,6 +688,7 @@ export default {
       paramName = "",
       paramType = 0,
       deliverySelectList = false,
+      deliverySelectListFields = [],
       validate = [],
       requestUrl = "",
       requestType = "post",
@@ -733,7 +731,7 @@ export default {
       if (!validateFn || (validateFn && str2Fn(validateFn).call(this, this.selectList))) {
         // 如果有自定义事件，则执行自定义事件
         if (fn) {
-          this.exec(fn);
+          str2Fn(fn).call(this);
         } else {
           if (openType === -1) {
             // openType为-1是固定行为，如下载 批量删除等
@@ -770,7 +768,7 @@ export default {
                 validate
               })
             ) {
-              disposeThisPageJump({ openUrl, deliverySelectList });
+              disposeThisPageJump({ openUrl, deliverySelectList, deliverySelectListFields });
             }
           } else if (openType === 3) {
             // openType为3是新窗口打开;
@@ -851,7 +849,8 @@ export default {
                 btnType,
                 relateTable,
                 dialogTitle,
-                deliverySelectList
+                deliverySelectList,
+                deliverySelectListFields
               });
             }
           }
@@ -944,8 +943,8 @@ export default {
       }
     },
 
-    async disposeDynamicTableEvent({ btnType, relateTable, dialogTitle, deliverySelectList }, rowData) {
-      const externalParams = rowData || this.formatSelectListParams(deliverySelectList);
+    async disposeDynamicTableEvent({ btnType, relateTable, dialogTitle, deliverySelectList, deliverySelectListFields }, rowData) {
+      const externalParams = rowData || this.formatSelectListParams(deliverySelectList, deliverySelectListFields);
       this.expose_showDialog();
       this.btnConfigs.tableId = relateTable;
       this.onlyRead = true;
@@ -954,31 +953,33 @@ export default {
       this.$refs.nestedTable.init(false, null, externalParams);
     },
 
-    disposeThisPageJump({ openUrl, deliverySelectList }, rowData) {
+    disposeThisPageJump({ openUrl, deliverySelectList, deliverySelectListFields }, rowData) {
       // TODO 调用接口看是否需要更改prjid
       // this.updatePrj()
-      const params = rowData || this.formatSelectListParams(deliverySelectList);
+      const params = rowData || this.formatSelectListParams(deliverySelectList, deliverySelectListFields);
       // 通过sessionStorage传递参数
       sessionStorage.setItem("lowcodeTableThisPageJumpParams", JSON.stringify(params));
       this.$router.push(openUrl);
     },
 
-    formatSelectListParams(deliverySelectList) {
+    formatSelectListParams(deliverySelectList, deliverySelectListFields) {
       let params = {};
       if (deliverySelectList) {
-        if (this.selectList.length > 1) {
-          this.selectList.map(row => {
-            for (const [key, value] of Object.entries(row)) {
-              if (params[`${key}Array`]) {
-                params[`${key}Array`].push(value);
-              } else {
-                params[`${key}Array`] = [value];
-              }
+        params = { [this.keyField]: this.selectList[0][this.keyField] || "" };
+        // 主键必穿
+        if (!deliverySelectListFields.includes(this.keyField)) {
+          deliverySelectListFields.push(this.keyField);
+        }
+        this.selectList.map(row => {
+          deliverySelectListFields.map(key => {
+            const value = row[key];
+            if (params[`${key}Array`]) {
+              params[`${key}Array`].push(value);
+            } else {
+              params[`${key}Array`] = [value];
             }
           });
-        } else if (this.selectList.length === 1) {
-          params = this.selectList[0];
-        }
+        });
       }
       return params;
     },
@@ -1045,14 +1046,11 @@ export default {
         const headerFieldNameRegex = /^[\w-]+$/;
         if (headerFieldNameRegex.test(item.name)) requestHeaders[item.name] = item.value;
       });
-      this.generalRequest(finalUrl, finalType, finalData, requestHeaders);
+      await this.generalRequest(finalUrl, finalType, finalData, requestHeaders);
+      this.btnConfigs.isRefresh && this.queryTableData();
     },
-    // TODO
     disposeDown({ command }) {
       console.log(command, "command");
-      if (this.selectList.length === 0) {
-        return this.$warn("请至少勾选一条要处理的数据");
-      }
       if ([undefined, null].includes(this.tableData[0][this.keyField])) {
         return this.$warn("主键字段未取到值，请检查数据或重新在列表设计页面重新关联主键！");
       }
@@ -1115,7 +1113,6 @@ export default {
 
     // 处理导入更新的实现
     async dealImportRefresh({ requestBeforeConfirmHint, requestBeforeConfirmText }) {
-      // TODO
       if (requestBeforeConfirmHint) {
         await this.$confirm(`${requestBeforeConfirmText}`);
       }

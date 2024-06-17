@@ -89,13 +89,15 @@ const staticBtn = ["import", "importRefresh", "download", "flowDocDownload", "ba
 
 const downBtn = ["download", "flowDocDownload"];
 
+const customBtn = "custom";
+
 const dialogAttrRenderDependFn = function(formData) {
   return [0, 2, 6].includes(formData.extraOption.openType) || (formData.extraOption.openType === 4 && formData.extraOption.useDialog);
 };
 
 const requestBeforeConfirmRenderDependFn = function(formData) {
   return (
-    !downBtn.includes(formData.extraOption.btnType) &&
+    !downBtn.concat(customBtn).includes(formData.extraOption.btnType) &&
     !(
       (formData.extraOption.openType === 4 && formData.extraOption.useDialog && !formData.extraOption.showFooter) ||
       (formData.extraOption.openType === 4 && !formData.extraOption.useDialog)
@@ -103,12 +105,16 @@ const requestBeforeConfirmRenderDependFn = function(formData) {
   );
 };
 
+const requestBeforeConfirmTextRenderDependFn = function(formData) {
+  return formData.extraOption.requestBeforeConfirmHint;
+};
+
 const deliverySelectListRenderDependFn = function(formData) {
   return formData.extraOption.deliverySelectList && formData.extraOption.openType !== 6;
 };
 
 const excludeDownAndDelRenderDependFn = function(formData) {
-  return !downBtn.concat("batchDel").includes(formData.extraOption.btnType);
+  return !downBtn.concat("batchDel", customBtn).includes(formData.extraOption.btnType);
 };
 
 const expectOpenTypeRenderDependFnGenerator = openType =>
@@ -199,7 +205,7 @@ export function BtnConfigFormOptions() {
           }
         },
         renderDependFn: function(formData) {
-          return !staticBtn.includes(formData.extraOption.btnType);
+          return !staticBtn.concat(customBtn).includes(formData.extraOption.btnType);
         }
       }
     },
@@ -525,8 +531,34 @@ export function BtnConfigFormOptions() {
         formField: "extraOption.deliverySelectList",
         extraOption: {},
         renderDependFn: function(formData) {
-          return !staticBtn.includes(formData.extraOption.btnType);
+          return !staticBtn.concat(customBtn).includes(formData.extraOption.btnType);
         }
+      }
+    },
+
+    {
+      elRowAttrs: {
+        gutter: 10
+      },
+      formItem: {
+        formItemAttrs: {
+          prop: "extraOption.deliverySelectListFields",
+          label: "提交字段："
+        },
+        // 对应formData中的属性值
+        formField: "extraOption.deliverySelectListFields",
+        tagName: "el-select",
+        tagAttrs: {
+          placeholder: "不选默认只传主键值",
+          multiple: true
+        },
+        extraOption: {
+          props: {
+            key: "id",
+            label: "cnName"
+          }
+        },
+        renderDependFn: deliverySelectListRenderDependFn
       }
     },
 
@@ -720,7 +752,7 @@ export function BtnConfigFormOptions() {
         },
         // 对应formData中的属性值
         formField: "extraOption.requestBeforeConfirmText",
-        renderDependFn: requestBeforeConfirmRenderDependFn
+        renderDependFn: requestBeforeConfirmTextRenderDependFn
       }
     },
     {
@@ -967,7 +999,10 @@ export function BtnConfigFormOptions() {
         },
         showCodeEditor: true,
         // 对应formData中的属性值
-        formField: "extraOption.validateFn"
+        formField: "extraOption.validateFn",
+        renderDependFn: function(formData) {
+          return !["custom"].includes(formData.extraOption.btnType);
+        }
       }
     },
     {
@@ -977,18 +1012,34 @@ export function BtnConfigFormOptions() {
       formItem: {
         formItemAttrs: {
           label: "自定义执行函数：",
-          prop: "extraOption.fn"
+          prop: "extraOption.fn",
+          labelSlotName: "",
+          labelOptions: {
+            tagName: "el-tooltip",
+            style: "width: 180px",
+            tagAttrs: {
+              effect: "dark",
+              content:
+                "点击按钮后只执行当前输入的函数。此函数无入参，this指向当前渲染组件，可以通过this.selectList（这个值代表当前的选中行）等获取你要的相应信息（具体请参阅文档）",
+              placement: "top-start",
+              internalTagOption: {
+                contentText: "自定义执行函数：",
+                style: "font-size: 14px"
+              }
+            }
+          }
         },
         tagName: "el-input",
         style: "width: 180px",
         tagAttrs: {
-          placeholder: "",
+          placeholder: "请输入自定义执行函数",
           type: "textarea",
           autosize: true
         },
         // 对应formData中的属性值
         formField: "extraOption.fn",
         showCodeEditor: true,
+
         renderDependFn: function(formData) {
           return ["custom"].includes(formData.extraOption.btnType);
         }
@@ -1024,6 +1075,7 @@ export function BtnConfigFrom(custom = {}) {
       dialogWidth: "900",
       dialogHeight: "600",
       deliverySelectList: false,
+      deliverySelectListFields: [],
       paramName: "",
       paramType: 0,
       validate: [],

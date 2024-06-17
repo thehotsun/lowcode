@@ -350,7 +350,8 @@ export default {
       _formListExtraOption: {},
       _tableListExtraOption: {},
       _metaListExtraOption: {},
-      _flowListExtraOption: {}
+      _flowListExtraOption: {},
+      _deliveryFieldsOption: {}
     };
   },
 
@@ -394,6 +395,15 @@ export default {
         }
         this.keyField = keyField;
         this.tableData = tableOptions;
+        this._deliveryFieldsOption = {
+          options: tableOptions.map(item => {
+            return {
+              cnName: `${item.fieldName}(${item.fieldCode})`,
+              id: item.fieldCode
+            };
+          })
+        };
+
         this.btnConfigArr = formOptions;
         // 更新数据库字段，如果多了新增默认，少了去除
         await this.updateFieldList();
@@ -686,6 +696,8 @@ export default {
           },
           "extraOption.relateComponent"
         );
+        // 选择提交选择数据中的相应字段
+        this.$refs.setupBtnConfig.expose_setExtraOption(this._deliveryFieldsOption, "extraOption.deliverySelectListFields");
         // 配置权限下拉框
         this.$refs.setupBtnConfig.expose_setExtraOption(this._btnAuthorize, "authorize");
         // 获取原始按钮配置form
@@ -743,7 +755,8 @@ export default {
             break;
           case "custom":
             config.extraOption.btnType = "custom";
-            config.extraOption.deliverySelectList = true;
+            config.extraOption.openType = -1;
+            config.extraOption.deliverySelectList = false;
             break;
           default:
             break;
