@@ -10,7 +10,7 @@
       <el-button size="small" type="default" @click="handleSummaryRow">设置统计行</el-button>
       <el-button size="small" type="default" @click="handleHideAll">隐藏所有</el-button>
       <el-button size="small" type="default" @click="handleShowAll">显示所有</el-button>
-      <el-checkbox v-model="filterShowField" size="small" style="margin-left: 10px;">仅列出显示字段</el-checkbox>
+      <el-checkbox v-model="filterShowField" size="small" class="marginLeft10">仅列出显示字段</el-checkbox>
 
       <!-- <el-button size='small' type="danger" :disabled="!selected.length" @click="handleDelete">删除</el-button> -->
       <!-- <el-button size='small' type="" :disabled="checkUpBtnDisabled()" @click="handleUpAndDwon(true)">上移</el-button>
@@ -29,11 +29,11 @@
         edit-mode
         row-key="fieldCode"
         border
-        @selection-change="selectListHandler"
+        class="fullHeight"
         :row-style="{ height: '40px' }"
         :cell-style="{ padding: '4px' }"
         height="100%"
-        style="height: 100%;overflow:auto"
+        @selection-change="selectListHandler"
       >
         <!-- 注意这里的slot值要和tableOptions中配置的slotName一致 -->
         <!-- #operator是简写，详细请查阅vue文档 -->
@@ -43,6 +43,13 @@
           </el-button>
           <slot name="setupWidget" :row="row"></slot>
         </template>
+        <template #setupContentText="{ row }">
+          <el-button type="text" icon="el-icon-edit" :disabled="row.isSearchWidget === false" @click.stop.prevent="handleWidgetAttr(row)">
+            设置a
+          </el-button>
+          <slot name="setupWidget" :row="row"></slot>
+        </template>
+
         <!-- <template #operator="{ row }">
           <el-button v-if="row.$edit" @click.stop.prevent="onSave(row)">
             保存
@@ -54,25 +61,25 @@
     </div>
     <!-- </el-main> -->
     <el-dialog
+      v-dialogDrag
       title="设置搜索控件属性"
       :visible.sync="dialogVisibleFrom"
       :close-on-click-modal="false"
       :close-on-press-escape="false"
       width="1450px"
-      v-dialogDrag
       :before-close="handleCloseFrom"
       append-to-body
     >
       <div class="flex">
         <div class="left">
-          <base-render-form ref="setupForm" :form-data="setupForm" :form-options="setupFormOptions" :use-dialog="false" :showFooter="false" v-if="dialogVisibleFrom">
+          <base-render-form v-if="dialogVisibleFrom" ref="setupForm" :form-data="setupForm" :form-options="setupFormOptions" :use-dialog="false" :show-footer="false">
             <template #searchWidget>
-              <el-select v-model="setupForm.searchWidgetType" @change="changeWidget" placeholder="请选择控件类型" filterable>
+              <el-select v-model="setupForm.searchWidgetType" placeholder="请选择控件类型" filterable @change="changeWidget">
                 <el-option v-for="item in searchWidget" :key="item.id" :label="item.cnName" :value="item.id"> </el-option>
               </el-select>
             </template>
             <template #selectDic="{ formData }">
-              <el-select :value="formData.request.url" @change="changeFormData($event, formData)" placeholder="请选择字典项" filterable clearable="">
+              <el-select :value="formData.request.url" placeholder="请选择字典项" filterable clearable="" @change="changeFormData($event, formData)">
                 <el-option v-for="item in dicCodeList" :key="item.dicCode" :label="item.dicName" :value="item.dicCode">
                   <span class="code">{{ item.dicCode.split("dicCode=")[1] }}</span>
                   <span>{{ item.dicName }}</span>
@@ -86,7 +93,7 @@
               <el-input v-model="suggestSQL" :autosize="{ minRows: 4, maxRows: 10 }" type="textarea" placeholder="" readonly></el-input>
             </el-form-item>
             <el-form-item label="">
-              <div style="color: #787878;">提示：生成的sql片段仅供参考</div>
+              <div class="color78">提示：生成的sql片段仅供参考</div>
             </el-form-item>
           </el-form>
         </div>
@@ -101,12 +108,12 @@
     </el-dialog>
 
     <el-dialog
+      v-dialogDrag
       title="设置搜索字段"
       :visible.sync="dialogVisibleFuzzyFrom"
       :close-on-click-modal="false"
       :close-on-press-escape="false"
       width="1450px"
-      v-dialogDrag
       :before-close="handleCloseFuzzyFrom"
       append-to-body
     >
@@ -114,8 +121,8 @@
         <div class="left">
           <el-form label-position="top">
             <el-form-item required label="搜索字段列表：">
-              <el-checkbox-group class="fieldList" v-model="fuzzyFieldSearchConfig.searchFieldList" @change="fuzzySearchFieldListChange">
-                <el-checkbox v-for="row in tableData" :label="row.fieldCode" :key="row.fieldCode">{{ row.fieldName }}</el-checkbox>
+              <el-checkbox-group v-model="fuzzyFieldSearchConfig.searchFieldList" class="fieldList" @change="fuzzySearchFieldListChange">
+                <el-checkbox v-for="row in tableData" :key="row.fieldCode" :label="row.fieldCode">{{ row.fieldName }}</el-checkbox>
               </el-checkbox-group>
             </el-form-item>
             <el-form-item required label="提示文本：">
@@ -125,7 +132,7 @@
               <el-input v-model="suggestSQL" :autosize="{ minRows: 4, maxRows: 10 }" type="textarea" placeholder="" readonly></el-input>
             </el-form-item>
             <el-form-item label="">
-              <div style="color: #787878;">提示：生成的sql片段仅供参考</div>
+              <div class="color78">提示：生成的sql片段仅供参考</div>
             </el-form-item>
           </el-form>
         </div>
@@ -423,7 +430,7 @@ export default {
       this.Sortable.create(dom, {
         handle: ".renderwrap .my-handle",
         onEnd: e => {
-          //e.oldIndex为拖动一行原来的位置，e.newIndex为拖动后新的位置
+          // e.oldIndex为拖动一行原来的位置，e.newIndex为拖动后新的位置
           const targetRow = this.finalTableData[e.oldIndex];
           const substitute = this.finalTableData[e.newIndex];
           const oldIndex = this.tableData.indexOf(targetRow);
@@ -644,5 +651,15 @@ export default {
 .renderwrap {
   height: calc(100% - 20px);
   padding: 20px;
+}
+.marginLeft10 {
+  margin-left: 10px;
+}
+.fullHeight {
+  height: 100%;
+  overflow: auto;
+}
+.color78 {
+  color: #787878;
 }
 </style>

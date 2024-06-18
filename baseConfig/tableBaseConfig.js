@@ -215,6 +215,13 @@ const originEditConf = [
     "min-width": "120",
     tagName: "el-switch"
   },
+  // {
+  //   label: "内容显示设置",
+  //   prop: "singleFormatter",
+  //   "min-width": "120",
+  //   align: "center",
+  //   slotName: "setupContentText"
+  // },
   {
     ...baseAttr,
     label: "列表渲染函数",
@@ -243,7 +250,8 @@ const originEditConf = [
 ];
 
 const addTipsProps = {
-  formatter: "列内容区域渲染使用的Function",
+  formatter: "列内容区域渲染使用的Function（优先级最高）",
+  singleFormatter: "简单设置展示内容的样式和点击事件（优先级比列表渲染函数低）",
   renderHeader: "列标题Label区域渲染使用的Function",
   "show-overflow-tooltip": "当内容过长被隐藏时显示 tooltip",
   "filter-method": "数据过滤使用的方法，如果是多选的筛选项，对每一条数据会执行多次，任意一次返回 true 就会显示",

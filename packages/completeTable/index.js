@@ -186,7 +186,8 @@ export default {
     "queryFlowDef",
     "componentList",
     "enterpriseId",
-    "prjInfo",
+    "getPrjInfo",
+    "queryChangePrjId",
     "updatePrj",
     "userInfo",
     "generalRequest",
@@ -548,7 +549,7 @@ export default {
         ...extraParams,
         ...this.externalParams,
         multiFieldSearch: this.multiFieldSearch,
-        prjId: this.prjInfo.prjId,
+        prjId: this.getPrjInfo().prjId,
         enterpriseId: this.enterpriseId
       };
     },
@@ -944,7 +945,7 @@ export default {
     },
 
     async disposeDynamicTableEvent({ btnType, relateTable, dialogTitle, deliverySelectList, deliverySelectListFields }, rowData) {
-      const externalParams = rowData || this.formatSelectListParams(deliverySelectList, deliverySelectListFields);
+      const externalParams = this.formatSelectListParams(deliverySelectList, deliverySelectListFields, rowData);
       this.expose_showDialog();
       this.btnConfigs.tableId = relateTable;
       this.onlyRead = true;
@@ -953,24 +954,38 @@ export default {
       this.$refs.nestedTable.init(false, null, externalParams);
     },
 
-    disposeThisPageJump({ openUrl, deliverySelectList, deliverySelectListFields }, rowData) {
-      // TODO 调用接口看是否需要更改prjid
-      // this.updatePrj()
-      const params = rowData || this.formatSelectListParams(deliverySelectList, deliverySelectListFields);
+    async disposeThisPageJump({ openUrl, deliverySelectList, deliverySelectListFields }) {
+      const params = this.formatSelectListParams(deliverySelectList, deliverySelectListFields);
       // 通过sessionStorage传递参数
       sessionStorage.setItem("lowcodeTableThisPageJumpParams", JSON.stringify(params));
-      this.$router.push(openUrl);
+      const res = await this.queryChangePrjId(this.listPageId, params[`${this.keyField}Array`][0]);
+      console.log(res, "queryChangePrjId");
+      if (res) {
+        await this.updatePrj({ prjId: res });
+        // prjId从外部传入需要时间更改
+        setTimeout(() => {
+          this.$router.push(openUrl);
+        }, 100);
+      } else {
+        this.$router.push(openUrl);
+      }
     },
 
-    formatSelectListParams(deliverySelectList, deliverySelectListFields) {
+    formatSelectListParams(deliverySelectList, deliverySelectListFields, rowData) {
       let params = {};
+      let selectList;
+      if (rowData) {
+        selectList = [rowData];
+      } else {
+        selectList = this.selectList;
+      }
       if (deliverySelectList) {
-        params = { [this.keyField]: this.selectList[0][this.keyField] || "" };
+        params = { [this.keyField]: selectList[0][this.keyField] || "" };
         // 主键必穿
         if (!deliverySelectListFields.includes(this.keyField)) {
           deliverySelectListFields.push(this.keyField);
         }
-        this.selectList.map(row => {
+        selectList.map(row => {
           deliverySelectListFields.map(key => {
             const value = row[key];
             if (params[`${key}Array`]) {
@@ -1055,7 +1070,7 @@ export default {
         return this.$warn("主键字段未取到值，请检查数据或重新在列表设计页面重新关联主键！");
       }
       const params = {
-        prjId: this.prjInfo.prjId,
+        prjId: this.getPrjInfo().prjId,
         enterpriseId: this.enterpriseId
       };
       switch (command) {
@@ -1432,9 +1447,6 @@ export default {
           switch (target.extraOption.openType) {
             case 0:
               this.disposeDynamicFormEvent(target.extraOption, row);
-              break;
-            case 1:
-              this.disposeThisPageJump(target.extraOption, row);
               break;
             case 2:
               this.btnConfigs.btnType = "check";
