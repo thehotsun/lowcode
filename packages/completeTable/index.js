@@ -960,7 +960,7 @@ export default {
       sessionStorage.setItem("lowcodeTableThisPageJumpParams", JSON.stringify(params));
       const res = await this.queryChangePrjId(this.listPageId, params[`${this.keyField}Array`][0]);
       console.log(res, "queryChangePrjId");
-      if (res) {
+      if (res && res !== this.getPrjInfo().prjId) {
         await this.updatePrj({ prjId: res });
         // prjId从外部传入需要时间更改
         setTimeout(() => {
