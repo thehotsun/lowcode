@@ -785,6 +785,37 @@ export function setEmptyTableData(emptyData = {}, fieldCode) {
   emptyData[fieldCode] = "";
 }
 
+function convertCamelToSnake(camelCase) {
+  return camelCase.replace(/([A-Z])/g, match => `-${match.toLowerCase()}`);
+}
+
+export function mergeStyle(style = "", styleForm) {
+  console.log(styleForm);
+  if (typeof style !== "string") {
+    style = "";
+  }
+  const camel = ["fontSize", "color"];
+  let str = "";
+  camel.map(key => {
+    str += `;${convertCamelToSnake(key)}:${key === "fontSize" ? styleForm[key] + "px" : styleForm[key]}`;
+  });
+  const { isBold, isItalic, isStrikethrough, isUnderline } = styleForm;
+  if (isBold) {
+    str += `;font-weight: 700`;
+  }
+  if (isItalic) {
+    str += `;font-style: italic`;
+  }
+  if (isStrikethrough && isUnderline) {
+    str += `; text-decoration: underline line-through`;
+  } else if (isStrikethrough) {
+    str += `; text-decoration: line-through`;
+  } else if (isUnderline) {
+    str += `; text-decoration: underline`;
+  }
+  return style + str;
+}
+
 export default {
   setPlaceholder,
   completeFromItemOptions,
@@ -812,5 +843,6 @@ export default {
   BtnConfigs,
   transformParamsValue,
   formatterWidthOrHeightStyle,
-  setEmptyTableData
+  setEmptyTableData,
+  mergeStyle
 };

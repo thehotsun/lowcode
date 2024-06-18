@@ -215,13 +215,13 @@ const originEditConf = [
     "min-width": "120",
     tagName: "el-switch"
   },
-  // {
-  //   label: "内容显示设置",
-  //   prop: "singleFormatter",
-  //   "min-width": "120",
-  //   align: "center",
-  //   slotName: "setupContentText"
-  // },
+  {
+    label: "内容显示设置",
+    prop: "singleFormatter",
+    "min-width": "120",
+    align: "center",
+    slotName: "setupContentText"
+  },
   {
     ...baseAttr,
     label: "列表渲染函数",
@@ -279,6 +279,20 @@ getEditConf();
 // export const editConf = getEditConf();
 export const editConf = originEditConf;
 
+export function ContentTextAttrForm() {
+  return {
+    isBold: false,
+    isItalic: false,
+    isStrikethrough: false,
+    isUnderline: false,
+    fontSize: 12,
+    color: "#000000",
+    clickEvent: {
+      relateBtnId: ""
+    }
+  };
+}
+
 export function getSingleTableData() {
   return {
     fieldCode: "",
@@ -298,6 +312,7 @@ export function getSingleTableData() {
     "show-overflow-tooltip": true,
     formatter: "",
     renderHeader: "",
-    listeners: {}
+    listeners: {},
+    contentTextAttr: new ContentTextAttrForm()
   };
 }

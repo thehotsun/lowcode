@@ -65,6 +65,7 @@
         :generate-query-sql="generateQuerySql"
         :save-sql="saveSql"
         :list-page-id="listPageId"
+        :btn-config-arr="btnConfigArr"
         edit-mode
         @searchOptionsChange="searchOptionsChange"
       >

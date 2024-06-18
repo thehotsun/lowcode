@@ -1,5 +1,5 @@
 import "./table.less";
-import { decorator } from "../../utils";
+import { decorator, mergeStyle } from "../../utils";
 import { omit } from "lodash";
 
 import { h } from "vue";
@@ -155,7 +155,16 @@ export default {
     },
 
     getCellRender(row, options) {
+      const that = this
       if (options.tagName) {
+        return this.cellRender(row, options);
+      } else if (options.contentTextAttr) {
+        options.listeners = {
+          click: function(row) {
+            that.$emit("clickBtn", row, options.contentTextAttr.clickEvent.relateBtnId);
+          }
+        };
+        options.style = mergeStyle(null, options.contentTextAttr);
         return this.cellRender(row, options);
       } else {
         return row[options.prop];
@@ -314,7 +323,7 @@ export default {
           : getCellRender(row, item);
       };
 
-      const attr = omit(item, ["className", "style", "formatter", "cellFormatterComponent", "renderHeader", "cellHeaderFormatterComponent"]);
+      const attr = omit(item, ["className", "style", "formatter", "cellFormatterComponent", "renderHeader", "cellHeaderFormatterComponent", "contentTextAttr"]);
 
       return (
         <el-table-column

@@ -44,10 +44,10 @@
           <slot name="setupWidget" :row="row"></slot>
         </template>
         <template #setupContentText="{ row }">
-          <el-button type="text" icon="el-icon-edit" :disabled="row.isSearchWidget === false" @click.stop.prevent="handleWidgetAttr(row)">
-            设置a
+          <el-button type="text" icon="el-icon-edit" @click.stop.prevent="handleContentTextAttr(row)">
+            设置
           </el-button>
-          <slot name="setupWidget" :row="row"></slot>
+          <slot name="setupContentText" :row="row"></slot>
         </template>
 
         <!-- <template #operator="{ row }">
@@ -145,13 +145,78 @@
         <el-button type="primary" @click="confirmFuzzyFrom">确定</el-button>
       </span>
     </el-dialog>
+
+    <el-dialog
+      v-dialogDrag
+      title="设置展示内容"
+      :visible.sync="dialogVisibleContentTextAttr"
+      :close-on-click-modal="false"
+      :close-on-press-escape="false"
+      width="650px"
+      :before-close="handleCloseContentTextAttr"
+      append-to-body
+    >
+      <div class="flex">
+        <el-form ref="form" :model="contentTextAttrForm" label-width="120px">
+          <el-form-item label="关联按钮：">
+            <el-select v-model="contentTextAttrForm.clickEvent.relateBtnId" placeholder="请选择关联按钮" filterable clearable="">
+              <el-option v-for="item in btnConfigArr" :key="item.btnId" :label="item.tagAttrs.value" :value="item.btnId"> </el-option>
+            </el-select>
+          </el-form-item>
+          <el-form-item label="字体大小：">
+            <el-input-number v-model="contentTextAttrForm.fontSize" :min="1" :max="100"></el-input-number>
+          </el-form-item>
+          <el-form-item label="是否字体变粗：">
+            <el-radio-group v-model="contentTextAttrForm.isBold">
+              <el-radio :label="true">是</el-radio>
+              <el-radio :label="false">否</el-radio>
+            </el-radio-group>
+          </el-form-item>
+          <el-form-item label="是否斜体：">
+            <el-radio-group v-model="contentTextAttrForm.isItalic">
+              <el-radio :label="true">是</el-radio>
+              <el-radio :label="false">否</el-radio>
+            </el-radio-group>
+          </el-form-item>
+          <el-form-item label="是否删除线：">
+            <el-radio-group v-model="contentTextAttrForm.isStrikethrough">
+              <el-radio :label="true">是</el-radio>
+              <el-radio :label="false">否</el-radio>
+            </el-radio-group>
+          </el-form-item>
+          <el-form-item label="是否下划线：">
+            <el-radio-group v-model="contentTextAttrForm.isUnderline">
+              <el-radio :label="true">是</el-radio>
+              <el-radio :label="false">否</el-radio>
+            </el-radio-group>
+          </el-form-item>
+          <el-form-item label="字体颜色：">
+            <div class="flexCenter">
+              <el-color-picker v-model="contentTextAttrForm.color"></el-color-picker>
+              <span>
+                快捷按钮：
+              </span>
+              <el-button type="text" @click="setColor('#409eff')" style="color: #409eff;">主要-蓝色</el-button>
+              <el-button type="text" @click="setColor('#67c23a')" style="color: #67c23a;">成功-绿色</el-button>
+              <el-button type="text" @click="setColor('#e6a23c')" style="color: #e6a23c;">警告-橙色</el-button>
+              <el-button type="text" @click="setColor('#f56c6c')" style="color: #f56c6c;">危险-红色</el-button>
+              <el-button type="text" @click="setColor('#909399')" style="color: #909399;">信息-灰色</el-button>
+            </div>
+          </el-form-item>
+        </el-form>
+      </div>
+      <span slot="footer" class="dialog-footer">
+        <el-button @click="handleCloseContentTextAttr">取消</el-button>
+        <el-button type="primary" @click="confirmContentTextAttr">确定</el-button>
+      </span>
+    </el-dialog>
   </div>
 </template>
 
 <script>
 import BaseRenderTable from "../../../../packages/BaseRenderTable/index";
 import BaseRenderForm from "../../../../packages/BaseRenderForm/index";
-import { getSingleTableData, editConf as tableOptions } from "../../../../baseConfig/tableBaseConfig";
+import { getSingleTableData, editConf as tableOptions, ContentTextAttrForm } from "../../../../baseConfig/tableBaseConfig";
 import { searchWidget } from "../../../../baseConfig/tableSelectConfigs";
 
 import { str2obj, getSetupForm, getSetupFormOptions, setPlaceholder } from "../../../../utils";
@@ -166,6 +231,7 @@ export default {
   props: {
     listPageId: String,
     rawTableData: Array,
+    btnConfigArr: Array,
     generalRequest: {
       type: Function
     },
@@ -180,6 +246,7 @@ export default {
   },
   data() {
     return {
+      contentTextAttrForm: new ContentTextAttrForm(),
       tableOptions,
       selected: [],
       formDesignData: {},
@@ -198,7 +265,8 @@ export default {
         searchFieldList: []
       },
       originFuzzyFieldSearchConfig: {},
-      dialogVisibleFuzzyFrom: false
+      dialogVisibleFuzzyFrom: false,
+      dialogVisibleContentTextAttr: false
     };
   },
 
@@ -311,6 +379,11 @@ export default {
       });
     },
 
+    handleContentTextAttr(row) {
+      this.curRowData = row;
+      this.contentTextAttrForm = row.contentTextAttr ? merge(new ContentTextAttrForm(), cloneDeep(row.contentTextAttr)) : new ContentTextAttrForm();
+      this.dialogVisibleContentTextAttr = true;
+    },
     // 处理设置控件属性事件
     handleWidgetAttr(row) {
       this.curRowData = row;
@@ -582,12 +655,24 @@ export default {
       this.originFuzzyFieldSearchConfig = cloneDeep(this.fuzzyFieldSearchConfig);
     },
 
+    handleCloseContentTextAttr() {
+      this.dialogVisibleContentTextAttr = false;
+    },
+
+    confirmContentTextAttr() {
+      this.curRowData.contentTextAttr = this.contentTextAttrForm;
+      this.handleCloseContentTextAttr();
+    },
+
     handleHideAll() {
       this.tableData.forEach(row => (row.show = false));
     },
 
     handleShowAll() {
       this.tableData.forEach(row => (row.show = true));
+    },
+    setColor(color) {
+      this.contentTextAttrForm.color = color;
     }
   }
 };
@@ -602,7 +687,6 @@ export default {
 
 .flex {
   display: flex;
-
   .left {
     width: 500px;
     box-sizing: border-box;
@@ -618,7 +702,10 @@ export default {
     width: 990px;
   }
 }
-
+.flexCenter {
+  display: flex;
+  align-items: center;
+}
 .code {
   float: right;
   color: #999;

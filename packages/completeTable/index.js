@@ -340,6 +340,7 @@ export default {
       obj["show-overflow-tooltip"] = item["show-overflow-tooltip"];
       if (item.fixed) obj.fixed = item.fixed;
       if (item.filters) obj.filters = str2obj(item.filters);
+      if (item.contentTextAttr) obj.contentTextAttr = item.contentTextAttr;
 
       // 某些函数转换
       const fnProps = ["sort-method", "formatter", "renderHeader"];
@@ -672,35 +673,38 @@ export default {
     },
 
     // 处理按钮点击事件
-    async handleBtnClick({
-      relateFrom = "",
-      relateMeta = "",
-      relateComponent = "",
-      relateTable = "",
-      openType = "",
-      openUrl = "",
-      fn = "",
-      isRefresh = false,
-      btnType = "",
-      dialogTitle = "",
-      dialogHeight = "",
-      dialogWidth = "",
-      flowKey = "",
-      paramName = "",
-      paramType = 0,
-      deliverySelectList = false,
-      deliverySelectListFields = [],
-      validate = [],
-      requestUrl = "",
-      requestType = "post",
-      requestBeforeConfirmHint = false,
-      requestBeforeConfirmText = "",
-      requestParamsConfig = {},
-      useDialog = true,
-      showFooter = false,
-      validateFn = "",
-      command = ""
-    }) {
+    async handleBtnClick(
+      {
+        relateFrom = "",
+        relateMeta = "",
+        relateComponent = "",
+        relateTable = "",
+        openType = "",
+        openUrl = "",
+        fn = "",
+        isRefresh = false,
+        btnType = "",
+        dialogTitle = "",
+        dialogHeight = "",
+        dialogWidth = "",
+        flowKey = "",
+        paramName = "",
+        paramType = 0,
+        deliverySelectList = false,
+        deliverySelectListFields = [],
+        validate = [],
+        requestUrl = "",
+        requestType = "post",
+        requestBeforeConfirmHint = false,
+        requestBeforeConfirmText = "",
+        requestParamsConfig = {},
+        useDialog = true,
+        showFooter = false,
+        validateFn = "",
+        command = ""
+      },
+      rowData
+    ) {
       const {
         validateSelectList,
         disposeFlowEvent,
@@ -732,21 +736,24 @@ export default {
       if (!validateFn || (validateFn && str2Fn(validateFn).call(this, this.selectList))) {
         // 如果有自定义事件，则执行自定义事件
         if (fn) {
-          str2Fn(fn).call(this);
+          str2Fn(fn).call(this, rowData);
         } else {
           if (openType === -1) {
             // openType为-1是固定行为，如下载 批量删除等
             switch (btnType) {
               case "download":
-                disposeDown({
-                  command
-                });
+                disposeDown(
+                  {
+                    command
+                  },
+                  rowData
+                );
                 break;
               case "flowDocDownload":
-                disposeFlowDocDown();
+                disposeFlowDocDown(rowData);
                 break;
               case "batchDel":
-                disposeDel();
+                disposeDel(rowData);
                 break;
               case "import":
                 // 处理导入
@@ -769,7 +776,7 @@ export default {
                 validate
               })
             ) {
-              disposeThisPageJump({ openUrl, deliverySelectList, deliverySelectListFields });
+              disposeThisPageJump({ openUrl, deliverySelectList, deliverySelectListFields }, rowData);
             }
           } else if (openType === 3) {
             // openType为3是新窗口打开;
@@ -785,12 +792,15 @@ export default {
                 validate
               })
             ) {
-              disposeRelateCompEvent({
-                relateComponent,
-                useDialog,
-                showFooter,
-                dialogTitle
-              });
+              disposeRelateCompEvent(
+                {
+                  relateComponent,
+                  useDialog,
+                  showFooter,
+                  dialogTitle
+                },
+                rowData
+              );
             }
           } else if (openType === 5) {
             // openType为5是直接调用接口
@@ -802,10 +812,13 @@ export default {
                 validate
               })
             ) {
-              disposeRequestEvent({
-                requestBeforeConfirmHint,
-                requestBeforeConfirmText
-              });
+              disposeRequestEvent(
+                {
+                  requestBeforeConfirmHint,
+                  requestBeforeConfirmText
+                },
+                rowData
+              );
             }
           } else if (openType === 2) {
             // openType为2是打开流程
@@ -817,7 +830,7 @@ export default {
                 validate
               })
             ) {
-              disposeFlowEvent({ flowKey, btnType, isRefresh });
+              disposeFlowEvent({ flowKey, btnType, isRefresh }, rowData);
             }
           } else if (openType === 0) {
             // openType为0是打开表单
@@ -829,12 +842,15 @@ export default {
                 validate
               })
             ) {
-              disposeDynamicFormEvent({
-                btnType,
-                relateFrom,
-                dialogTitle,
-                deliverySelectList
-              });
+              disposeDynamicFormEvent(
+                {
+                  btnType,
+                  relateFrom,
+                  dialogTitle,
+                  deliverySelectList
+                },
+                rowData
+              );
             }
           } else if (openType === 6) {
             // openType为0是打开列表
@@ -846,13 +862,16 @@ export default {
                 validate
               })
             ) {
-              disposeDynamicTableEvent({
-                btnType,
-                relateTable,
-                dialogTitle,
-                deliverySelectList,
-                deliverySelectListFields
-              });
+              disposeDynamicTableEvent(
+                {
+                  btnType,
+                  relateTable,
+                  dialogTitle,
+                  deliverySelectList,
+                  deliverySelectListFields
+                },
+                rowData
+              );
             }
           }
         }
@@ -954,8 +973,8 @@ export default {
       this.$refs.nestedTable.init(false, null, externalParams);
     },
 
-    async disposeThisPageJump({ openUrl, deliverySelectList, deliverySelectListFields }) {
-      const params = this.formatSelectListParams(deliverySelectList, deliverySelectListFields);
+    async disposeThisPageJump({ openUrl, deliverySelectList, deliverySelectListFields }, rowData) {
+      const params = this.formatSelectListParams(deliverySelectList, deliverySelectListFields, rowData);
       // 通过sessionStorage传递参数
       sessionStorage.setItem("lowcodeTableThisPageJumpParams", JSON.stringify(params));
       const res = await this.queryChangePrjId(this.listPageId, params[`${this.keyField}Array`][0]);
@@ -999,7 +1018,7 @@ export default {
       return params;
     },
 
-    getRequestConfig() {
+    getRequestConfig(row) {
       const {
         selectList,
         keyField,
@@ -1030,7 +1049,12 @@ export default {
         });
       }
       if (deliverySelectList) {
-        const selectListId = selectList.map(item => item[keyField]);
+        let selectListId;
+        if (row) {
+          selectListId = [row[keyField]];
+        } else {
+          selectListId = selectList.map(item => item[keyField]);
+        }
         if (paramType === 1) {
           finalUrl = addQueryString(
             {
@@ -1051,11 +1075,11 @@ export default {
       };
     },
 
-    async disposeRequestEvent({ requestBeforeConfirmHint, requestBeforeConfirmText }) {
+    async disposeRequestEvent({ requestBeforeConfirmHint, requestBeforeConfirmText }, rowData) {
       if (requestBeforeConfirmHint) {
         await this.$confirm(`${requestBeforeConfirmText}`);
       }
-      const { finalUrl, finalType, finalData, headers } = this.getRequestConfig();
+      const { finalUrl, finalType, finalData, headers } = this.getRequestConfig(rowData);
       const requestHeaders = {};
       headers.map(item => {
         const headerFieldNameRegex = /^[\w-]+$/;
@@ -1064,55 +1088,68 @@ export default {
       await this.generalRequest(finalUrl, finalType, finalData, requestHeaders);
       this.btnConfigs.isRefresh && this.queryTableData();
     },
-    disposeDown({ command }) {
-      console.log(command, "command");
-      if ([undefined, null].includes(this.tableData[0][this.keyField])) {
-        return this.$warn("主键字段未取到值，请检查数据或重新在列表设计页面重新关联主键！");
-      }
+    disposeDown({ command }, row) {
       const params = {
         prjId: this.getPrjInfo().prjId,
         enterpriseId: this.enterpriseId
       };
-      switch (command) {
-        case "curSelect":
-          if (!this.selectList.length) {
-            return this.$warn("当前未选中任何数据，无法下载！");
-          }
-          params[this.keyField] = this.selectList.map(item => item[this.keyField]);
-          break;
-        case "curPage":
-          if (!this.tableData.length) {
-            return this.$warn("当前页面无数据，无法下载！");
-          }
-          params[this.keyField] = this.tableData.map(item => item[this.keyField]);
-          break;
-        case "all":
-          params.multiFieldSearch = this.multiFieldSearch;
-          break;
-        default:
-          break;
+      if (row) {
+        params[this.keyField] = [row[this.keyField]];
+      } else {
+        console.log(command, "command");
+        if ([undefined, null].includes(this.tableData[0][this.keyField])) {
+          return this.$warn("主键字段未取到值，请检查数据或重新在列表设计页面重新关联主键！");
+        }
+
+        switch (command) {
+          case "curSelect":
+            if (!this.selectList.length) {
+              return this.$warn("当前未选中任何数据，无法下载！");
+            }
+            params[this.keyField] = this.selectList.map(item => item[this.keyField]);
+            break;
+          case "curPage":
+            if (!this.tableData.length) {
+              return this.$warn("当前页面无数据，无法下载！");
+            }
+            params[this.keyField] = this.tableData.map(item => item[this.keyField]);
+            break;
+          case "all":
+            params.multiFieldSearch = this.multiFieldSearch;
+            break;
+          default:
+            break;
+        }
       }
       this.download(params);
     },
 
-    disposeFlowDocDown() {
-      if (this.selectList.length === 0) {
-        return this.$warn("请至少勾选一条要处理的数据");
+    disposeFlowDocDown(row) {
+      if (row) {
+        this.requestBatchFlowDoc([row[this.keyField]]);
+      } else {
+        if (this.selectList.length === 0) {
+          return this.$warn("请至少勾选一条要处理的数据");
+        }
+        if ([undefined, null].includes(this.tableData[0][this.keyField])) {
+          return this.$warn("主键字段未取到值，请检查数据或重新在列表设计页面重新关联主键！");
+        }
+        this.requestBatchFlowDoc(this.selectList.map(item => item[this.keyField]));
       }
-      if ([undefined, null].includes(this.tableData[0][this.keyField])) {
-        return this.$warn("主键字段未取到值，请检查数据或重新在列表设计页面重新关联主键！");
-      }
-      this.requestBatchFlowDoc(this.selectList.map(item => item[this.keyField]));
     },
 
-    disposeDel() {
-      if (this.selectList.length === 0) {
-        return this.$warn("请至少勾选一条要处理的数据");
+    disposeDel(row) {
+      if (row) {
+        this.batchDel([row[this.keyField]]);
+      } else {
+        if (this.selectList.length === 0) {
+          return this.$warn("请至少勾选一条要处理的数据");
+        }
+        if ([undefined, null].includes(this.tableData[0][this.keyField])) {
+          return this.$warn("主键字段未取到值，请检查数据或重新在列表设计页面重新关联主键！");
+        }
+        this.batchDel(this.selectList.map(item => item[this.keyField]));
       }
-      if ([undefined, null].includes(this.tableData[0][this.keyField])) {
-        return this.$warn("主键字段未取到值，请检查数据或重新在列表设计页面重新关联主键！");
-      }
-      this.batchDel(this.selectList.map(item => item[this.keyField]));
     },
 
     // 处理导入的实现
@@ -1466,6 +1503,14 @@ export default {
           console.warn("当前页面未配置btnType为check的按钮或校验函数为返回为false！");
         }
       }
+    },
+    tableCellClick(row, btnId) {
+      try {
+        const target = this.btnRegularOptions[0].formItem.find(btn => btn.btnId === btnId);
+        this.handleBtnClick(target.extraOption, row);
+      } catch (error) {
+        console.error(error);
+      }
     }
   },
 
@@ -1500,7 +1545,8 @@ export default {
       handleFilter,
       handleGlobalClick,
       showCheckDialog,
-      onSave
+      onSave,
+      tableCellClick
     } = this;
 
     const curPageListeners = {
@@ -1514,11 +1560,13 @@ export default {
     const tableEvent = tableAttrs.clickRowShowDetialDialog
       ? {
           "row-click": showCheckDialog,
-          "selection-change": selectListHandler
+          "selection-change": selectListHandler,
+          clickBtn: tableCellClick
         }
       : {
           "row-dblclick": showCheckDialog,
-          "selection-change": selectListHandler
+          "selection-change": selectListHandler,
+          clickBtn: tableCellClick
         };
 
     const scopedSlots = {
