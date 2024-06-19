@@ -1556,7 +1556,6 @@ export default {
       "size-change": handleSizeChange,
       "current-change": handleCurrentChange
     };
-    console.log(tableAttrs.clickRowShowDetialDialog, "tableAttrs.clickRowShowDetialDialog");
     const tableEvent = tableAttrs.clickRowShowDetialDialog
       ? {
           "row-click": showCheckDialog,

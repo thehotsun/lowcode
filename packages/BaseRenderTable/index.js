@@ -155,12 +155,13 @@ export default {
     },
 
     getCellRender(row, options) {
-      const that = this
+      const that = this;
       if (options.tagName) {
         return this.cellRender(row, options);
       } else if (options.contentTextAttr) {
         options.listeners = {
-          click: function(row) {
+          click: function(row, $event) {
+            $event.stopPropagation();
             that.$emit("clickBtn", row, options.contentTextAttr.clickEvent.relateBtnId);
           }
         };

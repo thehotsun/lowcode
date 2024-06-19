@@ -285,6 +285,7 @@ export function ContentTextAttrForm() {
     isItalic: false,
     isStrikethrough: false,
     isUnderline: false,
+    cursor: "inherit",
     fontSize: 12,
     color: "#000000",
     clickEvent: {

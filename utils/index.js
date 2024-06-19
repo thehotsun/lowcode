@@ -790,11 +790,10 @@ function convertCamelToSnake(camelCase) {
 }
 
 export function mergeStyle(style = "", styleForm) {
-  console.log(styleForm);
   if (typeof style !== "string") {
     style = "";
   }
-  const camel = ["fontSize", "color"];
+  const camel = ["fontSize", "color", "cursor"];
   let str = "";
   camel.map(key => {
     str += `;${convertCamelToSnake(key)}:${key === "fontSize" ? styleForm[key] + "px" : styleForm[key]}`;

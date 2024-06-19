@@ -157,8 +157,11 @@
       append-to-body
     >
       <div class="flex">
-        <el-form ref="form" :model="contentTextAttrForm" label-width="120px">
+        <el-form ref="form" :model="contentTextAttrForm" label-width="140px">
           <el-form-item label="关联按钮：">
+            <el-tooltip slot="label" class="item" effect="dark" content="此渲染内容的点击行为相当于选中当前行后立刻点击关联的这个按钮" placement="top-start">
+              <span>关联按钮<i style="width: 20px" class="el-icon-question"></i>：</span>
+            </el-tooltip>
             <el-select v-model="contentTextAttrForm.clickEvent.relateBtnId" placeholder="请选择关联按钮" filterable clearable="">
               <el-option v-for="item in btnConfigArr" :key="item.btnId" :label="item.tagAttrs.value" :value="item.btnId"> </el-option>
             </el-select>
@@ -190,10 +193,19 @@
               <el-radio :label="false">否</el-radio>
             </el-radio-group>
           </el-form-item>
+          <el-form-item label="是否显示点击标识：">
+            <el-tooltip slot="label" class="item" effect="dark" content="鼠标移动到内容上是否展示一个小手的标识" placement="top-start">
+              <span>是否显示点击标识<i style="width: 20px" class="el-icon-question"></i>：</span>
+            </el-tooltip>
+            <el-radio-group v-model="contentTextAttrForm.cursor">
+              <el-radio label="pointer">是</el-radio>
+              <el-radio label="inherit">否</el-radio>
+            </el-radio-group>
+          </el-form-item>
           <el-form-item label="字体颜色：">
             <div class="flexCenter">
               <el-color-picker v-model="contentTextAttrForm.color"></el-color-picker>
-              <span>
+              <span style="margin-left: 10px">
                 快捷按钮：
               </span>
               <el-button type="text" @click="setColor('#409eff')" style="color: #409eff;">主要-蓝色</el-button>
