@@ -165,7 +165,13 @@ export default {
             that.$emit("clickBtn", row, options.contentTextAttr.clickEvent.relateBtnId);
           }
         };
-        options.style = mergeStyle(null, options.contentTextAttr);
+        const style = mergeStyle(null, options.contentTextAttr);
+        options.contentText = options.contentTextAttr.textVal;
+        if (options.contentTextAttr.iconName) {
+          options[`${options.contentTextAttr.iconPosition}TextClass`] = options.contentTextAttr.iconName;
+          options[`${options.contentTextAttr.iconPosition}TextStyle`] = `${style};${options.contentTextAttr.iconStyle}`;
+        }
+        options.style = style;
         return this.cellRender(row, options);
       } else {
         return row[options.prop];
@@ -184,6 +190,8 @@ export default {
         frontText = "",
         behindTextStyle = "",
         frontTextStyle = "",
+        frontTextClass = "",
+        behindTextClass = "",
         // 如不需要使用formData中的值而只是需要固定文本则可使用此字段
         contentText = "",
         // 特殊组件的额外属性值例如select组件下的option组件所需的options
@@ -246,7 +254,9 @@ export default {
             getCooperateComp(tagName, tagAttrs, finalListeners, prop, extraOption, row)
           ) : (
             <div style="display: inline-block">
-              <span style={frontTextStyle}>{frontText}</span>
+              <span class={frontTextClass} style={frontTextStyle}>
+                {frontText}
+              </span>
               <Tag
                 v-model={row[prop]}
                 value={value}
@@ -257,9 +267,11 @@ export default {
                   on: finalListeners
                 }}
               >
-                {value || tagAttrs?.value || contentText}
+                {tagAttrs?.value || contentText || value}
               </Tag>
-              <span style={behindTextStyle}>{behindText}</span>
+              <span class={behindTextClass} style={behindTextStyle}>
+                {behindText}
+              </span>
             </div>
           )}
         </div>
@@ -270,34 +282,34 @@ export default {
       const { getCellRender, tableColumnRender } = this;
       if (item.formatter && !item.cellFormatterComponent) {
         item.cellFormatterComponent = Vue.extend({
+          components: item.formatter().components || {},
           props: { row: Object, index: Number },
-          render: Vue.compile(item.formatter().template || "").render,
-          methods: item.formatter().methods || {},
-          computed: item.formatter().computed || {},
-          watch: item.formatter().watch || {},
           // eslint-disable-next-line
           data:
             item.formatter().data ||
             function() {
               return {};
             },
-          components: item.formatter().components || {}
+          computed: item.formatter().computed || {},
+          watch: item.formatter().watch || {},
+          methods: item.formatter().methods || {},
+          render: Vue.compile(item.formatter().template || "").render
         });
       }
       if (item.renderHeader && !item.cellHeaderFormatterComponent) {
         item.cellHeaderFormatterComponent = Vue.extend({
+          components: item.renderHeader().components || {},
           props: { column: Object, index: Number },
-          render: Vue.compile(item.renderHeader().template || "").render,
-          methods: item.renderHeader().methods || {},
-          computed: item.renderHeader().computed || {},
-          watch: item.renderHeader().watch || {},
           // eslint-disable-next-line
           data:
             item.renderHeader().data ||
             function() {
               return {};
             },
-          components: item.renderHeader().components || {}
+          computed: item.renderHeader().computed || {},
+          watch: item.renderHeader().watch || {},
+          methods: item.renderHeader().methods || {},
+          render: Vue.compile(item.renderHeader().template || "").render
         });
       }
       const renderHeader = (_, { column, index }) => {

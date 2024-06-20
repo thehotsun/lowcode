@@ -290,11 +290,15 @@ export function ContentTextAttrForm() {
     color: "#000000",
     clickEvent: {
       relateBtnId: ""
-    }
+    },
+    iconName: "",
+    iconPosition: "behind",
+    iconStyle: "",
+    textVal: ""
   };
 }
 
-export function getSingleTableData() {
+export function getSingleTableData(params = {}) {
   return {
     fieldCode: "",
     fieldName: "",
@@ -314,6 +318,7 @@ export function getSingleTableData() {
     formatter: "",
     renderHeader: "",
     listeners: {},
-    contentTextAttr: new ContentTextAttrForm()
+    contentTextAttr: new ContentTextAttrForm(),
+    ...params
   };
 }
