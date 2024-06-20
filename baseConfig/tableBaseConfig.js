@@ -319,6 +319,7 @@ export function getSingleTableData(params = {}) {
     renderHeader: "",
     listeners: {},
     contentTextAttr: new ContentTextAttrForm(),
+    isCustom: false,
     ...params
   };
 }

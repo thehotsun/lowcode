@@ -1,23 +1,20 @@
 <template>
   <div class="wrap" style="height: 100%; backg">
-    <!-- <el-header> -->
     <div class="operate">
       <el-button size="small" type="default" @click="handleAdd(1)">新增操作列</el-button>
-      <!-- <el-button size='small' type="primary" @click="handleAdd(5)">新增五条</el-button> -->
       <el-button size="small" type="default" :disabled="!selected.length" @click="handleAddParent">新增父级</el-button>
       <el-button size="small" type="default" :disabled="!selected.length" @click="handleDelParent">删除父级</el-button>
       <el-button size="small" type="default" @click="handleFuzzySearch">设置搜索字段</el-button>
       <el-button size="small" type="default" @click="handleSummaryRow">设置统计行</el-button>
       <el-button size="small" type="default" @click="handleHideAll">隐藏所有</el-button>
       <el-button size="small" type="default" @click="handleShowAll">显示所有</el-button>
+      <el-button size="small" type="danger" :disabled="!selected.length" @click="handleDelete">删除</el-button>
       <el-checkbox v-model="filterShowField" size="small" class="marginLeft10">仅列出显示字段</el-checkbox>
 
-      <!-- <el-button size='small' type="danger" :disabled="!selected.length" @click="handleDelete">删除</el-button> -->
       <!-- <el-button size='small' type="" :disabled="checkUpBtnDisabled()" @click="handleUpAndDwon(true)">上移</el-button>
         <el-button size='small' type="" :disabled="checkDwonBtnDisabled()" @click="handleUpAndDwon(false)">下移</el-button> -->
       <slot name="btn"></slot>
     </div>
-    <!-- </el-header> -->
 
     <!-- <el-main> -->
     <div class="renderwrap">
@@ -541,11 +538,14 @@ export default {
 
     handleAdd (time) {
       for (let index = 0; index < time; index++) {
-        this.tableData.push(getSingleTableData({ fieldName: "操作", show: true, sort: false, "show-overflow-tooltip": false }));
+        this.tableData.push(getSingleTableData({ fieldName: "操作", show: true, sort: false, "show-overflow-tooltip": false, isCustom: true }));
       }
     },
 
     handleDelete () {
+      if (this.selected.some(item => !item.isCustom)) {
+        return this.$warn("不可删除非新增列！");
+      }
       this.$confirm(`确认删除选中的数据吗?`, "提示", {
         confirmButtonText: "确定",
         cancelButtonText: "取消",
@@ -554,7 +554,7 @@ export default {
         .then(() => {
           this.tableData = this.tableData.filter(tableItem => !this.selected.find(selectedItem => selectedItem === tableItem));
         })
-        .catch(err => {
+        .catch(() => {
           this.$message({
             type: "info",
             message: "已取消删除"
@@ -587,17 +587,17 @@ export default {
         cancelButtonText: "取消",
         type: "warning"
       })
-        .then(result => {
+        .then(() => {
           const { tableData, selected } = this;
           selected
             .filter(item => item.children)
-            .map((item, idx) => {
+            .map((item) => {
               const index = tableData.indexOf(item);
               const children = item.children || [];
               tableData.splice(index, 1, ...children);
             });
         })
-        .catch(err => {
+        .catch(() => {
           this.$message({
             type: "info",
             message: "已取消删除"

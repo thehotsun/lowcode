@@ -11,38 +11,31 @@
     </div>
 
     <div v-if="showSearchFromArea" class="searchArea">
-      <base-render-form
-        ref="form"
-        :generalRequest="generalRequest"
-        :form-data="searchFrom"
-        :inline="true"
-        :form-options="searchFromOptions"
-        :showFooter="false"
-        :use-dialog="false"
-        label-width=""
-      ></base-render-form>
+      <base-render-form ref="form" :generalRequest="generalRequest" :form-data="searchFrom" :inline="true"
+        :form-options="searchFromOptions" :showFooter="false" :use-dialog="false" label-width=""></base-render-form>
     </div>
 
     <div class="btnDesign">
       <div class="btns">
-        <span v-for="(item, index) in btnConfigArr" :key="item.renderId" style="display:inline-block; position: relative;">
+        <span v-for="(item, index) in btnConfigArr" :key="item.renderId"
+          style="display:inline-block; position: relative;">
           <el-dropdown v-if="item.authorize === 'E'">
-            <el-button type="" size="small" :icon="item.tagAttrs.icon" @click="handleBtnDetail(index)"
-              >{{ item.tagAttrs.value }} <i :class="item?.contentTextBehindTagOptions?.className"></i
-            ></el-button>
+            <el-button type="" size="small" :icon="item.tagAttrs.icon" @click="handleBtnDetail(index)">{{
+              item.tagAttrs.value }} <i :class="item?.contentTextBehindTagOptions?.className"></i></el-button>
             <el-dropdown-menu slot="dropdown">
-              <el-dropdown-item v-for="(elDropdownItem, index) in elDropdownOptions" :key="index">{{ elDropdownItem.label }}</el-dropdown-item>
+              <el-dropdown-item v-for="(elDropdownItem, index) in elDropdownOptions" :key="index">{{
+                elDropdownItem.label }}</el-dropdown-item>
             </el-dropdown-menu>
           </el-dropdown>
-          <el-button v-else type="" size="small" :icon="item.tagAttrs.icon" @click="handleBtnDetail(index)"
-            >{{ item.tagAttrs.value }} <i :class="item?.contentTextBehindTagOptions?.className"></i
-          ></el-button>
+          <el-button v-else type="" size="small" :icon="item.tagAttrs.icon" @click="handleBtnDetail(index)">{{
+            item.tagAttrs.value }} <i :class="item?.contentTextBehindTagOptions?.className"></i></el-button>
           <i type="danger" class="el-icon-circle-close middle " @click="handleDelBtn(index)"></i>
         </span>
       </div>
 
       <el-dropdown szie="small" @command="handleBtnCommand">
-        <el-button type="primary" size="small" plain> 添加功能按钮<i class="el-icon-arrow-down el-icon--right"></i> </el-button>
+        <el-button type="primary" size="small" plain> 添加功能按钮<i class="el-icon-arrow-down el-icon--right"></i>
+        </el-button>
         <el-dropdown-menu slot="dropdown">
           <el-dropdown-item command="add">新增按钮</el-dropdown-item>
           <el-dropdown-item command="edit">编辑按钮</el-dropdown-item>
@@ -58,17 +51,9 @@
     </div>
 
     <div class="tablesetup">
-      <single-setup-table
-        ref="singleSetupTable"
-        :general-request="generalRequest"
-        :raw-table-data.sync="tableData"
-        :generate-query-sql="generateQuerySql"
-        :save-sql="saveSql"
-        :list-page-id="listPageId"
-        :btn-config-arr="btnConfigArr"
-        edit-mode
-        @searchOptionsChange="searchOptionsChange"
-      >
+      <single-setup-table ref="singleSetupTable" :general-request="generalRequest" :raw-table-data.sync="tableData"
+        :generate-query-sql="generateQuerySql" :save-sql="saveSql" :list-page-id="listPageId"
+        :btn-config-arr="btnConfigArr" edit-mode @searchOptionsChange="searchOptionsChange">
       </single-setup-table>
     </div>
 
@@ -76,18 +61,14 @@
       <setupBtnConfig ref="setupBtnConfig" @onSubmit="onSubmit" @onClose="onClose"></setupBtnConfig>
     </el-drawer>
 
-    <el-dialog title="预览" :visible.sync="dialogVisiblePreview" :close-on-click-modal="false" :close-on-press-escape="false" width="90%" :before-close="handleClosePreview">
-      <complete-table class="preview" ref="table" style="height:650px" :generalRequest="generalRequest"> </complete-table>
+    <el-dialog title="预览" :visible.sync="dialogVisiblePreview" :close-on-click-modal="false"
+      :close-on-press-escape="false" width="90%" :before-close="handleClosePreview">
+      <complete-table class="preview" ref="table" style="height:650px" :generalRequest="generalRequest">
+      </complete-table>
     </el-dialog>
 
-    <el-dialog
-      title="表格属性设置"
-      :visible.sync="dialogVisibleTableAttrs"
-      :close-on-click-modal="false"
-      :close-on-press-escape="false"
-      width="900px"
-      :before-close="handleCloseTableAttrs"
-    >
+    <el-dialog title="表格属性设置" :visible.sync="dialogVisibleTableAttrs" :close-on-click-modal="false"
+      :close-on-press-escape="false" width="900px" :before-close="handleCloseTableAttrs">
       <div style="min-width: 60px;background: #fff;padding: 10px; margin-top: 60px;margin-bottom: 60px;">
         <el-form :model="tableAttrs" :rules="rules" ref="ruleForm" label-width="130px" style="padding-bottom: 20px">
           <el-form-item label="分页" prop="showPagination">
@@ -95,14 +76,16 @@
           </el-form-item>
           <el-form-item v-show="tableAttrs.showPagination" label="分页显示条数" prop="showPagination">
             <el-select v-model="tableAttrs.paginationSize" placeholder="请选择">
-              <el-option v-for="item in paginationSizeOptions" :key="item.value" :label="item.label" :value="item.value"> </el-option>
+              <el-option v-for="item in paginationSizeOptions" :key="item.value" :label="item.label"
+                :value="item.value"> </el-option>
             </el-select>
           </el-form-item>
           <el-form-item label="显示序号" prop="isShowIndex">
             <el-switch v-model="tableAttrs.isShowIndex" />
           </el-form-item>
           <el-form-item label="自定义索引函数" prop="filterMethod" v-if="tableAttrs.isShowIndex">
-            <el-input v-model="tableAttrs.index" @focus="handleShow('index', $event)" placeholder="请输入function(index){ return index}格式"></el-input>
+            <el-input v-model="tableAttrs.index" @focus="handleShow('index', $event)"
+              placeholder="请输入function(index){ return index}格式"></el-input>
           </el-form-item>
           <el-form-item label="多选" prop="isShowCheckbox">
             <el-switch v-model="tableAttrs.isShowCheckbox" />
@@ -117,67 +100,60 @@
             <el-switch v-model="tableAttrs.showSummary" />
           </el-form-item>
           <el-form-item label="合计函数" prop="summaryMethod" v-if="tableAttrs.showSummary">
-            <el-input v-model="tableAttrs.summaryMethod" @focus="handleShow('summaryMethod', $event)" placeholder="请输入格式为Function({ columns, data })"></el-input>
+            <el-input v-model="tableAttrs.summaryMethod" @focus="handleShow('summaryMethod', $event)"
+              placeholder="请输入格式为Function({ columns, data })"></el-input>
           </el-form-item>
           <el-form-item label="合并" prop="isMerge">
             <el-switch v-model="tableAttrs.isMerge" />
           </el-form-item>
           <el-form-item label="合并函数" prop="spanMethod" v-if="tableAttrs.isMerge">
-            <el-input
-              v-model="tableAttrs.spanMethod"
-              @focus="handleShow('spanMethod', $event)"
-              placeholder="请输入格式为Function({ row, column, rowIndex, columnIndex })"
-            ></el-input>
+            <el-input v-model="tableAttrs.spanMethod" @focus="handleShow('spanMethod', $event)"
+              placeholder="请输入格式为Function({ row, column, rowIndex, columnIndex })"></el-input>
           </el-form-item>
           <el-form-item label="树类型数据" prop="isTree">
             <el-switch v-model="tableAttrs.isTree" />
           </el-form-item>
           <el-form-item label="配置tree-props" prop="treeProps" v-if="tableAttrs.isTree">
-            <el-input v-model="tableAttrs.treeProps" type="textarea" :rows="2" placeholder="请输入{children, hasChildren}格式"></el-input>
+            <el-input v-model="tableAttrs.treeProps" type="textarea" :rows="2"
+              placeholder="请输入{children, hasChildren}格式"></el-input>
           </el-form-item>
           <el-form-item label="指定row-key" prop="filterMethod" v-if="tableAttrs.isTree">
             <el-input v-model="tableAttrs.rowKey" placeholder="请输入充当key的字段名"></el-input>
           </el-form-item>
           <el-form-item label="数据转换函数" prop="filterMethod" v-if="tableAttrs.isTree">
-            <el-tooltip
-              slot="label"
-              class="item"
-              effect="dark"
-              content="由于当前通过sql查询很难直接生成树形结构所需的数据结构，因为通过此函数进行数据结构转换"
-              placement="top-start"
-            >
+            <el-tooltip slot="label" class="item" effect="dark" content="由于当前通过sql查询很难直接生成树形结构所需的数据结构，因为通过此函数进行数据结构转换"
+              placement="top-start">
               <span style="cursor: pointer;font-size: 14px">数据转换函数</span>
             </el-tooltip>
-            <el-input v-model="tableAttrs.dataTransitionFn" @focus="handleShow('dataTransitionFn', $event)" placeholder="请输入数据转换函数"></el-input>
+            <el-input v-model="tableAttrs.dataTransitionFn" @focus="handleShow('dataTransitionFn', $event)"
+              placeholder="请输入数据转换函数"></el-input>
           </el-form-item>
           <el-form-item label="懒加载" prop="lazy" v-if="tableAttrs.isTree">
             <el-switch v-model="tableAttrs.lazy" />
           </el-form-item>
           <el-form-item label="load函数" prop="filterMethod" v-if="tableAttrs.isTree && tableAttrs.lazy">
-            <el-input v-model="tableAttrs.load" type="textarea" :rows="2" placeholder="请输入格式为Function(row, treeNode, resolve)"></el-input>
+            <el-input v-model="tableAttrs.load" type="textarea" :rows="2"
+              placeholder="请输入格式为Function(row, treeNode, resolve)"></el-input>
           </el-form-item>
 
           <el-form-item label="组件大小" prop="size">
             <el-select v-model="tableAttrs.size" placeholder="请选择">
-              <el-option v-for="item in sizeOptions" :key="item.value" :label="item.label" :value="item.value"> </el-option>
+              <el-option v-for="item in sizeOptions" :key="item.value" :label="item.label" :value="item.value">
+              </el-option>
             </el-select>
           </el-form-item>
 
           <el-form-item label="单击列展示详情" prop="clickRowShowDetialDialog">
-            <el-tooltip
-              slot="label"
-              class="item"
-              effect="dark"
-              content="开启此功能后，单击列表的某行数据会调用其查看按钮相关功能（如果有），不开启此功能，则默认为双击时触发"
-              placement="top-start"
-            >
+            <el-tooltip slot="label" class="item" effect="dark"
+              content="开启此功能后，单击列表的某行数据会调用其查看按钮相关功能（如果有），不开启此功能，则默认为双击时触发" placement="top-start">
               <span style="cursor: pointer;font-size: 14px">单击列展示详情</span>
             </el-tooltip>
             <el-switch v-model="tableAttrs.clickRowShowDetialDialog" />
           </el-form-item>
 
           <el-form-item label="自定义样式" prop="style">
-            <el-input v-model="tableAttrs.style" type="textarea" :rows="2" placeholder="请输入整体样式（包括列表、搜索区域和按钮区域）"></el-input>
+            <el-input v-model="tableAttrs.style" type="textarea" :rows="2"
+              placeholder="请输入整体样式（包括列表、搜索区域和按钮区域）"></el-input>
           </el-form-item>
 
           <!-- <el-form-item label="列表自定义样式" prop="elTableStyle">
@@ -190,7 +166,8 @@
           </el-form-item> -->
         </el-form>
         <el-dialog :beforeClose="handleClose" title="代码编写" :visible="showCodeEditor" width="900px" :appendToBody="true">
-          <js-code-editor mode="javascript" :readonly="false" :value="tableAttrs[curFn]" ref="chEditor" @input="handleEditorInput"></js-code-editor>
+          <js-code-editor mode="javascript" :readonly="false" :value="tableAttrs[curFn]" ref="chEditor"
+            @input="handleEditorInput"></js-code-editor>
         </el-dialog>
       </div>
     </el-dialog>
@@ -245,7 +222,7 @@ export default {
     requestMetaList: {
       type: Function,
       require: false,
-      default: () => {}
+      default: () => { }
     },
     // 获取可关联流程
     requestFlowList: {
@@ -278,7 +255,7 @@ export default {
       require: true
     }
   },
-  data() {
+  data () {
     return {
       curFn: "",
       showCodeEditor: false,
@@ -358,25 +335,25 @@ export default {
 
   inject: ["componentDicList", "Sortable"],
   watch: {
-    showSearchFromArea(val) {
+    showSearchFromArea (val) {
       if (val) {
         this.$nextTick().then(() => this.searchAreaDrop());
       }
     }
   },
 
-  async mounted() {
+  async mounted () {
     this.btnsColumnDrop();
   },
 
-  errorCaptured(err) {
+  errorCaptured (err) {
     // 看着心烦，直接屏蔽，elform计算label值得时候得问题，在beforeDestroy周期里，不影响功能
     if (err.message === "[ElementForm]unpected width ") return false;
     else return true;
   },
 
   methods: {
-    async init(id = "", formCode) {
+    async init (id = "", formCode) {
       console.log(id, "id");
       this._groupId = id;
       this._formCode = formCode;
@@ -416,7 +393,7 @@ export default {
       }
     },
 
-    btnsColumnDrop() {
+    btnsColumnDrop () {
       // 此时找到的元素是要拖拽元素的父容器
       const dom = document.querySelector(".btnDesign .btns");
       this.Sortable.create(dom, {
@@ -429,7 +406,7 @@ export default {
       });
     },
 
-    searchAreaDrop() {
+    searchAreaDrop () {
       // 此时找到的元素是要拖拽元素的父容器
       const dom = document.querySelector(".searchArea .el-form .el-row");
       this.Sortable.create(dom, {
@@ -456,13 +433,13 @@ export default {
     },
 
     // 添加查询控件的change事件和控件属性弹窗的确认按钮触发
-    searchOptionsChange() {
+    searchOptionsChange () {
       const tableOptions = this.$refs.singleSetupTable.expose_getTableData();
       this.searchFromOptions = this.composeFromOptions(tableOptions);
     },
 
     // 设置searchFrom和装配fromOptions
-    composeFromOptions(tableData) {
+    composeFromOptions (tableData) {
       this.showSearchFromArea = false;
       this.setupForm = {};
       if (!tableData.length) return [];
@@ -499,22 +476,22 @@ export default {
     },
 
     // 由数据组成searchFrom
-    setFromField(source, fieldCode, formOptions, searchWidgetName) {
+    setFromField (source, fieldCode, formOptions, searchWidgetName) {
       this.$set(source, fieldCode, getWidgetDefaultVal(formOptions, searchWidgetName));
     },
 
-    requestTableConfig() {
+    requestTableConfig () {
       return this.getListConfigJSON(this._groupId);
     },
 
-    getPrimekey() {
+    getPrimekey () {
       this.requestPrimekey(this._groupId).then(res => {
         this.keyField = res.data.columnName;
       });
     },
 
     // 将元数据包装为可渲染的tableoptions
-    convertData(data) {
+    convertData (data) {
       return data.map((item, index) => {
         const rawData = getSingleTableData();
         if (index < 3) rawData.show = true;
@@ -527,7 +504,7 @@ export default {
     },
 
     // 更新数据库字段，如果多了新增默认，少了去除
-    updateFieldList() {
+    updateFieldList () {
       return this.requestFieldList(this._groupId).then(res => {
         const list = res.data;
         list.map(item => {
@@ -541,19 +518,19 @@ export default {
           }
         });
         this.tableData = this.tableData.filter(tableDataItem => {
-          return list.some(item => tableDataItem.fieldCode === item.fieldName);
+          return list.some(item => tableDataItem.isCustom || tableDataItem.fieldCode === item.fieldName);
         });
       });
     },
 
     // 查询元数据
-    queryFieldList() {
+    queryFieldList () {
       this.requestFieldList(this._groupId).then(res => {
         this.tableData = this.convertData(res.data);
       });
     },
 
-    queryFormList() {
+    queryFormList () {
       this.requestFormList(this._groupId).then(res => {
         console.log(res.data, "queryFormList");
         this._formListExtraOption = {
@@ -566,7 +543,7 @@ export default {
       });
     },
 
-    queryTableList() {
+    queryTableList () {
       this.requestTableList().then(res => {
         this._tableListExtraOption = {
           props: {
@@ -580,7 +557,7 @@ export default {
       });
     },
 
-    async queryMetaList() {
+    async queryMetaList () {
       if (!this.requestMetaList) {
         console.error("未配置查询业务模型的方法");
         return;
@@ -599,7 +576,7 @@ export default {
       };
     },
 
-    queryFlowList() {
+    queryFlowList () {
       this.requestFlowList().then(data => {
         this._flowListExtraOption = {
           options: data,
@@ -613,7 +590,7 @@ export default {
       });
     },
 
-    queryAuthorizeList() {
+    queryAuthorizeList () {
       this.requestAuthorizeList().then(res => {
         this._btnAuthorize = {
           options: res.data.concat({
@@ -628,12 +605,12 @@ export default {
       });
     },
 
-    async confirm() {
+    async confirm () {
       await this.handleSubmitTableConfig();
       this.$emit("onSave");
     },
     // 获取保存接口所需所需params
-    getRenderParams() {
+    getRenderParams () {
       const json = {
         fuzzyFieldSearchConfig: this.$refs.singleSetupTable.expose_getFuzzyFieldSearchConfig(),
         tableAttrs: this.tableAttrs,
@@ -648,7 +625,7 @@ export default {
     },
 
     // 保存按钮事件
-    handleSubmitTableConfig() {
+    handleSubmitTableConfig () {
       const renderParams = this.getRenderParams();
       const actionList = [];
       renderParams.formOptions?.map(item => {
@@ -675,7 +652,7 @@ export default {
     },
 
     // 添加功能按钮处理事件
-    handleBtnCommand(command) {
+    handleBtnCommand (command) {
       this.drawer = true;
       this.$nextTick(() => {
         // 给按钮设计器设置config
@@ -767,51 +744,51 @@ export default {
       });
     },
 
-    handleClosePreview() {
+    handleClosePreview () {
       this.dialogVisiblePreview = false;
     },
 
-    handleCloseTableAttrs() {
+    handleCloseTableAttrs () {
       this.dialogVisibleTableAttrs = false;
     },
 
     // 预览状态下，外部组件调用此方法
-    showPreview() {
+    showPreview () {
       this.dialogVisiblePreview = true;
       const renderParams = this.getRenderParams();
       this.$nextTick(() => this.$refs.table.expose_preview(renderParams));
     },
 
-    showTableAttrs() {
+    showTableAttrs () {
       this.dialogVisibleTableAttrs = true;
     },
 
-    showTableSetting() {
+    showTableSetting () {
       this.$emit("showTableSetting");
     },
 
     // 按钮设计的提交事件
-    onSubmit() {
+    onSubmit () {
       this.btnConfigArr = this.$refs.setupBtnConfig.expose_getBtnConfigFromArr();
       this.drawer = false;
     },
 
-    onClose() {},
-    handleDelBtn(index) {
+    onClose () { },
+    handleDelBtn (index) {
       this.btnConfigArr.splice(index, 1);
     },
 
     // 展开当前按钮详情
-    handleBtnDetail(index) {
+    handleBtnDetail (index) {
       this.handleBtnCommand(this.btnConfigArr[index].extraOption.btnType);
       this.$nextTick(() => {
         this.$refs.setupBtnConfig.expose_setBtnConfigFrom(this.btnConfigArr[index]);
       });
     },
-    handleClose() {
+    handleClose () {
       this.showCodeEditor = false;
     },
-    async handleShow(field) {
+    async handleShow (field) {
       this.curFn = field;
       this.showCodeEditor = true;
       await this.$nextTick();
@@ -820,7 +797,7 @@ export default {
       });
       this.$refs.chEditor.codeValue = this.tableAttrs[this.curFn];
     },
-    handleEditorInput(val) {
+    handleEditorInput (val) {
       this.tableAttrs[this.curFn] = val;
     }
   }
@@ -839,7 +816,7 @@ export default {
   vertical-align: top;
 }
 
-.el-dropdown + .el-dropdown {
+.el-dropdown+.el-dropdown {
   margin-left: 15px;
 }
 
@@ -867,6 +844,7 @@ export default {
 .btns {
   display: flex;
   align-items: center;
+
   span {
     margin-right: 10px;
   }
