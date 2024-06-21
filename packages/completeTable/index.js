@@ -334,6 +334,10 @@ export default {
       obj.prop = item.fieldCode;
       emptyData && setEmptyTableData(emptyData, item.fieldCode);
       obj.label = item.fieldName;
+      if (item.isCustom) {
+        obj.isCustom = item.isCustom;
+        obj.prop = `${Math.floor(Math.random() * 4000 + 1000)}`;
+      }
       obj.align = align.find(alignitem => alignitem.id === item.align).value;
       obj["min-width"] = item.columnWidth;
       obj.sortable = !!item.sort;
@@ -365,8 +369,9 @@ export default {
       this.tableOptions = this.tableConfigJSON
         .filter(item => item.show)
         .map(item => {
-          this.filterFiled.push(item.fieldCode);
-          return this.setSingleTableOptions(item, emptyData);
+          const obj = this.setSingleTableOptions(item, emptyData);
+          this.filterFiled.push(obj.prop);
+          return obj;
         });
 
       this.panelData = this.tableOptions.map(item => {
@@ -1507,9 +1512,9 @@ export default {
     tableCellClick(row, btnId) {
       try {
         const target = this.btnRegularOptions[0].formItem.find(btn => btn.btnId === btnId);
-        this.handleBtnClick(target.extraOption, row);
+        target && this.handleBtnClick(target.extraOption, row);
       } catch (error) {
-        console.error(error);
+        console.warn(error);
       }
     }
   },

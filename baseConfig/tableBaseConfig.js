@@ -216,7 +216,7 @@ const originEditConf = [
     tagName: "el-switch"
   },
   {
-    label: "内容显示设置",
+    label: "点击行为",
     prop: "singleFormatter",
     "min-width": "120",
     align: "center",
@@ -285,14 +285,14 @@ export function ContentTextAttrForm() {
     isItalic: false,
     isStrikethrough: false,
     isUnderline: false,
-    cursor: "inherit",
+    cursor: "pointer",
     fontSize: 12,
-    color: "#000000",
+    color: "rgb(64, 158, 255)",
     clickEvent: {
       relateBtnId: ""
     },
     iconName: "",
-    iconPosition: "behind",
+    iconPosition: "front",
     iconStyle: "",
     textVal: ""
   };

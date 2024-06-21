@@ -32,8 +32,9 @@
           <slot name="setupWidget" :row="row"></slot>
         </template>
         <template #setupContentText="{ row }">
-          <el-button type="text" icon="el-icon-edit" @click.stop.prevent="handleContentTextAttr(row)">
-            设置
+          <el-button type="text" icon="el-icon-edit" :class="row.contentTextAttr ? 'colorRed' : ''"
+            @click.stop.prevent="handleContentTextAttr(row)">
+            {{ row.contentTextAttr ? '修改' : '设置' }}
           </el-button>
           <slot name="setupContentText" :row="row"></slot>
         </template>
@@ -125,7 +126,7 @@
       </span>
     </el-dialog>
 
-    <el-dialog v-dialogDrag title="设置展示内容" :visible.sync="dialogVisibleContentTextAttr" :close-on-click-modal="false"
+    <el-dialog v-dialogDrag title="设置点击行为和展示内容" :visible.sync="dialogVisibleContentTextAttr" :close-on-click-modal="false"
       :close-on-press-escape="false" width="760px" :before-close="handleCloseContentTextAttr" append-to-body>
       <div class="flex">
         <el-form ref="form" :model="contentTextAttrForm" label-width="160px">
@@ -190,7 +191,7 @@
             </el-radio-group>
           </el-form-item>
           <el-form-item label="图标样式：">
-            <el-tooltip slot="label" class="fontSize14" effect="dark" content="如果输入显示文本，则会覆盖原本prop的值"
+            <el-tooltip slot="label" class="fontSize14" effect="dark" content="用于设置icon行内样式，大部分使用场景为设置和文字的间距"
               placement="top-start">
               <span>图标样式<i style="width: 20px" class="el-icon-question"></i>：</span>
             </el-tooltip>
@@ -710,6 +711,10 @@ export default {
 .code {
   float: right;
   color: #999;
+}
+
+.colorRed {
+  color: #ef5b5b;
 }
 
 .sql {
