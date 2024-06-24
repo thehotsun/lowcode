@@ -755,7 +755,12 @@ export default {
                 );
                 break;
               case "flowDocDownload":
-                disposeFlowDocDown(rowData);
+                disposeFlowDocDown(
+                  {
+                    command
+                  },
+                  rowData
+                );
                 break;
               case "batchDel":
                 disposeDel(rowData);
@@ -1129,9 +1134,9 @@ export default {
       this.download(params);
     },
 
-    disposeFlowDocDown(row) {
+    disposeFlowDocDown({ command }, row) {
       if (row) {
-        this.requestBatchFlowDoc([row[this.keyField]]);
+        this.requestBatchFlowDoc(command, [row[this.keyField]]);
       } else {
         if (this.selectList.length === 0) {
           return this.$warn("请至少勾选一条要处理的数据");
@@ -1139,7 +1144,10 @@ export default {
         if ([undefined, null].includes(this.tableData[0][this.keyField])) {
           return this.$warn("主键字段未取到值，请检查数据或重新在列表设计页面重新关联主键！");
         }
-        this.requestBatchFlowDoc(this.selectList.map(item => item[this.keyField]));
+        this.requestBatchFlowDoc(
+          command,
+          this.selectList.map(item => item[this.keyField])
+        );
       }
     },
 

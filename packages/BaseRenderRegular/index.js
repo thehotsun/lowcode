@@ -88,7 +88,7 @@ export default {
 
     getDropdownCompVNode(item) {
       const { handleCommand, getSingleCompVNode } = this;
-      const options = [
+      const downOptions = [
         {
           command: "curSelect",
           label: "当前选中"
@@ -102,6 +102,17 @@ export default {
           label: "全部"
         }
       ];
+      const flowDocDownOptions = [
+        {
+          command: "down",
+          label: "下载"
+        },
+        {
+          command: "recreate",
+          label: "重新生成"
+        }
+      ];
+      const options = item.extraOption.btnType === "download" ? downOptions : flowDocDownOptions;
       // 基础版有个添加维护字典的功能，里面返回的字段为id和cnName，因此以此字段为默认取值
       return (
         <el-dropdown nativeOnClick={e => e.stopPropagation()} oncommand={e => handleCommand(e, item.extraOption)}>
@@ -186,7 +197,7 @@ export default {
             })
           ) : isCooperateComp(tagName) ? (
             getCooperateComp(tagName, tagAttrs, listeners, formField, extraOption)
-          ) : authorize === "E" && extraOption.btnType === "download" && bindEvent ? (
+          ) : authorize === "E" && bindEvent ? (
             // 导出按钮特殊处理
             getDropdownCompVNode(item)
           ) : (
