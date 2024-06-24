@@ -158,21 +158,24 @@ export default {
       const that = this;
       if (options.tagName) {
         return this.cellRender(row, options);
-      } else if (options.contentTextAttr) {
-        options.listeners = {
-          click: function(row, $event) {
-            $event.stopPropagation();
-            that.$emit("clickBtn", row, options.contentTextAttr.clickEvent.relateBtnId);
+      } else if (options.contentTextAttrArr?.length) {
+        return options.contentTextAttrArr.map(contentTextAttr => {
+          const cellOptions = {};
+          cellOptions.listeners = {
+            click: function(row, $event) {
+              $event.stopPropagation();
+              that.$emit("clickBtn", row, contentTextAttr.clickEvent.relateBtnId);
+            }
+          };
+          const style = mergeStyle(null, contentTextAttr);
+          cellOptions.contentText = contentTextAttr.textVal;
+          if (contentTextAttr.iconName) {
+            cellOptions[`${contentTextAttr.iconPosition}TextClass`] = contentTextAttr.iconName;
+            cellOptions[`${contentTextAttr.iconPosition}TextStyle`] = `${style};${contentTextAttr.iconStyle}`;
           }
-        };
-        const style = mergeStyle(null, options.contentTextAttr);
-        options.contentText = options.contentTextAttr.textVal;
-        if (options.contentTextAttr.iconName) {
-          options[`${options.contentTextAttr.iconPosition}TextClass`] = options.contentTextAttr.iconName;
-          options[`${options.contentTextAttr.iconPosition}TextStyle`] = `${style};${options.contentTextAttr.iconStyle}`;
-        }
-        options.style = style;
-        return this.cellRender(row, options);
+          cellOptions.style = `${style};${contentTextAttr.textStyle}`;
+          return this.cellRender(row, cellOptions);
+        });
       } else {
         return row[options.prop];
       }
@@ -248,34 +251,36 @@ export default {
       //  tagAttrs.disabled = !this.editMode;
       const value = row[prop];
       const { getCooperateComp, isCooperateComp } = this;
-      return (
-        <div style="display: inline-block">
-          {isCooperateComp(tagName) ? (
-            getCooperateComp(tagName, tagAttrs, finalListeners, prop, extraOption, row)
-          ) : (
-            <div style="display: inline-block">
-              <span class={frontTextClass} style={frontTextStyle}>
-                {frontText}
-              </span>
-              <Tag
-                v-model={row[prop]}
-                value={value}
-                style={style}
-                class={className}
-                {...{
-                  attrs: tagAttrs,
-                  on: finalListeners
-                }}
-              >
-                {tagAttrs?.value || contentText || value}
-              </Tag>
-              <span class={behindTextClass} style={behindTextStyle}>
-                {behindText}
-              </span>
-            </div>
-          )}
-        </div>
-      );
+      if (isCooperateComp(tagName)) {
+        return getCooperateComp(tagName, tagAttrs, finalListeners, prop, extraOption, row);
+      } else {
+        return (
+          <div
+            style="display: inline-block;"
+            {...{
+              on: finalListeners
+            }}
+          >
+            <span class={frontTextClass} style={frontTextStyle}>
+              {frontText}
+            </span>
+            <Tag
+              v-model={row[prop]}
+              value={value}
+              style={style}
+              class={className}
+              {...{
+                attrs: tagAttrs
+              }}
+            >
+              {tagAttrs?.value || contentText || value}
+            </Tag>
+            <span class={behindTextClass} style={behindTextStyle}>
+              {behindText}
+            </span>
+          </div>
+        );
+      }
     },
 
     tableColumnRender(item) {
@@ -336,7 +341,7 @@ export default {
           : getCellRender(row, item);
       };
 
-      const attr = omit(item, ["className", "style", "formatter", "cellFormatterComponent", "renderHeader", "cellHeaderFormatterComponent", "contentTextAttr"]);
+      const attr = omit(item, ["className", "style", "formatter", "cellFormatterComponent", "renderHeader", "cellHeaderFormatterComponent", "contentTextAttrArr"]);
 
       return (
         <el-table-column

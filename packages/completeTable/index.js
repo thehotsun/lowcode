@@ -336,7 +336,7 @@ export default {
       obj.label = item.fieldName;
       if (item.isCustom) {
         obj.isCustom = item.isCustom;
-        obj.prop = `${Math.floor(Math.random() * 4000 + 1000)}`;
+        obj.prop = item.random;
       }
       obj.align = align.find(alignitem => alignitem.id === item.align).value;
       obj["min-width"] = item.columnWidth;
@@ -344,7 +344,7 @@ export default {
       obj["show-overflow-tooltip"] = item["show-overflow-tooltip"];
       if (item.fixed) obj.fixed = item.fixed;
       if (item.filters) obj.filters = str2obj(item.filters);
-      if (item.contentTextAttr) obj.contentTextAttr = item.contentTextAttr;
+      if (item.contentTextAttrArr) obj.contentTextAttrArr = item.contentTextAttrArr;
 
       // 某些函数转换
       const fnProps = ["sort-method", "formatter", "renderHeader"];

@@ -294,6 +294,7 @@ export function ContentTextAttrForm() {
     iconName: "",
     iconPosition: "front",
     iconStyle: "",
+    textStyle: "",
     textVal: ""
   };
 }
@@ -318,7 +319,7 @@ export function getSingleTableData(params = {}) {
     formatter: "",
     renderHeader: "",
     listeners: {},
-    contentTextAttr: new ContentTextAttrForm(),
+    contentTextAttrArr: [],
     isCustom: false,
     ...params
   };
