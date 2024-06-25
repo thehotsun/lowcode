@@ -100,7 +100,8 @@ export default {
         "deliveryLoadFnField",
         "dataTransitionCurField",
         "dataTransitionParentField",
-        "dataTransitionFn"
+        "dataTransitionFn",
+        "clickRowShowDetialDialog"
       ];
       if (!this.tableAttrs.isShowIndex) {
         props.push("index");
