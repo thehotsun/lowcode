@@ -20,7 +20,8 @@ import {
   BtnConfigs,
   transformParamsValue,
   formatterWidthOrHeightStyle,
-  setEmptyTableData
+  setEmptyTableData,
+  arrayToTree
 } from "../../utils";
 import { cloneDeep, omit, merge, isEmpty } from "lodash";
 
@@ -96,6 +97,9 @@ export default {
         "formOptions",
         "style",
         "paginationSize",
+        "deliveryLoadFnField",
+        "dataTransitionCurField",
+        "dataTransitionParentField",
         "dataTransitionFn"
       ];
       if (!this.tableAttrs.isShowIndex) {
@@ -105,16 +109,18 @@ export default {
         props.push("summaryMethod");
       }
       if (!this.tableAttrs.isTree) {
-        props.push("treeProps", "rowKey", "load", "lazy");
-      }
-      if (!this.tableAttrs.lazy && props.indexOf("load") !== -1) {
-        props.push("load");
+        props.push("treeProps", "rowKey", "lazy");
       }
       if (!this.tableAttrs.isMerge) {
         props.push("spanMethod");
       }
       if (!this.tableAttrs.elTableStyle) {
         props.push("elTableStyle");
+      }
+      if (this.tableAttrs.isTree && this.tableAttrs.lazy && this.tableAttrs.deliveryLoadFnField) {
+        this.$set(this.tableAttrs, "load", this.tableDataLoad);
+      } else {
+        props.push("load");
       }
       return omit(this.tableAttrs, props);
     },
@@ -559,25 +565,75 @@ export default {
         enterpriseId: this.enterpriseId
       };
     },
+    async tableDataLoad(tree, treeNode, resolve) {
+      console.log(tree, treeNode);
+      const data = await this.queryTableData({ [this.tableAttrs.deliveryLoadFnField]: tree[this.tableAttrs.deliveryLoadFnField] }, true);
+      resolve(data);
+    },
 
     // data为外界组件执行某些行为触发更新的参数(一次性参数，不会存储，如果点击分页就会消失，持久化的外部参数存储请使用refreshData方法)
-    queryTableData(data = {}) {
+    queryTableData(data = {}, isReturn) {
       const params = this.getParams(data);
-      return (this.tableAttrs.showPagination ? this.requestTablePaginationData(params, this.page, this.listPageId) : this.requestTableData(params, this.listPageId))
+      const { isTree, dataTransitionFn, dataTransitionParentField, dataTransitionCurField, showPagination } = this.tableAttrs;
+      return (showPagination ? this.requestTablePaginationData(params, this.page, this.listPageId) : this.requestTableData(params, this.listPageId))
         .then(res => {
           if (res.result === "0") {
-            if (this.tableAttrs.isTree && this.tableAttrs.dataTransitionFn) {
-              try {
-                this.tableData = this.tableAttrs.dataTransitionFn(res.data);
-              } catch (error) {
-                console.error(error);
+            // res.data = isReturn
+            //   ? [
+            //       { UserID: 34, RoleID: 32, EnterpriseID: "User 4" },
+            //       { UserID: 35, RoleID: 34, EnterpriseID: "User 35" },
+            //       { UserID: 36, RoleID: 35, EnterpriseID: "User 36" },
+            //       { UserID: 37, RoleID: 34, EnterpriseID: "User 37" },
+            //       { UserID: 38, RoleID: 37, EnterpriseID: "User 38" }
+            //     ]
+            //   : [
+            //       { UserID: 1, RoleID: null, EnterpriseID: "Admin", hasChildren: true },
+            //       { UserID: 2, RoleID: 1, EnterpriseID: "Manager" },
+            //       { UserID: 3, RoleID: 1, EnterpriseID: "Supervisor" },
+            //       { UserID: 4, RoleID: 2, EnterpriseID: "Employee A" },
+            //       { UserID: 5, RoleID: 2, EnterpriseID: "Employee B" },
+            //       { UserID: 6, RoleID: 3, EnterpriseID: "Employee C" },
+            //       { UserID: 7, RoleID: null, EnterpriseID: "Owner", hasChildren: true },
+            //       { UserID: 8, RoleID: 7, EnterpriseID: "Assistant" },
+            //       { UserID: 9, RoleID: 7, EnterpriseID: "Technician" },
+            //       { UserID: 10, RoleID: 8, EnterpriseID: "Intern A" },
+            //       { UserID: 11, RoleID: 8, EnterpriseID: "Intern B" },
+            //       { UserID: 12, RoleID: 2, EnterpriseID: "Employee D" },
+            //       { UserID: 13, RoleID: 2, EnterpriseID: "Employee E" },
+            //       { UserID: 14, RoleID: 5, EnterpriseID: "Employee F" },
+            //       { UserID: 15, RoleID: 5, EnterpriseID: "Employee G" },
+            //       { UserID: 16, RoleID: 3, EnterpriseID: "Employee H" },
+            //       { UserID: 17, RoleID: 3, EnterpriseID: "Employee I" },
+            //       { UserID: 18, RoleID: 1, EnterpriseID: "Secretary" },
+            //       { UserID: 19, RoleID: 7, EnterpriseID: "Consultant" },
+            //       { UserID: 20, RoleID: 19, EnterpriseID: "Junior Consultant" },
+            //       { UserID: 21, RoleID: 19, EnterpriseID: "Senior Consultant" }
+            //     ];
+            if (isReturn) {
+              return res.data;
+            } else {
+              if (isTree) {
+                if (dataTransitionFn) {
+                  try {
+                    this.tableData = dataTransitionFn(res.data);
+                  } catch (error) {
+                    console.error(error);
+                    this.tableData = res.data;
+                  }
+                } else if (dataTransitionParentField && dataTransitionCurField) {
+                  try {
+                    this.tableData = arrayToTree(res.data, dataTransitionCurField, dataTransitionParentField);
+                  } catch (error) {
+                    this.tableData = res.data;
+                    console.error(`queryTableData arrayToTree error: ${error}`);
+                  }
+                }
+              } else {
                 this.tableData = res.data;
               }
-            } else {
-              this.tableData = res.data;
-            }
-            if (this.tableAttrs.showPagination) {
-              this.page.totalCount = res.totalCount;
+              if (showPagination) {
+                this.page.totalCount = res.totalCount;
+              }
             }
           } else {
             console.error(`queryTableData message: ${res.message}`);

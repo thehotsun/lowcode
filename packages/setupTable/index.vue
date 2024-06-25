@@ -101,7 +101,7 @@
           <el-form-item label="显示序号" prop="isShowIndex">
             <el-switch v-model="tableAttrs.isShowIndex" />
           </el-form-item>
-          <el-form-item label="自定义索引函数" prop="filterMethod" v-if="tableAttrs.isShowIndex">
+          <el-form-item label="自定义索引函数" v-if="tableAttrs.isShowIndex">
             <el-input v-model="tableAttrs.index" @focus="handleShow('index', $event)" placeholder="请输入function(index){ return index}格式"></el-input>
           </el-form-item>
           <el-form-item label="多选" prop="isShowCheckbox">
@@ -135,26 +135,58 @@
           <el-form-item label="配置tree-props" prop="treeProps" v-if="tableAttrs.isTree">
             <el-input v-model="tableAttrs.treeProps" type="textarea" :rows="2" placeholder="请输入{children, hasChildren}格式"></el-input>
           </el-form-item>
-          <el-form-item label="指定row-key" prop="filterMethod" v-if="tableAttrs.isTree">
-            <el-input v-model="tableAttrs.rowKey" placeholder="请输入充当key的字段名"></el-input>
+          <el-form-item label="指定row-key" v-if="tableAttrs.isTree">
+            <el-select v-model="tableAttrs.rowKey" placeholder="请选择">
+              <el-option v-for="item in _deliveryFieldsOption.options" :key="item.id" :label="item.cnName" :value="item.id"> </el-option>
+            </el-select>
           </el-form-item>
-          <el-form-item label="数据转换函数" prop="filterMethod" v-if="tableAttrs.isTree">
+          <el-form-item label="数据转换函数" v-if="tableAttrs.isTree">
             <el-tooltip
               slot="label"
               class="item"
               effect="dark"
-              content="由于当前通过sql查询很难直接生成树形结构所需的数据结构，因为通过此函数进行数据结构转换"
+              content="由于当前通过sql查询很难直接生成树形结构所需的数据结构，因为通过此函数进行数据结构转换（优先级最高）"
               placement="top-start"
             >
               <span style="cursor: pointer;font-size: 14px">数据转换函数</span>
             </el-tooltip>
             <el-input v-model="tableAttrs.dataTransitionFn" @focus="handleShow('dataTransitionFn', $event)" placeholder="请输入数据转换函数"></el-input>
           </el-form-item>
+          <el-form-item label="数据转换配置" v-if="tableAttrs.isTree">
+            <el-tooltip
+              slot="label"
+              class="item"
+              effect="dark"
+              content="由于当前通过sql查询很难直接生成树形结构所需的数据结构，因为通过配置父子字段进行数据关联生成树状结构（优先级最比数据转换函数低）"
+              placement="top-start"
+            >
+              <span style="cursor: pointer;font-size: 14px">数据转换配置</span>
+            </el-tooltip>
+            <span>父级id字段：</span>
+            <el-select v-model="tableAttrs.dataTransitionParentField" placeholder="请选择">
+              <el-option v-for="item in _deliveryFieldsOption.options" :key="item.id" :label="item.cnName" :value="item.id"> </el-option>
+            </el-select>
+            <span>id字段：</span>
+            <el-select v-model="tableAttrs.dataTransitionCurField" placeholder="请选择">
+              <el-option v-for="item in _deliveryFieldsOption.options" :key="item.id" :label="item.cnName" :value="item.id"> </el-option>
+            </el-select>
+          </el-form-item>
           <el-form-item label="懒加载" prop="lazy" v-if="tableAttrs.isTree">
             <el-switch v-model="tableAttrs.lazy" />
           </el-form-item>
-          <el-form-item label="load函数" prop="filterMethod" v-if="tableAttrs.isTree && tableAttrs.lazy">
-            <el-input v-model="tableAttrs.load" type="textarea" :rows="2" placeholder="请输入格式为Function(row, treeNode, resolve)"></el-input>
+          <el-form-item label="传递字段" v-if="tableAttrs.isTree && tableAttrs.lazy">
+            <el-tooltip
+              slot="label"
+              class="item"
+              effect="dark"
+              content="一般懒加载时的load函数需要传递当前row的某个字段当作参数获取下一级的tableData"
+              placement="top-start"
+            >
+              <span style="cursor: pointer;font-size: 14px">传递字段</span>
+            </el-tooltip>
+            <el-select v-model="tableAttrs.deliveryLoadFnField" placeholder="请选择">
+              <el-option v-for="item in _deliveryFieldsOption.options" :key="item.id" :label="item.cnName" :value="item.id"> </el-option>
+            </el-select>
           </el-form-item>
 
           <el-form-item label="组件大小" prop="size">
@@ -352,7 +384,9 @@ export default {
       _tableListExtraOption: {},
       _metaListExtraOption: {},
       _flowListExtraOption: {},
-      _deliveryFieldsOption: {}
+      _deliveryFieldsOption: {
+        options: []
+      }
     };
   },
 

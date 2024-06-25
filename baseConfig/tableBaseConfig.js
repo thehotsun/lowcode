@@ -19,13 +19,15 @@ export function getTableAttrs() {
     treeProps: "",
     rowKey: "",
     lazy: false,
-    load: "",
     isMerge: false,
     spanMethod: "",
     clickRowShowDetialDialog: false,
     style: "",
     elTableStyle: "",
-    dataTransitionFn: ""
+    dataTransitionFn: "",
+    dataTransitionParentField: "",
+    dataTransitionCurField: "",
+    deliveryLoadFnField: ""
   };
 }
 

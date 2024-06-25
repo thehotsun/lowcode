@@ -95,7 +95,7 @@ module.exports = {
     ],
     "handle-callback-err": [1, "^(err|error)$"],
     indent: [
-      1,
+      "off",
       2,
       {
         SwitchCase: 1

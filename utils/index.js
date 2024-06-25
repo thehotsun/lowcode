@@ -815,6 +815,36 @@ export function mergeStyle(style = "", styleForm) {
   return style + str;
 }
 
+export function arrayToTree(data, idField = "id", parentField = "parentId") {
+  // 创建一个哈希表，存储每个节点
+  const idMapping = data.reduce((acc, el, i) => {
+    acc[el[idField]] = i;
+    return acc;
+  }, {});
+
+  const root = [];
+  data.forEach(el => {
+    // 如果是根节点（没有父节点），将其加入根节点数组
+    if (el[parentField] === null) {
+      root.push(el);
+      return;
+    }
+
+    // 使用哈希表获取父节点
+    const parentEl = data[idMapping[el[parentField]]];
+
+    // 如果父节点没有子节点数组，则创建一个
+    if (!parentEl.children) {
+      parentEl.children = [];
+    }
+
+    // 将当前节点加入父节点的子节点数组
+    parentEl.children.push(el);
+  });
+
+  return root;
+}
+
 export default {
   setPlaceholder,
   completeFromItemOptions,
@@ -843,5 +873,6 @@ export default {
   transformParamsValue,
   formatterWidthOrHeightStyle,
   setEmptyTableData,
-  mergeStyle
+  mergeStyle,
+  arrayToTree
 };
