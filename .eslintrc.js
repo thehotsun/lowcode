@@ -35,7 +35,7 @@ module.exports = {
       }
     ],
     "vue/html-indent": [
-      "error",
+      "off",
       2,
       {
         alignAttributesVertically: false

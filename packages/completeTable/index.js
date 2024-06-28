@@ -34,12 +34,9 @@ export default {
     panel
   },
   props: {
-    checkPermission: {
-      type: Function
-    },
-    listPageId: String,
-    rawlistPageId: String,
-    wrapHeight: [Number, String]
+    listPageIdProp: String,
+    rawRelateIdProp: String,
+    wrapHeightProp: [Number, String]
   },
 
   data() {
@@ -165,12 +162,22 @@ export default {
       } else {
         return "auto";
       }
+    },
+    listPageId() {
+      return this.listPageIdProp || this.getListPageId();
+    },
+    rawRelateId() {
+      return this.rawRelateIdProp || this.getRawRelateId();
+    },
+    wrapHeight() {
+      return this.wrapHeightProp || this.getWrapHeight();
     }
   },
 
   provide() {
     return {
-      getTableRenderInstance: () => this.expose_CompleteTableInstance()
+      getTableRenderInstance: () => this.expose_CompleteTableInstance(),
+      getWrapHeight: () => 0
     };
   },
   created() {
@@ -186,26 +193,101 @@ export default {
     else return true;
   },
 
-  inject: [
-    "openFlow",
-    "importFileComp",
-    "importRefreshComp",
-    "queryFlowDef",
-    "componentList",
-    "enterpriseId",
-    "getPrjInfo",
-    "queryChangePrjId",
-    "updatePrj",
-    "userInfo",
-    "generalRequest",
-    "requestTableData",
-    "requestTablePaginationData",
-    "requestTableConfig",
-    "requestDownload",
-    "requestBatchDel",
-    "requestBatchFlowDoc",
-    "checkPermission"
-  ],
+  inject: {
+    openFlow: {
+      default: () => () => {
+        console.warn("inject缺失openFlow!");
+      }
+    },
+    importFileComp: {
+      default: () => {}
+    },
+    importRefreshComp: {
+      default: () => {}
+    },
+    queryFlowDef: {
+      default: () => () => {
+        console.warn("inject缺失queryFlowDef!");
+      }
+    },
+    componentList: {
+      default: () => []
+    },
+    enterpriseId: {
+      default: () => ""
+    },
+    getPrjInfo: {
+      default: () => () => {
+        console.warn("inject缺失getPrjInfo!");
+      }
+    },
+    queryChangePrjId: {
+      default: () => () => {
+        console.warn("inject缺失queryChangePrjId!");
+      }
+    },
+    updatePrj: {
+      default: () => () => {
+        console.warn("inject缺失updatePrj!");
+      }
+    },
+    userInfo: {
+      default: () => {}
+    },
+    generalRequest: {
+      default: () => () => {
+        console.warn("inject缺失generalRequest!");
+      }
+    },
+    requestTableData: {
+      default: () => () => {
+        console.warn("inject缺失requestTableData!");
+      }
+    },
+    requestTablePaginationData: {
+      default: () => () => {
+        console.warn("inject缺失requestTablePaginationData!");
+      }
+    },
+    requestTableConfig: {
+      default: () => () => {
+        console.warn("inject缺失requestTableConfig!");
+      }
+    },
+    requestDownload: {
+      default: () => () => {
+        console.warn("inject缺失requestDownload!");
+      }
+    },
+    requestBatchDel: {
+      default: () => () => {
+        console.warn("inject缺失requestBatchDel!");
+      }
+    },
+    requestBatchFlowDoc: {
+      default: () => () => {
+        console.warn("inject缺失requestBatchFlowDoc!");
+      }
+    },
+    checkPermission: {
+      default: () => () => {
+        console.warn("inject缺失checkPermission!");
+      }
+    },
+    getListPageId: {
+      default: () => () => {
+        console.warn("inject缺失getListPageId!");
+      }
+    },
+    getRawRelateId: {
+      default: () => () => {
+        console.warn("inject缺失getRawRelateId!");
+      }
+    },
+    getWrapHeight: {
+      default: () => () => 0
+    }
+  },
 
   methods: {
     expose_CompleteTableInstance() {
@@ -480,7 +562,6 @@ export default {
     handleNativeFilter(e) {
       if (this.previewMode) return;
       const keyCode = window.event ? e.keyCode : e.which;
-      //  console.log('回车搜索',keyCode,e);
       console.log(keyCode);
       if (keyCode === 13) {
         this.page.pageNo = 1;
@@ -579,37 +660,6 @@ export default {
       return (showPagination ? this.requestTablePaginationData(params, this.page, this.listPageId) : this.requestTableData(params, this.listPageId))
         .then(res => {
           if (res.result === "0") {
-            // res.data = isReturn
-            //   ? [
-            //       { UserID: 34, RoleID: 32, EnterpriseID: "User 4" },
-            //       { UserID: 35, RoleID: 34, EnterpriseID: "User 35" },
-            //       { UserID: 36, RoleID: 35, EnterpriseID: "User 36" },
-            //       { UserID: 37, RoleID: 34, EnterpriseID: "User 37" },
-            //       { UserID: 38, RoleID: 37, EnterpriseID: "User 38" }
-            //     ]
-            //   : [
-            //       { UserID: 1, RoleID: null, EnterpriseID: "Admin", hasChildren: true },
-            //       { UserID: 2, RoleID: 1, EnterpriseID: "Manager" },
-            //       { UserID: 3, RoleID: 1, EnterpriseID: "Supervisor" },
-            //       { UserID: 4, RoleID: 2, EnterpriseID: "Employee A" },
-            //       { UserID: 5, RoleID: 2, EnterpriseID: "Employee B" },
-            //       { UserID: 6, RoleID: 3, EnterpriseID: "Employee C" },
-            //       { UserID: 7, RoleID: null, EnterpriseID: "Owner", hasChildren: true },
-            //       { UserID: 8, RoleID: 7, EnterpriseID: "Assistant" },
-            //       { UserID: 9, RoleID: 7, EnterpriseID: "Technician" },
-            //       { UserID: 10, RoleID: 8, EnterpriseID: "Intern A" },
-            //       { UserID: 11, RoleID: 8, EnterpriseID: "Intern B" },
-            //       { UserID: 12, RoleID: 2, EnterpriseID: "Employee D" },
-            //       { UserID: 13, RoleID: 2, EnterpriseID: "Employee E" },
-            //       { UserID: 14, RoleID: 5, EnterpriseID: "Employee F" },
-            //       { UserID: 15, RoleID: 5, EnterpriseID: "Employee G" },
-            //       { UserID: 16, RoleID: 3, EnterpriseID: "Employee H" },
-            //       { UserID: 17, RoleID: 3, EnterpriseID: "Employee I" },
-            //       { UserID: 18, RoleID: 1, EnterpriseID: "Secretary" },
-            //       { UserID: 19, RoleID: 7, EnterpriseID: "Consultant" },
-            //       { UserID: 20, RoleID: 19, EnterpriseID: "Junior Consultant" },
-            //       { UserID: 21, RoleID: 19, EnterpriseID: "Senior Consultant" }
-            //     ];
             if (isReturn) {
               return res.data;
             } else {
@@ -693,9 +743,9 @@ export default {
       this.showBtns = true;
       // 根据权限筛选
       // 兼容通过弹窗展示的列表，此时rawlistPageId为空，不进行权限校验
-      if (!this.previewMode && this.rawlistPageId) {
+      if (!this.previewMode && this.rawRelateId) {
         config = config.filter(item => {
-          return this.checkPermission(`${this.rawlistPageId}:${item.btnId}:${item.authorize}`) || item.authorize === "defaultShow";
+          return this.checkPermission(`${this.rawRelateId}:${item.btnId}:${item.authorize}`) || item.authorize === "defaultShow";
         });
         if (config.length === 0) this.showBtns = false;
       }
@@ -1297,7 +1347,7 @@ export default {
         btnConfigs: { tableId, dialogHeight }
       } = this;
       if (tableId) {
-        return <complete-table ref="nestedTable" listPageId={tableId} rawlistPageId=""></complete-table>;
+        return <complete-table ref="nestedTable" listPageIdProp={tableId} rawRelateIdProp=""></complete-table>;
       }
     },
 

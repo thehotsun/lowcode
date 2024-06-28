@@ -164,7 +164,7 @@
             <el-form ref="form" :model="contentTextAttrForm" label-width="160px">
               <el-form-item label="关联按钮：">
                 <el-tooltip slot="label" class="fontSize14" effect="dark" content="此渲染内容的点击行为相当于选中当前行后立刻点击关联的这个按钮" placement="top-start">
-                  <span>关联按钮<i style="width: 20px;" class="el-icon-question"></i>：</span>
+                  <span>关联按钮<i style=";width: 20px;" class="el-icon-question"></i>：</span>
                 </el-tooltip>
                 <el-select v-model="contentTextAttrForm.clickEvent.relateBtnId" placeholder="请选择关联按钮" filterable clearable="">
                   <el-option v-for="btnItem in btnConfigArr" :key="btnItem.btnId" :label="btnItem.tagAttrs.value" :value="btnItem.btnId"></el-option>
@@ -180,7 +180,7 @@
                 <el-checkbox v-model="contentTextAttrForm.isUnderline">下划线</el-checkbox>
                 <el-checkbox v-model="contentTextAttrForm.cursor" true-label="pointer" false-label="inherit">
                   <el-tooltip class="fontSize14" effect="dark" content="鼠标移动到内容上是否展示一个小手的标识" placement="top-start">
-                    <span>显示点击标识<i style="width: 20px" class="el-icon-question"></i></span>
+                    <span>显示点击标识<i style="width: 20px;" class="el-icon-question"></i></span>
                   </el-tooltip>
                 </el-checkbox>
               </el-form-item>
@@ -258,7 +258,7 @@ export default {
     IconPicker
   },
   props: {
-    listPageId: {
+    listPageIdProp: {
       type: String,
       default: () => {
         return "";
@@ -328,15 +328,18 @@ export default {
   computed: {
     finalTableData() {
       return this.filterShowField ? this.tableData.filter(item => item.show) : this.tableData;
+    },
+    listPageId() {
+      return this.listPageIdProp || this.getListPageId();
     }
   },
 
-  inject: ["queryGenerateMultiFieldSql", "Sortable"],
+  inject: ["queryGenerateMultiFieldSql", "Sortable", "getListPageId"],
 
   watch: {
     rawTableData(val) {
       this.tableData = val;
-      if (!this.fuzzyFieldSearchConfig.searchFieldList.length) {
+      if (!this.fuzzyFieldSearchConfig.searchFieldList.length && val.length) {
         this.fuzzyFieldSearchConfig.searchFieldList = [val[0].fieldCode];
         this.setFuzzySearchPlaceholder();
       }
