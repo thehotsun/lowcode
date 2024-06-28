@@ -88,7 +88,7 @@
 
         <el-form-item label="渲染函数">
           <el-input
-            v-model="treeAttrs.index"
+            v-model="treeAttrs.renderContent"
             placeholder="请输入function(h, { node, data, store }){ return <span>{node.label}</span>}格式"
             @focus="handleShow('renderContent', $event)"
           ></el-input>
@@ -98,7 +98,7 @@
           <el-input
             v-model="treeAttrs.filterFn"
             placeholder="请输入function(value, data){  return data.label.indexOf(value) !== -1;}格式"
-            @focus="handleShow('renderContent', $event)"
+            @focus="handleShow('filterFn', $event)"
           ></el-input>
         </el-form-item>
 

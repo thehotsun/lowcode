@@ -1,24 +1,17 @@
 <template>
   <div class="tree-container">
     <el-container>
-      <el-main style="align-items: baseline;">
-        <el-input v-if="treeOptions.filter" v-model="filterText" size="small" placeholder="输入关键字进行过滤"></el-input>
-        <el-tree v-if="initiated" ref="tree" highlight-current :data="treeData" v-bind="attrs" :style="treeOptions.style">
-          <span slot-scope="{ node }">
-            <span>{{ node.label }}</span>
-          </span>
-        </el-tree>
-      </el-main>
+      <base-render-tree v-if="initiated" :tree-data="treeData" :tree-options="treeOptions"></base-render-tree>
     </el-container>
   </div>
 </template>
 
 <script>
-import { str2obj, str2Fn } from "/utils";
 import { merge, pick } from "lodash";
-
+import BaseRenderTree from "/packages/BaseRenderTree";
 export default {
   name: "TreeWidget",
+  components: { BaseRenderTree },
   props: {
     options: {
       type: Object,
@@ -31,7 +24,7 @@ export default {
     return {
       initiated: false,
       treeData: [
-        { label: "一级 1", children: [{ label: "二级 1-1", children: [{ label: "三级 1-1-1" }] }] },
+        { label: "一级 1", s: "1", children: [{ label: "二级 1-1", s: "11", children: [{ label: "三级 1-1-1", s: "111" }] }] },
         {
           label: "一级 2",
           children: [
@@ -48,68 +41,20 @@ export default {
         }
       ],
       treeOptions: {},
-      currentKey: "",
-      filterText: "",
-      defaultProps: {
-        children: "children",
-        label: "label"
-      }
+      currentKey: ""
     };
   },
-  computed: {
-    attrs() {
-      const str2objFieldArr = ["props"];
-      const str2FnFieldArr = ["dataTransitionFn", "renderContent", "filterFn"];
-      str2objFieldArr.map(field => {
-        if (this.treeOptions[field]) {
-          this.treeOptions[field] = str2obj(this.treeOptions[field]);
-        }
-      });
-      str2FnFieldArr.map(field => {
-        if (this.treeOptions[field]) {
-          this.treeOptions[field] = str2Fn(this.treeOptions[field]);
-        }
-      });
 
-      const baseField = ["lazy", "nodeKey", "showCheckbox", "expandOnClickNode", "defaultExpandAll"];
-      const baseAttrs = pick(this.treeOptions, baseField);
-      baseAttrs.props = this.treeOptions.props || this.defaultProps;
-      if (this.treeOptions.filter) {
-        baseAttrs.filterNodeMethod = this.treeOptions.filterFn || this.filterNode;
-      }
-      if (this.treeOptions.renderContent) {
-        baseAttrs.renderContent = this.treeOptions.renderContent;
-      }
-      return baseAttrs;
-    }
-  },
-  watch: {
-    filterText(val) {
-      this.$refs.tree.filter(val);
-    }
-  },
   created() {},
   mounted() {},
   methods: {
     init(id, formCode, treeOptions) {
       if (treeOptions) {
         this.treeOptions = treeOptions;
-        this.initiated = true;
+        this.$nextTick(() => {
+          this.initiated = true;
+        });
       }
-    },
-    showTreeAttrs() {
-      this.dialogVisibleTreeAttrs = true;
-    },
-    handleCloseTreeAttrs() {
-      this.dialogVisibleTreeAttrs = false;
-    },
-    filterNode(value, data) {
-      if (!value) return true;
-      return data.label.indexOf(value) !== -1;
-    },
-
-    getNativeTree() {
-      return this.$refs.tree;
     },
 
     setTreeData(data) {
@@ -120,6 +65,7 @@ export default {
     getTreeData() {
       return this.treeData;
     },
+
     getTreeOptions() {
       return this.treeOptions;
     }
@@ -149,6 +95,6 @@ export default {
   align-items: start;
 }
 ::v-deep .el-main {
-  padding:0 20px 10px 20px;
+  padding: 0 20px 10px 20px;
 }
 </style>

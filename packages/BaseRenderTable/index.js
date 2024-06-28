@@ -161,7 +161,7 @@ export default {
       } else if (options.contentTextAttrArr?.length) {
         return options.contentTextAttrArr.map(contentTextAttr => {
           const cellOptions = {};
-          cellOptions.listeners = {
+          cellOptions.wrapListeners = {
             click: function(row, $event) {
               $event.stopPropagation();
               that.$emit("clickBtn", row, contentTextAttr.clickEvent.relateBtnId);
@@ -203,6 +203,7 @@ export default {
         tagAttrs = {},
         // 组件所需的监听事件
         listeners = {},
+        wrapListeners = {},
         // 需要绑定的formData的属性名
         prop = "",
         tagName = "span",
@@ -211,9 +212,16 @@ export default {
       } = options;
 
       const finalListeners = {};
+      const finalWrapListeners = {};
       Object.keys(listeners).map(key => {
         finalListeners[key] = (...arr) => {
           listeners[key](row, ...arr);
+        };
+      });
+
+      Object.keys(wrapListeners).map(key => {
+        finalWrapListeners[key] = (...arr) => {
+          wrapListeners[key](row, ...arr);
         };
       });
 
@@ -258,7 +266,7 @@ export default {
           <div
             style="display: inline-block;"
             {...{
-              on: finalListeners
+              on: finalWrapListeners
             }}
           >
             <span class={frontTextClass} style={frontTextStyle}>
@@ -271,6 +279,9 @@ export default {
               class={className}
               {...{
                 attrs: tagAttrs
+              }}
+              {...{
+                on: finalListeners
               }}
             >
               {tagAttrs?.value || contentText || value}
