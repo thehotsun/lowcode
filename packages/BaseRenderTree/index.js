@@ -1,7 +1,6 @@
 import "./index.less";
 import { omit, pick } from "lodash";
 import { str2obj, str2Fn } from "/utils";
-import { h } from "vue";
 
 export default {
   name: "BaseRenderTree",
@@ -64,7 +63,17 @@ export default {
         baseAttrs.filterNodeMethod = filterFn || filterNode;
       }
       if (renderContent) {
-        const { components = {}, data = () => {}, computed = {}, watch = {}, methods = {}, template } = renderContent();
+        const {
+          components = {},
+          data = () => {
+            return {};
+          },
+          computed = {},
+          watch = {},
+          methods = {},
+          template
+        } = renderContent();
+        console.log(renderContent(), "renderContent()");
         const formatterComponent = Vue.extend({
           components: components,
           props: { node: Object, data: Object, store: Object },
@@ -74,18 +83,21 @@ export default {
           methods,
           render: Vue.compile(template || "").render
         });
-        baseAttrs.renderContent = (_, { node, data, store }) => {
-          return h(formatterComponent, {
+        baseAttrs.renderContent = function(_, { _self, node, data, store }) {
+          return _(formatterComponent, {
             props: { node, data, store }
           });
         };
       }
+      console.log(baseAttrs, "baseAttrs");
       return baseAttrs;
     },
     labelField() {
-      return this.treeAttrs.props.label;
+      return this.treeAttrs.props.label || "label";
     },
-    treeListeners() {}
+    treeListeners() {
+      return {};
+    }
   },
   watch: {
     filterText(val) {
@@ -115,8 +127,12 @@ export default {
           highlight-current
           data={treeData}
           {...{
-            treeAttrs,
-            on: treeListeners
+            attrs: {
+              ...treeAttrs
+            },
+            on: {
+              ...treeListeners
+            }
           }}
         ></el-tree>
       </div>
