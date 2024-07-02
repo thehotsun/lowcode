@@ -7,6 +7,12 @@ import TableWidget from "../components/table-widget";
 
 export default {
   components: { TableWidget },
+  props: {
+    mode: {
+      type: Number,
+      default: 2
+    }
+  },
   methods: {
     async init(id = "", formCode) {
       this.$refs.TableWidget.init(id, formCode);

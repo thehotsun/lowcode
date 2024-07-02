@@ -14,6 +14,14 @@ import operate from "../components/operate.vue";
 import previewDlg from "../components/dialogs/previewDlg.vue";
 export default {
   components: { TableWidget, operate, previewDlg },
+  props: {
+    mode: {
+      type: Number,
+      default() {
+        return 0;
+      }
+    }
+  },
   data() {
     return {
       groupId: "",
@@ -39,6 +47,7 @@ export default {
     // 保存按钮事件
     handleSubmitTableConfig() {
       const renderParams = this.$refs.TableWidget.getRenderParams();
+      renderParams.mode = this.mode;
       const actionList = [];
       renderParams.formOptions?.map(item => {
         if (item.authorize !== "defaultShow") {

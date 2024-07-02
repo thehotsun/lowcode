@@ -42,7 +42,7 @@ export default {
       const baseAttrs = pick(treeOptions, baseField);
 
       const str2objFieldArr = ["props"];
-      const str2FnFieldArr = ["dataTransitionFn", "renderContent", "filterFn"];
+      const str2FnFieldArr = ["renderContent", "filterFn"];
 
       const transformObj = {};
       str2objFieldArr.map(field => {
@@ -92,11 +92,22 @@ export default {
       console.log(baseAttrs, "baseAttrs");
       return baseAttrs;
     },
+    dataTransitionFn() {
+      if (this.treeOptions.dataTransitionFn) {
+        return str2Fn(this.treeOptions.dataTransitionFn);
+      }
+    },
     labelField() {
       return this.treeAttrs.props.label || "label";
     },
     treeListeners() {
       return {};
+    },
+    finalTreeData() {
+      if (this.dataTransitionFn) {
+        return this.dataTransitionFn(this.treeData);
+      }
+      return this.treeData;
     }
   },
   watch: {
@@ -113,7 +124,7 @@ export default {
   render() {
     const {
       filterText,
-      treeData,
+      finalTreeData,
       treeOptions: { filter, style },
       treeAttrs,
       treeListeners
@@ -125,7 +136,7 @@ export default {
         <el-tree
           ref="tree"
           highlight-current
-          data={treeData}
+          data={finalTreeData}
           {...{
             attrs: {
               ...treeAttrs

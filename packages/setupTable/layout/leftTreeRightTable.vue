@@ -32,6 +32,14 @@ import { TreeAttrs } from "/baseConfig/treeBaseConfig";
 import { merge } from "lodash";
 export default {
   components: { TableWidget, TreeWidget, TreeAttrDlg, operate, previewDlg },
+  props: {
+    mode: {
+      type: Number,
+      default() {
+        return 1;
+      }
+    }
+  },
   data() {
     return {
       leftwidth: "200px",
@@ -47,10 +55,16 @@ export default {
       this.groupId = id;
       this.formCode = formCode;
       const { data } = await this.requestTableConfig(id);
-      const obj = JSON.parse(data);
-      const { treeOptions, ...tableOptions } = obj;
-      this.treeOptions = merge(new TreeAttrs(), treeOptions);
-      this.$refs.TableWidget.init(id, formCode, tableOptions);
+      let table;
+      if (data) {
+        const obj = JSON.parse(data);
+        const { treeOptions = {}, ...tableOptions } = obj;
+        table = tableOptions;
+        this.treeOptions = merge(new TreeAttrs(), treeOptions);
+      } else {
+        this.treeOptions = new TreeAttrs();
+      }
+      this.$refs.TableWidget.init(id, formCode, table);
       this.$refs.TreeWidget.init(id, formCode, this.treeOptions);
       this.$refs.TreeAttrDlg.init(id, formCode, this.treeOptions);
     },
@@ -79,7 +93,8 @@ export default {
       const treeOptions = this.$refs.TreeAttrDlg.getRenderParams();
       return {
         ...tablejson,
-        treeOptions
+        treeOptions,
+        mode: this.mode
       };
     },
     // 保存按钮事件
