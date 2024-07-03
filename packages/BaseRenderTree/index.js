@@ -1,9 +1,11 @@
 import "./index.less";
-import { omit, pick } from "lodash";
+import { pick } from "lodash";
 import { str2obj, str2Fn } from "/utils";
+import emitter from "/utils/emitter";
 
 export default {
   name: "BaseRenderTree",
+  mixins: [emitter],
   props: {
     treeOptions: {
       type: Object,
@@ -62,6 +64,7 @@ export default {
       if (filter) {
         baseAttrs.filterNodeMethod = filterFn || filterNode;
       }
+
       if (renderContent) {
         const {
           components = {},
@@ -74,6 +77,7 @@ export default {
           template
         } = renderContent();
         console.log(renderContent(), "renderContent()");
+        // eslint-disable-next-line no-undef
         const formatterComponent = Vue.extend({
           components: components,
           props: { node: Object, data: Object, store: Object },
@@ -81,6 +85,7 @@ export default {
           computed,
           watch,
           methods,
+          // eslint-disable-next-line no-undef
           render: Vue.compile(template || "").render
         });
         baseAttrs.renderContent = function(_, { _self, node, data, store }) {
@@ -92,6 +97,7 @@ export default {
       console.log(baseAttrs, "baseAttrs");
       return baseAttrs;
     },
+
     dataTransitionFn() {
       if (this.treeOptions.dataTransitionFn) {
         return str2Fn(this.treeOptions.dataTransitionFn);
@@ -101,7 +107,21 @@ export default {
       return this.treeAttrs.props.label || "label";
     },
     treeListeners() {
-      return {};
+      const { treeOptions, treeNodeClick } = this;
+      const listeners = {};
+      const str2FnFieldArr = ["nodeClick"];
+
+      const transformObj = {};
+      str2FnFieldArr.map(field => {
+        if (treeOptions[field]) {
+          transformObj[field] = str2Fn(treeOptions[field]).bind(this);
+        }
+      });
+
+      const { nodeClick } = transformObj;
+
+      listeners["node-click"] = nodeClick || treeNodeClick;
+      return listeners;
     },
     finalTreeData() {
       if (this.dataTransitionFn) {
@@ -119,11 +139,15 @@ export default {
     filterNode(value, data) {
       if (!value) return true;
       return data[this.labelField].indexOf(value) !== -1;
+    },
+    treeNodeClick(data) {
+      this.dispatch("CompleteTable", "refreshTable", {
+        [this.treeOptions.deliveryField]: data[this.treeOptions.deliveryField]
+      });
     }
   },
   render() {
     const {
-      filterText,
       finalTreeData,
       treeOptions: { filter, style },
       treeAttrs,
@@ -131,7 +155,7 @@ export default {
     } = this;
     return (
       <div class="baseRenderTreeContainer" style={style}>
-        {filter ? <el-input v-model={filterText} size="small" placeholder="输入关键字进行过滤"></el-input> : ""}
+        {filter ? <el-input v-model={this.filterText} size="small" placeholder="输入关键字进行过滤"></el-input> : ""}
 
         <el-tree
           ref="tree"

@@ -18,6 +18,12 @@
         <el-form-item label="配置props" prop="props">
           <el-input v-model="treeAttrs.props" type="textarea" :rows="2" placeholder="请输入{children: 'children', label: 'label'}格式"></el-input>
         </el-form-item>
+        <el-form-item label="" prop="props">
+          <el-tooltip slot="label" class="item" effect="dark" content="单位支持px和%，不填单位默认px" placement="top-start">
+            <span style="cursor: pointer;font-size: 14px">宽度（px|%）</span>
+          </el-tooltip>
+          <el-input v-model="treeAttrs.width" type="textarea" :rows="2" placeholder="请输入宽度"></el-input>
+        </el-form-item>
         <el-form-item label="显示复选框" prop="showCheckbox">
           <el-switch v-model="treeAttrs.showCheckbox" />
         </el-form-item>
@@ -88,6 +94,10 @@
             placeholder="请输入function(value, data){  return data.label.indexOf(value) !== -1;}格式"
             @focus="handleShow('filterFn', $event)"
           ></el-input>
+        </el-form-item>
+
+        <el-form-item label="点击事件">
+          <el-input v-model="treeAttrs.nodeClick" placeholder="请输入function(data){ }格式" @focus="handleShow('nodeClick', $event)"></el-input>
         </el-form-item>
 
         <el-form-item label="自定义样式" prop="style">

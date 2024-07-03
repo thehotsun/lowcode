@@ -1,126 +1,130 @@
 import "./index.less";
 import tableItem from "./component/tableItem";
 import treeItem from "./component/treeItem";
-import { cloneDeep, omit, merge, isEmpty } from "lodash";
+import { merge, isEmpty } from "lodash";
+import { TreeAttrs } from "/baseConfig/treeBaseConfig";
+import { formatterWidthOrHeightStyle } from "/utils";
 
 export default {
   name: "CompleteTable",
+  componentName: "CompleteTable",
   components: {
     tableItem,
     treeItem
   },
   props: {
     listPageIdProp: String,
-    rawRelateIdProp: String,
     wrapHeightProp: [Number, String]
   },
 
   data() {
     return {
-      mode: 0
+      mode: 0,
+      leftWidth: "200px"
     };
   },
 
-  computed: {},
-  methods: {
-    async init(isPreview, json, externalParams) {
-      this.resetAllData();
-      await this.$nextTick();
-      this.previewMode = !!isPreview;
-      if (!json || isEmpty(json)) {
-        await this.queryTableConfig();
-      } else {
-        this.parseTableConfig(json);
-        await this.$nextTick();
-      }
-      if (isPreview) {
-        const tableSingleData = {};
-        this.composeData(tableSingleData);
-        this.tableData = [];
-        for (let index = 0; index < 10; index++) {
-          this.tableData.push(tableSingleData);
-        }
-      } else {
-        this.composeData();
-        try {
-          // 有些参数通过sessionStorage传递
-          var jumpParams = JSON.parse(sessionStorage.getItem("lowcodeTableThisPageJumpParams"));
-          // 只接受对象参数
-          var isObj = Object.prototype.toString.call(jumpParams) === "[object Object]";
-          sessionStorage.removeItem("lowcodeTableThisPageJumpParams");
-        } catch (error) {
-          console.error(error);
-        }
-        if (externalParams && isObj) {
-          this.refreshData({ ...externalParams, ...jumpParams });
-        } else if (externalParams) {
-          this.refreshData(externalParams);
-        } else if (isObj) {
-          this.refreshData(jumpParams);
-        } else {
-          this.queryTableData();
-        }
-      }
-      setTimeout(() => {
-        try {
-          this.headerHeight =
-            parseFloat(window.getComputedStyle(this.$refs.elHeader.$el).height) +
-            (this.showSearchFrom ? parseFloat(window.getComputedStyle(this.$refs.elHeaderSearchFrom.$el).height) + 20 : 0);
-          console.log(this.headerHeight, " this.headerHeight");
-        } catch (error) {
-          console.error("获取低代码table header高度报错，报错信息：", error);
-        }
-      }, 1000);
+  computed: {
+    listPageId() {
+      return this.listPageIdProp || this.getListPageId();
     }
   },
-  provide() {
-    return {
-      getTableRenderInstance: () => this.expose_CompleteTableInstance(),
-      getWrapHeight: () => 0
-    };
+
+  inject: {
+    requestTableConfig: {
+      default: () => () => {
+        console.warn("inject缺失requestTableConfig!");
+      }
+    },
+    getListPageId: {
+      default: () => () => {
+        console.warn("inject缺失getListPageId!");
+      }
+    }
   },
   created() {
-    this.initTableAttrs();
+    this.initEventHandler();
+    // this.initTableAttrs();
   },
   mounted() {
     // this.init()
   },
 
-  inject: {},
-
   methods: {
     expose_CompleteTableInstance() {
       return this;
+    },
+    async init(isPreview, json, externalParams) {
+      if (!json || isEmpty(json)) {
+        json = await this.queryTableConfig();
+      }
+      const { mode = 0 } = json;
+      this.mode = mode;
+      await this.$nextTick();
+      switch (this.mode) {
+        case 0:
+          this.defaultInit(isPreview, json, externalParams);
+          break;
+        case 1:
+          this.leftTreeRightTableInit(isPreview, json, externalParams);
+          break;
+        default:
+          this.defaultInit(isPreview, json, externalParams);
+          break;
+      }
+    },
+
+    async leftTreeRightTableInit(isPreview, json, externalParams) {
+      const { treeOptions = {}, ...tableOptions } = json;
+
+      const tree = merge(new TreeAttrs(), treeOptions);
+
+      if (tree.width) {
+        this.leftWidth = formatterWidthOrHeightStyle(tree.width);
+      }
+      this.$refs.tableItem.init(isPreview, tableOptions, externalParams);
+      this.$refs.treeItem.init(isPreview, tree, externalParams);
+    },
+    async defaultInit(isPreview, json, externalParams) {
+      this.$refs.tableItem.init(isPreview, json, externalParams);
+    },
+    tabsTableInit() {},
+
+    queryTableConfig() {
+      return this.requestTableConfig(this.listPageId)
+        .then(res => {
+          if (res.result === "0") {
+            const data = JSON.parse(res.data);
+            return data;
+          } else {
+            console.error(`queryTableConfig message: ${res}`);
+          }
+        })
+        .catch(e => {
+          console.error(`queryTableConfig error: ${e}`);
+        });
+    },
+
+    initEventHandler() {
+      this.$on("refreshTable", this.dispatcher);
+    },
+    dispatcher(params) {
+      this.$refs.tableItem.queryTableData(params);
     }
   },
 
   render() {
-    const { mode } = this;
-
-    const curPageListeners = {
-      "update:currentPage": val => {
-        this.page.pageNo = val;
-      },
-      "size-change": handleSizeChange,
-      "current-change": handleCurrentChange
-    };
-    const tableEvent = tableAttrs.clickRowShowDetialDialog
-      ? {
-          "row-click": showCheckDialog,
-          "selection-change": selectListHandler,
-          clickBtn: tableCellClick
-        }
-      : {
-          "row-dblclick": showCheckDialog,
-          "selection-change": selectListHandler,
-          clickBtn: tableCellClick
-        };
+    const { mode, leftWidth } = this;
 
     if (mode === 1) {
       return (
-        <div class="completeTableWrap" ref="">
-          <treeItem ref="treeItem"></treeItem>
-          <tableItem ref="tableItem"></tableItem>
+        <div class="completeTableWrap">
+          <div class="" style={{ width: leftWidth }}>
+            <treeItem ref="treeItem"></treeItem>
+          </div>
+          <div class="" style={{ width: `calc(100% - ${leftWidth})` }}>
+            <tableItem ref="tableItem"></tableItem>
+          </div>
         </div>
       );
     } else if (mode === 2) {
