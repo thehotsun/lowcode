@@ -1,0 +1,30 @@
+export function TabsAttrs() {
+  return {
+    isDataModel: false,
+    defaultExpandAll: true,
+    expandOnClickNode: true,
+    filter: false,
+    showCheckbox: false,
+    accordion: false,
+    lazy: false,
+    width: "200",
+    nodeKey: "",
+    props: "",
+    dataTransitionFn: "",
+    filterFn: "",
+    loadFn: "",
+    nodeClick: "",
+    dataTransitionParentField: "",
+    dataTransitionCurField: "",
+    renderContent: "",
+    requestUrl: "",
+    requestParamsConfig: {},
+    requestType: "",
+    style: "",
+    deliveryField: "",
+    defaultCheckedKeys: "",
+    defaultExpandedKeys: "",
+    currentNodeKey: "",
+    iconClass: ""
+  };
+}

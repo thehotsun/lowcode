@@ -25,7 +25,9 @@ export default {
         mouseDown: false,
         dragging: false,
         activeSplitter: null
-      }
+      },
+      tabs: [],
+      activeName: 0
     };
   },
 
@@ -87,6 +89,9 @@ export default {
         case 1:
           this.leftTreeRightTableInit(isPreview, json, externalParams);
           break;
+        case 2:
+          this.tabsTableInit(isPreview, json, externalParams);
+          break;
         default:
           this.defaultInit(isPreview, json, externalParams);
           break;
@@ -107,7 +112,16 @@ export default {
     async defaultInit(isPreview, json, externalParams) {
       this.$refs.tableItem.init(isPreview, json, externalParams);
     },
-    tabsTableInit() {},
+    // TODO externalParams不同怎么处理？
+    tabsTableInit(isPreview, json, externalParams) {
+      const {
+        tabTableOptions: { tabTableOptionsArr, tabsOptions }
+      } = json;
+      this.tabs = tabsOptions;
+      tabTableOptionsArr.map((tableOptions, index) => {
+        this.$refs.tableItemTab[index].init(isPreview, tableOptions, externalParams);
+      });
+    },
 
     queryTableConfig() {
       return this.requestTableConfig(this.listPageId)
@@ -176,7 +190,7 @@ export default {
   },
 
   render() {
-    const { mode, leftWidth, onMouseDown } = this;
+    const { mode, leftWidth, onMouseDown, tabs, activeName } = this;
 
     if (mode === 1) {
       return (
@@ -191,7 +205,15 @@ export default {
         </div>
       );
     } else if (mode === 2) {
-      return <div ref=""></div>;
+      return (
+        <el-tabs v-model={activeName}>
+          {tabs.map((tab, index) => (
+            <el-tab-pane label={tab.label} name={index}>
+              <tableItem ref="tableItemTab"></tableItem>
+            </el-tab-pane>
+          ))}
+        </el-tabs>
+      );
     } else {
       return <tableItem ref="tableItem"></tableItem>;
     }
