@@ -40,11 +40,11 @@ export default {
       const { treeOptions, defaultProps, filterNode } = this;
       const { filter } = treeOptions;
 
-      const baseField = ["lazy", "nodeKey", "showCheckbox", "expandOnClickNode", "defaultExpandAll"];
+      const baseField = ["lazy", "nodeKey", "showCheckbox", "expandOnClickNode", "defaultExpandAll", "accordion", "iconClass", "currentNodeKey"];
       const baseAttrs = pick(treeOptions, baseField);
 
-      const str2objFieldArr = ["props"];
-      const str2FnFieldArr = ["renderContent", "filterFn"];
+      const str2objFieldArr = ["props", "defaultCheckedKeys", "defaultExpandedKeys"];
+      const str2FnFieldArr = ["renderContent", "filterFn", "loadFn"];
 
       const transformObj = {};
       str2objFieldArr.map(field => {
@@ -58,11 +58,21 @@ export default {
         }
       });
 
-      const { props, renderContent, filterFn } = transformObj;
+      const { props, renderContent, filterFn, loadFn, defaultExpandedKeys, defaultCheckedKeys } = transformObj;
+      if (defaultExpandedKeys) {
+        baseAttrs.defaultExpandedKeys = defaultExpandedKeys;
+      }
+
+      if (defaultCheckedKeys) {
+        baseAttrs.defaultCheckedKeys = defaultCheckedKeys;
+      }
 
       baseAttrs.props = props || defaultProps;
       if (filter) {
         baseAttrs.filterNodeMethod = filterFn || filterNode;
+      }
+      if (loadFn) {
+        baseAttrs.load = loadFn;
       }
 
       if (renderContent) {
@@ -119,8 +129,9 @@ export default {
       });
 
       const { nodeClick } = transformObj;
-
-      listeners["node-click"] = nodeClick || treeNodeClick;
+      if (!this.preview) {
+        listeners["node-click"] = nodeClick || treeNodeClick;
+      }
       return listeners;
     },
     finalTreeData() {
@@ -149,12 +160,12 @@ export default {
   render() {
     const {
       finalTreeData,
-      treeOptions: { filter, style },
+      treeOptions: { filter },
       treeAttrs,
       treeListeners
     } = this;
     return (
-      <div class="baseRenderTreeContainer" style={style}>
+      <div class="baseRenderTreeContainer">
         {filter ? <el-input v-model={this.filterText} size="small" placeholder="输入关键字进行过滤"></el-input> : ""}
 
         <el-tree

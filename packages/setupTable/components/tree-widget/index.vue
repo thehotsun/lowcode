@@ -68,6 +68,9 @@ export default {
 
     getTreeOptions() {
       return this.treeOptions;
+    },
+    setTreeOptions(treeOptions) {
+      this.treeOptions = treeOptions;
     }
   }
 };

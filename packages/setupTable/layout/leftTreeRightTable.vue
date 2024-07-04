@@ -14,7 +14,7 @@
       </div>
     </div>
 
-    <TreeAttrDlg ref="TreeAttrDlg"></TreeAttrDlg>
+    <TreeAttrDlg ref="TreeAttrDlg" @changeTreeAttrs="changeTreeAttrs"></TreeAttrDlg>
 
     <previewDlg ref="previewDlg"></previewDlg>
   </div>
@@ -58,6 +58,7 @@ export default {
       let table;
       if (data) {
         const obj = JSON.parse(data);
+        console.log("parsejson", obj);
         const { treeOptions = {}, ...tableOptions } = obj;
         table = tableOptions;
         this.treeOptions = merge(new TreeAttrs(), treeOptions);
@@ -66,13 +67,13 @@ export default {
       }
       this.$refs.TableWidget.init(id, formCode, table);
       this.$refs.TreeWidget.init(id, formCode, this.treeOptions);
-      this.$refs.TreeAttrDlg.init(id, formCode, this.treeOptions);
     },
     showTableAttrs() {
       this.$refs.TableWidget.$refs.tableAttrsDlg.showDlg();
     },
+
     showPreview() {
-      const renderParams = this.$refs.TableWidget.getRenderParams();
+      const renderParams = this.getRenderParams();
       this.$refs.previewDlg.showDlg(renderParams);
     },
     handleSave() {
@@ -81,19 +82,21 @@ export default {
     requestTableConfig(id) {
       return this.getListConfigJSON(id);
     },
-    getTableStyle() {
-      const w = this.leftwidth;
-      return { width: `calc(100% - ${w})` };
-    },
+
     showTreeAttrs() {
-      this.$refs.TreeAttrDlg.showTreeAttrs();
+      this.$refs.TreeAttrDlg.showTreeAttrs(this.treeOptions);
     },
+
+    changeTreeAttrs(treeOptions) {
+      this.treeOptions = treeOptions;
+      this.$refs.TreeWidget.setTreeOptions(this.treeOptions);
+    },
+
     getRenderParams() {
       const tablejson = this.$refs.TableWidget.getRenderParams();
-      const treeOptions = this.$refs.TreeAttrDlg.getRenderParams();
       return {
         ...tablejson,
-        treeOptions,
+        treeOptions: this.treeOptions,
         mode: this.mode
       };
     },
@@ -109,6 +112,7 @@ export default {
           });
         }
       });
+      console.log("savejson", renderParams);
       return this.saveListConfigJSON(
         {
           json: JSON.stringify(renderParams),

@@ -2,6 +2,50 @@
   display: flex;
   width: 100%;
   height: 100%;
+  .contentleft {
+    // border-right: 1px solid #ebefff;
+  }
+  .splitpanes__splitter {
+    width: 7px;
+    border-left: 1px solid #eee;
+    margin-left: -1px;
+    background-color: #fff;
+    box-sizing: border-box;
+    position: relative;
+    flex-shrink: 0;
+    min-width: 1px;
+    cursor: col-resize;
+    touch-action: none;
+    &:before,
+    &:after {
+      content: "";
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      background-color: rgba(0, 0, 0, 0.15);
+      transition: background-color 0.3s;
+    }
+    &:hover:before,
+    &:hover:after {
+      background-color: rgba(0, 0, 0, 0.25);
+    }
+    &:first-child {
+      cursor: auto;
+    }
+    &:before,
+    &:after {
+      transform: translateY(-50%);
+      width: 1px;
+      height: 30px;
+    }
+    &:before {
+      margin-left: -2px;
+    }
+    &:after {
+      margin-left: 1px;
+    }
+ 
+  }
 }
 .CompleteTable {
   height: 100%;

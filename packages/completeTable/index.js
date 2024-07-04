@@ -20,7 +20,12 @@ export default {
   data() {
     return {
       mode: 0,
-      leftWidth: "200px"
+      leftWidth: "200px",
+      touch: {
+        mouseDown: false,
+        dragging: false,
+        activeSplitter: null
+      }
     };
   },
 
@@ -53,6 +58,20 @@ export default {
   methods: {
     expose_CompleteTableInstance() {
       return this;
+    },
+
+    async expose_preview(data) {
+      const { treeOptions = {}, mode = 0, ...tableOptions } = data;
+      this.mode = mode;
+      await this.$nextTick();
+      if (mode === 1) {
+        this.$refs.tableItem.expose_preview(tableOptions);
+        this.$refs.treeItem.expose_preview(treeOptions);
+      } else if (mode === 2) {
+        console.log();
+      } else {
+        this.$refs.tableItem.expose_preview(tableOptions);
+      }
     },
     async init(isPreview, json, externalParams) {
       if (!json || isEmpty(json)) {
@@ -110,18 +129,62 @@ export default {
     },
     dispatcher(params) {
       this.$refs.tableItem.queryTableData(params);
+    },
+
+    bindEvents() {
+      document.addEventListener("mousemove", this.onMouseMove, { passive: false });
+      document.addEventListener("mouseup", this.onMouseUp);
+      document.onselectstart = function() {
+        return false;
+      };
+    },
+    unbindEvents() {
+      document.removeEventListener("mousemove", this.onMouseMove, { passive: false });
+      document.removeEventListener("mouseup", this.onMouseUp);
+      document.onselectstart = null;
+    },
+    onMouseDown(event) {
+      this.bindEvents();
+      this.touch.mouseDown = true;
+    },
+
+    onMouseMove(event) {
+      if (this.touch.mouseDown) {
+        event.preventDefault();
+        this.touch.dragging = true;
+        this.leftWidth = this.getCurrentMouseDrag(event).x + "px";
+        console.log(this.getCurrentMouseDrag(event));
+      }
+    },
+
+    getCurrentMouseDrag(event) {
+      const rect = this.$refs.container.getBoundingClientRect();
+      const { clientX } = "ontouchstart" in window && event.touches ? event.touches[0] : event;
+
+      return {
+        x: clientX - rect.left
+      };
+    },
+
+    onMouseUp() {
+      this.touch.mouseDown = false;
+      setTimeout(() => {
+        this.touch.dragging = false;
+        this.unbindEvents();
+      }, 100);
     }
   },
 
   render() {
-    const { mode, leftWidth } = this;
+    const { mode, leftWidth, onMouseDown } = this;
 
     if (mode === 1) {
       return (
-        <div class="completeTableWrap">
-          <div class="" style={{ width: leftWidth }}>
+        <div class="completeTableWrap" ref="container">
+          <div class="contentleft" style={{ width: leftWidth }}>
             <treeItem ref="treeItem"></treeItem>
           </div>
+          {/* <div class="splitpanes__splitter" onmousedown={onMouseDown}></div> */}
           <div class="" style={{ width: `calc(100% - ${leftWidth})` }}>
             <tableItem ref="tableItem"></tableItem>
           </div>

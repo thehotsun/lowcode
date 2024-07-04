@@ -2,15 +2,17 @@ export function TreeAttrs() {
   return {
     isDataModel: false,
     defaultExpandAll: true,
-    expandOnClickNode: false,
+    expandOnClickNode: true,
     filter: false,
     showCheckbox: false,
+    accordion: false,
     lazy: false,
     width: "200",
     nodeKey: "",
     props: "",
     dataTransitionFn: "",
     filterFn: "",
+    loadFn: "",
     nodeClick: "",
     dataTransitionParentField: "",
     dataTransitionCurField: "",
@@ -19,6 +21,10 @@ export function TreeAttrs() {
     requestParamsConfig: {},
     requestType: "",
     style: "",
-    deliveryField: ""
+    deliveryField: "",
+    defaultCheckedKeys: "",
+    defaultExpandedKeys: "",
+    currentNodeKey: "",
+    iconClass: ""
   };
 }
