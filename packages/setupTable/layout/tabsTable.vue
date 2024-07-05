@@ -23,11 +23,11 @@ import TabsAttrDlg from "../components/dialogs/tabsAttrDlg";
 import previewDlg from "../components/dialogs/previewDlg.vue";
 
 import operate from "../components/operate.vue";
-import { TabsAttrs } from "/baseConfig/tabsAttrDlg";
+import { TabsAttrs } from "/baseConfig/tabsBaseConfigs";
 
 import { merge } from "lodash";
 export default {
-  components: { TableWidget, TreeWidget, TabsAttrDlg, operate, previewDlg },
+  components: { TableWidget, TabsAttrDlg, operate, previewDlg },
   props: {
     mode: {
       type: Number,

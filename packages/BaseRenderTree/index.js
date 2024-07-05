@@ -37,13 +37,13 @@ export default {
   },
   computed: {
     treeAttrs() {
-      const { treeOptions, defaultProps, filterNode } = this;
-      const { filter } = treeOptions;
+      const { treeOptions, filterNode } = this;
+      const { filter, propsChildren, propsLabel } = treeOptions;
 
       const baseField = ["lazy", "nodeKey", "showCheckbox", "expandOnClickNode", "defaultExpandAll", "accordion", "iconClass", "currentNodeKey"];
       const baseAttrs = pick(treeOptions, baseField);
 
-      const str2objFieldArr = ["props", "defaultCheckedKeys", "defaultExpandedKeys"];
+      const str2objFieldArr = ["defaultCheckedKeys", "defaultExpandedKeys"];
       const str2FnFieldArr = ["renderContent", "filterFn", "loadFn"];
 
       const transformObj = {};
@@ -58,7 +58,7 @@ export default {
         }
       });
 
-      const { props, renderContent, filterFn, loadFn, defaultExpandedKeys, defaultCheckedKeys } = transformObj;
+      const { renderContent, filterFn, loadFn, defaultExpandedKeys, defaultCheckedKeys } = transformObj;
       if (defaultExpandedKeys) {
         baseAttrs.defaultExpandedKeys = defaultExpandedKeys;
       }
@@ -67,7 +67,10 @@ export default {
         baseAttrs.defaultCheckedKeys = defaultCheckedKeys;
       }
 
-      baseAttrs.props = props || defaultProps;
+      baseAttrs.props = {
+        children: propsChildren,
+        label: propsLabel
+      };
       if (filter) {
         baseAttrs.filterNodeMethod = filterFn || filterNode;
       }

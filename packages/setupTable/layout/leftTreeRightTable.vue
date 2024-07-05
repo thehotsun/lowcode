@@ -116,7 +116,9 @@ export default {
       return this.saveListConfigJSON(
         {
           json: JSON.stringify(renderParams),
-          actionList
+          actionList,
+          treeSql: renderParams.treeOptions.treeSql,
+          treeOrderExpr: renderParams.treeOptions.treeOrderExpr
         },
         this.groupId
       ).then(data => {

@@ -21,7 +21,7 @@
 </template>
 
 <script>
-import { TabsAttrs } from "/baseConfig/tabsAttrDlg";
+import { TabsAttrs } from "/baseConfig/tabsBaseConfigs";
 
 import { cloneDeep } from "lodash";
 
