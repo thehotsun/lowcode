@@ -1,7 +1,7 @@
 <template>
-  <el-select :value="value" :disabled="disabled" clearable @clear="clearHandle">
+  <el-select :value="value" :disabled="disabled" clearable :size="size" @clear="clearHandle">
     <template slot="prefix">
-      <span class="icon-picker-selected" v-if="value !== '' && value != null">
+      <span v-if="value !== '' && value != null" class="icon-picker-selected">
         <i :class="value"></i>
       </span>
     </template>
@@ -20,10 +20,15 @@
 </template>
 
 <script>
-import icons from './icons.json'
+import { size } from "lodash";
+import icons from "./icons.json";
 
 export default {
-  name: "icon-picker",
+  name: "IconPicker",
+  model: {
+    prop: "value",
+    event: "change"
+  },
   props: {
     value: {
       type: String | null,
@@ -32,27 +37,30 @@ export default {
     disabled: {
       type: Boolean,
       default: false
+    },
+    size: {
+      type: String,
+      default() {
+        return "";
+      }
     }
   },
-  model: {
-    prop: 'value',
-    event: 'change'
-  },
-  data () {
+
+  data() {
     return {
       icons: icons
     };
   },
   methods: {
-    iconClick (className) {
-      this.$emit('change', className);
+    iconClick(className) {
+      this.$emit("change", className);
     },
 
-    clearHandle () {
-      this.$emit('change', '');
+    clearHandle() {
+      this.$emit("change", "");
     }
   }
-}
+};
 </script>
 
 <style scoped lang="less">
@@ -93,7 +101,7 @@ export default {
     border-radius: 7px;
   } */
 
-.icon-picker-option>div {
+.icon-picker-option > div {
   cursor: default;
 }
 
@@ -103,7 +111,7 @@ export default {
   padding: 0;
 }
 
-.icon-picker-option ul>li {
+.icon-picker-option ul > li {
   display: block;
   margin: 0;
   padding: 0;
@@ -116,12 +124,12 @@ export default {
   font-size: 16px;
 }
 
-.icon-picker-option ul>li:hover {
+.icon-picker-option ul > li:hover {
   color: #327edb;
   font-size: 18px;
 }
 
-.icon-picker-selected>i {
+.icon-picker-selected > i {
   color: #333333;
   line-height: 30px;
   margin-left: 6px;

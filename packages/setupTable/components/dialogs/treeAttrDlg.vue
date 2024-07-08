@@ -14,63 +14,84 @@
         </el-tab-pane>
         <el-tab-pane label="属性设置" name="second">
           <el-form ref="ruleForm" :model="treeAttrs" :rules="isDataModel ? rules1 : rules2" label-width="150px" style="padding-bottom: 20px">
-            <el-form-item label="指定nodeId" prop="nodeKey">
-              <el-tooltip slot="label" class="item" effect="dark" content="每个树节点用来作为唯一标识的属性，整棵树应该是唯一的" placement="top-start">
-                <span style="cursor: pointer;font-size: 14px">指定nodeId<i style="width: 20px" class="el-icon-question"></i></span>
-              </el-tooltip>
-              <!-- <el-select v-if="isDataModel" v-model="treeAttrs.nodeKey" size="small" placeholder="请选择">
+            <el-row>
+              <el-col :span="8">
+                <el-form-item label="指定nodeId" prop="nodeKey">
+                  <el-tooltip slot="label" class="item" effect="dark" content="每个树节点用来作为唯一标识的属性，整棵树应该是唯一的" placement="top-start">
+                    <span style="cursor: pointer;font-size: 14px">指定nodeId<i style="width: 20px" class="el-icon-question"></i></span>
+                  </el-tooltip>
+                  <!-- <el-select v-if="isDataModel" v-model="treeAttrs.nodeKey" size="small" placeholder="请选择">
                 <el-option v-for="item in deliveryFieldsOption.options" :key="item.id" :label="item.cnName" :value="item.id"> </el-option>
               </el-select> -->
-              <el-input v-model="treeAttrs.nodeKey" size="small" placeholder="请输入"></el-input>
-            </el-form-item>
-
-            <el-form-item label="指定nodeName" prop="propsLabel">
-              <el-tooltip slot="label" class="item" effect="dark" content="节点文本展示的字段值" placement="top-start">
-                <span style="cursor: pointer;font-size: 14px">指定nodeName<i style="width: 20px" class="el-icon-question"></i></span>
-              </el-tooltip>
-              <!-- <el-select v-if="isDataModel" v-model="treeAttrs.propsLabel" size="small" placeholder="请选择">
+                  <el-input v-model="treeAttrs.nodeKey" size="small" placeholder="请输入"></el-input>
+                </el-form-item>
+              </el-col>
+              <el-col :span="8">
+                <el-form-item label="指定nodeName" prop="propsLabel">
+                  <el-tooltip slot="label" class="item" effect="dark" content="节点文本展示的字段值" placement="top-start">
+                    <span style="cursor: pointer;font-size: 14px">指定nodeName<i style="width: 20px" class="el-icon-question"></i></span>
+                  </el-tooltip>
+                  <!-- <el-select v-if="isDataModel" v-model="treeAttrs.propsLabel" size="small" placeholder="请选择">
                 <el-option v-for="item in deliveryFieldsOption.options" :key="item.id" :label="item.cnName" :value="item.id"> </el-option>
               </el-select> -->
-              <el-input v-model="treeAttrs.propsLabel" size="small" placeholder="请输入"></el-input>
-            </el-form-item>
-
-            <el-form-item label="指定children" prop="propsChildren">
-              <el-tooltip slot="label" class="item" effect="dark" content="指定子树为节点对象的某个属性值" placement="top-start">
-                <span style="cursor: pointer;font-size: 14px">指定children<i style="width: 20px" class="el-icon-question"></i></span>
-              </el-tooltip>
-              <!-- <el-select v-if="isDataModel" v-model="treeAttrs.propsChildren" size="small" placeholder="请选择">
+                  <el-input v-model="treeAttrs.propsLabel" size="small" placeholder="请输入"></el-input>
+                </el-form-item>
+              </el-col>
+              <el-col :span="8">
+                <el-form-item label="指定children" prop="propsChildren">
+                  <el-tooltip slot="label" class="item" effect="dark" content="指定子树为节点对象的某个属性值" placement="top-start">
+                    <span style="cursor: pointer;font-size: 14px">指定children<i style="width: 20px" class="el-icon-question"></i></span>
+                  </el-tooltip>
+                  <!-- <el-select v-if="isDataModel" v-model="treeAttrs.propsChildren" size="small" placeholder="请选择">
                 <el-option v-for="item in deliveryFieldsOption.options" :key="item.id" :label="item.cnName" :value="item.id"> </el-option>
               </el-select> -->
-              <el-input v-model="treeAttrs.propsChildren" size="small" placeholder="请输入"></el-input>
-            </el-form-item>
+                  <el-input v-model="treeAttrs.propsChildren" size="small" placeholder="请输入"></el-input>
+                </el-form-item>
+              </el-col>
+            </el-row>
 
-            <el-form-item label="当前选中">
-              <el-tooltip slot="label" class="item" effect="dark" content="匹配中的值会高亮,这里应该是你想当前选中节点的nodeId的值" placement="top-start">
-                <span style="cursor: pointer;font-size: 14px">当前选中<i style="width: 20px" class="el-icon-question"></i></span>
-              </el-tooltip>
-              <el-input v-model="treeAttrs.currentNodeKey" size="small" placeholder="请输入类似5格式， 其中5是当前选中的nodeId的值"></el-input>
-            </el-form-item>
+            <el-row>
+              <el-col :span="8">
+                <el-form-item label="当前选中">
+                  <el-tooltip slot="label" class="item" effect="dark" content="匹配中的值会高亮,这里应该是你想当前选中节点的nodeId的值" placement="top-start">
+                    <span style="cursor: pointer;font-size: 14px">当前选中<i style="width: 20px" class="el-icon-question"></i></span>
+                  </el-tooltip>
+                  <el-input v-model="treeAttrs.currentNodeKey" size="small" placeholder="请输入类似5格式， 其中5是当前选中的nodeId的值"></el-input>
+                </el-form-item>
+              </el-col>
+              <el-col :span="8">
+                <el-form-item label="默认展开">
+                  <el-tooltip slot="label" class="item" effect="dark" content="默认展开的节点的nodeId的数组" placement="top-start">
+                    <span style="cursor: pointer;font-size: 14px">默认展开<i style="width: 20px" class="el-icon-question"></i></span>
+                  </el-tooltip>
+                  <el-input v-model="treeAttrs.defaultExpandedKeys" size="small" placeholder="请输入类似[2, 3]格式， 其中2和3是默认展开的nodeId的值"></el-input>
+                </el-form-item>
+              </el-col>
+              <el-col :span="8">
+                <el-form-item label="自定义图标">
+                  <el-tooltip slot="label" class="fontSize14" effect="dark" content="如果选择图标，则会替换原本▶的icon" placement="top-start">
+                    <span style="font-size: 14px;">自定义图标<i style="width: 20px; font-size: 14px;" class="el-icon-question"></i></span>
+                  </el-tooltip>
+                  <icon-picker v-model="treeAttrs.iconClass" size="small"></icon-picker>
+                </el-form-item>
+              </el-col>
+            </el-row>
 
-            <el-form-item label="默认展开">
-              <el-tooltip slot="label" class="item" effect="dark" content="默认展开的节点的nodeId的数组" placement="top-start">
-                <span style="cursor: pointer;font-size: 14px">当前选中<i style="width: 20px" class="el-icon-question"></i></span>
-              </el-tooltip>
-              <el-input v-model="treeAttrs.defaultExpandedKeys" size="small" placeholder="请输入类似[2, 3]格式， 其中2和3是默认展开的nodeId的值"></el-input>
-            </el-form-item>
-
-            <el-form-item label="" prop="props">
-              <el-tooltip slot="label" class="item" effect="dark" content="单位支持px和%，不填单位默认px" placement="top-start">
-                <span style="cursor: pointer;font-size: 14px">宽度（px|%）<i style="width: 20px" class="el-icon-question"></i></span>
-              </el-tooltip>
-              <el-input v-model="treeAttrs.width" size="small" placeholder="请输入宽度"></el-input>
-            </el-form-item>
-
-            <el-form-item label="自定义图标">
-              <el-tooltip slot="label" class="fontSize14" effect="dark" content="如果选择图标，则会替换原本▶的icon" placement="top-start">
-                <span style="font-size: 14px;">自定义图标<i style="width: 20px; font-size: 14px;" class="el-icon-question"></i></span>
-              </el-tooltip>
-              <icon-picker v-model="treeAttrs.iconClass"></icon-picker>
-            </el-form-item>
+            <el-row>
+              <el-col :span="8">
+                <el-form-item label="" prop="props">
+                  <el-tooltip slot="label" class="item" effect="dark" content="单位支持px和%，不填单位默认px" placement="top-start">
+                    <span style="cursor: pointer;font-size: 14px">宽度（px|%）<i style="width: 20px" class="el-icon-question"></i></span>
+                  </el-tooltip>
+                  <el-input v-model="treeAttrs.width" size="small" placeholder="请输入宽度"></el-input>
+                </el-form-item>
+              </el-col>
+              <el-col :span="16">
+                <el-form-item label="自定义样式" prop="style">
+                  <el-input v-model="treeAttrs.style" size="small" placeholder="请输入样式"></el-input>
+                </el-form-item>
+              </el-col>
+            </el-row>
 
             <el-form-item label="基础配置" prop="showCheckbox">
               <el-checkbox v-model="treeAttrs.showCheckbox">复选框</el-checkbox>
@@ -92,10 +113,6 @@
                   <span style="cursor: pointer;font-size: 14px">手风琴模式<i style="width: 20px" class="el-icon-question"></i></span>
                 </el-checkbox>
               </el-tooltip>
-            </el-form-item>
-
-            <el-form-item label="自定义样式" prop="style">
-              <el-input v-model="treeAttrs.style" size="small" type="textarea" :rows="2" placeholder="请输入样式"></el-input>
             </el-form-item>
 
             <el-form-item v-if="treeAttrs.showCheckbox" label="默认选中">
@@ -144,13 +161,15 @@
                 <span style="cursor: pointer;font-size: 14px">数据转换配置<i style="width: 20px" class="el-icon-question"></i></span>
               </el-tooltip>
               <span>父级id字段：</span>
-              <el-select v-model="treeAttrs.dataTransitionParentField" size="small" placeholder="请选择">
+              <el-input v-model="treeAttrs.dataTransitionParentField" size="small" placeholder="请输入" class="w315"></el-input>
+              <!-- <el-select v-model="treeAttrs.dataTransitionParentField" size="small" placeholder="请选择">
                 <el-option v-for="item in deliveryFieldsOption.options" :key="item.id" :label="item.cnName" :value="item.id"> </el-option>
-              </el-select>
+              </el-select> -->
               <span>id字段：</span>
-              <el-select v-model="treeAttrs.dataTransitionCurField" size="small" placeholder="请选择">
+              <!-- <el-select v-model="treeAttrs.dataTransitionCurField" size="small" placeholder="请选择">
                 <el-option v-for="item in deliveryFieldsOption.options" :key="item.id" :label="item.cnName" :value="item.id"> </el-option>
-              </el-select>
+              </el-select> -->
+              <el-input v-model="treeAttrs.dataTransitionCurField" size="small" placeholder="请输入" class="w315"></el-input>
             </el-form-item>
 
             <el-form-item label="渲染函数">
@@ -302,9 +321,11 @@ export default {
   margin-right: 5px;
 }
 ::v-deep .el-form-item {
-  margin-bottom: 5px;
+  margin-bottom: 10px;
 }
-
+.w315 {
+  width: 319px;
+}
 ::v-deep .el-form-item__error {
   top: 78%;
 }
