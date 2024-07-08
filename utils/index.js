@@ -845,6 +845,21 @@ export function arrayToTree(data, idField = "id", parentField = "parentId") {
   return root;
 }
 
+export function findInTree(tree, fieldName, value) {
+  for (const node of tree) {
+    if (node[fieldName] === value) {
+      return node;
+    }
+    if (node.children) {
+      const result = findInTree(node.children, fieldName, value);
+      if (result) {
+        return result;
+      }
+    }
+  }
+  return null;
+}
+
 export default {
   setPlaceholder,
   completeFromItemOptions,
@@ -874,5 +889,6 @@ export default {
   formatterWidthOrHeightStyle,
   setEmptyTableData,
   mergeStyle,
-  arrayToTree
+  arrayToTree,
+  findInTree
 };

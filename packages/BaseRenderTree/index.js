@@ -1,6 +1,6 @@
 import "./index.less";
 import { pick } from "lodash";
-import { str2obj, str2Fn } from "/utils";
+import { str2obj, str2Fn, findInTree } from "/utils";
 import emitter from "/utils/emitter";
 
 export default {
@@ -108,6 +108,12 @@ export default {
         };
       }
       console.log(baseAttrs, "baseAttrs");
+      if (baseAttrs.currentNodeKey) {
+        const data = findInTree(this.treeData, baseAttrs.nodeKey, baseAttrs.currentNodeKey);
+        setTimeout(() => {
+          this.treeListeners["node-click"](data);
+        }, 300);
+      }
       return baseAttrs;
     },
 
@@ -155,9 +161,7 @@ export default {
       return data[this.labelField].indexOf(value) !== -1;
     },
     treeNodeClick(data) {
-      this.dispatch("CompleteTable", "refreshTable", {
-        [this.treeOptions.deliveryField]: data[this.treeOptions.deliveryField]
-      });
+      this.dispatch("CompleteTable", "refreshTable", data, data[this.treeOptions.deliveryField]);
     }
   },
   render() {

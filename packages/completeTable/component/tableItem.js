@@ -341,7 +341,7 @@ export default {
       this.expose_hideDialog();
     },
 
-    async init(isPreview, json, externalParams) {
+    async init(isPreview, json, externalParams, externalTriggerQueryTableData) {
       this.resetAllData();
       await this.$nextTick();
       this.previewMode = !!isPreview;
@@ -369,14 +369,16 @@ export default {
         } catch (error) {
           console.error(error);
         }
-        if (externalParams && isObj) {
-          this.refreshData({ ...externalParams, ...jumpParams });
-        } else if (externalParams) {
-          this.refreshData(externalParams);
-        } else if (isObj) {
-          this.refreshData(jumpParams);
-        } else {
-          this.queryTableData();
+        if (!externalTriggerQueryTableData) {
+          if (externalParams && isObj) {
+            this.refreshData({ ...externalParams, ...jumpParams });
+          } else if (externalParams) {
+            this.refreshData(externalParams);
+          } else if (isObj) {
+            this.refreshData(jumpParams);
+          } else {
+            this.queryTableData();
+          }
         }
       }
       setTimeout(() => {

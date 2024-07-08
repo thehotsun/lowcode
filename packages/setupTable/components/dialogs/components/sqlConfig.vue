@@ -37,6 +37,10 @@ export default {
       type: String,
       default: "sql"
     },
+    needOrderExpr: {
+      type: Boolean,
+      default: false
+    },
     orderExprField: {
       type: String,
       default: "orderExpr"

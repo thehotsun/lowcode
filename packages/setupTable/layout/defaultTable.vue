@@ -31,6 +31,8 @@ export default {
   inject: ["saveListConfigJSON"],
   methods: {
     async init(id = "", formCode) {
+      this.groupId = id;
+      this.formCode = formCode;
       this.$refs.TableWidget.init(id, formCode);
     },
     showTableAttrs() {

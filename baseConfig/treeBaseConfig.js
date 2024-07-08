@@ -22,7 +22,6 @@ export function TreeAttrs() {
     requestType: "",
     requestParamsConfig: {},
     treeSql: "",
-    treeOrderExpr: "",
     style: "",
     deliveryField: "",
     defaultCheckedKeys: "",

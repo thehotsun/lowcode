@@ -117,8 +117,7 @@ export default {
         {
           json: JSON.stringify(renderParams),
           actionList,
-          treeSql: renderParams.treeOptions.treeSql,
-          treeOrderExpr: renderParams.treeOptions.treeOrderExpr
+          treeSql: renderParams.treeOptions.treeSql
         },
         this.groupId
       ).then(data => {

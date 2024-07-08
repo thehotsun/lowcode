@@ -106,7 +106,7 @@ export default {
       if (tree.width) {
         this.leftWidth = formatterWidthOrHeightStyle(tree.width);
       }
-      this.$refs.tableItem.init(isPreview, tableOptions, externalParams);
+      this.$refs.tableItem.init(isPreview, tableOptions, externalParams, true);
       this.$refs.treeItem.init(isPreview, tree, externalParams);
     },
     async defaultInit(isPreview, json, externalParams) {
@@ -141,8 +141,8 @@ export default {
     initEventHandler() {
       this.$on("refreshTable", this.dispatcher);
     },
-    dispatcher(params) {
-      this.$refs.tableItem.queryTableData(params);
+    dispatcher(allData, primaryKeyValue) {
+      this.$refs.tableItem.queryTableData(allData);
     },
 
     bindEvents() {

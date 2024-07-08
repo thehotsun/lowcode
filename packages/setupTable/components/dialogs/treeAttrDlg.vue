@@ -18,30 +18,30 @@
               <el-tooltip slot="label" class="item" effect="dark" content="每个树节点用来作为唯一标识的属性，整棵树应该是唯一的" placement="top-start">
                 <span style="cursor: pointer;font-size: 14px">指定nodeId<i style="width: 20px" class="el-icon-question"></i></span>
               </el-tooltip>
-              <el-select v-if="isDataModel" v-model="treeAttrs.nodeKey" size="small" placeholder="请选择">
+              <!-- <el-select v-if="isDataModel" v-model="treeAttrs.nodeKey" size="small" placeholder="请选择">
                 <el-option v-for="item in deliveryFieldsOption.options" :key="item.id" :label="item.cnName" :value="item.id"> </el-option>
-              </el-select>
-              <el-input v-else v-model="treeAttrs.nodeKey" size="small" placeholder="请输入"></el-input>
+              </el-select> -->
+              <el-input v-model="treeAttrs.nodeKey" size="small" placeholder="请输入"></el-input>
             </el-form-item>
 
             <el-form-item label="指定nodeName" prop="propsLabel">
               <el-tooltip slot="label" class="item" effect="dark" content="节点文本展示的字段值" placement="top-start">
                 <span style="cursor: pointer;font-size: 14px">指定nodeName<i style="width: 20px" class="el-icon-question"></i></span>
               </el-tooltip>
-              <el-select v-if="isDataModel" v-model="treeAttrs.propsLabel" size="small" placeholder="请选择">
+              <!-- <el-select v-if="isDataModel" v-model="treeAttrs.propsLabel" size="small" placeholder="请选择">
                 <el-option v-for="item in deliveryFieldsOption.options" :key="item.id" :label="item.cnName" :value="item.id"> </el-option>
-              </el-select>
-              <el-input v-else v-model="treeAttrs.propsLabel" size="small" placeholder="请输入"></el-input>
+              </el-select> -->
+              <el-input v-model="treeAttrs.propsLabel" size="small" placeholder="请输入"></el-input>
             </el-form-item>
 
             <el-form-item label="指定children" prop="propsChildren">
               <el-tooltip slot="label" class="item" effect="dark" content="指定子树为节点对象的某个属性值" placement="top-start">
                 <span style="cursor: pointer;font-size: 14px">指定children<i style="width: 20px" class="el-icon-question"></i></span>
               </el-tooltip>
-              <el-select v-if="isDataModel" v-model="treeAttrs.propsChildren" size="small" placeholder="请选择">
+              <!-- <el-select v-if="isDataModel" v-model="treeAttrs.propsChildren" size="small" placeholder="请选择">
                 <el-option v-for="item in deliveryFieldsOption.options" :key="item.id" :label="item.cnName" :value="item.id"> </el-option>
-              </el-select>
-              <el-input v-else v-model="treeAttrs.propsChildren" size="small" placeholder="请输入"></el-input>
+              </el-select> -->
+              <el-input v-model="treeAttrs.propsChildren" size="small" placeholder="请输入"></el-input>
             </el-form-item>
 
             <el-form-item label="当前选中">
@@ -67,7 +67,7 @@
 
             <el-form-item label="自定义图标">
               <el-tooltip slot="label" class="fontSize14" effect="dark" content="如果选择图标，则会替换原本▶的icon" placement="top-start">
-                <span>自定义图标<i style="width: 20px" class="el-icon-question"></i></span>
+                <span style="font-size: 14px;">自定义图标<i style="width: 20px; font-size: 14px;" class="el-icon-question"></i></span>
               </el-tooltip>
               <icon-picker v-model="treeAttrs.iconClass"></icon-picker>
             </el-form-item>
@@ -141,7 +141,7 @@
                 content="由于当前通过sql查询很难直接生成树形结构所需的数据结构，因为通过配置父子字段进行数据关联生成树状结构（优先级最比数据转换函数低）"
                 placement="top-start"
               >
-                <span style="cursor: pointer;font-size: 14px">数据转换配置</span>
+                <span style="cursor: pointer;font-size: 14px">数据转换配置<i style="width: 20px" class="el-icon-question"></i></span>
               </el-tooltip>
               <span>父级id字段：</span>
               <el-select v-model="treeAttrs.dataTransitionParentField" size="small" placeholder="请选择">
@@ -184,7 +184,7 @@
     </span>
     <el-dialog :before-close="handleClose" :title="codeEditorTil" :visible="showCodeEditor" width="900px" :append-to-body="true">
       <js-code-editor ref="chEditor" mode="javascript" :readonly="false" :value="treeAttrs[curFn]" @input="handleEditorInput"></js-code-editor>
-      <!-- <codeExample></codeExample> -->
+      <codeExample :val="treeAttrsCodeExampleList[curFn]" @copy="handleCopy"></codeExample>
     </el-dialog>
   </el-dialog>
 </template>
@@ -194,11 +194,14 @@ import { TreeAttrs } from "/baseConfig/treeBaseConfig";
 import IconPicker from "../setupBtnConfig/components/iconPicker";
 import { cloneDeep } from "lodash";
 import treeConfig from "./components/treeConfig.vue";
+import codeExample from "./components/codeExample.vue";
+import { treeAttrsCodeExampleList } from "/utils/codeExampleList";
 
 export default {
   components: {
     IconPicker,
-    treeConfig
+    treeConfig,
+    codeExample
   },
   data() {
     return {
@@ -220,7 +223,8 @@ export default {
       },
       deliveryFieldsOption: {
         options: []
-      }
+      },
+      treeAttrsCodeExampleList
     };
   },
 
@@ -238,6 +242,14 @@ export default {
     },
     handleCloseTreeAttrs() {
       this.dialogVisibleTreeAttrs = false;
+    },
+    async handleCopy(val) {
+      this.treeAttrs[this.curFn] = val;
+      await this.$nextTick();
+      this.$refs.chEditor.aceEditor.setOptions({
+        value: this.treeAttrs[this.curFn]
+      });
+      this.$refs.chEditor.codeValue = this.treeAttrs[this.curFn];
     },
     async handleShow(field, codeEditorTil) {
       this.curFn = field;

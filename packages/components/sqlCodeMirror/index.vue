@@ -135,7 +135,7 @@ export default {
 <style lang="less">
 .codemirror {
   .ace-editor {
-    height: 600px !important;
+    height: 300px !important;
   }
 
   .ace-sqlserver .ace_print-margin {
