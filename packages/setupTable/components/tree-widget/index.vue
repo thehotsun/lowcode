@@ -7,7 +7,6 @@
 </template>
 
 <script>
-import { merge, pick } from "lodash";
 import BaseRenderTree from "/packages/BaseRenderTree";
 export default {
   name: "TreeWidget",
@@ -24,19 +23,21 @@ export default {
     return {
       initiated: false,
       treeData: [
-        { label: "一级 1", s: "1", children: [{ label: "二级 1-1", s: "11", children: [{ label: "三级 1-1-1", s: "111" }] }] },
+        { label: "一级 1", id: "1", children: [{ label: "二级 1-1", id: "11", children: [{ label: "三级 1-1-1", id: "111" }] }] },
         {
           label: "一级 2",
+          id: "2",
           children: [
-            { label: "二级 2-1", children: [{ label: "三级 2-1-1" }] },
-            { label: "二级 2-2", children: [{ label: "三级 2-2-1" }] }
+            { label: "二级 2-1", id: "21", children: [{ label: "三级 2-1-1", id: "211" }] },
+            { label: "二级 2-2", id: "22", children: [{ label: "三级 2-2-1", id: "221" }] }
           ]
         },
         {
           label: "一级 3",
+          id: "3",
           children: [
-            { label: "二级 3-1", children: [{ label: "三级 3-1-1" }] },
-            { label: "二级 3-2", children: [{ label: "三级 3-2-1" }] }
+            { label: "二级 3-1", id: "31", children: [{ label: "三级 3-1-1", id: "311" }] },
+            { label: "二级 3-2", id: "32", children: [{ label: "三级 3-2-1", id: "321" }] }
           ]
         }
       ],
@@ -54,6 +55,8 @@ export default {
         this.$nextTick(() => {
           this.initiated = true;
         });
+      } else {
+        this.initiated = true;
       }
     },
 
