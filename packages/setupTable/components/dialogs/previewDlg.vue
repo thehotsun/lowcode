@@ -1,6 +1,6 @@
 <template>
   <el-dialog title="预览" :visible.sync="dialogVisiblePreview" :close-on-click-modal="false" :close-on-press-escape="false" width="90%" :before-close="handleClosePreview">
-    <complete-table ref="table" class="preview" style="height:650px" :general-request="generalRequest"> </complete-table>
+    <complete-table ref="table" :key="random" class="preview" style="height:650px" :general-request="generalRequest"> </complete-table>
   </el-dialog>
 </template>
 
@@ -12,7 +12,8 @@ export default {
   data() {
     return {
       dialogVisiblePreview: false,
-      generalRequest: null
+      generalRequest: null,
+      random: +new Date()
     };
   },
   inject: ["generalRequest"],
@@ -24,6 +25,7 @@ export default {
     // 预览状态下，外部组件调用此方法
     showDlg(renderParams) {
       this.dialogVisiblePreview = true;
+      this.random = +new Date();
       this.$nextTick(() => this.$refs.table.expose_preview(renderParams));
     }
   }

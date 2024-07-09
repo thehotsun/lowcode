@@ -4,7 +4,7 @@
     :visible.sync="dialogVisibleTreeAttrs"
     :close-on-click-modal="false"
     :close-on-press-escape="false"
-    width="960px"
+    width="1160px"
     :before-close="handleCloseTreeAttrs"
   >
     <div style="min-width: 60px;background: #fff;padding: 10px;">
@@ -32,6 +32,12 @@
               <el-tooltip class="item" effect="dark" content="是否每次只打开一个同级树节点展开" placement="top-start">
                 <el-checkbox v-model="treeAttrs.accordion">
                   <span style="cursor: pointer;font-size: 14px">手风琴模式<i style="width: 20px" class="el-icon-question"></i></span>
+                </el-checkbox>
+              </el-tooltip>
+
+              <el-tooltip class="item" effect="dark" content="是否第一个节点高亮，比默认选中优先级低" placement="top-start">
+                <el-checkbox v-model="treeAttrs.currentNodeKeyFirst">
+                  <span style="cursor: pointer;font-size: 14px">默认第一个节点高亮<i style="width: 20px" class="el-icon-question"></i></span>
                 </el-checkbox>
               </el-tooltip>
             </el-form-item>
@@ -108,14 +114,6 @@
                 </el-form-item>
               </el-col>
               <el-col :span="8">
-                <el-form-item label="自定义样式" prop="style">
-                  <el-tooltip slot="label" class="item" effect="dark" content="应用到整个区域（包括输入框）的外层" placement="top-start">
-                    <span style="cursor: pointer;font-size: 14px">自定义样式<i style="width: 20px" class="el-icon-question"></i></span>
-                  </el-tooltip>
-                  <el-input v-model="treeAttrs.style" clearable size="small" placeholder="请输入样式"></el-input>
-                </el-form-item>
-              </el-col>
-              <el-col :span="8">
                 <el-form-item label="自定义图标">
                   <el-tooltip slot="label" class="fontSize14" effect="dark" content="如果选择图标，则会替换原本▶的icon" placement="top-start">
                     <span style="font-size: 14px;">自定义图标<i style="width: 20px; font-size: 14px;" class="el-icon-question"></i></span>
@@ -124,6 +122,13 @@
                 </el-form-item>
               </el-col>
             </el-row>
+
+            <el-form-item label="自定义样式" prop="style">
+              <el-tooltip slot="label" class="item" effect="dark" content="应用到整个区域（包括输入框）的外层" placement="top-start">
+                <span style="cursor: pointer;font-size: 14px">自定义样式<i style="width: 20px" class="el-icon-question"></i></span>
+              </el-tooltip>
+              <el-input v-model="treeAttrs.style" clearable size="small" placeholder="请输入样式"></el-input>
+            </el-form-item>
 
             <el-form-item v-if="treeAttrs.lazy" label="懒加载函数">
               <el-input

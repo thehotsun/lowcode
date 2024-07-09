@@ -18,7 +18,7 @@
     </el-form-item>
 
     <el-form-item v-if="!form.isDataModel" :label="requestUrlLabel">
-      <el-input v-model="form[requestUrlField]" clearable style="width: 201px" placeholder="请输入接口地址"></el-input>
+      <el-input v-model="form[requestUrlField]" clearable placeholder="请输入接口地址"></el-input>
       <el-button type="text" @click="handleRequestParamsConfigEdit"> 编辑请求 </el-button>
     </el-form-item>
     <el-form-item v-if="!form.isDataModel" :label="requestTypeLabel">

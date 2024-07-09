@@ -19,7 +19,7 @@ export default {
         return [];
       }
     },
-    preview: {
+    isPreview: {
       type: Boolean,
       default() {
         return;
@@ -32,16 +32,19 @@ export default {
       defaultProps: {
         children: "children",
         label: "label"
-      }
+      },
+      currentNodeKey: ""
     };
   },
   computed: {
     treeAttrs() {
       const { treeOptions, filterNode } = this;
-      const { filter, propsChildren, propsLabel } = treeOptions;
+      const { filter, propsChildren, propsLabel, currentNodeKey } = treeOptions;
 
-      const baseField = ["lazy", "nodeKey", "showCheckbox", "expandOnClickNode", "defaultExpandAll", "accordion", "iconClass", "currentNodeKey"];
+      const baseField = ["lazy", "nodeKey", "showCheckbox", "expandOnClickNode", "defaultExpandAll", "accordion", "iconClass"];
+
       const baseAttrs = pick(treeOptions, baseField);
+      baseAttrs.currentNodeKey = currentNodeKey || this.currentNodeKey;
 
       const str2objFieldArr = ["defaultCheckedKeys", "defaultExpandedKeys"];
       const str2FnFieldArr = ["renderContent", "filterFn", "loadFn"];
@@ -108,12 +111,6 @@ export default {
         };
       }
       console.log(baseAttrs, "baseAttrs");
-      if (baseAttrs.currentNodeKey) {
-        const data = findInTree(this.treeData, baseAttrs.nodeKey, baseAttrs.currentNodeKey);
-        setTimeout(() => {
-          this.treeListeners["node-click"](data);
-        }, 300);
-      }
       return baseAttrs;
     },
 
@@ -138,21 +135,48 @@ export default {
       });
 
       const { nodeClick } = transformObj;
-      if (!this.preview) {
+      if (!this.isPreview) {
         listeners["node-click"] = nodeClick || treeNodeClick;
       }
       return listeners;
     },
     finalTreeData() {
+      let data;
       if (this.dataTransitionFn) {
-        return this.dataTransitionFn(this.treeData);
+        data = this.dataTransitionFn(this.treeData);
+      } else {
+        data = this.treeData;
       }
-      return this.treeData;
+      const { currentNodeKeyFirst, currentNodeKey, nodeKey } = this.treeOptions;
+
+      if (!currentNodeKey && currentNodeKeyFirst) {
+        console.log(data, "finalTreeData");
+        this.$nextTick(() => {
+          console.log(this.$refs.tree, "this.$refs.tree");
+          this.$refs.tree.setCurrentKey(data[0][nodeKey]);
+        });
+      }
+      return data;
     }
   },
   watch: {
     filterText(val) {
       this.$refs.tree.filter(val);
+    },
+    finalTreeData: {
+      handler() {
+        const {
+          treeOptions: { currentNodeKey, currentNodeKeyFirst, nodeKey },
+          treeData,
+          isPreview
+        } = this;
+        if ((currentNodeKey || currentNodeKeyFirst) && !isPreview) {
+          const data = findInTree(treeData, nodeKey, currentNodeKey);
+          setTimeout(() => {
+            this.treeListeners["node-click"](data);
+          }, 300);
+        }
+      }
     }
   },
   methods: {

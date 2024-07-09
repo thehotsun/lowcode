@@ -7,6 +7,7 @@ export function TreeAttrs() {
     showCheckbox: false,
     accordion: false,
     lazy: false,
+    currentNodeKeyFirst: false,
     width: "200",
     nodeKey: "id",
     propsLabel: "label",
