@@ -1,5 +1,5 @@
 import { requestTypeList } from "/baseConfig/btnBaseConfig";
-import { addQueryString, transformParamsValue } from "/utils";
+import { addQueryString, transformParamsValue, arrayToTree } from "/utils";
 export default {
   data() {
     return {
@@ -88,12 +88,44 @@ export default {
     },
     async disposeRequestEvent() {
       const { finalUrl, finalType, finalData, headers } = this.getRequestConfig();
+      if (!finalUrl) return { message: "接口没有设置url" };
       const requestHeaders = {};
       headers.map(item => {
         const headerFieldNameRegex = /^[\w-]+$/;
         if (headerFieldNameRegex.test(item.name)) requestHeaders[item.name] = item.value;
       });
       return await this.generalRequest(finalUrl, finalType, finalData, requestHeaders);
+    },
+    queryTreeData(data = {}, isReturn) {
+      const params = this.getParams(data);
+      const { isDataModel } = this.treeOptions;
+      return (isDataModel ? this.requestTreeData : this.disposeRequestEvent)(params)
+        .then(res => {
+          if (res.result === "0") {
+            let data = res.data;
+            if (isDataModel) {
+              data = arrayToTree(data);
+            }
+            if (isReturn) {
+              return data;
+            } else {
+              this.treeData = res.data;
+            }
+          } else {
+            console.error(`queryTreeData message: ${res.message}`);
+          }
+        })
+        .catch(e => {
+          console.error(`queryTreeData error: ${e}`);
+          throw new Error(e);
+        });
+    },
+    getTreeData() {
+      return this.treeData;
+    },
+
+    getTreeOptions() {
+      return this.treeOptions;
     }
   }
 };

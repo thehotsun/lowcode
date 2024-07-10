@@ -15,6 +15,11 @@
 
     <el-form-item v-if="form.isDataModel" :label="sqlLabel" :prop="sqlField">
       <sql-code-editor ref="chEditor" v-model="form[sqlField]" mode="javascript" />
+      <div>
+        说明：<br />
+        (1) sql请求返回的字段必须有id,pid,children这三个字段<br />
+        (2) 顶级数据的pid可为0或者null
+      </div>
     </el-form-item>
 
     <el-form-item v-if="!form.isDataModel" :label="requestUrlLabel">

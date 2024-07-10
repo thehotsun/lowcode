@@ -158,7 +158,7 @@
                 @focus="handleShow('dataTransitionFn', '数据转换函数', $event)"
               ></el-input>
             </el-form-item>
-            <el-form-item v-if="isDataModel" label="数据转换配置">
+            <el-form-item v-if="false" label="数据转换配置">
               <el-tooltip
                 slot="label"
                 class="item"

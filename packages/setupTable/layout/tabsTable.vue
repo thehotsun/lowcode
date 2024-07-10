@@ -29,10 +29,10 @@ import { merge } from "lodash";
 export default {
   components: { TableWidget, TabsAttrDlg, operate, previewDlg },
   props: {
-    mode: {
-      type: Number,
+    pageLayout: {
+      type: String,
       default() {
-        return 1;
+        return "tabs-table";
       }
     }
   },
@@ -99,7 +99,7 @@ export default {
       return {
         tabTableOptionsArr,
         tabsOptions: this.tabsOptions,
-        mode: this.mode
+        pageLayout: this.pageLayout
       };
     },
     // 保存按钮事件

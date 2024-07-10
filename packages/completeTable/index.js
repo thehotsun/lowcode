@@ -19,7 +19,7 @@ export default {
 
   data() {
     return {
-      mode: 0,
+      pageLayout: "table",
       leftWidth: "200px",
       touch: {
         mouseDown: false,
@@ -63,13 +63,13 @@ export default {
     },
 
     async expose_preview(data) {
-      const { treeOptions = {}, mode = 0, ...tableOptions } = data;
-      this.mode = mode;
+      const { treeOptions = {}, pageLayout = "table", ...tableOptions } = data;
+      this.pageLayout = pageLayout;
       await this.$nextTick();
-      if (mode === 1) {
+      if (pageLayout === "tree-table") {
         this.$refs.tableItem.expose_preview(tableOptions);
         this.$refs.treeItem.expose_preview(treeOptions);
-      } else if (mode === 2) {
+      } else if (pageLayout === "tabs-table") {
         console.log();
       } else {
         this.$refs.tableItem.expose_preview(tableOptions);
@@ -79,17 +79,17 @@ export default {
       if (!json || isEmpty(json)) {
         json = await this.queryTableConfig();
       }
-      const { mode = 0 } = json;
-      this.mode = mode;
+      const { pageLayout = "table" } = json;
+      this.pageLayout = pageLayout;
       await this.$nextTick();
-      switch (this.mode) {
-        case 0:
+      switch (this.pageLayout) {
+        case "table":
           this.defaultInit(isPreview, json, externalParams);
           break;
-        case 1:
+        case "tree-table":
           this.leftTreeRightTableInit(isPreview, json, externalParams);
           break;
-        case 2:
+        case "tabs-table":
           this.tabsTableInit(isPreview, json, externalParams);
           break;
         default:
@@ -190,21 +190,21 @@ export default {
   },
 
   render() {
-    const { mode, leftWidth, onMouseDown, tabs, activeName } = this;
+    const { pageLayout, leftWidth, onMouseDown, tabs, activeName } = this;
 
-    if (mode === 1) {
+    if (pageLayout === "tree-table") {
       return (
         <div class="completeTableWrap" ref="container">
           <div class="contentleft" style={{ width: leftWidth }}>
             <treeItem ref="treeItem"></treeItem>
           </div>
-          {/* <div class="splitpanes__splitter" onmousedown={onMouseDown}></div> */}
-          <div class="" style={{ width: `calc(100% - ${leftWidth})` }}>
+          <div class="splitpanes__splitter" onmousedown={onMouseDown}></div>
+          <div class="" style={{ width: `calc(100% - ${leftWidth} - 7px)` }}>
             <tableItem ref="tableItem"></tableItem>
           </div>
         </div>
       );
-    } else if (mode === 2) {
+    } else if (pageLayout === "tabs-table") {
       return (
         <el-tabs v-model={activeName}>
           {tabs.map((tab, index) => (

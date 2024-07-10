@@ -33,10 +33,10 @@ import { merge } from "lodash";
 export default {
   components: { TableWidget, TreeWidget, TreeAttrDlg, operate, previewDlg },
   props: {
-    mode: {
-      type: Number,
+    pageLayout: {
+      type: String,
       default() {
-        return 1;
+        return "table";
       }
     }
   },
@@ -97,7 +97,7 @@ export default {
       return {
         ...tablejson,
         treeOptions: this.treeOptions,
-        mode: this.mode
+        pageLayout: this.pageLayout
       };
     },
     // 保存按钮事件

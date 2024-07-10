@@ -815,7 +815,7 @@ export function mergeStyle(style = "", styleForm) {
   return style + str;
 }
 
-export function arrayToTree(data, idField = "id", parentField = "parentId") {
+export function arrayToTree(data, idField = "id", parentField = "pid") {
   // 创建一个哈希表，存储每个节点
   const idMapping = data.reduce((acc, el, i) => {
     acc[el[idField]] = i;
@@ -825,7 +825,7 @@ export function arrayToTree(data, idField = "id", parentField = "parentId") {
   const root = [];
   data.forEach(el => {
     // 如果是根节点（没有父节点），将其加入根节点数组
-    if (el[parentField] === null) {
+    if ([null, 0].includes(el[parentField])) {
       root.push(el);
       return;
     }

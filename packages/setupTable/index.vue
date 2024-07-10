@@ -1,8 +1,8 @@
 <template>
   <div class="flexWrap">
-    <defaultTable v-if="mode === 0" :ref="refDic['0']"> </defaultTable>
-    <leftTreeRightTable v-if="mode === 1" :ref="refDic['1']"></leftTreeRightTable>
-    <tabsTable v-if="mode === 2" :ref="refDic['2']"></tabsTable>
+    <defaultTable v-if="pageLayout === 'table'" ref="table"> </defaultTable>
+    <leftTreeRightTable v-if="pageLayout === 'tree-table'" ref="tree-table"></leftTreeRightTable>
+    <tabsTable v-if="pageLayout === 'tabs-table'" ref="tabs-table"></tabsTable>
   </div>
 </template>
 
@@ -26,12 +26,7 @@ export default {
 
   data() {
     return {
-      mode: 0,
-      refDic: {
-        "0": "defaultTable",
-        "1": "leftTreeRightTable",
-        "2": "tabsTable"
-      }
+      pageLayout: "table"
     };
   },
 
@@ -39,9 +34,9 @@ export default {
 
   methods: {
     async init(id = "", formCode) {
-      this.mode = this.getPageInfo()?.mode || 0;
+      this.pageLayout = this.getPageInfo()?.pageLayout || "table";
       await this.$nextTick();
-      this.$refs[this.refDic[this.mode]].init(id, formCode);
+      this.$refs[this.pageLayout].init(id, formCode);
     }
   }
 };

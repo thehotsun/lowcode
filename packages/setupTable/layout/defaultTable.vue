@@ -15,10 +15,10 @@ import previewDlg from "../components/dialogs/previewDlg.vue";
 export default {
   components: { TableWidget, operate, previewDlg },
   props: {
-    mode: {
-      type: Number,
+    pageLayout: {
+      type: String,
       default() {
-        return 0;
+        return 'table';
       }
     }
   },
@@ -49,7 +49,7 @@ export default {
     // 保存按钮事件
     handleSubmitTableConfig() {
       const renderParams = this.$refs.TableWidget.getRenderParams();
-      renderParams.mode = this.mode;
+      renderParams.pageLayout = this.pageLayout;
       const actionList = [];
       renderParams.formOptions?.map(item => {
         if (item.authorize !== "defaultShow") {
