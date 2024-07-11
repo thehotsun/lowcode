@@ -199,7 +199,7 @@ export default {
             <treeItem ref="treeItem"></treeItem>
           </div>
           <div class="splitpanes__splitter" onmousedown={onMouseDown}></div>
-          <div class="" style={{ width: `calc(100% - ${leftWidth} - 7px)` }}>
+          <div class="contentRight" style={{ width: `calc(100% - ${leftWidth} - 7px)` }}>
             <tableItem ref="tableItem"></tableItem>
           </div>
         </div>

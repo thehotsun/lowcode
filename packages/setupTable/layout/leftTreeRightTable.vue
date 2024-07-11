@@ -36,7 +36,7 @@ export default {
     pageLayout: {
       type: String,
       default() {
-        return "table";
+        return "tree-table";
       }
     }
   },

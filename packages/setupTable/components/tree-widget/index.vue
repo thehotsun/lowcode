@@ -13,14 +13,7 @@ export default {
   name: "TreeWidget",
   components: { BaseRenderTree },
   mixins: [tree],
-  props: {
-    options: {
-      type: Object,
-      default() {
-        return {};
-      }
-    }
-  },
+  props: {},
   data() {
     return {
       currentKey: "",
@@ -71,7 +64,6 @@ export default {
       } else {
         this.initiated = true;
       }
-      this.queryTreeData();
     },
 
     setTreeData(data) {

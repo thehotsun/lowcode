@@ -846,6 +846,7 @@ export function arrayToTree(data, idField = "id", parentField = "pid") {
 }
 
 export function findInTree(tree, fieldName, value) {
+  if (value === undefined) return null;
   for (const node of tree) {
     if (node[fieldName] === value) {
       return node;

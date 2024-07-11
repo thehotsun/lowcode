@@ -1,26 +1,29 @@
 import { requestTypeList } from "/baseConfig/btnBaseConfig";
 import { addQueryString, transformParamsValue, arrayToTree } from "/utils";
 export default {
+  props: {
+    listPageIdProp: String
+  },
   data() {
     return {
       initiated: false,
       treeOptions: {},
       treeData: [
-        { label: "一级 1", id: "1", children: [{ label: "二级 1-1", id: "11", children: [{ label: "三级 1-1-1", id: "111" }] }] },
+        { originalVal: true, label: "一级 1", id: "1", children: [{ originalVal: true, label: "二级 1-1", id: "11", children: [{ originalVal: true, label: "三级 1-1-1", id: "111" }] }] },
         {
-          label: "一级 2",
+          originalVal: true, label: "一级 2",
           id: "2",
           children: [
-            { label: "二级 2-1", id: "21", children: [{ label: "三级 2-1-1", id: "211" }] },
-            { label: "二级 2-2", id: "22", children: [{ label: "三级 2-2-1", id: "221" }] }
+            { originalVal: true, label: "二级 2-1", id: "21", children: [{ originalVal: true, label: "三级 2-1-1", id: "211" }] },
+            { originalVal: true, label: "二级 2-2", id: "22", children: [{ originalVal: true, label: "三级 2-2-1", id: "221" }] }
           ]
         },
         {
-          label: "一级 3",
+          originalVal: true, label: "一级 3",
           id: "3",
           children: [
-            { label: "二级 3-1", id: "31", children: [{ label: "三级 3-1-1", id: "311" }] },
-            { label: "二级 3-2", id: "32", children: [{ label: "三级 3-2-1", id: "321" }] }
+            { originalVal: true, label: "二级 3-1", id: "31", children: [{ originalVal: true, label: "三级 3-1-1", id: "311" }] },
+            { originalVal: true, label: "二级 3-2", id: "32", children: [{ originalVal: true, label: "三级 3-2-1", id: "321" }] }
           ]
         }
       ]
@@ -44,6 +47,16 @@ export default {
       default: () => () => {
         console.warn("inject缺失requestTreeData!");
       }
+    },
+    getListPageId: {
+      default: () => () => {
+        console.warn("inject缺失getListPageId!");
+      }
+    }
+  },
+  computed: {
+    listPageId() {
+      return this.listPageIdProp || this.getListPageId();
     }
   },
   methods: {
@@ -99,12 +112,16 @@ export default {
     queryTreeData(data = {}, isReturn) {
       const params = this.getParams(data);
       const { isDataModel } = this.treeOptions;
-      return (isDataModel ? this.requestTreeData : this.disposeRequestEvent)(params)
+      return (isDataModel ? this.requestTreeData : this.disposeRequestEvent)(params, this.listPageId)
         .then(res => {
           if (res.result === "0") {
             let data = res.data;
             if (isDataModel) {
-              data = arrayToTree(data);
+              if (Object.keys(data[0] || {}).includes("id", "pid")) {
+                data = arrayToTree(data);
+              } else {
+                console.warn("当前接口返回的对象缺失id和pid字段！重组为树状结构失败");
+              }
             }
             if (isReturn) {
               return data;

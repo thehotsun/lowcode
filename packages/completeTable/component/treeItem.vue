@@ -64,7 +64,8 @@ export default {
 </script>
 <style lang="less" scoped>
 .tree-container {
-  margin: 2px;
+  width: 100%;
+  height: 100%;
 }
 
 .custom-tree-node {

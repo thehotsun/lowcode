@@ -149,13 +149,23 @@ export default {
       }
       const { currentNodeKeyFirst, currentNodeKey, nodeKey } = this.treeOptions;
 
-      if (!currentNodeKey && currentNodeKeyFirst) {
-        console.log(data, "finalTreeData");
+      if (currentNodeKeyFirst) {
         this.$nextTick(() => {
-          console.log(this.$refs.tree, "this.$refs.tree");
           this.$refs.tree.setCurrentKey(data[0][nodeKey]);
         });
       }
+
+      if (currentNodeKey) {
+        if (findInTree(data, nodeKey, currentNodeKey)) {
+          this.$refs.tree.setCurrentKey(currentNodeKey);
+        } else {
+          // 如果是我写死的值，则不产生这个警告
+          if (!data[0].originalVal) {
+            console.warn("设置了当前高亮，但是并未在数组中找到当前节点");
+          }
+        }
+      }
+
       return data;
     }
   },
@@ -171,7 +181,7 @@ export default {
           isPreview
         } = this;
         if ((currentNodeKey || currentNodeKeyFirst) && !isPreview) {
-          const data = findInTree(treeData, nodeKey, currentNodeKey);
+          const data = findInTree(treeData, nodeKey, currentNodeKey) || treeData[0];
           setTimeout(() => {
             this.treeListeners["node-click"](data);
           }, 300);
@@ -197,21 +207,22 @@ export default {
     } = this;
     return (
       <div class="baseRenderTreeContainer">
-        {filter ? <el-input v-model={this.filterText} size="small" placeholder="输入关键字进行过滤"></el-input> : ""}
-
-        <el-tree
-          ref="tree"
-          highlight-current
-          data={finalTreeData}
-          {...{
-            attrs: {
-              ...treeAttrs
-            },
-            on: {
-              ...treeListeners
-            }
-          }}
-        ></el-tree>
+        {filter ? <el-input v-model={this.filterText} class="padding10" size="small" placeholder="输入关键字进行过滤"></el-input> : ""}
+        <div class="treeWrap">
+          <el-tree
+            ref="tree"
+            highlight-current
+            data={finalTreeData}
+            {...{
+              attrs: {
+                ...treeAttrs
+              },
+              on: {
+                ...treeListeners
+              }
+            }}
+          ></el-tree>
+        </div>
       </div>
     );
   }

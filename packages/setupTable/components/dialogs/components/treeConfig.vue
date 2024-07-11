@@ -13,20 +13,20 @@
     </el-form-item> -->
     <!-- <sqlConfig ref="sqlConfig" :form="form" :sql-field="sqlField"></sqlConfig> -->
 
-    <el-form-item v-if="form.isDataModel" :label="sqlLabel" :prop="sqlField">
+    <el-form-item v-show="form.isDataModel" :label="sqlLabel" :prop="sqlField">
       <sql-code-editor ref="chEditor" v-model="form[sqlField]" mode="javascript" />
-      <div>
+      <div style="line-height: 20px;">
         说明：<br />
         (1) sql请求返回的字段必须有id,pid,children这三个字段<br />
         (2) 顶级数据的pid可为0或者null
       </div>
     </el-form-item>
 
-    <el-form-item v-if="!form.isDataModel" :label="requestUrlLabel">
+    <el-form-item v-show="!form.isDataModel" :label="requestUrlLabel">
       <el-input v-model="form[requestUrlField]" clearable placeholder="请输入接口地址"></el-input>
       <el-button type="text" @click="handleRequestParamsConfigEdit"> 编辑请求 </el-button>
     </el-form-item>
-    <el-form-item v-if="!form.isDataModel" :label="requestTypeLabel">
+    <el-form-item v-show="!form.isDataModel" :label="requestTypeLabel">
       <el-select v-model="form[requestTypeField]" placeholder="请选择">
         <el-option v-for="item in requestTypeList" :key="item.id" :label="item.cnName" :value="item.id"> </el-option>
       </el-select>
@@ -89,6 +89,26 @@ export default {
       requestTypeList,
       sql: ""
     };
+  },
+  watch: {
+    form: {
+      immediate: true,
+      handler(val, prevVal) {
+        if (!prevVal) {
+          this.$nextTick(() => {
+            this.$refs.chEditor.aceEditor.setOptions({
+              value: val[this.sqlField]
+            });
+            this.$refs.chEditor.codeValue = val[this.sqlField];
+          });
+        } else if (val[this.sqlField] !== prevVal[this.sqlField]) {
+          this.$refs.chEditor.aceEditor.setOptions({
+            value: val[this.sqlField]
+          });
+          this.$refs.chEditor.codeValue = val[this.sqlField];
+        }
+      }
+    }
   },
   methods: {
     handleRequestParamsConfigEdit() {

@@ -2,7 +2,11 @@
   display: flex;
   width: 100%;
   height: 100%;
+  .contentRight,
   .contentleft {
+    width: 100%;
+    height: 100%;
+    overflow-y: auto;
     // border-right: 1px solid #ebefff;
   }
   .splitpanes__splitter {
@@ -44,7 +48,6 @@
     &:after {
       margin-left: 1px;
     }
- 
   }
 }
 .CompleteTable {
