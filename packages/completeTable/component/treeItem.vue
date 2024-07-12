@@ -46,7 +46,7 @@ export default {
       } else {
         console.warn("当前树没有配置options！");
       }
-      this.queryTreeData();
+      if (!isPreview) this.queryTreeData();
     },
 
     resetAllData() {},

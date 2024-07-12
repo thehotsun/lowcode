@@ -1,7 +1,7 @@
 <template>
   <div class="tree-container">
     <el-container>
-      <base-render-tree v-if="initiated" :key="random" ref="baseTree" :tree-data="treeData" :tree-options="treeOptions"></base-render-tree>
+      <base-render-tree v-if="initiated" ref="baseTree" :tree-data="treeData" :tree-options="treeOptions" :is-preview="true"></base-render-tree>
     </el-container>
   </div>
 </template>
@@ -46,7 +46,6 @@ export default {
     treeOptions: {
       deep: true,
       handler() {
-        this.queryTreeData();
         this.random = +new Date();
       }
     }

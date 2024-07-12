@@ -495,7 +495,14 @@ export default {
               attrs: { ...defaultDialogAttrs }
             }}
           >
-            <js-code-editor mode="javascript" readonly={false} value={codeValue.row[codeValue.prop]} ref="chEditor" {...{ on: codeEditorListeners }}></js-code-editor>
+            <js-code-editor
+              ref="chEditor"
+              mode="javascript"
+              readonly={false}
+              value={codeValue.row[codeValue.prop]}
+              display-height="600px"
+              {...{ on: codeEditorListeners }}
+            ></js-code-editor>
           </el-dialog>
         ) : null}
       </div>

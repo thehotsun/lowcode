@@ -22,7 +22,7 @@ export default {
     isPreview: {
       type: Boolean,
       default() {
-        return;
+        return false;
       }
     }
   },
@@ -38,80 +38,87 @@ export default {
   },
   computed: {
     treeAttrs() {
-      const { treeOptions, filterNode } = this;
-      const { filter, propsChildren, propsLabel, currentNodeKey } = treeOptions;
+      const { treeOptions, filterNode, isPreview } = this;
+      if (isPreview) {
+        const baseField = ["showCheckbox", "expandOnClickNode", "accordion", "iconClass"];
+        const baseAttrs = pick(treeOptions, baseField);
+        baseAttrs.nodeKey = "id";
+        return baseAttrs;
+      } else {
+        const { filter, propsChildren, propsLabel, currentNodeKey } = treeOptions;
 
-      const baseField = ["lazy", "nodeKey", "showCheckbox", "expandOnClickNode", "defaultExpandAll", "accordion", "iconClass"];
+        const baseField = ["lazy", "nodeKey", "showCheckbox", "expandOnClickNode", "defaultExpandAll", "accordion", "iconClass"];
 
-      const baseAttrs = pick(treeOptions, baseField);
-      baseAttrs.currentNodeKey = currentNodeKey || this.currentNodeKey;
+        const baseAttrs = pick(treeOptions, baseField);
+        baseAttrs.currentNodeKey = currentNodeKey || this.currentNodeKey;
 
-      const str2objFieldArr = ["defaultCheckedKeys", "defaultExpandedKeys"];
-      const str2FnFieldArr = ["renderContent", "filterFn", "loadFn"];
+        const str2objFieldArr = ["defaultCheckedKeys", "defaultExpandedKeys"];
+        const str2FnFieldArr = ["renderContent", "filterFn", "loadFn"];
 
-      const transformObj = {};
-      str2objFieldArr.map(field => {
-        if (treeOptions[field]) {
-          transformObj[field] = str2obj(treeOptions[field]);
-        }
-      });
-      str2FnFieldArr.map(field => {
-        if (treeOptions[field]) {
-          transformObj[field] = str2Fn(treeOptions[field]);
-        }
-      });
-
-      const { renderContent, filterFn, loadFn, defaultExpandedKeys, defaultCheckedKeys } = transformObj;
-      if (defaultExpandedKeys) {
-        baseAttrs.defaultExpandedKeys = defaultExpandedKeys;
-      }
-
-      if (defaultCheckedKeys) {
-        baseAttrs.defaultCheckedKeys = defaultCheckedKeys;
-      }
-
-      baseAttrs.props = {
-        children: propsChildren,
-        label: propsLabel
-      };
-      if (filter) {
-        baseAttrs.filterNodeMethod = filterFn || filterNode;
-      }
-      if (loadFn) {
-        baseAttrs.load = loadFn;
-      }
-
-      if (renderContent) {
-        const {
-          components = {},
-          data = () => {
-            return {};
-          },
-          computed = {},
-          watch = {},
-          methods = {},
-          template
-        } = renderContent();
-        console.log(renderContent(), "renderContent()");
-        // eslint-disable-next-line no-undef
-        const formatterComponent = Vue.extend({
-          components: components,
-          props: { node: Object, data: Object, store: Object },
-          data,
-          computed,
-          watch,
-          methods,
-          // eslint-disable-next-line no-undef
-          render: Vue.compile(template || "").render
+        const transformObj = {};
+        str2objFieldArr.map(field => {
+          if (treeOptions[field]) {
+            transformObj[field] = str2obj(treeOptions[field]);
+          }
         });
-        baseAttrs.renderContent = function(_, { _self, node, data, store }) {
-          return _(formatterComponent, {
-            props: { node, data, store }
-          });
+        str2FnFieldArr.map(field => {
+          if (treeOptions[field]) {
+            transformObj[field] = str2Fn(treeOptions[field]);
+          }
+        });
+
+        const { renderContent, filterFn, loadFn, defaultExpandedKeys, defaultCheckedKeys } = transformObj;
+        if (defaultExpandedKeys) {
+          baseAttrs.defaultExpandedKeys = defaultExpandedKeys;
+        }
+
+        if (defaultCheckedKeys) {
+          baseAttrs.defaultCheckedKeys = defaultCheckedKeys;
+        }
+
+        baseAttrs.props = {
+          children: propsChildren,
+          label: propsLabel
         };
+        if (filter) {
+          baseAttrs.filterNodeMethod = filterFn || filterNode;
+        }
+        if (loadFn) {
+          baseAttrs.load = loadFn;
+        }
+
+        if (renderContent) {
+          const {
+            components = {},
+            data = () => {
+              return {};
+            },
+            computed = {},
+            watch = {},
+            methods = {},
+            template
+          } = renderContent();
+          console.log(renderContent(), "renderContent()");
+          // eslint-disable-next-line no-undef
+          const formatterComponent = Vue.extend({
+            components: components,
+            props: { node: Object, data: Object, store: Object },
+            data,
+            computed,
+            watch,
+            methods,
+            // eslint-disable-next-line no-undef
+            render: Vue.compile(template || "").render
+          });
+          baseAttrs.renderContent = function(_, { _self, node, data, store }) {
+            return _(formatterComponent, {
+              props: { node, data, store }
+            });
+          };
+        }
+        console.log(baseAttrs, "baseAttrs");
+        return baseAttrs;
       }
-      console.log(baseAttrs, "baseAttrs");
-      return baseAttrs;
     },
 
     dataTransitionFn() {

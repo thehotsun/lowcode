@@ -569,7 +569,7 @@ export default {
     };
 
     const model = getter(formData, this.codeValue.formField);
-    console.log('baseformrender');
+    console.log("baseformrender");
     return (
       <div>
         {useDialog ? (
@@ -636,7 +636,7 @@ export default {
               attrs: { ...defaultCodeEditorDialogAttrs }
             }}
           >
-            <js-code-editor mode="javascript" readonly={false} value={model} ref="chEditor" {...{ on: codeEditorListeners }}></js-code-editor>
+            <js-code-editor ref="chEditor" mode="javascript" readonly={false} value={model} display-height="600px" {...{ on: codeEditorListeners }}></js-code-editor>
           </el-dialog>
         ) : null}
       </div>

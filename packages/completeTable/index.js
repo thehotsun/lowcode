@@ -69,6 +69,9 @@ export default {
       if (pageLayout === "tree-table") {
         this.$refs.tableItem.expose_preview(tableOptions);
         this.$refs.treeItem.expose_preview(treeOptions);
+        if (treeOptions.width) {
+          this.leftWidth = formatterWidthOrHeightStyle(treeOptions.width);
+        }
       } else if (pageLayout === "tabs-table") {
         console.log();
       } else {

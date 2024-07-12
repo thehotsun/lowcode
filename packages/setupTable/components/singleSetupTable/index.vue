@@ -121,13 +121,13 @@
     >
       <div class="flex">
         <div class="left">
-          <el-form label-position="top">
-            <el-form-item required label="搜索字段列表：">
+          <el-form ref="fuzzyFrom" :model="fuzzyFieldSearchConfig" :rules="fuzzyFromRules" label-position="top">
+            <el-form-item label="搜索字段列表：" prop="searchFieldList">
               <el-checkbox-group v-model="fuzzyFieldSearchConfig.searchFieldList" class="fieldList" @change="fuzzySearchFieldListChange">
                 <el-checkbox v-for="row in tableData" :key="row.fieldCode" :label="row.fieldCode">{{ row.fieldName }}</el-checkbox>
               </el-checkbox-group>
             </el-form-item>
-            <el-form-item required label="提示文本：">
+            <el-form-item label="提示文本：" prop="placeholder">
               <el-input v-model="fuzzyFieldSearchConfig.placeholder" placeholder="请输入提示文本"></el-input>
             </el-form-item>
             <el-form-item label-width="106px" label="生成sql片段：">
@@ -321,7 +321,11 @@ export default {
           contentTextAttrForm: new ContentTextAttrForm()
         }
       ],
-      contentTextAttrForm: new ContentTextAttrForm()
+      contentTextAttrForm: new ContentTextAttrForm(),
+      fuzzyFromRules: {
+        searchFieldList: [{ required: true, validator: this.validatePass, message: "请选择搜索字段列表", trigger: "change" }],
+        placeholder: [{ required: true, message: "请输入提示文本", trigger: "change" }]
+      }
     };
   },
 
@@ -739,9 +743,24 @@ export default {
     },
 
     confirmFuzzyFrom() {
-      this.saveSql(this.listPageId, this.wholeSQL);
-      this.handleCloseFuzzyFrom(false);
-      this.originFuzzyFieldSearchConfig = cloneDeep(this.fuzzyFieldSearchConfig);
+      this.$refs.fuzzyFrom.validate(valid => {
+        if (valid) {
+          this.saveSql(this.listPageId, this.wholeSQL);
+          this.handleCloseFuzzyFrom(false);
+          this.originFuzzyFieldSearchConfig = cloneDeep(this.fuzzyFieldSearchConfig);
+        } else {
+          console.log("error submit!!");
+          return false;
+        }
+      });
+    },
+
+    validatePass(rule, value, callback) {
+      if (value?.length) {
+        callback();
+      } else {
+        callback(new Error("请选择搜索字段列表"));
+      }
     },
 
     handleCloseContentTextAttr() {

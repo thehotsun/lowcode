@@ -131,7 +131,7 @@
           </el-form-item> -->
       </el-form>
       <el-dialog ref="chEditor" :before-close="handleClose" title="代码编写" :visible="showCodeEditor" width="900px" :append-to-body="true">
-        <js-code-editor mode="javascript" :readonly="false" :value="tableAttrs[curFn]" @input="handleEditorInput"></js-code-editor>
+        <js-code-editor mode="javascript" :readonly="false" :value="tableAttrs[curFn]" display-height="600px" @input="handleEditorInput"></js-code-editor>
       </el-dialog>
     </div>
   </el-dialog>
