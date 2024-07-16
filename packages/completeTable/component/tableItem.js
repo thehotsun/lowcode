@@ -623,7 +623,7 @@ export default {
     },
 
     // 获取列表数据接口参数
-    getParams(data) {
+    getParams(data = {}) {
       const extraParams = {};
       if (this.formOptions?.length) {
         const formItem = this.formOptions[0].formItem;
@@ -1215,7 +1215,7 @@ export default {
       this.btnConfigs.isRefresh && this.queryTableData();
     },
     disposeDown({ command }, row) {
-      const params = {
+      let params = {
         prjId: this.getPrjInfo().prjId,
         enterpriseId: this.enterpriseId
       };
@@ -1241,7 +1241,7 @@ export default {
             params[this.keyField] = this.tableData.map(item => item[this.keyField]);
             break;
           case "all":
-            params.multiFieldSearch = this.multiFieldSearch;
+            params = this.getParams();
             break;
           default:
             break;
