@@ -69,7 +69,7 @@ export default {
       this.$refs.TreeWidget.init(id, formCode, this.treeOptions);
     },
     showTableAttrs() {
-      this.$refs.TableWidget.$refs.tableAttrsDlg.showDlg();
+      this.$refs.TableWidget.showTableAttrsDlg();
     },
 
     showPreview() {

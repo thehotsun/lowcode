@@ -21,7 +21,7 @@
               >{{ item.tagAttrs.value }} <i :class="item?.contentTextBehindTagOptions?.className"></i
             ></el-button>
             <el-dropdown-menu slot="dropdown">
-              <el-dropdown-item v-for="(elDropdownItem, index) in elDropdownOptions" :key="index">{{ elDropdownItem.label }}</el-dropdown-item>
+              <el-dropdown-item v-for="(elDropdownItem, elIndex) in elDropdownOptions" :key="elIndex">{{ elDropdownItem.label }}</el-dropdown-item>
             </el-dropdown-menu>
           </el-dropdown>
           <el-button v-else type="" size="small" :icon="item.tagAttrs.icon" @click="handleBtnDetail(index)"
@@ -66,7 +66,7 @@
       <setupBtnConfig ref="setupBtnConfig" @onSubmit="onSubmit" @onClose="onClose"></setupBtnConfig>
     </el-drawer>
 
-    <tableAttrsDlg ref="tableAttrsDlg" :table-attrs="tableAttrs"></tableAttrsDlg>
+    <tableAttrsDlg ref="tableAttrsDlg" :delivery-fields-option="deliveryFieldsOption" @changeTableAttrs="changeTableAttrs"></tableAttrsDlg>
   </div>
 </template>
 
@@ -219,6 +219,14 @@ export default {
           console.log(e.oldIndex, e.newIndex);
         }
       });
+    },
+
+    showTableAttrsDlg() {
+      this.$refs.tableAttrsDlg.showDlg(this.tableAttrs);
+    },
+
+    changeTableAttrs(tableOptions) {
+      this.tableAttrs = tableOptions;
     },
 
     searchAreaDrop() {

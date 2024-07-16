@@ -10,3 +10,12 @@ export const treeAttrsCodeExampleList = {
   filterFn:
     "function filterNode(value, data) {\r\n  // value是筛选输入框内的值\r\n  // data是每个节点的数据\r\n  if (!value) return true;\r\n  return data.label.indexOf(value) !== -1;\r\n}"
 };
+export const tableAttrsCodeExampleList = {
+  index: "function indexMethod(index) {\r\n  // index是数组的下标，如果是第一行，index为0\r\n  return index * 2;\r\n}",
+  summaryMethod:
+    "function getSummaries(param) {\r\n  // 接受的参数，columns是列信息, data是tabledata\r\n  const { columns, data } = param;\r\n  const sums = [];\r\n  columns.forEach((column, index) => {\r\n    if (index === 0) {\r\n      // 如果是第一列，直接展示总价这个文本\r\n      sums[index] = '总价';\r\n      return;\r\n    }\r\n    // 将这一列所有的数据进行数字转换\r\n    const values = data.map(item => Number(item[column.property]));\r\n    // 如果没有一个是NaN,则将所有数据相加，最后加一个元字\r\n    if (!values.every(value => isNaN(value))) {\r\n      sums[index] = values.reduce((prev, curr) => {\r\n        const value = Number(curr);\r\n        if (!isNaN(value)) {\r\n          return prev + curr;\r\n        } else {\r\n          return prev;\r\n        }\r\n      }, 0);\r\n      sums[index] += ' 元';\r\n    } else {\r\n      // 否则，直接展示N/A文本\r\n      sums[index] = 'N/A';\r\n    }\r\n  });\r\n\r\n  return sums;\r\n}",
+  spanMethod:
+    "function objectSpanMethod({ row, column, rowIndex, columnIndex }) {\r\n  // 只针对第一列\r\n  if (columnIndex === 0) {\r\n    // 如果行是偶数行，则占据两列\r\n    if (rowIndex % 2 === 0) {\r\n      return {\r\n        // rowspan返回几，就占据几行，\r\n        rowspan: 2,\r\n        // colspan返回几，就占据几列\r\n        colspan: 1\r\n      };\r\n    } else {\r\n      // 返回0则当前cell不展示\r\n      return {\r\n        rowspan: 0,\r\n        colspan: 0\r\n      };\r\n    }\r\n  }\r\n}",
+  dataTransitionFn:
+    "function dataTransition(data) {\n  // data 是接口返回的数据\n  // 数组对象中的id字段\n  const idField = 'id';\n  // 数组对象中指向父级的字段\n  const parentField = 'parentField';\n  // 创建一个哈希表，存储每个节点\n  const idMapping = data.reduce((acc, el, i) => {\n    acc[el[idField]] = i;\n    return acc;\n  }, {});\n\n  const root = [];\n  data.forEach(el => {\n    // 如果是根节点（没有父节点），将其加入根节点数组\n    if (el[parentField] === null) {\n      root.push(el);\n      return;\n    }\n\n    // 使用哈希表获取父节点\n    const parentEl = data[idMapping[el[parentField]]];\n\n    // 如果父节点没有子节点数组，则创建一个\n    if (!parentEl.children) {\n      parentEl.children = [];\n    }\n\n    // 将当前节点加入父节点的子节点数组\n    parentEl.children.push(el);\n  });\n\n  return root;\n}"
+};

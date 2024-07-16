@@ -66,7 +66,7 @@ export default {
       }
     },
     showTableAttrs() {
-      this.$refs.TableWidget.$refs.tableAttrsDlg.showDlg();
+      this.$refs.TableWidget.showTableAttrsDlg();
     },
 
     showPreview() {

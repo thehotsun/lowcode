@@ -9,61 +9,103 @@
   >
     <div style="min-width: 60px;background: #fff;padding: 10px;">
       <el-form ref="ruleForm" :model="tableAttrs" :rules="rules" label-width="130px" style="padding-bottom: 20px">
-        <el-form-item label="分页" prop="showPagination">
-          <el-switch v-model="tableAttrs.showPagination" />
+        <el-form-item label="基础配置">
+          <el-checkbox v-model="tableAttrs.showPagination">分页</el-checkbox>
+          <el-checkbox v-model="tableAttrs.isShowIndex">显示序号</el-checkbox>
+          <el-tooltip class="item" effect="dark" content="开启此功能后，列表左侧展示复选框" placement="top-start">
+            <el-checkbox v-model="tableAttrs.isShowCheckbox"
+              ><span style="cursor: pointer;font-size: 14px">多选</span><i style="width: 20px" class="el-icon-question"></i>
+            </el-checkbox>
+          </el-tooltip>
+          <el-checkbox v-model="tableAttrs.stripe">斑马线</el-checkbox>
+          <el-checkbox v-model="tableAttrs.border">边框</el-checkbox>
+          <el-tooltip
+            class="item"
+            effect="dark"
+            content="开启此功能后，单击列表的某行数据会调用其查看按钮相关功能（如果有），不开启此功能，则默认为双击时触发"
+            placement="top-start"
+          >
+            <el-checkbox v-model="tableAttrs.clickRowShowDetialDialog">
+              <span style="cursor: pointer;font-size: 14px">单击列展示详情</span><i style="width: 20px" class="el-icon-question"></i>
+            </el-checkbox>
+          </el-tooltip>
+          <el-tooltip
+            class="item"
+            effect="dark"
+            content="若表格展示的是各类数字，可以在表尾显示各列的合计。默认情况下，对于合计行，第一列不进行数据求合操作，而是显示「合计」二字，其余列会将本列所有数值进行求合操作，并显示出来。当然，你也可以定义自己的合计函数"
+            placement="top-start"
+          >
+            <el-checkbox v-model="tableAttrs.showSummary"
+              ><span style="cursor: pointer;font-size: 14px">合计</span><i style="width: 20px" class="el-icon-question"></i>
+            </el-checkbox>
+          </el-tooltip>
+          <el-tooltip class="item" effect="dark" content="多行或多列共用一个数据时，可以合并行或列。必须通过合并函数定义合并规则" placement="top-start">
+            <el-checkbox v-model="tableAttrs.isMerge"><span style="cursor: pointer;font-size: 14px">合并</span><i style="width: 20px" class="el-icon-question"></i> </el-checkbox>
+          </el-tooltip>
+          <el-tooltip
+            class="item"
+            effect="dark"
+            content="当 row 中包含 children 字段时，被视为树形数据。渲染树形数据时，必须要指定row-key。支持子节点数据异步加载（配置懒加载和传递字段）。"
+            placement="top-start"
+          >
+            <el-checkbox v-model="tableAttrs.isTree"
+              ><span style="cursor: pointer;font-size: 14px">树类型数据</span><i style="width: 20px" class="el-icon-question"></i>
+            </el-checkbox>
+          </el-tooltip>
+          <el-checkbox v-if="tableAttrs.isTree" v-model="tableAttrs.lazy">懒加载</el-checkbox>
         </el-form-item>
-        <el-form-item v-show="tableAttrs.showPagination" label="分页显示条数" prop="showPagination">
-          <el-select v-model="tableAttrs.paginationSize" placeholder="请选择">
-            <el-option v-for="item in paginationSizeOptions" :key="item.value" :label="item.label" :value="item.value"> </el-option>
-          </el-select>
-        </el-form-item>
-        <el-form-item label="显示序号" prop="isShowIndex">
-          <el-switch v-model="tableAttrs.isShowIndex" />
-        </el-form-item>
+
+        <el-row>
+          <el-col :span="12">
+            <el-form-item v-show="tableAttrs.showPagination" label="分页显示条数" prop="showPagination">
+              <el-select v-model="tableAttrs.paginationSize" placeholder="请选择">
+                <el-option v-for="item in paginationSizeOptions" :key="item.value" :label="item.label" :value="item.value"> </el-option>
+              </el-select>
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="组件大小" prop="size">
+              <el-select v-model="tableAttrs.size" placeholder="请选择">
+                <el-option v-for="item in sizeOptions" :key="item.value" :label="item.label" :value="item.value"> </el-option>
+              </el-select>
+            </el-form-item>
+          </el-col>
+        </el-row>
+
         <el-form-item v-if="tableAttrs.isShowIndex" label="自定义索引函数">
           <el-input v-model="tableAttrs.index" placeholder="请输入function(index){ return index}格式" @focus="handleShow('index', $event)"></el-input>
         </el-form-item>
-        <el-form-item label="多选" prop="isShowCheckbox">
-          <el-switch v-model="tableAttrs.isShowCheckbox" />
-        </el-form-item>
-        <el-form-item label="斑马线" prop="stripe">
-          <el-switch v-model="tableAttrs.stripe" />
-        </el-form-item>
-        <el-form-item label="边框" prop="border">
-          <el-switch v-model="tableAttrs.border" />
-        </el-form-item>
-        <el-form-item label="合计" prop="showSummary">
-          <el-switch v-model="tableAttrs.showSummary" />
-        </el-form-item>
+
         <el-form-item v-if="tableAttrs.showSummary" label="合计函数" prop="summaryMethod">
           <el-input v-model="tableAttrs.summaryMethod" placeholder="请输入格式为Function({ columns, data })" @focus="handleShow('summaryMethod', $event)"></el-input>
         </el-form-item>
-        <el-form-item label="合并" prop="isMerge">
-          <el-switch v-model="tableAttrs.isMerge" />
-        </el-form-item>
+
         <el-form-item v-if="tableAttrs.isMerge" label="合并函数" prop="spanMethod">
           <el-input v-model="tableAttrs.spanMethod" placeholder="请输入格式为Function({ row, column, rowIndex, columnIndex })" @focus="handleShow('spanMethod', $event)"></el-input>
         </el-form-item>
-        <el-form-item label="树类型数据" prop="isTree">
-          <el-switch v-model="tableAttrs.isTree" />
-        </el-form-item>
-        <el-form-item v-if="tableAttrs.isTree" label="配置tree-props" prop="treeProps">
-          <el-input v-model="tableAttrs.treeProps" type="textarea" :rows="2" placeholder="请输入{children, hasChildren}格式"></el-input>
-        </el-form-item>
-        <el-form-item v-if="tableAttrs.isTree" label="指定row-key">
-          <el-select v-model="tableAttrs.rowKey" placeholder="请选择">
-            <el-option v-for="item in deliveryFieldsOption.options" :key="item.id" :label="item.cnName" :value="item.id"> </el-option>
-          </el-select>
-        </el-form-item>
+
+        <el-row>
+          <el-col :span="12"
+            ><el-form-item v-if="tableAttrs.isTree" label="配置tree-props" prop="treeProps">
+              <el-input v-model="tableAttrs.treeProps" type="textarea" :rows="2" placeholder="请输入{children, hasChildren}格式"></el-input> </el-form-item
+          ></el-col>
+          <el-col :span="12"
+            ><el-form-item v-if="tableAttrs.isTree" label="指定row-key">
+              <el-select v-model="tableAttrs.rowKey" placeholder="请选择">
+                <el-option v-for="item in deliveryFieldsOption.options" :key="item.id" :label="item.cnName" :value="item.id"> </el-option>
+              </el-select> </el-form-item
+          ></el-col>
+        </el-row>
+
         <el-form-item v-if="tableAttrs.isTree" label="数据转换函数">
           <el-tooltip
             slot="label"
             class="item"
             effect="dark"
-            content="由于当前通过sql查询很难直接生成树形结构所需的数据结构，因为通过此函数进行数据结构转换（优先级最高）"
+            content="由于当前通过sql查询很难直接生成树形结构所需的数据结构，因此通过此函数进行数据结构转换（优先级最高）"
             placement="top-start"
           >
-            <span style="cursor: pointer;font-size: 14px">数据转换函数</span>
+            <span style="cursor: pointer;font-size: 14px">数据转换函数</span><i style="width: 20px; font-size: 14px;" class="el-icon-question"></i>
           </el-tooltip>
           <el-input v-model="tableAttrs.dataTransitionFn" placeholder="请输入数据转换函数" @focus="handleShow('dataTransitionFn', $event)"></el-input>
         </el-form-item>
@@ -72,10 +114,10 @@
             slot="label"
             class="item"
             effect="dark"
-            content="由于当前通过sql查询很难直接生成树形结构所需的数据结构，因为通过配置父子字段进行数据关联生成树状结构（优先级最比数据转换函数低）"
+            content="由于当前通过sql查询很难直接生成树形结构所需的数据结构，因此通过配置父子字段进行数据关联生成树状结构（优先级最比数据转换函数低）"
             placement="top-start"
           >
-            <span style="cursor: pointer;font-size: 14px">数据转换配置</span>
+            <span style="cursor: pointer;font-size: 14px">数据转换配置</span><i style="width: 20px; font-size: 14px;" class="el-icon-question"></i>
           </el-tooltip>
           <span>父级id字段：</span>
           <el-select v-model="tableAttrs.dataTransitionParentField" placeholder="请选择">
@@ -86,9 +128,7 @@
             <el-option v-for="item in deliveryFieldsOption.options" :key="item.id" :label="item.cnName" :value="item.id"> </el-option>
           </el-select>
         </el-form-item>
-        <el-form-item v-if="tableAttrs.isTree" label="懒加载" prop="lazy">
-          <el-switch v-model="tableAttrs.lazy" />
-        </el-form-item>
+
         <el-form-item v-if="tableAttrs.isTree && tableAttrs.lazy" label="传递字段">
           <el-tooltip slot="label" class="item" effect="dark" content="一般懒加载时的load函数需要传递当前row的某个字段当作参数获取下一级的tableData" placement="top-start">
             <span style="cursor: pointer;font-size: 14px">传递字段</span>
@@ -96,25 +136,6 @@
           <el-select v-model="tableAttrs.deliveryLoadFnField" placeholder="请选择">
             <el-option v-for="item in deliveryFieldsOption.options" :key="item.id" :label="item.cnName" :value="item.id"> </el-option>
           </el-select>
-        </el-form-item>
-
-        <el-form-item label="组件大小" prop="size">
-          <el-select v-model="tableAttrs.size" placeholder="请选择">
-            <el-option v-for="item in sizeOptions" :key="item.value" :label="item.label" :value="item.value"> </el-option>
-          </el-select>
-        </el-form-item>
-
-        <el-form-item label="单击列展示详情" prop="clickRowShowDetialDialog">
-          <el-tooltip
-            slot="label"
-            class="item"
-            effect="dark"
-            content="开启此功能后，单击列表的某行数据会调用其查看按钮相关功能（如果有），不开启此功能，则默认为双击时触发"
-            placement="top-start"
-          >
-            <span style="cursor: pointer;font-size: 14px">单击列展示详情</span>
-          </el-tooltip>
-          <el-switch v-model="tableAttrs.clickRowShowDetialDialog" />
         </el-form-item>
 
         <el-form-item label="自定义样式" prop="style">
@@ -130,22 +151,28 @@
               placeholder="请输入列表样式（包括列表、搜索区域和按钮区域）"></el-input>
           </el-form-item> -->
       </el-form>
-      <el-dialog ref="chEditor" :before-close="handleClose" title="代码编写" :visible="showCodeEditor" width="900px" :append-to-body="true">
-        <js-code-editor mode="javascript" :readonly="false" :value="tableAttrs[curFn]" display-height="600px" @input="handleEditorInput"></js-code-editor>
+      <el-dialog :before-close="handleClose" title="代码编写" :visible="showCodeEditor" width="900px" :append-to-body="true">
+        <js-code-editor ref="chEditor" mode="javascript" :readonly="false" :value="tableAttrs[curFn]" @input="handleEditorInput"></js-code-editor>
+        <codeExample :val="tableAttrsCodeExampleList[curFn]" @copy="handleCopy"></codeExample>
       </el-dialog>
     </div>
+    <span slot="footer" class="dialog-footer">
+      <el-button @click="handleCloseTableAttrs">取消</el-button>
+      <el-button type="primary" @click="handleConfirm">确定</el-button>
+    </span>
   </el-dialog>
 </template>
 
 <script>
+import codeExample from "./components/codeExample.vue";
+import { cloneDeep } from "lodash";
+import { tableAttrsCodeExampleList } from "/utils/codeExampleList";
+import { getTableAttrs } from "/baseConfig/tableBaseConfig";
 export default {
+  components: {
+    codeExample
+  },
   props: {
-    tableAttrs: {
-      type: Object,
-      default() {
-        return {};
-      }
-    },
     deliveryFieldsOption: {
       type: Object,
       default() {
@@ -157,9 +184,10 @@ export default {
   },
   data() {
     return {
+      tableAttrs: getTableAttrs(),
       dialogVisibleTableAttrs: false,
       showCodeEditor: false,
-      curFn: '',
+      curFn: "",
       rules: {},
       sizeOptions: [
         {
@@ -175,7 +203,7 @@ export default {
           label: "迷你"
         }
       ],
-        paginationSizeOptions: [
+      paginationSizeOptions: [
         {
           label: "10条/页",
           value: 10
@@ -193,11 +221,21 @@ export default {
           value: 100
         }
       ],
+      tableAttrsCodeExampleList
     };
   },
   methods: {
-    showDlg() {
+    showDlg(attrs) {
+      this.tableAttrs = cloneDeep(attrs);
       this.dialogVisibleTableAttrs = true;
+    },
+    async handleCopy(val) {
+      this.tableAttrs[this.curFn] = val;
+      await this.$nextTick();
+      this.$refs.chEditor.aceEditor.setOptions({
+        value: this.tableAttrs[this.curFn]
+      });
+      this.$refs.chEditor.codeValue = this.tableAttrs[this.curFn];
     },
     async handleShow(field) {
       this.curFn = field;
@@ -213,10 +251,14 @@ export default {
     },
     handleEditorInput(value) {
       // 处理编辑器输入的逻辑
-      this.tableAttrs[this.tableAttrs.curFn] = value;
+      this.tableAttrs[this.curFn] = value;
     },
     handleCloseTableAttrs() {
       this.dialogVisibleTableAttrs = false;
+    },
+    handleConfirm() {
+      this.$emit("changeTableAttrs", this.tableAttrs);
+      this.handleCloseTableAttrs();
     }
   }
 };

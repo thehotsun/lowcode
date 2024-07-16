@@ -846,19 +846,35 @@ export function arrayToTree(data, idField = "id", parentField = "pid") {
 }
 
 export function findInTree(tree, fieldName, value) {
-  if (value === undefined) return null;
-  for (const node of tree) {
-    if (node[fieldName] === value) {
-      return node;
+  let count = 0;
+  console.log("findInTree", tree);
+  function exec(tree) {
+    count++;
+    if (count > 200) {
+      console.warn("findInTree函数执行次数超过200！请检查数据是否有循环引用");
+      return null;
     }
-    if (node.children) {
-      const result = findInTree(node.children, fieldName, value);
-      if (result) {
-        return result;
+    if (value === undefined) return null;
+    for (const node of tree) {
+      if (node[fieldName] === value) {
+        return node;
+      }
+      console.log(node, "node");
+      if (node.children) {
+        const result = exec(node.children);
+        if (result) {
+          return result;
+        }
       }
     }
+    return null;
   }
-  return null;
+  try {
+    return exec(tree);
+  } catch (error) {
+    console.error(error);
+    return null;
+  }
 }
 
 export default {

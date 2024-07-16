@@ -150,6 +150,7 @@ export default {
     finalTreeData() {
       let data;
       if (this.dataTransitionFn) {
+        console.log("this.dataTransitionFn");
         data = this.dataTransitionFn(this.treeData);
       } else {
         data = this.treeData;
@@ -163,8 +164,11 @@ export default {
       }
 
       if (currentNodeKey) {
+        console.log("computed");
         if (findInTree(data, nodeKey, currentNodeKey)) {
-          this.$refs.tree.setCurrentKey(currentNodeKey);
+          this.$nextTick(() => {
+            this.$refs.tree.setCurrentKey(currentNodeKey);
+          });
         } else {
           // 如果是我写死的值，则不产生这个警告
           if (!data[0].originalVal) {
@@ -188,10 +192,13 @@ export default {
           isPreview
         } = this;
         if ((currentNodeKey || currentNodeKeyFirst) && !isPreview) {
+          console.log("watch");
           const data = findInTree(treeData, nodeKey, currentNodeKey) || treeData[0];
           setTimeout(() => {
             this.treeListeners["node-click"](data);
           }, 300);
+        } else {
+          this.treeListeners["node-click"]({});
         }
       }
     }

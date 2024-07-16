@@ -36,7 +36,7 @@ export default {
       this.$refs.TableWidget.init(id, formCode);
     },
     showTableAttrs() {
-      this.$refs.TableWidget.$refs.tableAttrsDlg.showDlg();
+      this.$refs.TableWidget.showTableAttrsDlg();
     },
     showPreview() {
       const renderParams = this.$refs.TableWidget.getRenderParams();

@@ -83,7 +83,7 @@
                   <el-tooltip slot="label" class="item" effect="dark" content="匹配中的值会高亮,这里应该是你想当前选中节点的nodeId的值" placement="top-start">
                     <span style="cursor: pointer;font-size: 14px">当前选中<i style="width: 20px" class="el-icon-question"></i></span>
                   </el-tooltip>
-                  <el-input v-model="treeAttrs.currentNodeKey" clearable size="small" placeholder="请输入类似5格式， 其中5是当前选中的nodeId的值"></el-input>
+                  <el-input v-model="treeAttrs.currentNodeKey" clearable size="small" placeholder="请输入nodeId的值"></el-input>
                 </el-form-item>
               </el-col>
               <el-col :span="8">
@@ -91,7 +91,7 @@
                   <el-tooltip slot="label" class="item" effect="dark" content="默认展开的节点的nodeId的数组" placement="top-start">
                     <span style="cursor: pointer;font-size: 14px">默认展开<i style="width: 20px" class="el-icon-question"></i></span>
                   </el-tooltip>
-                  <el-input v-model="treeAttrs.defaultExpandedKeys" clearable size="small" placeholder="请输入类似[2, 3]格式， 其中2和3是默认展开的nodeId的值"></el-input>
+                  <el-input v-model="treeAttrs.defaultExpandedKeys" clearable size="small" placeholder="请输入数组格式nodeId的值"></el-input>
                 </el-form-item>
               </el-col>
               <el-col :span="8">
@@ -99,7 +99,7 @@
                   <el-tooltip slot="label" class="item" effect="dark" content="只有显示复选框时才生效，匹配的节点复选框会被选中" placement="top-start">
                     <span style="cursor: pointer;font-size: 14px">默认选中<i style="width: 20px" class="el-icon-question"></i></span>
                   </el-tooltip>
-                  <el-input v-model="treeAttrs.defaultCheckedKeys" clearable size="small" placeholder="请输入类似[5]格式， 其中5是默认选中的nodeId的值"></el-input>
+                  <el-input v-model="treeAttrs.defaultCheckedKeys" clearable size="small" placeholder="请输入数组格式nodeId的值"></el-input>
                 </el-form-item>
               </el-col>
             </el-row>
@@ -146,10 +146,10 @@
                 slot="label"
                 class="item"
                 effect="dark"
-                content="由于当前通过sql查询很难直接生成树形结构所需的数据结构，因为通过此函数进行数据结构转换（优先级最高）"
+                content="由于当前通过sql查询很难直接生成树形结构所需的数据结构，因此通过此函数进行数据结构转换（优先级最高）"
                 placement="top-start"
               >
-                <span style="cursor: pointer;font-size: 14px">数据转换函数</span>
+                <span style="cursor: pointer;font-size: 14px">数据转换函数</span><i style="width: 20px; font-size: 14px;" class="el-icon-question"></i>
               </el-tooltip>
               <el-input
                 v-model="treeAttrs.dataTransitionFn"

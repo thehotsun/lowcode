@@ -9,9 +9,15 @@ export default {
       initiated: false,
       treeOptions: {},
       treeData: [
-        { originalVal: true, label: "一级 1", id: "1", children: [{ originalVal: true, label: "二级 1-1", id: "11", children: [{ originalVal: true, label: "三级 1-1-1", id: "111" }] }] },
         {
-          originalVal: true, label: "一级 2",
+          originalVal: true,
+          label: "一级 1",
+          id: "1",
+          children: [{ originalVal: true, label: "二级 1-1", id: "11", children: [{ originalVal: true, label: "三级 1-1-1", id: "111" }] }]
+        },
+        {
+          originalVal: true,
+          label: "一级 2",
           id: "2",
           children: [
             { originalVal: true, label: "二级 2-1", id: "21", children: [{ originalVal: true, label: "三级 2-1-1", id: "211" }] },
@@ -19,7 +25,8 @@ export default {
           ]
         },
         {
-          originalVal: true, label: "一级 3",
+          originalVal: true,
+          label: "一级 3",
           id: "3",
           children: [
             { originalVal: true, label: "二级 3-1", id: "31", children: [{ originalVal: true, label: "三级 3-1-1", id: "311" }] },
@@ -68,7 +75,7 @@ export default {
         enterpriseId: this.enterpriseId
       };
     },
-    getRequestConfig() {
+    getRequestConfig(externalParams = {}) {
       const {
         treeOptions: { requestParamsConfig, requestUrl, requestType }
       } = this;
@@ -84,7 +91,8 @@ export default {
         });
         finalUrl = addQueryString(finalParams, requestUrl);
       }
-      const finalData = {};
+      const finalData = externalParams;
+      console.log(externalParams, "externalParams");
       if (data?.length) {
         data.map(item => {
           finalData[item.name] = transformParamsValue(item.value);
@@ -99,8 +107,8 @@ export default {
         headers
       };
     },
-    async disposeRequestEvent() {
-      const { finalUrl, finalType, finalData, headers } = this.getRequestConfig();
+    async disposeRequestEvent(params) {
+      const { finalUrl, finalType, finalData, headers } = this.getRequestConfig(params);
       if (!finalUrl) return { message: "接口没有设置url" };
       const requestHeaders = {};
       headers.map(item => {
@@ -111,6 +119,7 @@ export default {
     },
     queryTreeData(data = {}, isReturn) {
       const params = this.getParams(data);
+      console.log(params, "paramsparams");
       const { isDataModel } = this.treeOptions;
       return (isDataModel ? this.requestTreeData : this.disposeRequestEvent)(params, this.listPageId)
         .then(res => {
