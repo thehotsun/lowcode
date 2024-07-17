@@ -67,7 +67,7 @@ export default {
       // 选中的table数据
       selectList: [],
       panelData: [],
-      filterFiled: [],
+      filterField: [],
       externalParams: {},
       keyField: "",
       onlyRead: false,
@@ -123,7 +123,7 @@ export default {
     },
 
     filterTableOptions() {
-      const { tableOptions, filterFiled } = this;
+      const { tableOptions, filterField } = this;
       if (tableOptions?.length === 0) return [];
       let configOptions = [];
       if (tableOptions[1]?.type === "selection" || tableOptions[1]?.type === "index") {
@@ -132,7 +132,11 @@ export default {
         configOptions = tableOptions.slice(0, 1);
       }
 
-      const options = filterFiled.map(field => tableOptions.find(rawitem => rawitem.prop === field));
+      const options = filterField.map(field => tableOptions.find(rawitem => rawitem.prop === field));
+      this.$nextTick(() => {
+        // 为了解决取消展示全部字段后，再选择展示某个字段，此时高度渲染出现问题，需要重新调用此方法
+        this.$refs.table.$refs.elTable?.doLayout?.();
+      });
       return [...configOptions, ...options];
     },
 
@@ -414,7 +418,7 @@ export default {
       this.showPanel = false;
       this.selectList = [];
       this.panelData = [];
-      this.filterFiled = [];
+      this.filterField = [];
       this.keyField = "";
       this.onlyRead = false;
       this.previewMode = false;
@@ -463,12 +467,12 @@ export default {
 
     composeData(emptyData) {
       this.formOptions = this.composeFromOptions(this.tableConfigJSON);
-      this.filterFiled = [];
+      this.filterField = [];
       this.tableOptions = this.tableConfigJSON
         .filter(item => item.show)
         .map(item => {
           const obj = this.setSingleTableOptions(item, emptyData);
-          this.filterFiled.push(obj.prop);
+          this.filterField.push(obj.prop);
           return obj;
         });
 
@@ -1584,7 +1588,7 @@ export default {
       });
     },
     filterFieldChange(val) {
-      this.filterFiled = val;
+      this.filterField = val;
     },
     handleSetting(e) {
       e.stopPropagation();

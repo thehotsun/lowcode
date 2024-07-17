@@ -138,10 +138,12 @@ export default {
               this.treeData = res.data;
             }
           } else {
+            this.treeData = [];
             console.error(`queryTreeData message: ${res.message}`);
           }
         })
         .catch(e => {
+          this.treeData = [];
           console.error(`queryTreeData error: ${e}`);
           throw new Error(e);
         });
