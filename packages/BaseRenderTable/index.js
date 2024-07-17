@@ -1,10 +1,13 @@
 import "./table.less";
 import { decorator, mergeStyle } from "../../utils";
 import { omit } from "lodash";
+import { tableOptionsCodeExampleList } from "/utils/codeExampleList";
+import codeExample from "/packages/setupTable/components/dialogs/components/codeExample.vue";
 
 import { h } from "vue";
 export default {
   name: "BaseRenderTable",
+  components: { codeExample },
   data() {
     return {
       zanwu: require("@/assets/noData.png"),
@@ -63,6 +66,15 @@ export default {
 
     expose_clearCurCellPro() {
       this.curCellProperty = "";
+    },
+
+    async handleCopy(val) {
+      this.codeValue.row[this.codeValue.prop] = val;
+      await this.$nextTick();
+      this.$refs.chEditor.aceEditor.setOptions({
+        value: val
+      });
+      this.$refs.chEditor.codeValue = val;
     },
 
     rowClick(row) {
@@ -411,7 +423,8 @@ export default {
       codeValue,
       showCodeEditor,
       handleClose,
-      height
+      height,
+      handleCopy
     } = this;
     const defaultTableAttrs = {
       "row-style": rowStyle,
@@ -431,7 +444,7 @@ export default {
 
     const defaultDialogAttrs = {
       beforeClose: handleClose,
-      title: "代码编写",
+      title: tableOptions.find(item => item.prop === codeValue.prop)?.label || "代码编写",
       visible: showCodeEditor,
       width: "900px",
       appendToBody: true
@@ -495,14 +508,8 @@ export default {
               attrs: { ...defaultDialogAttrs }
             }}
           >
-            <js-code-editor
-              ref="chEditor"
-              mode="javascript"
-              readonly={false}
-              value={codeValue.row[codeValue.prop]}
-              display-height="600px"
-              {...{ on: codeEditorListeners }}
-            ></js-code-editor>
+            <js-code-editor ref="chEditor" mode="javascript" readonly={false} value={codeValue.row[codeValue.prop]} {...{ on: codeEditorListeners }}></js-code-editor>
+            <codeExample val={tableOptionsCodeExampleList[codeValue.prop]} oncopy={handleCopy}></codeExample>
           </el-dialog>
         ) : null}
       </div>

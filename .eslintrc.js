@@ -24,7 +24,7 @@ module.exports = {
         }
       }
     ],
-    "max-len": ["error", { code: 800 }],
+    "max-len": ["error", { code: 1000 }],
     "vue/name-property-casing": ["error", "PascalCase"],
     "accessor-pairs": 1,
     "arrow-spacing": [

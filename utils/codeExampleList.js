@@ -19,3 +19,15 @@ export const tableAttrsCodeExampleList = {
   dataTransitionFn:
     "function dataTransition(data) {\n  // data 是接口返回的数据\n  // 数组对象中的id字段\n  const idField = 'id';\n  // 数组对象中指向父级的字段\n  const parentField = 'parentField';\n  // 创建一个哈希表，存储每个节点\n  const idMapping = data.reduce((acc, el, i) => {\n    acc[el[idField]] = i;\n    return acc;\n  }, {});\n\n  const root = [];\n  data.forEach(el => {\n    // 如果是根节点（没有父节点），将其加入根节点数组\n    if (el[parentField] === null) {\n      root.push(el);\n      return;\n    }\n\n    // 使用哈希表获取父节点\n    const parentEl = data[idMapping[el[parentField]]];\n\n    // 如果父节点没有子节点数组，则创建一个\n    if (!parentEl.children) {\n      parentEl.children = [];\n    }\n\n    // 将当前节点加入父节点的子节点数组\n    parentEl.children.push(el);\n  });\n\n  return root;\n}"
 };
+
+export const tableOptionsCodeExampleList = {
+  filters: "[{text: '2016-05-01(显示值)', value: '2016-05-01(传递给筛选函数的值)'}]",
+  "sort-method":
+    "function sortMethod(a, b) {\n  // a是需要排序的上一个值，b是需要排序的下一个值\n  // 需返回一个数字，和 Array.sort 表现一致\n  if (a < b) {\n    return -1\n  } else if (a > b) {\n    return 1\n  } else {\n    return 0\n  }\n}",
+  "filter-method":
+    "function filterHandler(value, row, column) {\r\n  // value是筛选选中的值，如果选择多个，则会将值挨个遍历此方法\r\n  \r\n  // 取出属性名\r\n  const property = column['property'];\r\n  // 筛选\r\n  return row[property] === value;\r\n}",
+  renderHeader:
+    'function render() {\n  // 此函数直接返回一个类似vue options组件的对象，如data、methods等，\n  // 模板则使用template代替，由于某些原因，尽量使用``来包裹整个字符串\n  return {\n    methods: {\n      getValue () {\n        return this.data.s\n      }\n    },\n    template: `<div><i  class="el-icon-date"></i> <span> {{getValue()}} </span></div>`\n  }\n}',
+  formatter:
+    'function render() {\n  // 此函数直接返回一个类似vue options组件的对象，如data、methods等，\n  // 模板则使用template代替，由于某些原因，尽量使用``来包裹整个字符串\n  return {\n    methods: {\n      getValue () {\n        return this.data.s\n      }\n    },\n    template: `<div><i  class="el-icon-date"></i> <span> {{getValue()}} </span></div>`\n  }\n}'
+};
