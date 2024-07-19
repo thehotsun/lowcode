@@ -4,6 +4,7 @@ import treeItem from "./component/treeItem";
 import { merge, isEmpty } from "lodash";
 import { TreeAttrs } from "/baseConfig/treeBaseConfig";
 import { formatterWidthOrHeightStyle } from "/utils";
+import tabs from "/mixins/tabs";
 
 export default {
   name: "CompleteTable",
@@ -12,6 +13,7 @@ export default {
     tableItem,
     treeItem
   },
+  mixins: [tabs],
   props: {
     listPageIdProp: String,
     wrapHeightProp: [Number, String]
@@ -26,8 +28,8 @@ export default {
         dragging: false,
         activeSplitter: null
       },
-      tabs: [],
-      activeName: 0
+      tabsOptions: {},
+      activeName: "0"
     };
   },
 
@@ -120,7 +122,7 @@ export default {
       const {
         tabTableOptions: { tabTableOptionsArr, tabsOptions }
       } = json;
-      this.tabs = tabsOptions;
+      this.tabsOptions = this.tabAttrsFormatter(tabsOptions);
       tabTableOptionsArr.map((tableOptions, index) => {
         this.$refs.tableItemTab[index].init(isPreview, tableOptions, externalParams);
       });
@@ -193,7 +195,13 @@ export default {
   },
 
   render() {
-    const { pageLayout, leftWidth, onMouseDown, tabs, activeName } = this;
+    const {
+      pageLayout,
+      leftWidth,
+      onMouseDown,
+      tabsOptions: { attrs = {}, showLableInfo = [] },
+      activeName
+    } = this;
 
     if (pageLayout === "tree-table") {
       return (
@@ -209,9 +217,14 @@ export default {
       );
     } else if (pageLayout === "tabs-table") {
       return (
-        <el-tabs v-model={activeName}>
-          {tabs.map((tab, index) => (
-            <el-tab-pane label={tab.label} name={index}>
+        <el-tabs
+          v-model={activeName}
+          {...{
+            attrs
+          }}
+        >
+          {showLableInfo.map((label, index) => (
+            <el-tab-pane label={label} name={index + ""} class="full">
               <tableItem ref="tableItemTab"></tableItem>
             </el-tab-pane>
           ))}

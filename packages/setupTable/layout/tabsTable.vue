@@ -5,8 +5,8 @@
         <el-button size="mini" @click="showTabsAttrs">tabs属性设置</el-button>
       </template>
     </operate>
-    <el-tabs v-model="activeName">
-      <el-tab-pane v-for="(options, index) in tabsOptions" :key="index" :label="options.label" :name="index">
+    <el-tabs v-model="activeName" class="full">
+      <el-tab-pane v-for="(name, index) in finalTabsOptions.showLableInfo" :key="index" :label="name" :name="'' + index" class="full">
         <TableWidget ref="tableItemTab"> </TableWidget>
       </el-tab-pane>
     </el-tabs>
@@ -24,10 +24,12 @@ import previewDlg from "../components/dialogs/previewDlg.vue";
 
 import operate from "../components/operate.vue";
 import { TabsAttrs } from "/baseConfig/tabsBaseConfigs";
+import tabs from "/mixins/tabs";
 
-import { merge } from "lodash";
+import { merge, cloneDeep } from "lodash";
 export default {
   components: { TableWidget, TabsAttrDlg, operate, previewDlg },
+  mixins: [tabs],
   props: {
     pageLayout: {
       type: String,
@@ -39,11 +41,28 @@ export default {
   data() {
     return {
       leftwidth: "200px",
-      tabsOptions: {},
+      tabsOptions: new TabsAttrs(),
+      tabTableOptionsArr: [],
       groupId: "",
       formCode: "",
-      activeName: 0
+      activeName: "0"
     };
+  },
+
+  computed: {
+    finalTabsOptions() {
+      return this.tabAttrsFormatter(this.tabsOptions);
+    }
+  },
+
+  watch: {
+    // "tabsOptions.showLableInfo": {
+    //   handler(val) {
+    //     console.warn("finalTabsOptions.showLableInfo", val);
+    //     this.$nextTick(() => {});
+    //     this.initTableWidget(id, formCode, this.tabTableOptionsArr);
+    //   }
+    // }
   },
   inject: ["getListConfigJSON", "saveListConfigJSON"],
 
@@ -55,16 +74,41 @@ export default {
       if (data) {
         const obj = JSON.parse(data);
         console.log("parsejson", obj);
-        const { tabsOptions = {}, tabTableOptionsArr = [] } = obj;
+        // const { tabsOptions = {},  tabTableOptionsArr = [] } = obj;
+        const { tabsOptions = {}, ...tableOptions } = obj;
+        const tabTableOptionsArr = [];
+        tabTableOptionsArr.length = 3;
+        for (let index = 0; index < tabTableOptionsArr.length; index++) {
+          tabTableOptionsArr[index] = cloneDeep(tableOptions);
+        }
+        // tabTableOptionsArr.fill(cloneDeep(tableOptions));
         this.tabsOptions = merge(new TabsAttrs(), tabsOptions);
+        this.tabTableOptionsArr = tabTableOptionsArr;
         await this.$nextTick();
-        tabTableOptionsArr.map((tableOptions, index) => {
-          this.$refs.tableItemTab[index].init(isPreview, tableOptions, externalParams);
-        });
+        this.initTableWidget(id, formCode, tabTableOptionsArr);
+        await this.$nextTick();
+        this.getBtnConfigOptions();
       } else {
         console.warn("当前多tab页的options为空！");
       }
     },
+
+    initTableWidget(id, formCode, tabTableOptionsArr) {
+      tabTableOptionsArr.map((tableOptions, index) => {
+        // 需要判断是否是新增状态，而且后期还要考虑和tab页对应问题
+        this.$refs.tableItemTab?.[index]?.init(id, formCode, tableOptions || false, true);
+      });
+    },
+
+    async getBtnConfigOptions() {
+      console.log(this.$refs.tableItemTab.length, "getBtnConfigOptions");
+      const arr = await this.$refs.tableItemTab?.[0]?.expose_getBtnConfigOptions();
+      console.warn(arr, "getBtnConfigOptions", this.$refs.tableItemTab.length);
+      this.$refs.tableItemTab.map(instance => {
+        instance.expose_setBtnConfigOptions(arr);
+      });
+    },
+
     showTableAttrs() {
       this.$refs.TableWidget.showTableAttrsDlg();
     },
@@ -86,7 +130,6 @@ export default {
 
     changeTabsAttrs(tabsOptions) {
       this.tabsOptions = tabsOptions;
-      this.$refs.TabsAttrDlg.setTabsOptions(this.tabsOptions);
     },
 
     getRenderParams() {
@@ -141,6 +184,14 @@ export default {
 }
 .content {
   display: flex;
+  width: 100%;
+  height: 100%;
+}
+::v-deep .el-tabs__content {
+  width: 100%;
+  height: 100%;
+}
+.full {
   width: 100%;
   height: 100%;
 }

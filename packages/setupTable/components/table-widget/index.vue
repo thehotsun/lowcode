@@ -161,14 +161,12 @@ export default {
   },
 
   methods: {
-    async init(id = "", formCode, jsonOptions) {
+    async init(id = "", formCode, jsonOptions, externalPass) {
       console.log(id, "id");
       this.groupId = id;
-      this.queryTableList();
-      this.queryFormList();
-      this.queryMetaList();
-      this.queryFlowList();
-      this.queryAuthorizeList();
+      if (!externalPass) {
+        this.expose_getBtnConfigOptions();
+      }
       let obj;
       if (jsonOptions === undefined) {
         const res = await this.requestTableConfig();
@@ -206,6 +204,60 @@ export default {
         this.queryFieldList();
         this.getPrimekey();
       }
+    },
+
+    expose_getBtnConfigOptions() {
+      return Promise.all([this.queryTableList(), this.queryFormList(), this.queryMetaList(), this.queryFlowList(), this.queryAuthorizeList()]);
+    },
+
+    expose_setBtnConfigOptions(btnConfigOptions = []) {
+      const [tableList, formList, metaList, flowList, authorizeList] = btnConfigOptions;
+      this.tableListExtraOption = {
+        props: {
+          emitPath: false,
+          key: "groupId",
+          label: "groupName",
+          children: "children"
+        },
+        options: tableList
+      };
+
+      this.metaListExtraOption = {
+        options: metaList,
+        props: {
+          label: "businessName",
+          key: "tableName"
+        }
+      };
+
+      this.flowListExtraOption = {
+        options: flowList,
+        props: {
+          label: "name",
+          key: "flowKey",
+          children: "flowDefinitionDtoList",
+          emitPath: false
+        }
+      };
+
+      this.formListExtraOption = {
+        options: formList,
+        props: {
+          label: "formName",
+          key: "formId"
+        }
+      };
+
+      this._btnAuthorize = {
+        options: authorizeList.concat({
+          actionName: "所有人可操作",
+          actionCode: "defaultShow"
+        }),
+        props: {
+          label: "actionName",
+          key: "actionCode"
+        }
+      };
     },
 
     btnsColumnDrop() {
@@ -354,7 +406,7 @@ export default {
     },
 
     queryFormList() {
-      this.requestFormList(this.groupId).then(res => {
+      return this.requestFormList(this.groupId).then(res => {
         console.log(res.data, "queryFormList");
         this.formListExtraOption = {
           options: res.data,
@@ -363,11 +415,12 @@ export default {
             key: "formId"
           }
         };
+        return res.data;
       });
     },
 
     queryTableList() {
-      this.requestTableList().then(res => {
+      return this.requestTableList().then(res => {
         this.tableListExtraOption = {
           props: {
             emitPath: false,
@@ -377,6 +430,7 @@ export default {
           },
           options: res.data
         };
+        return res.data;
       });
     },
 
@@ -397,10 +451,12 @@ export default {
           key: "tableName"
         }
       };
+
+      return res.data;
     },
 
     queryFlowList() {
-      this.requestFlowList().then(data => {
+      return this.requestFlowList().then(data => {
         this.flowListExtraOption = {
           options: data,
           props: {
@@ -410,11 +466,12 @@ export default {
             emitPath: false
           }
         };
+        return data;
       });
     },
 
     queryAuthorizeList() {
-      this.requestAuthorizeList().then(res => {
+      return this.requestAuthorizeList().then(res => {
         this._btnAuthorize = {
           options: res.data.concat({
             actionName: "所有人可操作",
@@ -425,6 +482,7 @@ export default {
             key: "actionCode"
           }
         };
+        return res.data;
       });
     },
 

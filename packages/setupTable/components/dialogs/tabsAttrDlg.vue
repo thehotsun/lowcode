@@ -1,6 +1,6 @@
 <template>
   <el-dialog
-    title="树属性设置"
+    title="tabs属性设置"
     :visible.sync="dialogVisibleTabsAttrs"
     :close-on-click-modal="false"
     :close-on-press-escape="false"
@@ -8,10 +8,21 @@
     :before-close="handleCloseTabsAttrs"
   >
     <div style="min-width: 60px;background: #fff;padding: 10px;">
-      <el-form ref="ruleForm" :model="tabsAttrs" :rules="rules" label-width="130px" style="padding-bottom: 20px"> </el-form>
-      <el-dialog :before-close="handleClose" title="代码编写" :visible="showCodeEditor" width="900px" :append-to-body="true">
-        <js-code-editor ref="chEditor" mode="javascript" :readonly="false" :value="tabsAttrs[curFn]" @input="handleEditorInput"></js-code-editor>
-      </el-dialog>
+      <el-form ref="ruleForm" :model="tabsAttrs" :rules="rules" label-width="130px" style="padding-bottom: 20px">
+        <!-- <el-form-item label="tab页名称" prop="showLableInfo">
+          <el-input v-model="tabsAttrs.showLableInfo" placeholder="请输入tab1,tab2,tab3格式"></el-input>
+        </el-form-item> -->
+        <el-form-item label="类型" prop="type">
+          <el-select v-model="tabsAttrs.attrs.type" placeholder="请选择">
+            <el-option v-for="item in typeOptions" :key="item.value" :label="item.label" :value="item.value"> </el-option>
+          </el-select>
+        </el-form-item>
+        <el-form-item label="标签位置" prop="tabPosition">
+          <el-select v-model="tabsAttrs.attrs.tabPosition" placeholder="请选择">
+            <el-option v-for="item in tabPositionOptions" :key="item.value" :label="item.label" :value="item.value"> </el-option>
+          </el-select>
+        </el-form-item>
+      </el-form>
     </div>
     <span slot="footer" class="dialog-footer">
       <el-button @click="handleCloseTabsAttrs">取消</el-button>
@@ -36,7 +47,27 @@ export default {
       rules: {},
       deliveryFieldsOption: {
         options: []
-      }
+      },
+      typeOptions: [
+        {
+          label: "默认",
+          value: ""
+        },
+        {
+          label: "选项卡样式",
+          value: "card"
+        },
+        {
+          label: "卡片化",
+          value: "border-card"
+        }
+      ],
+      tabPositionOptions: [
+        { label: "左", value: "left" },
+        { label: "右", value: "right" },
+        { label: "上", value: "top" },
+        { label: "下", value: "bottom" }
+      ]
     };
   },
 
