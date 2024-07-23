@@ -9,19 +9,16 @@
   >
     <div style="min-width: 60px;background: #fff;padding: 10px;">
       <el-form ref="ruleForm" :model="tabsAttrs" :rules="rules" label-width="130px" style="padding-bottom: 20px">
-        <!-- <el-form-item label="tab页名称" prop="showLableInfo">
-          <el-input v-model="tabsAttrs.showLableInfo" placeholder="请输入tab1,tab2,tab3格式"></el-input>
-        </el-form-item> -->
         <el-form-item label="类型" prop="type">
           <el-select v-model="tabsAttrs.attrs.type" placeholder="请选择">
             <el-option v-for="item in typeOptions" :key="item.value" :label="item.label" :value="item.value"> </el-option>
           </el-select>
         </el-form-item>
-        <el-form-item label="标签位置" prop="tabPosition">
+        <!-- <el-form-item label="标签位置" prop="tabPosition">
           <el-select v-model="tabsAttrs.attrs.tabPosition" placeholder="请选择">
             <el-option v-for="item in tabPositionOptions" :key="item.value" :label="item.label" :value="item.value"> </el-option>
           </el-select>
-        </el-form-item>
+        </el-form-item> -->
       </el-form>
     </div>
     <span slot="footer" class="dialog-footer">

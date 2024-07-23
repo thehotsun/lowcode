@@ -1,8 +1,7 @@
 export default {
   methods: {
     tabAttrsFormatter(options) {
-      let { attrs = {}, showLableInfo = "" } = options;
-      showLableInfo = showLableInfo.split(",");
+      const { attrs = {}, showLableInfo = [] } = options;
       return {
         attrs,
         showLableInfo

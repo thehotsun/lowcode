@@ -29,7 +29,10 @@ export default {
         activeSplitter: null
       },
       tabsOptions: {},
-      activeName: "0"
+      activeName: "0",
+      wrapHeight: {
+        height: ""
+      }
     };
   },
 
@@ -49,6 +52,36 @@ export default {
       default: () => () => {
         console.warn("inject缺失getListPageId!");
       }
+    },
+    getWrapHeight: {
+      default: () => () => {
+        console.warn("inject缺失getWrapHeight!");
+        return {
+          height: 0
+        };
+      }
+    }
+  },
+
+  provide() {
+    return {
+      getWrapHeight: () => (this.pageLayout === "tabs-table" ? this.wrapHeight : this.getWrapHeight())
+    };
+  },
+
+  watch: {
+    pageLayout: {
+      handler(val) {
+        if (val === "tabs-table") {
+          setTimeout(() => {
+            try {
+              this.wrapHeight.height = parseFloat(window.getComputedStyle(this.$refs.elTabs.$el.querySelector(".el-tabs__content")).height);
+            } catch (error) {
+              console.error("获取低代码table渲染elTabsDom高度报错，报错信息：", error);
+            }
+          }, 300);
+        }
+      }
     }
   },
   created() {
@@ -65,19 +98,25 @@ export default {
     },
 
     async expose_preview(data) {
-      const { treeOptions = {}, pageLayout = "table", ...tableOptions } = data;
+      const { pageLayout = "table", ...otherData } = data;
       this.pageLayout = pageLayout;
       await this.$nextTick();
       if (pageLayout === "tree-table") {
+        const { treeOptions = {}, ...tableOptions } = otherData;
         this.$refs.tableItem.expose_preview(tableOptions);
         this.$refs.treeItem.expose_preview(treeOptions);
         if (treeOptions.width) {
           this.leftWidth = formatterWidthOrHeightStyle(treeOptions.width);
         }
       } else if (pageLayout === "tabs-table") {
-        console.log();
+        const { tabTableOptionsArr = [], tabsOptions = {} } = otherData;
+        this.tabsOptions = this.tabAttrsFormatter(tabsOptions);
+        await this.$nextTick();
+        tabTableOptionsArr.map((options, index) => {
+          this.$refs[`tableItemTab${index}`].expose_preview(options);
+        });
       } else {
-        this.$refs.tableItem.expose_preview(tableOptions);
+        this.$refs.tableItem.expose_preview(otherData);
       }
     },
     async init(isPreview, json, externalParams) {
@@ -118,13 +157,12 @@ export default {
       this.$refs.tableItem.init(isPreview, json, externalParams);
     },
     // TODO externalParams不同怎么处理？
-    tabsTableInit(isPreview, json, externalParams) {
-      const {
-        tabTableOptions: { tabTableOptionsArr, tabsOptions }
-      } = json;
+    async tabsTableInit(isPreview, json, externalParams) {
+      const { tabTableOptionsArr, tabsOptions } = json;
       this.tabsOptions = this.tabAttrsFormatter(tabsOptions);
+      await this.$nextTick();
       tabTableOptionsArr.map((tableOptions, index) => {
-        this.$refs.tableItemTab[index].init(isPreview, tableOptions, externalParams);
+        this.$refs[`tableItemTab${index}`].init(isPreview, tableOptions, externalParams);
       });
     },
 
@@ -199,9 +237,11 @@ export default {
       pageLayout,
       leftWidth,
       onMouseDown,
-      tabsOptions: { attrs = {}, showLableInfo = [] },
-      activeName
+      tabsOptions: { attrs = {}, showLableInfo = [] }
     } = this;
+
+    // eslint-disable-next-line prefer-const
+    let { activeName } = this;
 
     if (pageLayout === "tree-table") {
       return (
@@ -218,14 +258,16 @@ export default {
     } else if (pageLayout === "tabs-table") {
       return (
         <el-tabs
+          ref="elTabs"
           v-model={activeName}
+          class="tabsWrap"
           {...{
             attrs
           }}
         >
-          {showLableInfo.map((label, index) => (
-            <el-tab-pane label={label} name={index + ""} class="full">
-              <tableItem ref="tableItemTab"></tableItem>
+          {showLableInfo.map((item, index) => (
+            <el-tab-pane label={item.title} name={index + ""} class="panefull">
+              <tableItem ref={"tableItemTab" + index}></tableItem>
             </el-tab-pane>
           ))}
         </el-tabs>

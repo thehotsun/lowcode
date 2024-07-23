@@ -1,12 +1,12 @@
 <template>
   <div class="leftTreeRightTableWrap">
-    <operate @handleSave="handleSave" @showTableAttrs="showTableAttrs" @showPreview="showPreview">
+    <operate :disposeShowTableSetting="disposeShowTableSetting" @handleSave="handleSave" @showTableAttrs="showTableAttrs" @showPreview="showPreview">
       <template slot="btn">
         <el-button size="mini" @click="showTabsAttrs">tabs属性设置</el-button>
       </template>
     </operate>
     <el-tabs v-model="activeName" class="full">
-      <el-tab-pane v-for="(name, index) in finalTabsOptions.showLableInfo" :key="index" :label="name" :name="'' + index" class="full">
+      <el-tab-pane v-for="(item, index) in finalTabsOptions.showLableInfo" :key="index" :label="item.title" :name="'' + index" class="full">
         <TableWidget ref="tableItemTab"> </TableWidget>
       </el-tab-pane>
     </el-tabs>
@@ -55,62 +55,74 @@ export default {
     }
   },
 
-  watch: {
-    // "tabsOptions.showLableInfo": {
-    //   handler(val) {
-    //     console.warn("finalTabsOptions.showLableInfo", val);
-    //     this.$nextTick(() => {});
-    //     this.initTableWidget(id, formCode, this.tabTableOptionsArr);
-    //   }
-    // }
-  },
-  inject: ["getListConfigJSON", "saveListConfigJSON"],
+  watch: {},
+  inject: ["getListConfigJSON", "saveListConfigJSON", "getPageInfo", "showTableSetting"],
 
   methods: {
     async init(id = "", formCode) {
       this.groupId = id;
       this.formCode = formCode;
       const { data } = await this.requestTableConfig(id);
+      const showLableInfo = this.getPageInfo().tabOptions.map(item => {
+        return {
+          id: item.id,
+          title: item.title
+        };
+      });
       if (data) {
         const obj = JSON.parse(data);
         console.log("parsejson", obj);
-        // const { tabsOptions = {},  tabTableOptionsArr = [] } = obj;
-        const { tabsOptions = {}, ...tableOptions } = obj;
-        const tabTableOptionsArr = [];
-        tabTableOptionsArr.length = 3;
-        for (let index = 0; index < tabTableOptionsArr.length; index++) {
-          tabTableOptionsArr[index] = cloneDeep(tableOptions);
-        }
+        const { tabsOptions = {}, tabTableOptionsArr = [] } = obj;
+        // const { tabsOptions = {}, ...tableOptions } = obj;
+        // const tabTableOptionsArr = [];
+        // // tabTableOptionsArr.length = 3;
+        // for (let index = 0; index < tabTableOptionsArr.length; index++) {
+        //   tabTableOptionsArr[index] = cloneDeep(tableOptions);
+        // }
         // tabTableOptionsArr.fill(cloneDeep(tableOptions));
         this.tabsOptions = merge(new TabsAttrs(), tabsOptions);
-        this.tabTableOptionsArr = tabTableOptionsArr;
-        await this.$nextTick();
-        this.initTableWidget(id, formCode, tabTableOptionsArr);
+        this.tabTableOptionsArr = showLableInfo.map(tab => {
+          return tabTableOptionsArr.find(item => item.id === tab.id);
+        });
+      } else {
+        this.tabsOptions = new TabsAttrs();
+        this.tabTableOptionsArr = [];
+        this.tabTableOptionsArr.length = showLableInfo.length;
+        this.tabTableOptionsArr.fill(false);
+      }
+      this.tabsOptions.showLableInfo = showLableInfo;
+      await this.$nextTick();
+      this.initTableWidget(id, formCode, this.tabTableOptionsArr);
+      if (this.tabTableOptionsArr.length) {
         await this.$nextTick();
         this.getBtnConfigOptions();
-      } else {
-        console.warn("当前多tab页的options为空！");
       }
     },
 
     initTableWidget(id, formCode, tabTableOptionsArr) {
       tabTableOptionsArr.map((tableOptions, index) => {
-        // 需要判断是否是新增状态，而且后期还要考虑和tab页对应问题
         this.$refs.tableItemTab?.[index]?.init(id, formCode, tableOptions || false, true);
       });
     },
 
     async getBtnConfigOptions() {
       console.log(this.$refs.tableItemTab.length, "getBtnConfigOptions");
-      const arr = await this.$refs.tableItemTab?.[0]?.expose_getBtnConfigOptions();
-      console.warn(arr, "getBtnConfigOptions", this.$refs.tableItemTab.length);
-      this.$refs.tableItemTab.map(instance => {
-        instance.expose_setBtnConfigOptions(arr);
-      });
+      try {
+        const arr = await this.$refs.tableItemTab?.[0]?.expose_getBtnConfigOptions();
+        this.$refs.tableItemTab.map(instance => {
+          instance.expose_setBtnConfigOptions(arr);
+        });
+      } catch (error) {
+        console.error("getBtnConfigOptions:", error);
+      }
+    },
+
+    disposeShowTableSetting() {
+      this.showTableSetting(this.activeName);
     },
 
     showTableAttrs() {
-      this.$refs.TableWidget.showTableAttrsDlg();
+      this.$refs.tableItemTab[this.activeName].showTableAttrsDlg();
     },
 
     showPreview() {
@@ -133,10 +145,13 @@ export default {
     },
 
     getRenderParams() {
-      const tableWidgetArr = this.$refs.TableWidget;
+      const tableWidgetArr = this.$refs.tableItemTab;
 
-      const tabTableOptionsArr = tableWidgetArr.map(tableWidge => {
-        return tableWidge.getRenderParams();
+      const tabTableOptionsArr = tableWidgetArr.map((tableWidge, index) => {
+        return {
+          ...tableWidge.getRenderParams(),
+          id: this.tabsOptions.showLableInfo[index].id
+        };
       });
 
       return {

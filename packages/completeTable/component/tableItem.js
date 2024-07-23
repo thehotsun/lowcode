@@ -691,6 +691,9 @@ export default {
                     this.tableData = res.data;
                     console.error(`queryTableData arrayToTree error: ${error}`);
                   }
+                } else {
+                  console.warn("当前tableData配置了树结构，但是同时缺失数据转换函数和转换字段！");
+                  this.tableData = res.data;
                 }
               } else {
                 this.tableData = res.data;

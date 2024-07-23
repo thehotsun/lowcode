@@ -2,7 +2,7 @@
   <div class="top">
     &nbsp;
     <div class="operate">
-      <el-button size="mini" @click="showTableSetting">页面属性</el-button>
+      <el-button size="mini" @click="handleTableSetting">页面属性</el-button>
       <slot name="btn"></slot>
       <el-button size="mini" @click="showTableAttrs">表格属性设置</el-button>
       <el-button size="mini" @click="showPreview">预览</el-button>
@@ -13,7 +13,20 @@
 
 <script>
 export default {
+  props: {
+    disposeShowTableSetting: {
+      type: Function,
+      default() {
+        return null;
+      }
+    }
+  },
   inject: ["showTableSetting"],
+  computed: {
+    handleTableSetting() {
+      return this.disposeShowTableSetting || this.showTableSetting;
+    }
+  },
   methods: {
     async handleSave() {
       this.$emit("handleSave");

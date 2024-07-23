@@ -1,11 +1,10 @@
 export function TabsAttrs() {
   return {
-    showLableInfo: "a,b,c",
+    showLableInfo: [],
     attrs: {
       type: "",
       tabPosition: "top",
-      stretch: false,
-      beforeLeave: ""
+      stretch: false
     }
   };
 }
