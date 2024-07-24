@@ -63,7 +63,7 @@ export default {
       this.groupId = id;
       this.formCode = formCode;
       const { data } = await this.requestTableConfig(id);
-      const showLableInfo = this.getPageInfo().tabOptions.map(item => {
+      const showLableInfo = this.getPageInfo().tabs.map(item => {
         return {
           id: item.id,
           title: item.title
@@ -163,15 +163,17 @@ export default {
     // 保存按钮事件
     handleSubmitTableConfig() {
       const renderParams = this.getRenderParams();
-      // TODO 多个列表的多个按钮
+      const { tabTableOptionsArr } = renderParams;
       const actionList = [];
-      renderParams.formOptions?.map(item => {
-        if (item.authorize !== "defaultShow") {
-          actionList.push({
-            actionCode: `${this.formCode}:${item.btnId}:${item.authorize}`,
-            actionName: item.tagAttrs.value
-          });
-        }
+      tabTableOptionsArr.map(tabTableOption => {
+        tabTableOption.formOptions?.map((item, index) => {
+          if (item.authorize !== "defaultShow") {
+            actionList.push({
+              actionCode: `${this.formCode}:${item.btnId}:${item.authorize}`,
+              actionName: `${this.getPageInfo().tabs[index].tableName}:${item.tagAttrs.value}`
+            });
+          }
+        });
       });
       console.log("savejson", renderParams);
       return this.saveListConfigJSON(

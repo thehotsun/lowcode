@@ -339,7 +339,6 @@ export default {
       return [
         {
           elRowAttrs: {
-            gutter: 10,
             type: "flex",
             align: "middle",
             justify: "start"

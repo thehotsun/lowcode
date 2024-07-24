@@ -157,12 +157,12 @@ export default {
       this.$refs.tableItem.init(isPreview, json, externalParams);
     },
     // TODO externalParams不同怎么处理？
-    async tabsTableInit(isPreview, json, externalParams) {
+    async tabsTableInit(isPreview, json, externalParams = {}) {
       const { tabTableOptionsArr, tabsOptions } = json;
       this.tabsOptions = this.tabAttrsFormatter(tabsOptions);
       await this.$nextTick();
       tabTableOptionsArr.map((tableOptions, index) => {
-        this.$refs[`tableItemTab${index}`].init(isPreview, tableOptions, externalParams);
+        this.$refs[`tableItemTab${index}`].init(isPreview, tableOptions, { ...externalParams, tabId: tableOptions.id });
       });
     },
 
