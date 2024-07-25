@@ -19,6 +19,9 @@
             <el-option v-for="item in tabPositionOptions" :key="item.value" :label="item.label" :value="item.value"> </el-option>
           </el-select>
         </el-form-item>
+        <el-form-item label="标签宽度" prop="tabPosition">
+          <el-checkbox v-model="tabsAttrs.attrs.stretch">是否平分父元素宽度</el-checkbox>
+        </el-form-item>
       </el-form>
     </div>
     <span slot="footer" class="dialog-footer">
