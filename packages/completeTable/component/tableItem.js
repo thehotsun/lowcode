@@ -390,11 +390,24 @@ export default {
           this.headerHeight =
             parseFloat(window.getComputedStyle(this.$refs.elHeader.$el).height) +
             (this.showSearchFrom ? parseFloat(window.getComputedStyle(this.$refs.elHeaderSearchFrom.$el).height) + 20 : 0);
-          console.log(this.headerHeight, " this.headerHeight");
+          console.log(
+            this.headerHeight,
+            " this.headerHeight",
+            this.$refs.elHeader.$el,
+            this.$refs.elHeader.$el.offsetHeight,
+            window.getComputedStyle(this.$refs.elHeader.$el),
+            window.getComputedStyle(this.$refs.elHeader.$el).height,
+            parseFloat(window.getComputedStyle(this.$refs.elHeader.$el).height),
+            this.$refs.elHeaderSearchFrom?.$el,
+            this.$refs.elHeaderSearchFrom?.$el.offsetHeight,
+            window.getComputedStyle(this.$refs.elHeaderSearchFrom.$el),
+            window.getComputedStyle(this.$refs.elHeaderSearchFrom.$el).height,
+            parseFloat(window.getComputedStyle(this.$refs.elHeaderSearchFrom.$el).height)
+          );
         } catch (error) {
           console.error("获取低代码table header高度报错，报错信息：", error);
         }
-      }, 1000);
+      }, 300);
     },
 
     // 清空数据

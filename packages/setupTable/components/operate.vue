@@ -15,10 +15,8 @@
 export default {
   props: {
     disposeShowTableSetting: {
-      type: Function,
-      default() {
-        return null;
-      }
+      type: [Boolean, Function],
+      default: false
     }
   },
   inject: ["showTableSetting"],

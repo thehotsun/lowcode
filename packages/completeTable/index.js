@@ -82,6 +82,12 @@ export default {
           }, 300);
         }
       }
+    },
+    activeName(val) {
+      // eltable自己设置高度有问题，需要切换后重新触发布局方法
+      setTimeout(() => {
+        this.$refs[`tableItemTab${val}`].$refs.table.$refs.elTable.doLayout();
+      });
     }
   },
   created() {
@@ -161,6 +167,17 @@ export default {
       const { tabTableOptionsArr, tabsOptions } = json;
       this.tabsOptions = this.tabAttrsFormatter(tabsOptions);
       await this.$nextTick();
+      // for (let index = 0; index < tabTableOptionsArr.length; index++) {
+      //   const el = this.$refs[`tabpane${index}`].$el;
+      //   const display = window.getComputedStyle(el).display;
+      //   if (display === "none") {
+      //     const oldStyle = el.style.cssText;
+      //     el.style.cssText = `display:block;position:absolute;z-index:-1000;`;
+      //     setTimeout(() => {
+      //       el.style.cssText = oldStyle;
+      //     }, 400);
+      //   }
+      // }
       tabTableOptionsArr.map((tableOptions, index) => {
         this.$refs[`tableItemTab${index}`].init(isPreview, tableOptions, { ...externalParams, tabId: tableOptions.id });
       });
@@ -237,7 +254,8 @@ export default {
       pageLayout,
       leftWidth,
       onMouseDown,
-      tabsOptions: { attrs = {}, showLableInfo = [] }
+      tabsOptions: { attrs = {}, showLableInfo = [] },
+      listPageIdProp
     } = this;
 
     // eslint-disable-next-line prefer-const
@@ -251,7 +269,7 @@ export default {
           </div>
           <div class="splitpanes__splitter" onmousedown={onMouseDown}></div>
           <div class="contentRight" style={{ width: `calc(100% - ${leftWidth} - 7px)` }}>
-            <tableItem ref="tableItem"></tableItem>
+            <tableItem ref="tableItem" listPageIdProp={listPageIdProp}></tableItem>
           </div>
         </div>
       );
@@ -259,21 +277,26 @@ export default {
       return (
         <el-tabs
           ref="elTabs"
-          v-model={activeName}
+          value={activeName}
           class="tabsWrap"
           {...{
-            attrs
+            attrs,
+            on: {
+              input: val => {
+                this.activeName = val;
+              }
+            }
           }}
         >
           {showLableInfo.map((item, index) => (
-            <el-tab-pane label={item.title} name={index + ""} class="panefull">
-              <tableItem ref={"tableItemTab" + index}></tableItem>
+            <el-tab-pane ref={"tabpane" + index} label={item.title} name={index + ""} class="panefull">
+              <tableItem ref={"tableItemTab" + index} listPageIdProp={listPageIdProp}></tableItem>
             </el-tab-pane>
           ))}
         </el-tabs>
       );
     } else {
-      return <tableItem ref="tableItem"></tableItem>;
+      return <tableItem ref="tableItem" listPageIdProp={listPageIdProp}></tableItem>;
     }
   }
 };
