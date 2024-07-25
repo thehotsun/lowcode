@@ -1426,17 +1426,6 @@ export default {
             {!onlyRead && !previewMode && (formId || (relateComponent && showFooter)) ? (
               <span slot="footer">
                 <el-button
-                  type="primary"
-                  size="small"
-                  {...{
-                    on: {
-                      click: submitForm
-                    }
-                  }}
-                >
-                  提 交
-                </el-button>
-                <el-button
                   size="small"
                   {...{
                     on: {
@@ -1445,6 +1434,17 @@ export default {
                   }}
                 >
                   取 消
+                </el-button>
+                <el-button
+                  type="primary"
+                  size="small"
+                  {...{
+                    on: {
+                      click: submitForm
+                    }
+                  }}
+                >
+                  确 定
                 </el-button>
               </span>
             ) : null}
