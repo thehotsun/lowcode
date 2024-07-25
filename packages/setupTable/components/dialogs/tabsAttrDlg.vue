@@ -14,11 +14,11 @@
             <el-option v-for="item in typeOptions" :key="item.value" :label="item.label" :value="item.value"> </el-option>
           </el-select>
         </el-form-item>
-        <!-- <el-form-item label="标签位置" prop="tabPosition">
+        <el-form-item label="标签位置" prop="tabPosition">
           <el-select v-model="tabsAttrs.attrs.tabPosition" placeholder="请选择">
             <el-option v-for="item in tabPositionOptions" :key="item.value" :label="item.label" :value="item.value"> </el-option>
           </el-select>
-        </el-form-item> -->
+        </el-form-item>
       </el-form>
     </div>
     <span slot="footer" class="dialog-footer">

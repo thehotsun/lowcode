@@ -142,8 +142,11 @@
   width: 100%;
   height: 100%;
   display: flex;
-  flex-direction: column;
   .el-tabs__content:last-child {
+    width: 100%;
+    flex: 1;
+  }
+  .el-tabs__content:first-child {
     width: 100%;
     flex: 1;
   }
@@ -151,4 +154,10 @@
     width: 100%;
     height: 100%;
   }
+}
+.flexDirColumn {
+  flex-direction: column;
+}
+.flexDirRowReverse {
+  flex-direction: row-reverse;
 }

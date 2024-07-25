@@ -278,7 +278,7 @@ export default {
         <el-tabs
           ref="elTabs"
           value={activeName}
-          class="tabsWrap"
+          class={["top", "bottom"].includes(attrs.tabPosition) ? "tabsWrap flexDirColumn" : attrs.tabPosition === "right" ? "tabsWrap flexDirRowReverse" : "tabsWrap"}
           {...{
             attrs,
             on: {
