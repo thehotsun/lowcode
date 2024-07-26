@@ -25,8 +25,8 @@ import previewDlg from "../components/dialogs/previewDlg.vue";
 import operate from "../components/operate.vue";
 import { TabsAttrs } from "/baseConfig/tabsBaseConfigs";
 import tabs from "/mixins/tabs";
+import { mergeAndClean } from "/utils/index.js";
 
-import { merge, cloneDeep } from "lodash";
 export default {
   components: { TableWidget, TabsAttrDlg, operate, previewDlg },
   mixins: [tabs],
@@ -80,7 +80,7 @@ export default {
         //   tabTableOptionsArr[index] = cloneDeep(tableOptions);
         // }
         // tabTableOptionsArr.fill(cloneDeep(tableOptions));
-        this.tabsOptions = merge(new TabsAttrs(), tabsOptions);
+        this.tabsOptions = mergeAndClean(new TabsAttrs(), tabsOptions);
         this.tabTableOptionsArr = showLableInfo.map(tab => {
           return tabTableOptionsArr.find(item => item.id === tab.id);
         });

@@ -10,7 +10,7 @@ import {
 import { searchWidget } from "../baseConfig/tableSelectConfigs";
 import { requestTypeList } from "../baseConfig/btnBaseConfig";
 
-import { pickBy, merge } from "lodash";
+import { pickBy, merge, isObject } from "lodash";
 
 export function setPlaceholder(tagName, fieldName) {
   const inputs = ["el-input", "el-input-number"];
@@ -877,6 +877,24 @@ export function findInTree(tree, fieldName, value) {
   }
 }
 
+export function mergeAndClean(a, b) {
+  const merged = merge({}, a, b);
+
+  function clean(obj, reference) {
+    for (const key in obj) {
+      // eslint-disable-next-line no-prototype-builtins
+      if (!reference.hasOwnProperty(key)) {
+        delete obj[key];
+      } else if (isObject(obj[key]) && isObject(reference[key])) {
+        clean(obj[key], reference[key]);
+      }
+    }
+  }
+
+  clean(merged, a);
+  return merged;
+}
+
 export default {
   setPlaceholder,
   completeFromItemOptions,
@@ -907,5 +925,6 @@ export default {
   setEmptyTableData,
   mergeStyle,
   arrayToTree,
-  findInTree
+  findInTree,
+  mergeAndClean
 };
