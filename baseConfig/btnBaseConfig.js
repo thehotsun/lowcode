@@ -1099,7 +1099,7 @@ export function BtnConfigFrom(custom = {}) {
     contentTextBehindTagOptions: {},
     // 点击按钮是否传递当前选中数据
     authorize: "",
-    btnId: Math.floor(Math.random() * 9000) + 1000,
+    btnId: Math.floor(Math.random() * 900) + 100,
     ...custom
   };
 }
