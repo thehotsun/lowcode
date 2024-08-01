@@ -1,6 +1,6 @@
 <template>
   <div class="leftTreeRightTableWrap">
-    <operate :disposeShowTableSetting="disposeShowTableSetting" @handleSave="handleSave" @showTableAttrs="showTableAttrs" @showPreview="showPreview">
+    <operate :loading="loading" :disposeShowTableSetting="disposeShowTableSetting" @handleSave="handleSave" @showTableAttrs="showTableAttrs" @showPreview="showPreview">
       <template slot="btn">
         <el-button size="mini" @click="showTabsAttrs">tabs属性设置</el-button>
       </template>
@@ -26,10 +26,11 @@ import operate from "../components/operate.vue";
 import { TabsAttrs } from "/baseConfig/tabsBaseConfigs";
 import tabs from "/mixins/tabs";
 import { mergeAndClean } from "/utils/index.js";
+import tableDesignMixin from "../../../mixins/tableDesign";
 
 export default {
   components: { TableWidget, TabsAttrDlg, operate, previewDlg },
-  mixins: [tabs],
+  mixins: [tabs, tableDesignMixin],
   props: {
     pageLayout: {
       type: String,
@@ -45,7 +46,8 @@ export default {
       tabTableOptionsArr: [],
       groupId: "",
       formCode: "",
-      activeName: "0"
+      activeName: "0",
+      loading: false
     };
   },
 
@@ -125,13 +127,6 @@ export default {
       this.$refs.tableItemTab[this.activeName].showTableAttrsDlg();
     },
 
-    showPreview() {
-      const renderParams = this.getRenderParams();
-      this.$refs.previewDlg.showDlg(renderParams);
-    },
-    handleSave() {
-      this.handleSubmitTableConfig();
-    },
     requestTableConfig(id) {
       return this.getListConfigJSON(id);
     },
@@ -161,7 +156,8 @@ export default {
       };
     },
     // 保存按钮事件
-    handleSubmitTableConfig() {
+    async handleSubmitTableConfig() {
+      this.loading = true;
       const renderParams = this.getRenderParams();
       const { tabTableOptionsArr } = renderParams;
       const actionList = [];
@@ -183,6 +179,7 @@ export default {
         },
         this.groupId
       ).then(data => {
+        this.loading = false;
         if (data.result === "0") {
           this.$message.success("保存成功");
         } else {

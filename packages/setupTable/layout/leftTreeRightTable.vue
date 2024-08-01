@@ -1,6 +1,6 @@
 <template>
   <div class="leftTreeRightTableWrap">
-    <operate @handleSave="handleSave" @showTableAttrs="showTableAttrs" @showPreview="showPreview">
+    <operate :loading="loading" @handleSave="handleSave" @showTableAttrs="showTableAttrs" @showPreview="showPreview">
       <template slot="btn">
         <el-button size="mini" @click="showTreeAttrs">树属性设置</el-button>
       </template>
@@ -28,10 +28,12 @@ import previewDlg from "../components/dialogs/previewDlg.vue";
 
 import operate from "../components/operate.vue";
 import { TreeAttrs } from "/baseConfig/treeBaseConfig";
+import tableDesignMixin from "../../../mixins/tableDesign";
 
 import { merge } from "lodash";
 export default {
   components: { TableWidget, TreeWidget, TreeAttrDlg, operate, previewDlg },
+  mixins: [tableDesignMixin],
   props: {
     pageLayout: {
       type: String,
@@ -68,17 +70,7 @@ export default {
       this.$refs.TableWidget.init(id, formCode, table);
       this.$refs.TreeWidget.init(id, formCode, this.treeOptions);
     },
-    showTableAttrs() {
-      this.$refs.TableWidget.showTableAttrsDlg();
-    },
 
-    showPreview() {
-      const renderParams = this.getRenderParams();
-      this.$refs.previewDlg.showDlg(renderParams);
-    },
-    handleSave() {
-      this.handleSubmitTableConfig();
-    },
     requestTableConfig(id) {
       return this.getListConfigJSON(id);
     },
@@ -101,7 +93,7 @@ export default {
       };
     },
     // 保存按钮事件
-    handleSubmitTableConfig() {
+    async handleSubmitTableConfig() {
       const renderParams = this.getRenderParams();
       const actionList = [];
       renderParams.formOptions?.map(item => {

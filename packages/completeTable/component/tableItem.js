@@ -780,7 +780,7 @@ export default {
       ];
     },
 
-    validateSelectList({ paramName, paramType, deliverySelectList, validate }) {
+    validateSelectList({ paramName, paramType, deliverySelectList, validate }, row) {
       const { selectList } = this;
       this.btnConfigs.deliverySelectList = deliverySelectList;
       if (deliverySelectList) {
@@ -788,11 +788,11 @@ export default {
           paramName,
           paramType
         };
-        if (validate.includes(0) && selectList.length === 0) {
+        if (validate.includes(0) && selectList.length === 0 && !row) {
           this.$warn("请至少勾选一条要处理的数据");
           return false;
         }
-        if (validate.includes(1) && selectList.length !== 1) {
+        if (validate.includes(1) && selectList.length !== 1 && !row) {
           this.$warn("当前操作只允许勾选一条数据");
           return false;
         }
@@ -902,12 +902,15 @@ export default {
           } else if (openType === 1) {
             // openType为1是当前页面跳转
             if (
-              validateSelectList({
-                paramName,
-                paramType,
-                deliverySelectList,
-                validate
-              })
+              validateSelectList(
+                {
+                  paramName,
+                  paramType,
+                  deliverySelectList,
+                  validate
+                },
+                rowData
+              )
             ) {
               disposeThisPageJump({ openUrl, deliverySelectList, deliverySelectListFields }, rowData);
             }
@@ -918,12 +921,15 @@ export default {
           } else if (openType === 4) {
             // openType为4是打开本地关联代码
             if (
-              validateSelectList({
-                paramName,
-                paramType,
-                deliverySelectList,
-                validate
-              })
+              validateSelectList(
+                {
+                  paramName,
+                  paramType,
+                  deliverySelectList,
+                  validate
+                },
+                rowData
+              )
             ) {
               disposeRelateCompEvent(
                 {
@@ -938,12 +944,15 @@ export default {
           } else if (openType === 5) {
             // openType为5是直接调用接口
             if (
-              validateSelectList({
-                paramName,
-                paramType,
-                deliverySelectList,
-                validate
-              })
+              validateSelectList(
+                {
+                  paramName,
+                  paramType,
+                  deliverySelectList,
+                  validate
+                },
+                rowData
+              )
             ) {
               disposeRequestEvent(
                 {
@@ -956,24 +965,30 @@ export default {
           } else if (openType === 2) {
             // openType为2是打开流程
             if (
-              validateSelectList({
-                paramName,
-                paramType,
-                deliverySelectList,
-                validate
-              })
+              validateSelectList(
+                {
+                  paramName,
+                  paramType,
+                  deliverySelectList,
+                  validate
+                },
+                rowData
+              )
             ) {
               disposeFlowEvent({ flowKey, btnType, isRefresh }, rowData);
             }
           } else if (openType === 0) {
             // openType为0是打开表单
             if (
-              validateSelectList({
-                paramName,
-                paramType,
-                deliverySelectList,
-                validate
-              })
+              validateSelectList(
+                {
+                  paramName,
+                  paramType,
+                  deliverySelectList,
+                  validate
+                },
+                rowData
+              )
             ) {
               disposeDynamicFormEvent(
                 {
@@ -988,12 +1003,15 @@ export default {
           } else if (openType === 6) {
             // openType为0是打开列表
             if (
-              validateSelectList({
-                paramName,
-                paramType,
-                deliverySelectList,
-                validate
-              })
+              validateSelectList(
+                {
+                  paramName,
+                  paramType,
+                  deliverySelectList,
+                  validate
+                },
+                rowData
+              )
             ) {
               disposeDynamicTableEvent(
                 {

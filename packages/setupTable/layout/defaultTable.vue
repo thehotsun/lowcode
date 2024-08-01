@@ -1,6 +1,6 @@
 <template>
   <div class="wrap">
-    <operate @handleSave="handleSave" @showTableAttrs="showTableAttrs" @showPreview="showPreview"> </operate>
+    <operate :loading="loading" @handleSave="handleSave" @showTableAttrs="showTableAttrs" @showPreview="showPreview"> </operate>
 
     <TableWidget ref="TableWidget"></TableWidget>
 
@@ -12,13 +12,15 @@
 import TableWidget from "../components/table-widget";
 import operate from "../components/operate.vue";
 import previewDlg from "../components/dialogs/previewDlg.vue";
+import tableDesignMixin from "../../../mixins/tableDesign";
 export default {
   components: { TableWidget, operate, previewDlg },
+  mixins: [tableDesignMixin],
   props: {
     pageLayout: {
       type: String,
       default() {
-        return 'table';
+        return "table";
       }
     }
   },
@@ -35,21 +37,15 @@ export default {
       this.formCode = formCode;
       this.$refs.TableWidget.init(id, formCode);
     },
-    showTableAttrs() {
-      this.$refs.TableWidget.showTableAttrsDlg();
-    },
-    showPreview() {
-      const renderParams = this.$refs.TableWidget.getRenderParams();
-      this.$refs.previewDlg.showDlg(renderParams);
-    },
-    handleSave() {
-      this.handleSubmitTableConfig();
+    getRenderParams() {
+      const params = this.$refs.TableWidget.getRenderParams();
+      params.pageLayout = this.pageLayout;
+      return params;
     },
 
     // 保存按钮事件
-    handleSubmitTableConfig() {
-      const renderParams = this.$refs.TableWidget.getRenderParams();
-      renderParams.pageLayout = this.pageLayout;
+    async handleSubmitTableConfig() {
+      const renderParams = this.getRenderParams();
       const actionList = [];
       renderParams.formOptions?.map(item => {
         if (item.authorize !== "defaultShow") {
