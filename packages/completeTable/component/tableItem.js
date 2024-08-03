@@ -75,11 +75,17 @@ export default {
       curDialogCompRef: "",
       tableAttrs: {},
       btnConfigs: new BtnConfigs(),
-      headerHeight: 0
+      headerHeight: 0,
+      // 当不使用网络请求处理提交数据时，编辑的row
+      editRow: {}
     };
   },
 
   computed: {
+    // 使用动态表单是否要使用网络请求处理提交数据
+    noRequest() {
+      return this.getWidget()?.options?.noRequest;
+    },
     attrs() {
       const props = [
         "isTree",
@@ -274,6 +280,22 @@ export default {
           height: 0
         };
       }
+    },
+    // 下面是和vform结合相关的
+    getWidget: {
+      default: () => () => {
+        return {};
+      }
+    },
+    globalModel: {
+      default: () => {
+        return {};
+      }
+    },
+    getSubformRelateField: {
+      default: () => {
+        return "";
+      }
     }
   },
 
@@ -303,6 +325,10 @@ export default {
   methods: {
     expose_CompleteTableInstance() {
       return this;
+    },
+
+    expose_setTableData(data) {
+      this.tableData = data;
     },
     expose_showDialog() {
       this.btnRelateDialogVisible = true;
@@ -340,7 +366,6 @@ export default {
     // 保存表单
     async onSubmit(data) {
       this.$emit("onSubmit", data);
-      // await this.requestFormConfirm(this.formid, data)
       this.btnConfigs.isRefresh && this.queryTableData();
       this.expose_hideDialog();
     },
@@ -1094,15 +1119,24 @@ export default {
           break;
         case "check":
         case "edit":
-          if (rowData) {
-            this.primaryKeyValue = rowData[this.keyField];
-          } else if (this.selectList.length) {
-            this.primaryKeyValue = this.selectList[0] && this.selectList[0][this.keyField];
+          if (!this.noRequest) {
+            if (rowData) {
+              this.primaryKeyValue = rowData[this.keyField];
+            } else if (this.selectList.length) {
+              this.primaryKeyValue = this.selectList[0]?.[this.keyField];
+            } else {
+              return this.$warn("请至少勾选一条要处理的数据！");
+            }
+            if ([undefined, null].includes(this.primaryKeyValue)) {
+              return this.$warn("主键字段未取到值，请检查数据或在列表设计页面重新关联主键！");
+            }
           } else {
-            return this.$warn("请至少勾选一条要处理的数据！");
-          }
-          if ([undefined, null].includes(this.primaryKeyValue)) {
-            return this.$warn("主键字段未取到值，请检查数据或在列表设计页面重新关联主键！");
+            if (btnType === "edit") {
+              this.editRow = rowData || this.selectList[0];
+              if (!this.editRow) {
+                return this.$warn("请至少勾选一条要处理的数据！");
+              }
+            }
           }
           this.expose_showDialog();
           this.btnConfigs.formId = relateFrom;
@@ -1332,9 +1366,14 @@ export default {
         primaryKeyValue,
         onlyRead,
         onSubmit,
-        expose_hideDialog
+        expose_hideDialog,
+        noRequest,
+        editRow
       } = this;
       const baseAttrs = this.getExternalCompBaseAttrs();
+      if (noRequest) {
+        baseAttrs.editData = cloneDeep(editRow);
+      }
       if (formId) {
         this.curDialogCompRef = previewMode ? "VFPreview" : "VFRuntime";
         return previewMode ? (
@@ -1615,8 +1654,30 @@ export default {
       e.stopPropagation();
       this.showPanel = !this.showPanel;
     },
-    submitForm() {
-      this.$refs[this.curDialogCompRef]?.submitForm();
+    async submitForm() {
+      const {
+        tableData,
+        expose_hideDialog,
+        globalModel,
+        getWidget,
+        noRequest,
+        editRow,
+        btnConfigs: { btnType }
+      } = this;
+      if (!noRequest) {
+        this.$refs[this.curDialogCompRef]?.submitForm();
+      } else {
+        const rowData = await this.$refs[this.curDialogCompRef]?.getFormData();
+        // 根据按钮类型判断怎么处理提交数据
+        if (btnType === "edit") {
+          const index = tableData.findIndex(row => row === editRow);
+          tableData.splice(index, 1, rowData);
+        } else if (btnType === "add") {
+          tableData.push(rowData);
+        }
+        globalModel.formModel[getWidget().options.name] = tableData;
+        expose_hideDialog();
+      }
     },
     handleCancel() {
       this.$refs[this.curDialogCompRef]?.handleCancel();

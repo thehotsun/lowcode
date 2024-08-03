@@ -103,6 +103,23 @@ export default {
       return this;
     },
 
+    expose_setTableData(data) {
+      switch (this.pageLayout) {
+        case "table":
+          case "tree-table":
+          this.$refs.tableItem.expose_setTableData(data);
+          break;
+        case "tabs-table":
+          data?.map((options, index) => {
+            this.$refs[`tableItemTab${index}`].expose_setTableData(options);
+          });
+          break;
+        default:
+          this.$refs.tableItem.expose_setTableData(data);
+          break;
+      }
+    },
+
     async expose_preview(data) {
       const { pageLayout = "table", ...otherData } = data;
       this.pageLayout = pageLayout;
@@ -125,7 +142,7 @@ export default {
         this.$refs.tableItem.expose_preview(otherData);
       }
     },
-    async init(isPreview, json, externalParams) {
+    async init(isPreview, json, externalParams, externalTriggerQueryTableData = false) {
       if (!json || isEmpty(json)) {
         json = await this.queryTableConfig();
       }
@@ -134,16 +151,16 @@ export default {
       await this.$nextTick();
       switch (this.pageLayout) {
         case "table":
-          this.defaultInit(isPreview, json, externalParams);
+          this.defaultInit(isPreview, json, externalParams, externalTriggerQueryTableData);
           break;
         case "tree-table":
           this.leftTreeRightTableInit(isPreview, json, externalParams);
           break;
         case "tabs-table":
-          this.tabsTableInit(isPreview, json, externalParams);
+          this.tabsTableInit(isPreview, json, externalParams, externalTriggerQueryTableData);
           break;
         default:
-          this.defaultInit(isPreview, json, externalParams);
+          this.defaultInit(isPreview, json, externalParams, externalTriggerQueryTableData);
           break;
       }
     },
@@ -159,11 +176,11 @@ export default {
       this.$refs.tableItem.init(isPreview, tableOptions, externalParams, true);
       this.$refs.treeItem.init(isPreview, tree, externalParams);
     },
-    async defaultInit(isPreview, json, externalParams) {
-      this.$refs.tableItem.init(isPreview, json, externalParams);
+    async defaultInit(isPreview, json, externalParams, externalTriggerQueryTableData) {
+      this.$refs.tableItem.init(isPreview, json, externalParams, externalTriggerQueryTableData);
     },
     // TODO externalParams不同怎么处理？
-    async tabsTableInit(isPreview, json, externalParams = {}) {
+    async tabsTableInit(isPreview, json, externalParams = {}, externalTriggerQueryTableData) {
       const { tabTableOptionsArr, tabsOptions } = json;
       this.tabsOptions = this.tabAttrsFormatter(tabsOptions);
       await this.$nextTick();
@@ -179,7 +196,7 @@ export default {
       //   }
       // }
       tabTableOptionsArr.map((tableOptions, index) => {
-        this.$refs[`tableItemTab${index}`].init(isPreview, tableOptions, { ...externalParams, tabId: tableOptions.id });
+        this.$refs[`tableItemTab${index}`].init(isPreview, tableOptions, { ...externalParams, tabId: tableOptions.id }, externalTriggerQueryTableData);
       });
     },
 
