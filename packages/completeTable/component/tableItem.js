@@ -86,6 +86,19 @@ export default {
     noRequest() {
       return this.getWidget()?.options?.noRequest;
     },
+    finalTableData() {
+      const {
+        noRequest,
+        page: { pageNo, pageSize },
+        tableData
+      } = this;
+      if (noRequest) {
+        return tableData.slice((pageNo - 1) * pageSize, (pageNo - 1) * pageSize + pageSize);
+      } else {
+        return tableData;
+      }
+    },
+    // 处理分页且属于本地请求数据的情况
     attrs() {
       const props = [
         "isTree",
@@ -329,7 +342,13 @@ export default {
 
     expose_setTableData(data) {
       this.tableData = data;
+      this.updateTotalCount();
     },
+
+    expose_getTableData() {
+      return this.tableData;
+    },
+
     expose_showDialog() {
       this.btnRelateDialogVisible = true;
     },
@@ -398,16 +417,18 @@ export default {
         } catch (error) {
           console.error(error);
         }
+        let finalExternalParams = {};
+        if (externalParams && isObj) {
+          finalExternalParams = { ...externalParams, ...jumpParams };
+        } else if (externalParams) {
+          finalExternalParams = externalParams;
+        } else if (isObj) {
+          finalExternalParams = isObj;
+        }
         if (!externalTriggerQueryTableData) {
-          if (externalParams && isObj) {
-            this.refreshData({ ...externalParams, ...jumpParams });
-          } else if (externalParams) {
-            this.refreshData(externalParams);
-          } else if (isObj) {
-            this.refreshData(jumpParams);
-          } else {
-            this.queryTableData();
-          }
+          this.refreshData(finalExternalParams);
+        } else {
+          this.externalParams = finalExternalParams;
         }
       }
       setTimeout(() => {
@@ -637,7 +658,6 @@ export default {
 
     handleSizeChange(val) {
       console.log(val, this.page);
-      this.page.pageSize = val;
       this.queryTableData();
     },
 
@@ -872,6 +892,7 @@ export default {
         previewMode
       } = this;
       if (previewMode) return;
+      this.editRow = null;
       // 只btnConfigs.要执行点击按钮操作，先置空formid
       this.btnConfigs = new BtnConfigs();
       this.btnConfigs.requestUrl = requestUrl;
@@ -1131,11 +1152,9 @@ export default {
               return this.$warn("主键字段未取到值，请检查数据或在列表设计页面重新关联主键！");
             }
           } else {
-            if (btnType === "edit") {
-              this.editRow = rowData || this.selectList[0];
-              if (!this.editRow) {
-                return this.$warn("请至少勾选一条要处理的数据！");
-              }
+            this.editRow = rowData || this.selectList[0];
+            if (!this.editRow) {
+              return this.$warn("请至少勾选一条要处理的数据！");
             }
           }
           this.expose_showDialog();
@@ -1327,16 +1346,36 @@ export default {
     },
 
     disposeDel(row) {
-      if (row) {
-        this.batchDel([row[this.keyField]]);
+      if (!this.noRequest) {
+        if (row) {
+          this.batchDel([row[this.keyField]]);
+        } else {
+          if (this.selectList.length === 0) {
+            return this.$warn("请至少勾选一条要处理的数据");
+          }
+          if ([undefined, null].includes(this.tableData[0][this.keyField])) {
+            return this.$warn("主键字段未取到值，请检查数据或重新在列表设计页面重新关联主键！");
+          }
+          this.batchDel(this.selectList.map(item => item[this.keyField]));
+        }
       } else {
-        if (this.selectList.length === 0) {
+        if (this.selectList.length === 0 && !row) {
           return this.$warn("请至少勾选一条要处理的数据");
         }
-        if ([undefined, null].includes(this.tableData[0][this.keyField])) {
-          return this.$warn("主键字段未取到值，请检查数据或重新在列表设计页面重新关联主键！");
+        // 非网络请求本地处理数据
+        if (row) {
+          const index = this.tableData.findIndex(rowItem => rowItem === row);
+          this.tableData.splice(index, 1);
+        } else {
+          this.tableData = this.tableData.filter(rowItem => {
+            return this.selectList.findIndex(item => item === rowItem) === -1;
+          });
         }
-        this.batchDel(this.selectList.map(item => item[this.keyField]));
+        const index = Math.ceil(this.tableData.length / this.page.pageSize) || 1;
+        if (index < this.page.pageNo) {
+          this.page.pageNo = index;
+        }
+        this.updateTotalCount();
       }
     },
 
@@ -1371,7 +1410,7 @@ export default {
         editRow
       } = this;
       const baseAttrs = this.getExternalCompBaseAttrs();
-      if (noRequest) {
+      if (noRequest && editRow) {
         baseAttrs.editData = cloneDeep(editRow);
       }
       if (formId) {
@@ -1662,7 +1701,8 @@ export default {
         getWidget,
         noRequest,
         editRow,
-        btnConfigs: { btnType }
+        btnConfigs: { btnType },
+        updateTotalCount
       } = this;
       if (!noRequest) {
         this.$refs[this.curDialogCompRef]?.submitForm();
@@ -1673,12 +1713,19 @@ export default {
           const index = tableData.findIndex(row => row === editRow);
           tableData.splice(index, 1, rowData);
         } else if (btnType === "add") {
-          tableData.push(rowData);
+          // TODO新增的是放前面还是放后面，放后面是不是要处理pageNo
+          tableData.unshift(rowData);
+          updateTotalCount();
         }
         globalModel.formModel[getWidget().options.name] = tableData;
         expose_hideDialog();
       }
     },
+
+    updateTotalCount() {
+      this.page.totalCount = this.tableData.length;
+    },
+
     handleCancel() {
       this.$refs[this.curDialogCompRef]?.handleCancel();
     },
@@ -1761,16 +1808,30 @@ export default {
       handleGlobalClick,
       showCheckDialog,
       onSave,
-      tableCellClick
+      tableCellClick,
+      noRequest,
+      finalTableData
     } = this;
 
-    const curPageListeners = {
-      "update:currentPage": val => {
-        this.page.pageNo = val;
-      },
-      "size-change": handleSizeChange,
-      "current-change": handleCurrentChange
-    };
+    const curPageListeners = noRequest
+      ? {
+          "update:currentPage": val => {
+            page.pageNo = val;
+          },
+          "update:pageSize": val => {
+            page.pageSize = val;
+          }
+        }
+      : {
+          "update:currentPage": val => {
+            page.pageNo = val;
+          },
+          "update:pageSize": val => {
+            page.pageSize = val;
+          },
+          "size-change": handleSizeChange,
+          "current-change": handleCurrentChange
+        };
     const tableEvent = tableAttrs.clickRowShowDetialDialog
       ? {
           "row-click": showCheckDialog,
@@ -1892,7 +1953,7 @@ export default {
               <base-render-table
                 ref="table"
                 height={tableHeight}
-                table-data={tableData}
+                table-data={finalTableData}
                 table-options={filterTableOptions}
                 {...{
                   on: {

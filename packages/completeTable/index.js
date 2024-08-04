@@ -103,15 +103,35 @@ export default {
       return this;
     },
 
+    expose_getTableData() {
+      switch (this.pageLayout) {
+        case "table":
+        case "tree-table":
+          return this.$refs.tableItem.expose_getTableData();
+        case "tabs-table":
+          const {
+            tabsOptions: { showLableInfo = [] }
+          } = this;
+          return showLableInfo?.map((_, index) => {
+            this.$refs[`tableItemTab${index}`].expose_getTableData();
+          });
+        default:
+          return this.$refs.tableItem.expose_getTableData();
+      }
+    },
+
     expose_setTableData(data) {
       switch (this.pageLayout) {
         case "table":
-          case "tree-table":
+        case "tree-table":
           this.$refs.tableItem.expose_setTableData(data);
           break;
         case "tabs-table":
-          data?.map((options, index) => {
-            this.$refs[`tableItemTab${index}`].expose_setTableData(options);
+          const {
+            tabsOptions: { showLableInfo = [] }
+          } = this;
+          showLableInfo?.map((_, index) => {
+            this.$refs[`tableItemTab${index}`].expose_setTableData(data[index]);
           });
           break;
         default:
