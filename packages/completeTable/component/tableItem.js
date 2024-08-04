@@ -90,9 +90,10 @@ export default {
       const {
         noRequest,
         page: { pageNo, pageSize },
-        tableData
+        tableData,
+        showPagination
       } = this;
-      if (noRequest) {
+      if (noRequest && showPagination) {
         return tableData.slice((pageNo - 1) * pageSize, (pageNo - 1) * pageSize + pageSize);
       } else {
         return tableData;
@@ -1723,7 +1724,9 @@ export default {
     },
 
     updateTotalCount() {
-      this.page.totalCount = this.tableData.length;
+      if (this.showPagination) {
+        this.page.totalCount = this.tableData.length;
+      }
     },
 
     handleCancel() {
