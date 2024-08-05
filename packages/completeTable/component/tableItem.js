@@ -24,6 +24,51 @@ import {
 } from "../../../utils";
 import { cloneDeep, omit, merge, isEmpty } from "lodash";
 
+function InstanceData() {
+  return {
+    fuzzyFieldSearchConfig: { placeholder: "", searchFieldList: [] },
+    pageLayout: "->, total,sizes, prev, pager, next,jumper",
+    // 显示动态表单相关
+    btnRelateDialogVisible: false,
+    rule: [],
+    option: {},
+    multiFieldSearch: "",
+    // 在本地处理数据时，保证通过enter键和搜索按钮触发搜索
+    multiFieldSearchCopy: "",
+    // tabledata 属性值要做到和tableOptions中的prop相对应
+    tableConfigJSON: [],
+    tableOptions: [],
+    tableData: [],
+    formOptions: [],
+    searchFrom: {},
+    rawSearchFrom: {},
+    page: {
+      pageNo: 1,
+      pageSize: 20,
+      totalCount: 0
+    },
+    btnRegularOptions: [],
+    showSearchFrom: true,
+    showBtns: true,
+    primaryKeyValue: "",
+    showPanel: false,
+    // 选中的table数据
+    selectList: [],
+    panelData: [],
+    filterField: [],
+    externalParams: {},
+    keyField: "",
+    onlyRead: false,
+    previewMode: false,
+    curDialogCompRef: "",
+    tableAttrs: {},
+    btnConfigs: new BtnConfigs(),
+    headerHeight: 0,
+    // 当不使用网络请求处理提交数据时，编辑的row
+    editRow: {}
+  };
+}
+
 export default {
   name: "CompleteTableItem",
   components: {
@@ -39,46 +84,7 @@ export default {
   },
 
   data() {
-    return {
-      fuzzySearchPlaceholder: "",
-      pageLayout: "->, total,sizes, prev, pager, next,jumper",
-      // 显示动态表单相关
-      btnRelateDialogVisible: false,
-      rule: [],
-      option: {},
-      multiFieldSearch: "",
-      // tabledata 属性值要做到和tableOptions中的prop相对应
-      tableConfigJSON: [],
-      tableOptions: [],
-      tableData: [],
-      formOptions: [],
-      searchFrom: {},
-      rawSearchFrom: {},
-      page: {
-        pageNo: 1,
-        pageSize: 20,
-        totalCount: 0
-      },
-      btnRegularOptions: [],
-      showSearchFrom: true,
-      showBtns: true,
-      primaryKeyValue: "",
-      showPanel: false,
-      // 选中的table数据
-      selectList: [],
-      panelData: [],
-      filterField: [],
-      externalParams: {},
-      keyField: "",
-      onlyRead: false,
-      previewMode: false,
-      curDialogCompRef: "",
-      tableAttrs: {},
-      btnConfigs: new BtnConfigs(),
-      headerHeight: 0,
-      // 当不使用网络请求处理提交数据时，编辑的row
-      editRow: {}
-    };
+    return new InstanceData();
   },
 
   computed: {
@@ -86,19 +92,7 @@ export default {
     noRequest() {
       return this.getWidget()?.options?.noRequest;
     },
-    finalTableData() {
-      const {
-        noRequest,
-        page: { pageNo, pageSize },
-        tableData,
-        showPagination
-      } = this;
-      if (noRequest && showPagination) {
-        return tableData.slice((pageNo - 1) * pageSize, (pageNo - 1) * pageSize + pageSize);
-      } else {
-        return tableData;
-      }
-    },
+
     // 处理分页且属于本地请求数据的情况
     attrs() {
       const props = [
@@ -140,6 +134,46 @@ export default {
         props.push("load");
       }
       return omit(this.tableAttrs, props);
+    },
+
+    finalTableData() {
+      const {
+        noRequest,
+        page: { pageNo, pageSize },
+        tableData,
+        tableAttrs: { showPagination },
+        multiFieldSearchCopy,
+        fuzzyFieldSearchConfig: { searchFieldList = [] }
+      } = this;
+      if (noRequest) {
+        if (showPagination) {
+          console.log("multiFieldSearchCopy", multiFieldSearchCopy, pageNo);
+          return (multiFieldSearchCopy
+            ? tableData.filter(row => {
+                for (const field of searchFieldList) {
+                  const match = `${row[field]}`.toLowerCase().includes(multiFieldSearchCopy.toLowerCase());
+                  if (match) {
+                    return true;
+                  }
+                }
+              })
+            : tableData
+          ).slice((pageNo - 1) * pageSize, (pageNo - 1) * pageSize + pageSize);
+        } else {
+          return multiFieldSearchCopy
+            ? tableData.filter(row => {
+                for (const field of searchFieldList) {
+                  const match = `${row[field]}`.toLowerCase().includes(multiFieldSearchCopy.toLowerCase());
+                  if (match) {
+                    return true;
+                  }
+                }
+              })
+            : tableData;
+        }
+      } else {
+        return tableData;
+      }
     },
 
     filterTableOptions() {
@@ -446,35 +480,7 @@ export default {
 
     // 清空数据
     resetAllData() {
-      this.fuzzySearchPlaceholder = "";
-      this.pageLayout = "->, total,sizes, prev, pager, next,jumper";
-      this.btnRelateDialogVisible = false;
-      this.rule = [];
-      this.option = {};
-      this.multiFieldSearch = "";
-      this.tableConfigJSON = [];
-      this.tableOptions = [];
-      this.tableData = [];
-      this.formOptions = [];
-      this.searchFrom = {};
-      this.rawSearchFrom = {};
-      this.btnRegularOptions = [];
-      this.showSearchFrom = true;
-      this.showBtns = true;
-      this.primaryKeyValue = "";
-      this.showPanel = false;
-      this.selectList = [];
-      this.panelData = [];
-      this.filterField = [];
-      this.keyField = "";
-      this.onlyRead = false;
-      this.previewMode = false;
-      this.page = {
-        pageNo: 1,
-        pageSize: 20,
-        totalCount: 0
-      };
-      this.btnConfigs = new BtnConfigs();
+      this.data = new InstanceData();
       this.initTableAttrs();
     },
 
@@ -617,15 +623,24 @@ export default {
     handleFilter() {
       if (this.previewMode) return;
       this.page.pageNo = 1;
-      this.queryTableData();
+      if (this.noRequest) {
+        this.multiFieldSearchCopy = this.multiFieldSearch;
+      } else {
+        this.queryTableData();
+      }
     },
+
     handleNativeFilter(e) {
       if (this.previewMode) return;
       const keyCode = window.event ? e.keyCode : e.which;
       console.log(keyCode);
       if (keyCode === 13) {
         this.page.pageNo = 1;
-        this.queryTableData();
+        if (this.noRequest) {
+          this.multiFieldSearchCopy = this.multiFieldSearch;
+        } else {
+          this.queryTableData();
+        }
       }
     },
 
@@ -769,9 +784,7 @@ export default {
       }
       this.tableConfigJSON = tableOptions;
       this.keyField = keyField;
-      if (fuzzyFieldSearchConfig?.searchFieldList?.length > 0) {
-        this.fuzzySearchPlaceholder = fuzzyFieldSearchConfig.placeholder;
-      }
+      this.fuzzyFieldSearchConfig = fuzzyFieldSearchConfig;
     },
 
     queryTableConfig() {
@@ -810,6 +823,13 @@ export default {
           return this.checkPermission(`${this.rawRelateId}:${item.btnId}:${item.authorize}`) || item.authorize === "defaultShow";
         });
         if (config.length === 0) this.showBtns = false;
+      }
+
+      if (this.showBtns && this.getWidget()?.options?.disabled) {
+        console.log("this.disabled", this.getWidget()?.options?.disabled);
+        config.map(item => {
+          item.tagAttrs.disabled = true;
+        });
       }
 
       return [
@@ -1724,7 +1744,7 @@ export default {
     },
 
     updateTotalCount() {
-      if (this.showPagination) {
+      if (this.tableAttrs.showPagination) {
         this.page.totalCount = this.tableData.length;
       }
     },
@@ -1790,7 +1810,6 @@ export default {
       showBtns,
       btnRegularOptions,
       handleBtnClick,
-      tableData,
       filterTableOptions,
       selectListHandler,
       tableAttrs,
@@ -1806,7 +1825,7 @@ export default {
       btnRelateDialogVNode,
       importFileVNode,
       importRefreshVNode,
-      fuzzySearchPlaceholder,
+      fuzzyFieldSearchConfig: { searchFieldList, placeholder },
       handleFilter,
       handleGlobalClick,
       showCheckDialog,
@@ -1896,13 +1915,13 @@ export default {
                 ></base-render-regular>
               ) : null}
               <div class="operate">
-                {fuzzySearchPlaceholder ? (
+                {searchFieldList.length ? (
                   <div class="inlineBlock">
                     <el-input
                       style={{ width: "200px" }}
                       size="mini"
                       v-model={this.multiFieldSearch}
-                      placeholder={fuzzySearchPlaceholder}
+                      placeholder={placeholder}
                       nativeOnkeydown={handleNativeFilter}
                       clearable={true}
                     >
