@@ -22,7 +22,7 @@ import {
   setEmptyTableData,
   arrayToTree
 } from "../../../utils";
-import { cloneDeep, omit, merge, isEmpty } from "lodash";
+import { cloneDeep, omit, merge, isEmpty, union } from "lodash";
 
 function InstanceData() {
   return {
@@ -88,6 +88,10 @@ export default {
   },
 
   computed: {
+    // 当前是否作为Vform的一个组件
+    isVformWidget() {
+      return !!this.getWidget()?.options;
+    },
     // 使用动态表单是否要使用网络请求处理提交数据
     noRequest() {
       return this.getWidget()?.options?.noRequest;
@@ -228,6 +232,9 @@ export default {
     },
     wrapHeight() {
       return this.wrapHeightProp || this.getWrapHeight().height;
+    },
+    slaveTable() {
+      return this.getSlaveTableList()?.find(({ slaveTableField }) => this.getWidget().options.name === slaveTableField) || {};
     }
   },
   inject: {
@@ -344,6 +351,17 @@ export default {
       default: () => {
         return "";
       }
+    },
+    extraData: {
+      default: () => {
+        return {};
+      }
+    },
+    getSlaveTableList: {
+      default: () => () => []
+    },
+    getBtnDlgConfig: {
+      default: () => () => {}
     }
   },
 
@@ -354,6 +372,10 @@ export default {
         return {
           height: 0
         };
+      },
+      // 下面是和vform结合相关的
+      getBtnDlgConfig: () => {
+        return this.btnConfigs;
       }
     };
   },
@@ -1369,7 +1391,7 @@ export default {
     disposeDel(row) {
       if (!this.noRequest) {
         if (row) {
-          this.batchDel([row[this.keyField]]);
+          this.batchDel([row[this.keyField]], [row]);
         } else {
           if (this.selectList.length === 0) {
             return this.$warn("请至少勾选一条要处理的数据");
@@ -1377,7 +1399,10 @@ export default {
           if ([undefined, null].includes(this.tableData[0][this.keyField])) {
             return this.$warn("主键字段未取到值，请检查数据或重新在列表设计页面重新关联主键！");
           }
-          this.batchDel(this.selectList.map(item => item[this.keyField]));
+          this.batchDel(
+            this.selectList.map(item => item[this.keyField]),
+            this.selectList
+          );
         }
       } else {
         if (this.selectList.length === 0 && !row) {
@@ -1696,16 +1721,63 @@ export default {
       });
     },
 
-    batchDel(list = []) {
-      this.requestBatchDel(list, this.listPageId).then(async res => {
-        if (res.result === "0") {
-          if (this.tableData.length === list.length && this.page.pageNo > 1) {
-            this.page.pageNo--;
+    async batchDel(idList = [], listData) {
+      const {
+        logDeletedData,
+        noRequest,
+        logAddOrEditData,
+        btnConfigs: { btnType }
+      } = this;
+      if (!this.isVformWidget) {
+        this.requestBatchDel(idList, this.listPageId).then(async res => {
+          if (res.result === "0") {
+            if (this.tableData.length === list.length && this.page.pageNo > 1) {
+              this.page.pageNo--;
+            }
+            this.$success("删除成功");
+            this.queryTableData();
           }
-          this.$success("删除成功");
-          this.queryTableData();
+        });
+      } else {
+        // TODO 独立模式下删除需要额外传参
+        if (noRequest) {
+          if (btnType === "edit") {
+            logDeletedData(listData);
+          }
+        } else {
+          if (this.getBtnDlgConfig().btnType === "add") {
+            // TODO接口？
+            const id = await sad();
+            logAddOrEditData(id, true);
+          }
         }
-      });
+      }
+    },
+    // 记录已删除数据
+    logDeletedData(data) {
+      if (!data) return;
+      const field = "_DELETE_LIST_";
+      const { extraData, slaveTable } = this;
+      const { pkField, slaveTableField } = slaveTable || {};
+      if (!pkField) return;
+      const lastLog = extraData[field][slaveTableField] || [];
+      const logs = data.map(val => val[pkField]);
+      const newLog = union(lastLog, logs).filter(d => d);
+      extraData[field][slaveTableField] = newLog;
+    },
+
+    logAddOrEditData(id, isDel) {
+      if (!id) return;
+      const { extraData, slaveTable } = this;
+      const { pkField, slaveTableField } = slaveTable || {};
+      if (!pkField) return;
+      const field = "_SLAVE_LIST_";
+      if (isDel) {
+        const index = extraData[field][slaveTableField].findIndex(item => item === id);
+        extraData[field][slaveTableField].splice(index, 1);
+      } else {
+        extraData[field][slaveTableField].push(id);
+      }
     },
     filterFieldChange(val) {
       this.filterField = val;
@@ -1723,23 +1795,42 @@ export default {
         noRequest,
         editRow,
         btnConfigs: { btnType },
-        updateTotalCount
+        updateTotalCount,
+        isVformWidget,
+        logAddOrEditData,
+        slaveTable: { masterTableName }
       } = this;
-      if (!noRequest) {
+      if (!isVformWidget) {
         this.$refs[this.curDialogCompRef]?.submitForm();
       } else {
-        const rowData = await this.$refs[this.curDialogCompRef]?.getFormData();
-        // 根据按钮类型判断怎么处理提交数据
-        if (btnType === "edit") {
-          const index = tableData.findIndex(row => row === editRow);
-          tableData.splice(index, 1, rowData);
-        } else if (btnType === "add") {
-          // TODO新增的是放前面还是放后面，放后面是不是要处理pageNo
-          tableData.unshift(rowData);
-          updateTotalCount();
+        if (!noRequest) {
+          if (this.getBtnDlgConfig().btnType === "add") {
+            if (btnType === "add") {
+              // TODO接口？
+              const id = await this.$refs[this.curDialogCompRef]?.submitAddFormSubform(masterTableName);
+              logAddOrEditData(id);
+            } else if (btnType === "edit") {
+              // TODO接口？ 编辑实际上是id替换？id变不变？不变就不需要记录id
+              const id = await this.$refs[this.curDialogCompRef]?.submitEditFormSubform(masterTableName);
+              // logAddOrEditData(id);
+            }
+            // 这里要掉新街口
+            //
+          } else if (this.getBtnDlgConfig().btnType === "edit") {
+          }
+        } else {
+          const rowData = await this.$refs[this.curDialogCompRef]?.getFormData();
+          // 根据按钮类型判断怎么处理提交数据
+          if (btnType === "edit") {
+            const index = tableData.findIndex(row => row === editRow);
+            tableData.splice(index, 1, rowData);
+          } else if (btnType === "add") {
+            tableData.unshift(rowData);
+            updateTotalCount();
+          }
+          globalModel.formModel[getWidget().options.name] = tableData;
+          expose_hideDialog();
         }
-        globalModel.formModel[getWidget().options.name] = tableData;
-        expose_hideDialog();
       }
     },
 
