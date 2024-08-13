@@ -93,8 +93,20 @@ export default {
       return !!this.getWidget()?.options;
     },
     // 使用动态表单是否要使用网络请求处理提交数据
-    noRequest() {
-      return this.getWidget()?.options?.noRequest;
+    localProcessData() {
+      return this.getWidget()?.options?.renderMode === 0;
+    },
+
+    pageSizes() {
+      let options;
+      try {
+        if (this.tableAttrs.setPaginationSize) {
+          options = str2obj(this.tableAttrs.setPaginationSize)?.map(item => item.value);
+        }
+      } catch (error) {
+        console.warn("分页设置转换失败：", error);
+      }
+      return options || [10, 20, 50, 100];
     },
 
     // 处理分页且属于本地请求数据的情况
@@ -142,14 +154,14 @@ export default {
 
     finalTableData() {
       const {
-        noRequest,
+        localProcessData,
         page: { pageNo, pageSize },
         tableData,
         tableAttrs: { showPagination },
         multiFieldSearchCopy,
         fuzzyFieldSearchConfig: { searchFieldList = [] }
       } = this;
-      if (noRequest) {
+      if (localProcessData) {
         if (showPagination) {
           console.log("multiFieldSearchCopy", multiFieldSearchCopy, pageNo);
           return (multiFieldSearchCopy
@@ -376,6 +388,9 @@ export default {
       // 下面是和vform结合相关的
       getBtnDlgConfig: () => {
         return this.btnConfigs;
+      },
+      getPrimaryKeyValue: () => {
+        return this.primaryKeyValue;
       }
     };
   },
@@ -645,7 +660,7 @@ export default {
     handleFilter() {
       if (this.previewMode) return;
       this.page.pageNo = 1;
-      if (this.noRequest) {
+      if (this.localProcessData) {
         this.multiFieldSearchCopy = this.multiFieldSearch;
       } else {
         this.queryTableData();
@@ -658,7 +673,7 @@ export default {
       console.log(keyCode);
       if (keyCode === 13) {
         this.page.pageNo = 1;
-        if (this.noRequest) {
+        if (this.localProcessData) {
           this.multiFieldSearchCopy = this.multiFieldSearch;
         } else {
           this.queryTableData();
@@ -827,32 +842,15 @@ export default {
     // 构成按钮设计区的options
     composeBtnRegularOptions(config) {
       if (this.previewMode) {
-        config.map(item => {
-          if (item.tagAttrs) {
-            item.tagAttrs.disabled = !["add", "edit", "check"].includes(item.extraOption.btnType);
-          } else {
-            item.tagAttrs = {
-              disabled: !["add", "edit", "check"].includes(item.extraOption.btnType)
-            };
-          }
-        });
+        this.disabledBtnsByPreviewStatus(config);
       }
       this.showBtns = true;
-      // 根据权限筛选
-      // 兼容通过弹窗展示的列表，此时rawlistPageId为空，不进行权限校验
-      if (!this.previewMode && this.rawRelateId) {
-        config = config.filter(item => {
-          return this.checkPermission(`${this.rawRelateId}:${item.btnId}:${item.authorize}`) || item.authorize === "defaultShow";
-        });
-        if (config.length === 0) this.showBtns = false;
+      if (!this.isVformWidget) {
+        config = this.filterBtnsByPermission(config);
+      } else {
+        config = this.filterBtnsByVfromWidgetOptions(config);
       }
-
-      if (this.showBtns && this.getWidget()?.options?.disabled) {
-        console.log("this.disabled", this.getWidget()?.options?.disabled);
-        config.map(item => {
-          item.tagAttrs.disabled = true;
-        });
-      }
+      if (config.length === 0) this.showBtns = false;
 
       return [
         {
@@ -866,6 +864,58 @@ export default {
           formItem: config
         }
       ];
+    },
+
+    disabledBtnsByPreviewStatus(config) {
+      config.map(item => {
+        if (item.tagAttrs) {
+          item.tagAttrs.disabled = !["add", "edit", "check"].includes(item.extraOption.btnType);
+        } else {
+          item.tagAttrs = {
+            disabled: !["add", "edit", "check"].includes(item.extraOption.btnType)
+          };
+        }
+      });
+    },
+
+    // 根据授权筛选按钮
+    filterBtnsByPermission(config) {
+      // 根据权限筛选
+      // 兼容通过弹窗展示的列表，此时rawlistPageId为空，不进行权限校验
+      if (!this.previewMode && this.rawRelateId) {
+        return config.filter(item => {
+          return this.checkPermission(`${this.rawRelateId}:${item.btnId}:${item.authorize}`) || item.authorize === "defaultShow";
+        });
+      }
+      return config;
+    },
+
+    // 在作为vform组件时，进行不同状态下按钮的显示筛选
+    filterBtnsByVfromWidgetOptions(config) {
+      let showBtnList;
+      const key = this.getBtnDlgConfig().btnType;
+      switch (key) {
+        case "add":
+          showBtnList = this.getWidget()?.options?.addBtnShowList;
+          break;
+        case "edit":
+          showBtnList = this.getWidget()?.options?.editBtnShowList;
+          break;
+        case "check":
+          showBtnList = this.getWidget()?.options?.checkBtnShowList;
+          break;
+      }
+      console.log(showBtnList, "showBtnList");
+
+      const btnList = config.filter(btnItem => showBtnList.some(btnId => btnId === btnItem.btnId));
+
+      // if (this.showBtns && this.getWidget()?.options?.disabled) {
+      //   console.log("this.disabled", this.getWidget()?.options?.disabled);
+      //   btnList.map(item => {
+      //     item.tagAttrs.disabled = true;
+      //   });
+      // }
+      return btnList;
     },
 
     validateSelectList({ paramName, paramType, deliverySelectList, validate }, row) {
@@ -1183,7 +1233,7 @@ export default {
           break;
         case "check":
         case "edit":
-          if (!this.noRequest) {
+          if (!this.localProcessData) {
             if (rowData) {
               this.primaryKeyValue = rowData[this.keyField];
             } else if (this.selectList.length) {
@@ -1195,11 +1245,11 @@ export default {
               return this.$warn("主键字段未取到值，请检查数据或在列表设计页面重新关联主键！");
             }
           } else {
-            this.editRow = rowData || this.selectList[0];
-            if (!this.editRow) {
+            if (!(rowData || this.selectList[0])) {
               return this.$warn("请至少勾选一条要处理的数据！");
             }
           }
+          this.editRow = rowData || this.selectList[0];
           this.expose_showDialog();
           this.btnConfigs.formId = relateFrom;
           this.onlyRead = btnType === "check";
@@ -1389,7 +1439,7 @@ export default {
     },
 
     disposeDel(row) {
-      if (!this.noRequest) {
+      if (!this.localProcessData && !this.isVformWidget) {
         if (row) {
           this.batchDel([row[this.keyField]], [row]);
         } else {
@@ -1404,24 +1454,39 @@ export default {
             this.selectList
           );
         }
-      } else {
+      } else if (this.localProcessData && this.isVformWidget) {
         if (this.selectList.length === 0 && !row) {
           return this.$warn("请至少勾选一条要处理的数据");
         }
-        // 非网络请求本地处理数据
-        if (row) {
-          const index = this.tableData.findIndex(rowItem => rowItem === row);
-          this.tableData.splice(index, 1);
-        } else {
-          this.tableData = this.tableData.filter(rowItem => {
-            return this.selectList.findIndex(item => item === rowItem) === -1;
-          });
+        this.localDataDel(row);
+      } else if (!this.localProcessData && this.isVformWidget) {
+        if (this.selectList.length === 0 && !row) {
+          return this.$warn("请至少勾选一条要处理的数据");
         }
-        const index = Math.ceil(this.tableData.length / this.page.pageSize) || 1;
-        if (index < this.page.pageNo) {
-          this.page.pageNo = index;
-        }
-        this.updateTotalCount();
+        this.batchDelByVformWidget(
+          this.selectList.map(item => item[this.keyField]),
+          this.selectList
+        );
+      }
+    },
+
+    localDataDel(row) {
+      // 非网络请求本地处理数据
+      if (row) {
+        const index = this.tableData.findIndex(rowItem => rowItem === row);
+        this.tableData.splice(index, 1);
+      } else {
+        this.tableData = this.tableData.filter(rowItem => {
+          return this.selectList.findIndex(item => item === rowItem) === -1;
+        });
+      }
+      const index = Math.ceil(this.tableData.length / this.page.pageSize) || 1;
+      if (index < this.page.pageNo) {
+        this.page.pageNo = index;
+      }
+      this.updateTotalCount();
+      if (["edit", "check"].includes(this.getBtnDlgConfig().btnType)) {
+        this.logDeletedData(row ? [row] : this.selectList);
       }
     },
 
@@ -1452,11 +1517,11 @@ export default {
         onlyRead,
         onSubmit,
         expose_hideDialog,
-        noRequest,
+        localProcessData,
         editRow
       } = this;
       const baseAttrs = this.getExternalCompBaseAttrs();
-      if (noRequest && editRow) {
+      if (localProcessData && editRow) {
         baseAttrs.editData = cloneDeep(editRow);
       }
       if (formId) {
@@ -1721,56 +1786,73 @@ export default {
       });
     },
 
-    async batchDel(idList = [], listData) {
+    async batchDelByVformWidget(idList, dataList) {
       const {
         logDeletedData,
-        noRequest,
-        logAddOrEditData,
-        btnConfigs: { btnType }
+        batchDel,
+        slaveTable: { masterTableName },
+        tableData,
+        page,
+        queryTableData,
+        requestBatchDelByVformWidget,
+        listPageId
       } = this;
-      if (!this.isVformWidget) {
-        this.requestBatchDel(idList, this.listPageId).then(async res => {
+      if (this.getBtnDlgConfig()?.btnType === "add") {
+        batchDel(idList, dataList);
+      } else {
+        const id = await requestBatchDelByVformWidget(listPageId, idList.join(","), masterTableName, this.getPrimaryKeyValue()).then(res => {
           if (res.result === "0") {
-            if (this.tableData.length === list.length && this.page.pageNo > 1) {
-              this.page.pageNo--;
+            if (tableData.length === dataList.length && page.pageNo > 1) {
+              page.pageNo--;
             }
             this.$success("删除成功");
-            this.queryTableData();
+            queryTableData();
           }
+          return res.data;
         });
-      } else {
-        // TODO 独立模式下删除需要额外传参
-        if (noRequest) {
-          if (btnType === "edit") {
-            logDeletedData(listData);
-          }
-        } else {
-          if (this.getBtnDlgConfig().btnType === "add") {
-            // TODO接口？
-            const id = await sad();
-            logAddOrEditData(id, true);
-          }
-        }
+        console.log("删除id：", id);
+        logDeletedData(dataList);
       }
+    },
+
+    async batchDel(idList = [], listData) {
+      this.requestBatchDel(idList, this.listPageId).then(async res => {
+        if (res.result === "0") {
+          if (this.tableData.length === listData.length && this.page.pageNo > 1) {
+            this.page.pageNo--;
+          }
+          this.$success("删除成功");
+          this.queryTableData();
+        }
+      });
     },
     // 记录已删除数据
     logDeletedData(data) {
       if (!data) return;
-      const field = "_DELETE_LIST_";
-      const { extraData, slaveTable } = this;
-      const { pkField, slaveTableField } = slaveTable || {};
-      if (!pkField) return;
-      const lastLog = extraData[field][slaveTableField] || [];
+      const delField = "_DELETE_LIST_";
+      const addField = "_SLAVE_LIST_";
+      const {
+        extraData,
+        slaveTable: { pkField, slaveTableField }
+      } = this;
+      if (!pkField) return console.warn("当前关联子表信息的pkField字段返回空！");
+      const lastLog = extraData[delField][slaveTableField] || [];
       const logs = data.map(val => val[pkField]);
       const newLog = union(lastLog, logs).filter(d => d);
-      extraData[field][slaveTableField] = newLog;
+      extraData[delField][slaveTableField] = newLog;
+      // 如果删除的id在slavelist中存在，则删除
+      const addListId = extraData[addField][slaveTableField];
+      extraData[addField][slaveTableField] = addListId.filter(addId => !logs.some(delId => delId === addId));
     },
 
-    logAddOrEditData(id, isDel) {
+    // 记录添加或修改数据
+    logAddData(id, isDel) {
       if (!id) return;
-      const { extraData, slaveTable } = this;
-      const { pkField, slaveTableField } = slaveTable || {};
-      if (!pkField) return;
+      const {
+        extraData,
+        slaveTable: { pkField, slaveTableField }
+      } = this;
+      if (!pkField) return console.warn("当前关联子表信息的pkField字段返回空！");
       const field = "_SLAVE_LIST_";
       if (isDel) {
         const index = extraData[field][slaveTableField].findIndex(item => item === id);
@@ -1787,51 +1869,58 @@ export default {
       this.showPanel = !this.showPanel;
     },
     async submitForm() {
+      const { localProcessData, isVformWidget, curDialogCompRef, submitFormByVformWidget, submitLocalData } = this;
+      if (!isVformWidget) {
+        this.$refs[curDialogCompRef]?.submitForm();
+      } else {
+        if (!localProcessData) {
+          submitFormByVformWidget();
+        } else {
+          submitLocalData();
+        }
+      }
+    },
+
+    async submitFormByVformWidget() {
+      const {
+        editRow,
+        btnConfigs: { btnType },
+        logAddData,
+        slaveTable: { masterTableName },
+        listPageId,
+        keyField
+      } = this;
+      if (btnType === "add") {
+        const url = `/dyn-common/create-slave/${listPageId}?main=${masterTableName}`;
+        const id = await this.$refs[this.curDialogCompRef]?.submitForm(url);
+        logAddData(id);
+      } else if (btnType === "edit") {
+        const url = `/dyn-common/update-slave/${listPageId}?main=${masterTableName}&id=${editRow[keyField]}`;
+        this.$refs[this.curDialogCompRef]?.submitForm(url);
+      }
+    },
+
+    async submitLocalData() {
       const {
         tableData,
         expose_hideDialog,
         globalModel,
         getWidget,
-        noRequest,
         editRow,
         btnConfigs: { btnType },
-        updateTotalCount,
-        isVformWidget,
-        logAddOrEditData,
-        slaveTable: { masterTableName }
+        updateTotalCount
       } = this;
-      if (!isVformWidget) {
-        this.$refs[this.curDialogCompRef]?.submitForm();
-      } else {
-        if (!noRequest) {
-          if (this.getBtnDlgConfig().btnType === "add") {
-            if (btnType === "add") {
-              // TODO接口？
-              const id = await this.$refs[this.curDialogCompRef]?.submitAddFormSubform(masterTableName);
-              logAddOrEditData(id);
-            } else if (btnType === "edit") {
-              // TODO接口？ 编辑实际上是id替换？id变不变？不变就不需要记录id
-              const id = await this.$refs[this.curDialogCompRef]?.submitEditFormSubform(masterTableName);
-              // logAddOrEditData(id);
-            }
-            // 这里要掉新街口
-            //
-          } else if (this.getBtnDlgConfig().btnType === "edit") {
-          }
-        } else {
-          const rowData = await this.$refs[this.curDialogCompRef]?.getFormData();
-          // 根据按钮类型判断怎么处理提交数据
-          if (btnType === "edit") {
-            const index = tableData.findIndex(row => row === editRow);
-            tableData.splice(index, 1, rowData);
-          } else if (btnType === "add") {
-            tableData.unshift(rowData);
-            updateTotalCount();
-          }
-          globalModel.formModel[getWidget().options.name] = tableData;
-          expose_hideDialog();
-        }
+      const rowData = await this.$refs[this.curDialogCompRef]?.getFormData();
+      // 根据按钮类型判断怎么处理提交数据
+      if (btnType === "edit") {
+        const index = tableData.findIndex(row => row === editRow);
+        tableData.splice(index, 1, rowData);
+      } else if (btnType === "add") {
+        tableData.unshift(rowData);
+        updateTotalCount();
       }
+      globalModel.formModel[getWidget().options.name] = tableData;
+      expose_hideDialog();
     },
 
     updateTotalCount() {
@@ -1906,6 +1995,7 @@ export default {
       tableAttrs,
       pageLayout,
       page,
+      pageSizes,
       handleSizeChange,
       handleCurrentChange,
       showPanel,
@@ -1922,11 +2012,11 @@ export default {
       showCheckDialog,
       onSave,
       tableCellClick,
-      noRequest,
+      localProcessData,
       finalTableData
     } = this;
 
-    const curPageListeners = noRequest
+    const curPageListeners = localProcessData
       ? {
           "update:currentPage": val => {
             page.pageNo = val;
@@ -2004,7 +2094,9 @@ export default {
                     }
                   }}
                 ></base-render-regular>
-              ) : null}
+              ) : (
+                <div>&nbsp;</div>
+              )}
               <div class="operate">
                 {searchFieldList.length ? (
                   <div class="inlineBlock">
@@ -2089,7 +2181,7 @@ export default {
                   current-page={page.pageNo}
                   page-size={page.pageSize}
                   total={page.totalCount}
-                  page-sizes={[10, 20, 50, 100]}
+                  page-sizes={pageSizes}
                   {...{ on: curPageListeners }}
                 ></el-pagination>
               </el-footer>

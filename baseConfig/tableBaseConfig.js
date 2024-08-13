@@ -27,7 +27,8 @@ export function getTableAttrs() {
     dataTransitionFn: "",
     dataTransitionParentField: "",
     dataTransitionCurField: "",
-    deliveryLoadFnField: ""
+    deliveryLoadFnField: "",
+    setPaginationSize: ""
   };
 }
 

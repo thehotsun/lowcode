@@ -61,6 +61,7 @@
               <el-select v-model="tableAttrs.paginationSize" placeholder="请选择">
                 <el-option v-for="item in paginationSizeOptions" :key="item.value" :label="item.label" :value="item.value"> </el-option>
               </el-select>
+              <el-button type="text" @click="handleShow('setPaginationSize', '设置分页', $event)">编辑</el-button>
             </el-form-item>
           </el-col>
           <el-col :span="12">
@@ -157,7 +158,7 @@
       </el-form>
       <el-dialog :before-close="handleClose" :title="codeEditorTil" :visible="showCodeEditor" width="900px" :append-to-body="true">
         <js-code-editor ref="chEditor" mode="javascript" :readonly="false" :value="tableAttrs[curFn]" @input="handleEditorInput"></js-code-editor>
-        <codeExample :val="tableAttrsCodeExampleList[curFn]" @copy="handleCopy"></codeExample>
+        <codeExample v-if="tableAttrsCodeExampleList[curFn]" :val="tableAttrsCodeExampleList[curFn]" @copy="handleCopy"> </codeExample>
       </el-dialog>
     </div>
     <span slot="footer" class="dialog-footer">
@@ -172,6 +173,7 @@ import codeExample from "./components/codeExample.vue";
 import { cloneDeep } from "lodash";
 import { tableAttrsCodeExampleList } from "/utils/codeExampleList";
 import { getTableAttrs } from "/baseConfig/tableBaseConfig";
+import { str2obj } from "/utils";
 export default {
   components: {
     codeExample
@@ -208,7 +210,7 @@ export default {
           label: "迷你"
         }
       ],
-      paginationSizeOptions: [
+      paginationOptions: [
         {
           label: "10条/页",
           value: 10
@@ -228,6 +230,19 @@ export default {
       ],
       tableAttrsCodeExampleList
     };
+  },
+  computed: {
+    paginationSizeOptions() {
+      let options;
+      try {
+        if (this.tableAttrs.setPaginationSize) {
+          options = str2obj(this.tableAttrs.setPaginationSize);
+        }
+      } catch (error) {
+        console.warn("分页设置转换失败：", error);
+      }
+      return options || this.paginationOptions;
+    }
   },
   methods: {
     showDlg(attrs) {
