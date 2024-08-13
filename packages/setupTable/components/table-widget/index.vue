@@ -621,14 +621,13 @@ export default {
   width: 100%;
   display: flex;
   flex-direction: column;
+  .searchArea {
+    padding-left: 20px;
+  }
 }
 
 .el-dropdown {
   vertical-align: top;
-}
-
-.el-dropdown + .el-dropdown {
-  margin-left: 15px;
 }
 
 .el-icon-arrow-down {
