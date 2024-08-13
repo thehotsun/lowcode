@@ -13,25 +13,23 @@
       ></base-render-form>
     </div>
 
-    <div class="btnDesign">
-      <div class="btns">
-        <span v-for="(item, index) in btnConfigArr" :key="item.renderId" style="display:inline-block; position: relative;">
-          <el-dropdown v-if="item.authorize === 'E'">
-            <el-button type="" size="small" :icon="item.tagAttrs.icon" @click="handleBtnDetail(index)"
-              >{{ item.tagAttrs.value }} <i :class="item?.contentTextBehindTagOptions?.className"></i
-            ></el-button>
-            <el-dropdown-menu slot="dropdown">
-              <el-dropdown-item v-for="(elDropdownItem, elIndex) in elDropdownOptions" :key="elIndex">{{ elDropdownItem.label }}</el-dropdown-item>
-            </el-dropdown-menu>
-          </el-dropdown>
-          <el-button v-else type="" size="small" :icon="item.tagAttrs.icon" @click="handleBtnDetail(index)"
+    <div class="btnDesign btns">
+      <span v-for="(item, index) in btnConfigArr" :key="item.renderId" class="btn" style="display:inline-block; position: relative;">
+        <el-dropdown v-if="item.authorize === 'E'">
+          <el-button type="" size="small" :icon="item.tagAttrs.icon" @click="handleBtnDetail(index)"
             >{{ item.tagAttrs.value }} <i :class="item?.contentTextBehindTagOptions?.className"></i
           ></el-button>
-          <i type="danger" class="el-icon-circle-close middle " @click="handleDelBtn(index)"></i>
-        </span>
-      </div>
+          <el-dropdown-menu slot="dropdown">
+            <el-dropdown-item v-for="(elDropdownItem, elIndex) in elDropdownOptions" :key="elIndex">{{ elDropdownItem.label }}</el-dropdown-item>
+          </el-dropdown-menu>
+        </el-dropdown>
+        <el-button v-else type="" size="small" :icon="item.tagAttrs.icon" @click="handleBtnDetail(index)"
+          >{{ item.tagAttrs.value }} <i :class="item?.contentTextBehindTagOptions?.className"></i
+        ></el-button>
+        <i type="danger" class="el-icon-circle-close middle " @click="handleDelBtn(index)"></i>
+      </span>
 
-      <el-dropdown szie="small" @command="handleBtnCommand">
+      <el-dropdown class="btn" szie="small" @command="handleBtnCommand">
         <el-button type="primary" size="small" plain> 添加功能按钮<i class="el-icon-arrow-down el-icon--right"></i> </el-button>
         <el-dropdown-menu slot="dropdown">
           <el-dropdown-item command="add">新增按钮</el-dropdown-item>
@@ -264,7 +262,7 @@ export default {
 
     btnsColumnDrop() {
       // 此时找到的元素是要拖拽元素的父容器
-      const dom = document.querySelector(".btnDesign .btns");
+      const dom = document.querySelector(".btnDesign");
       this.Sortable.create(dom, {
         onEnd: e => {
           // e.oldIndex为拖动一行原来的位置，e.newIndex为拖动后新的位置
@@ -619,8 +617,8 @@ export default {
 
 <style lang="less" scoped>
 .content {
+  height: calc(100% - 60px);
   width: 100%;
-  height: 100%;
   display: flex;
   flex-direction: column;
 }
@@ -654,24 +652,19 @@ export default {
   position: relative;
 }
 
-.btns {
-  display: flex;
-  align-items: center;
-
-  span {
-    margin-right: 10px;
-  }
-}
-
 .btnDesign {
   // margin: -6px 56px 10px 56px;
   background: #fff;
-  height: 65px;
+  min-height: 65px;
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   margin-top: 10px;
   padding-left: 20px;
+  .btn {
+    margin-right: 10px;
+    margin-bottom: 10px;
+  }
 }
 
 .middle {
