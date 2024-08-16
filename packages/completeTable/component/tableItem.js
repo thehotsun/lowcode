@@ -244,9 +244,6 @@ export default {
     },
     wrapHeight() {
       return this.wrapHeightProp || this.getWrapHeight().height;
-    },
-    slaveTable() {
-      return this.getSlaveTableList()?.find(({ slaveTableField }) => this.getWidget().options.name === slaveTableField) || {};
     }
   },
   inject: {
@@ -356,23 +353,29 @@ export default {
     },
     globalModel: {
       default: () => {
+        console.warn("inject缺失globalModel！如果不是作为vform组件状态请忽略");
         return {};
-      }
-    },
-    getSubformRelateField: {
-      default: () => {
-        return "";
       }
     },
     extraData: {
       default: () => {
+        console.warn("inject缺失extraData！如果不是作为vform组件状态请忽略");
         return {};
       }
     },
-    getSlaveTableList: {
-      default: () => () => []
+    getDlgConfig: {
+      default: () => {
+        console.warn("inject缺失getDlgConfig！如果不是作为vform组件状态请忽略");
+        return () => {};
+      }
     },
-    getBtnDlgConfig: {
+    getPrimaryKeyValue: {
+      default: () => {
+        console.warn("inject缺失getPrimaryKeyValue！如果不是作为vform组件状态请忽略");
+        return () => {};
+      }
+    },
+    requestBatchDelByVformWidget: {
       default: () => () => {}
     }
   },
@@ -384,13 +387,6 @@ export default {
         return {
           height: 0
         };
-      },
-      // 下面是和vform结合相关的
-      getBtnDlgConfig: () => {
-        return this.btnConfigs;
-      },
-      getPrimaryKeyValue: () => {
-        return this.primaryKeyValue;
       }
     };
   },
@@ -893,7 +889,7 @@ export default {
     // 在作为vform组件时，进行不同状态下按钮的显示筛选
     filterBtnsByVfromWidgetOptions(config) {
       let showBtnList;
-      const key = this.getBtnDlgConfig().btnType;
+      const key = this.getDlgConfig()?.btnType;
       switch (key) {
         case "add":
           showBtnList = this.getWidget()?.options?.addBtnShowList;
@@ -906,9 +902,13 @@ export default {
           break;
       }
       console.log(showBtnList, "showBtnList");
-
-      const btnList = config.filter(btnItem => showBtnList.some(btnId => btnId === btnItem.btnId));
-
+      let btnList;
+      // 如果是受控模式，在查看状态下，只能展示查看按钮
+      if (this.localProcessData && key === "check") {
+        btnList = config.filter(btnItem => showBtnList.some(btnId => btnId === btnItem.btnId && btnItem.extraOption.btnType === "check"));
+      } else {
+        btnList = config.filter(btnItem => showBtnList.some(btnId => btnId === btnItem.btnId));
+      }
       // if (this.showBtns && this.getWidget()?.options?.disabled) {
       //   console.log("this.disabled", this.getWidget()?.options?.disabled);
       //   btnList.map(item => {
@@ -1480,14 +1480,22 @@ export default {
           return this.selectList.findIndex(item => item === rowItem) === -1;
         });
       }
+      // 同步到表单
+      this.syncFormDataByVformWidget();
       const index = Math.ceil(this.tableData.length / this.page.pageSize) || 1;
       if (index < this.page.pageNo) {
         this.page.pageNo = index;
       }
       this.updateTotalCount();
-      if (["edit", "check"].includes(this.getBtnDlgConfig().btnType)) {
-        this.logDeletedData(row ? [row] : this.selectList);
+      if (["edit", "check"].includes(this.getDlgConfig().btnType)) {
+        // 只有当前数据有主键，才进行记录
+        const idList = (row ? [row[this.keyField]] : this.selectList.map(val => val[this.keyField])).filter(v => v);
+        this.logDeletedData(idList);
       }
+    },
+
+    syncFormDataByVformWidget() {
+      this.globalModel.formModel[this.getWidget().options.name] = this.tableData;
     },
 
     // 处理导入的实现
@@ -1751,7 +1759,9 @@ export default {
           requestBeforeConfirmText
         },
         tableData: this.tableData,
-        externalParams: this.externalParams
+        externalParams: this.externalParams,
+        callingFrom: "dynatic-table",
+        dlgFormConfig: this.btnConfigs
       };
       if (deliverySelectList) {
         config = Object.assign(config, {
@@ -1787,79 +1797,78 @@ export default {
     },
 
     async batchDelByVformWidget(idList, dataList) {
-      const {
-        logDeletedData,
-        batchDel,
-        slaveTable: { masterTableName },
-        tableData,
-        page,
-        queryTableData,
-        requestBatchDelByVformWidget,
-        listPageId
-      } = this;
-      if (this.getBtnDlgConfig()?.btnType === "add") {
-        batchDel(idList, dataList);
+      const { logDeletedData, batchDel, tableData, page, queryTableData, requestBatchDelByVformWidget, listPageId } = this;
+      if (this.getDlgConfig()?.btnType === "add") {
+        await batchDel(idList, dataList);
       } else {
-        const id = await requestBatchDelByVformWidget(listPageId, idList.join(","), masterTableName, this.getPrimaryKeyValue()).then(res => {
+        await requestBatchDelByVformWidget(listPageId, idList.join(",")).then(res => {
           if (res.result === "0") {
             if (tableData.length === dataList.length && page.pageNo > 1) {
               page.pageNo--;
             }
             this.$success("删除成功");
             queryTableData();
+          } else {
+            throw new Error();
           }
-          return res.data;
         });
-        console.log("删除id：", id);
-        logDeletedData(dataList);
       }
+      logDeletedData(idList);
     },
 
     async batchDel(idList = [], listData) {
-      this.requestBatchDel(idList, this.listPageId).then(async res => {
+      return this.requestBatchDel(idList, this.listPageId).then(async res => {
         if (res.result === "0") {
           if (this.tableData.length === listData.length && this.page.pageNo > 1) {
             this.page.pageNo--;
           }
           this.$success("删除成功");
           this.queryTableData();
+        } else {
+          throw new Error();
         }
       });
     },
     // 记录已删除数据
-    logDeletedData(data) {
-      if (!data) return;
+    logDeletedData(idList) {
+      if (!idList || !idList.length) return;
       const delField = "_DELETE_LIST_";
       const addField = "_SLAVE_LIST_";
-      const {
-        extraData,
-        slaveTable: { pkField, slaveTableField }
-      } = this;
-      if (!pkField) return console.warn("当前关联子表信息的pkField字段返回空！");
+      const { extraData } = this;
+      const slaveTableField = this.getWidget().options.name;
+      if (!extraData[delField]) {
+        this.$set(extraData, delField, {});
+      }
+      if (!extraData[delField][slaveTableField]) {
+        this.$set(extraData[delField], slaveTableField, []);
+      }
+      if (!extraData[addField]) {
+        this.$set(extraData, addField, {});
+      }
+      if (!extraData[addField][slaveTableField]) {
+        this.$set(extraData[addField], slaveTableField, []);
+      }
       const lastLog = extraData[delField][slaveTableField] || [];
-      const logs = data.map(val => val[pkField]);
-      const newLog = union(lastLog, logs).filter(d => d);
+      const newLog = union(lastLog, idList).filter(d => d);
       extraData[delField][slaveTableField] = newLog;
       // 如果删除的id在slavelist中存在，则删除
       const addListId = extraData[addField][slaveTableField];
-      extraData[addField][slaveTableField] = addListId.filter(addId => !logs.some(delId => delId === addId));
+      extraData[addField][slaveTableField] = addListId.filter(addId => !idList.some(delId => delId === addId));
     },
 
     // 记录添加或修改数据
-    logAddData(id, isDel) {
+    logAddData(id) {
       if (!id) return;
-      const {
-        extraData,
-        slaveTable: { pkField, slaveTableField }
-      } = this;
-      if (!pkField) return console.warn("当前关联子表信息的pkField字段返回空！");
+      const { extraData } = this;
+      const slaveTableField = this.getWidget().options.name;
       const field = "_SLAVE_LIST_";
-      if (isDel) {
-        const index = extraData[field][slaveTableField].findIndex(item => item === id);
-        extraData[field][slaveTableField].splice(index, 1);
-      } else {
-        extraData[field][slaveTableField].push(id);
+      if (!extraData[field]) {
+        this.$set(extraData, field, {});
       }
+      if (!extraData[field][slaveTableField]) {
+        this.$set(extraData[field], slaveTableField, []);
+      }
+      extraData[field][slaveTableField].push(id);
     },
     filterFieldChange(val) {
       this.filterField = val;
@@ -1883,20 +1892,22 @@ export default {
 
     async submitFormByVformWidget() {
       const {
-        editRow,
-        btnConfigs: { btnType },
+        btnConfigs: { btnType, formId },
         logAddData,
-        slaveTable: { masterTableName },
-        listPageId,
-        keyField
+        getWidget,
+        getPrimaryKeyValue,
+        getDlgConfig,
+        primaryKeyValue
       } = this;
       if (btnType === "add") {
-        const url = `/dyn-common/create-slave/${listPageId}?main=${masterTableName}`;
+        const url = `/dyn-common/create-slave/${formId}?mainDataId=${getPrimaryKeyValue()}&mainFormId=${getDlgConfig().formId}&mainRelateFieldName=${getWidget().options.name}`;
         const id = await this.$refs[this.curDialogCompRef]?.submitForm(url);
         logAddData(id);
       } else if (btnType === "edit") {
-        const url = `/dyn-common/update-slave/${listPageId}?main=${masterTableName}&id=${editRow[keyField]}`;
+        const url = `/dyn-common/update-slave/${formId}?id=${primaryKeyValue}`;
         this.$refs[this.curDialogCompRef]?.submitForm(url);
+      } else {
+        console.warn("当前按钮的btnType既非新增也非编辑！");
       }
     },
 
@@ -1904,22 +1915,25 @@ export default {
       const {
         tableData,
         expose_hideDialog,
-        globalModel,
-        getWidget,
         editRow,
         btnConfigs: { btnType },
-        updateTotalCount
+        updateTotalCount,
+        syncFormDataByVformWidget
       } = this;
       const rowData = await this.$refs[this.curDialogCompRef]?.getFormData();
       // 根据按钮类型判断怎么处理提交数据
       if (btnType === "edit") {
         const index = tableData.findIndex(row => row === editRow);
-        tableData.splice(index, 1, rowData);
+        const finalData = {
+          ...tableData[index],
+          ...rowData
+        };
+        tableData.splice(index, 1, finalData);
       } else if (btnType === "add") {
         tableData.unshift(rowData);
         updateTotalCount();
       }
-      globalModel.formModel[getWidget().options.name] = tableData;
+      syncFormDataByVformWidget();
       expose_hideDialog();
     },
 
@@ -1972,7 +1986,11 @@ export default {
     tableCellClick(row, btnId) {
       try {
         const target = this.btnRegularOptions[0].formItem.find(btn => btn.btnId === btnId);
-        target && this.handleBtnClick(target.extraOption, row);
+        if (target) {
+          this.handleBtnClick(target.extraOption, row);
+        } else {
+          console.warn("当前列表未找到此操作关联的按钮！");
+        }
       } catch (error) {
         console.warn(error);
       }
