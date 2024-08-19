@@ -1463,10 +1463,7 @@ export default {
         if (this.selectList.length === 0 && !row) {
           return this.$warn("请至少勾选一条要处理的数据");
         }
-        this.batchDelByVformWidget(
-          this.selectList.map(item => item[this.keyField]),
-          this.selectList
-        );
+        this.batchDelByVformWidget(row ? [row[this.keyField]] : this.selectList.map(item => item[this.keyField]), row || this.selectList);
       }
     },
 
