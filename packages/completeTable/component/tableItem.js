@@ -888,6 +888,7 @@ export default {
 
     // 在作为vform组件时，进行不同状态下按钮的显示筛选
     filterBtnsByVfromWidgetOptions(config) {
+      if (this.previewMode) return config;
       let showBtnList;
       const key = this.getDlgConfig()?.btnType;
       switch (key) {
@@ -901,7 +902,7 @@ export default {
           showBtnList = this.getWidget()?.options?.checkBtnShowList;
           break;
       }
-      console.log(showBtnList, "showBtnList");
+      console.log(showBtnList, "showBtnList", config);
       let btnList;
       // 如果是受控模式，在查看状态下，只能展示查看按钮
       if (this.localProcessData && key === "check") {
