@@ -13,8 +13,8 @@
           <el-checkbox v-model="tableAttrs.showPagination">分页</el-checkbox>
           <el-checkbox v-model="tableAttrs.isShowIndex">显示序号</el-checkbox>
           <el-tooltip class="item" effect="dark" content="开启此功能后，列表左侧展示复选框" placement="top-start">
-            <el-checkbox v-model="tableAttrs.isShowCheckbox"
-              ><span style="cursor: pointer;font-size: 14px">多选</span><i style="width: 20px" class="el-icon-question"></i>
+            <el-checkbox v-model="tableAttrs.isShowCheckbox">
+              <span style="cursor: pointer;font-size: 14px">多选</span><i style="width: 20px" class="el-icon-question"></i>
             </el-checkbox>
           </el-tooltip>
           <el-checkbox v-model="tableAttrs.stripe">斑马线</el-checkbox>
@@ -35,8 +35,8 @@
             content="若表格展示的是各类数字，可以在表尾显示各列的合计。默认情况下，对于合计行，第一列不进行数据求合操作，而是显示「合计」二字，其余列会将本列所有数值进行求合操作，并显示出来。当然，你也可以定义自己的合计函数"
             placement="top-start"
           >
-            <el-checkbox v-model="tableAttrs.showSummary"
-              ><span style="cursor: pointer;font-size: 14px">合计</span><i style="width: 20px" class="el-icon-question"></i>
+            <el-checkbox v-model="tableAttrs.showSummary">
+              <span style="cursor: pointer;font-size: 14px">合计</span><i style="width: 20px" class="el-icon-question"></i>
             </el-checkbox>
           </el-tooltip>
           <el-tooltip class="item" effect="dark" content="多行或多列共用一个数据时，可以合并行或列。必须通过合并函数定义合并规则" placement="top-start">
@@ -48,8 +48,8 @@
             content="当 row 中包含 children 字段时，被视为树形数据。渲染树形数据时，必须要指定row-key。支持子节点数据异步加载（配置懒加载和传递字段）。"
             placement="top-start"
           >
-            <el-checkbox v-model="tableAttrs.isTree"
-              ><span style="cursor: pointer;font-size: 14px">树类型数据</span><i style="width: 20px" class="el-icon-question"></i>
+            <el-checkbox v-model="tableAttrs.isTree">
+              <span style="cursor: pointer;font-size: 14px">树类型数据</span><i style="width: 20px" class="el-icon-question"></i>
             </el-checkbox>
           </el-tooltip>
           <el-checkbox v-if="tableAttrs.isTree" v-model="tableAttrs.lazy">懒加载</el-checkbox>
@@ -90,16 +90,16 @@
         </el-form-item>
 
         <el-row>
-          <el-col :span="12"
-            ><el-form-item v-if="tableAttrs.isTree" label="配置tree-props" prop="treeProps">
-              <el-input v-model="tableAttrs.treeProps" type="textarea" :rows="2" placeholder="请输入{children, hasChildren}格式"></el-input> </el-form-item
-          ></el-col>
-          <el-col :span="12"
-            ><el-form-item v-if="tableAttrs.isTree" label="指定row-key">
-              <el-select v-model="tableAttrs.rowKey" placeholder="请选择">
-                <el-option v-for="item in deliveryFieldsOption.options" :key="item.id" :label="item.cnName" :value="item.id"> </el-option>
-              </el-select> </el-form-item
-          ></el-col>
+          <el-col :span="12">
+            <el-form-item v-if="tableAttrs.isTree" label="配置tree-props" prop="treeProps">
+              <el-input v-model="tableAttrs.treeProps" type="textarea" :rows="2" placeholder="请输入{children, hasChildren}格式"></el-input>
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item v-if="tableAttrs.isTree" label="指定row-key">
+              <el-input v-model="tableAttrs.rowKey" placeholder="请输入字段名"></el-input>
+            </el-form-item>
+          </el-col>
         </el-row>
 
         <el-form-item v-if="tableAttrs.isTree" label="数据转换函数">
@@ -124,14 +124,18 @@
           >
             <span style="cursor: pointer;font-size: 14px">数据转换配置</span><i style="width: 20px; font-size: 14px;" class="el-icon-question"></i>
           </el-tooltip>
-          <span>父级id字段：</span>
-          <el-select v-model="tableAttrs.dataTransitionParentField" placeholder="请选择">
-            <el-option v-for="item in deliveryFieldsOption.options" :key="item.id" :label="item.cnName" :value="item.id"> </el-option>
-          </el-select>
-          <span>id字段：</span>
-          <el-select v-model="tableAttrs.dataTransitionCurField" placeholder="请选择">
-            <el-option v-for="item in deliveryFieldsOption.options" :key="item.id" :label="item.cnName" :value="item.id"> </el-option>
-          </el-select>
+          <el-row>
+            <el-col :span="12">
+              <span>父级id字段：</span>
+              <el-select v-model="tableAttrs.dataTransitionParentField" placeholder="请选择">
+                <el-option v-for="item in deliveryFieldsOption.options" :key="item.id" :label="item.cnName" :value="item.id"> </el-option>
+              </el-select>
+            </el-col>
+            <el-col :span="12">
+              <span>id字段：</span>
+              <el-input v-model="tableAttrs.dataTransitionCurField" style="width: 314px;" placeholder="请输入字段名"></el-input>
+            </el-col>
+          </el-row>
         </el-form-item>
 
         <el-form-item v-if="tableAttrs.isTree && tableAttrs.lazy" label="传递字段">
