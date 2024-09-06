@@ -972,6 +972,31 @@ export function BtnConfigFormOptions() {
       },
       formItem: {
         formItemAttrs: {
+          prop: "extraOption.isHidden",
+          label: "隐藏按钮："
+        },
+        tagName: "el-radio-group",
+        tagAttrs: {
+          placeholder: ""
+        },
+        // 对应formData中的属性值
+        formField: "extraOption.isHidden",
+        extraOption: {
+          options: yesOrNo,
+          props: {
+            key: "value",
+            label: "label"
+          }
+        }
+      }
+    },
+
+    {
+      elRowAttrs: {
+        gutter: 10
+      },
+      formItem: {
+        formItemAttrs: {
           prop: "style",
           label: "自定义样式："
         },
@@ -1072,6 +1097,7 @@ export function BtnConfigFrom(custom = {}) {
       fn: "",
       flowKey: "",
       isRefresh: false,
+      isHidden: false,
       dialogTitle: "",
       dialogWidth: "900",
       dialogHeight: "600",

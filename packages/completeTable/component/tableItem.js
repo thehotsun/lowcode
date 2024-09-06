@@ -840,6 +840,12 @@ export default {
       if (this.previewMode) {
         this.disabledBtnsByPreviewStatus(config);
       }
+      // 处理隐藏按钮逻辑，转为css配置
+      config.map(btn => {
+        if (btn.extraOption.isHidden) {
+          btn.style += ";display: none;";
+        }
+      });
       this.showBtns = true;
       if (!this.isVformWidget) {
         config = this.filterBtnsByPermission(config);
