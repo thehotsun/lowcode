@@ -297,7 +297,7 @@ export function ContentTextAttrForm() {
     iconName: "",
     iconPosition: "front",
     iconStyle: "",
-    textStyle: "",
+    textStyle: "padding-right: 5px;",
     textVal: ""
   };
 }

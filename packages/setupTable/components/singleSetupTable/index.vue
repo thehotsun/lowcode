@@ -154,7 +154,7 @@
       :visible.sync="dialogVisibleContentTextAttr"
       :close-on-click-modal="false"
       :close-on-press-escape="false"
-      width="760px"
+      width="900px"
       :before-close="handleCloseContentTextAttr"
       append-to-body
     >
@@ -784,7 +784,7 @@ export default {
     },
     handleTabsEdit(targetName, action) {
       if (action === "add") {
-        const newTabName = ++this.editableTabsValue;
+        const newTabName = this.editableTabs.length;
         this.editableTabs.push({
           title: "渲染内容" + (newTabName + 1),
           name: newTabName + "",
@@ -825,7 +825,6 @@ export default {
 }
 
 .flex {
-  display: flex;
 
   .left {
     width: 500px;
