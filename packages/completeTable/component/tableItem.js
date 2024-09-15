@@ -513,7 +513,10 @@ export default {
 
     // 清空数据
     resetAllData() {
-      this.data = new InstanceData();
+      const data = new InstanceData();
+      for (const [key, value] of Object.entries(data)) {
+        this[key] = value;
+      }
       this.initTableAttrs();
     },
 
