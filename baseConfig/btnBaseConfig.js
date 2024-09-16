@@ -110,11 +110,11 @@ const requestBeforeConfirmTextRenderDependFn = function(formData) {
 };
 
 const deliverySelectListRenderDependFn = function(formData) {
-  return formData.extraOption.deliverySelectList && ![1, 6].includes(formData.extraOption.openType);
+  return formData.extraOption.deliverySelectList && ![0, 1, 6].includes(formData.extraOption.openType);
 };
 
 const deliverySelectListFieldsRenderDependFn = function(formData) {
-  return formData.extraOption.deliverySelectList && [1, 6].includes(formData.extraOption.openType);
+  return formData.extraOption.deliverySelectList && [0, 1, 6].includes(formData.extraOption.openType);
 };
 
 const excludeDownAndDelRenderDependFn = function(formData) {
@@ -562,6 +562,29 @@ export function BtnConfigFormOptions() {
             label: "cnName"
           }
         },
+        renderDependFn: deliverySelectListFieldsRenderDependFn
+      }
+    },
+
+    {
+      elRowAttrs: {
+        gutter: 10
+      },
+      formItem: {
+        formItemAttrs: {
+          prop: "extraOption.fieldConversions",
+          label: "名称转换："
+        },
+        // 对应formData中的属性值
+        formField: "extraOption.fieldConversions",
+        tagName: "el-input",
+        style: "width: 180px",
+        tagAttrs: {
+          type: "textarea",
+          placeholder: "请输入名称转换",
+          autosize: { minRows: 2, maxRows: 4 }
+        },
+        showCodeEditor: true,
         renderDependFn: deliverySelectListFieldsRenderDependFn
       }
     },
@@ -1103,6 +1126,7 @@ export function BtnConfigFrom(custom = {}) {
       dialogHeight: "600",
       deliverySelectList: false,
       deliverySelectListFields: [],
+      fieldConversions: "",
       paramName: "",
       paramType: 0,
       validate: [],

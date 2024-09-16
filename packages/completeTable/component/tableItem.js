@@ -65,7 +65,9 @@ function InstanceData() {
     btnConfigs: new BtnConfigs(),
     headerHeight: 0,
     // 当不使用网络请求处理提交数据时，编辑的row
-    editRow: {}
+    editRow: {},
+    // 一般用来传递当前row给表单
+    externalParamsFormRow: {}
   };
 }
 
@@ -968,6 +970,7 @@ export default {
         paramType = 0,
         deliverySelectList = false,
         deliverySelectListFields = [],
+        fieldConversions = "",
         validate = [],
         requestUrl = "",
         requestType = "post",
@@ -996,6 +999,7 @@ export default {
       } = this;
       if (previewMode) return;
       this.editRow = null;
+      this.externalParamsFormRow = null;
       // 只btnConfigs.要执行点击按钮操作，先置空formid
       this.btnConfigs = new BtnConfigs();
       this.btnConfigs.requestUrl = requestUrl;
@@ -1061,7 +1065,7 @@ export default {
                 rowData
               )
             ) {
-              disposeThisPageJump({ openUrl, deliverySelectList, deliverySelectListFields }, rowData);
+              disposeThisPageJump({ openUrl, deliverySelectList, deliverySelectListFields, fieldConversions }, rowData);
             }
           } else if (openType === 3) {
             // openType为3是新窗口打开;
@@ -1144,7 +1148,9 @@ export default {
                   btnType,
                   relateFrom,
                   dialogTitle,
-                  deliverySelectList
+                  deliverySelectList,
+                  deliverySelectListFields,
+                  fieldConversions
                 },
                 rowData
               );
@@ -1168,7 +1174,8 @@ export default {
                   relateTable,
                   dialogTitle,
                   deliverySelectList,
-                  deliverySelectListFields
+                  deliverySelectListFields,
+                  fieldConversions
                 },
                 rowData
               );
@@ -1232,7 +1239,8 @@ export default {
       }
     },
 
-    disposeDynamicFormEvent({ btnType, relateFrom, dialogTitle, deliverySelectList }, rowData) {
+    disposeDynamicFormEvent({ btnType, relateFrom, dialogTitle, deliverySelectList, deliverySelectListFields, fieldConversions }, rowData) {
+      this.externalParamsFormRow = this.formatSelectListParams(deliverySelectList, deliverySelectListFields, fieldConversions, rowData, false);
       switch (btnType) {
         case "add":
           this.expose_showDialog();
@@ -1270,8 +1278,8 @@ export default {
       }
     },
 
-    async disposeDynamicTableEvent({ btnType, relateTable, dialogTitle, deliverySelectList, deliverySelectListFields }, rowData) {
-      const externalParams = this.formatSelectListParams(deliverySelectList, deliverySelectListFields, rowData);
+    async disposeDynamicTableEvent({ btnType, relateTable, dialogTitle, deliverySelectList, deliverySelectListFields, fieldConversions }, rowData) {
+      const externalParams = this.formatSelectListParams(deliverySelectList, deliverySelectListFields, fieldConversions, rowData);
       this.expose_showDialog();
       this.btnConfigs.tableId = relateTable;
       this.onlyRead = true;
@@ -1280,8 +1288,8 @@ export default {
       this.$refs.nestedTable.init(false, null, externalParams);
     },
 
-    async disposeThisPageJump({ openUrl, deliverySelectList, deliverySelectListFields }, rowData) {
-      const params = this.formatSelectListParams(deliverySelectList, deliverySelectListFields, rowData);
+    async disposeThisPageJump({ openUrl, deliverySelectList, deliverySelectListFields, fieldConversions }, rowData) {
+      const params = this.formatSelectListParams(deliverySelectList, deliverySelectListFields, fieldConversions, rowData);
       // 通过sessionStorage传递参数
       sessionStorage.setItem("lowcodeTableThisPageJumpParams", JSON.stringify(params));
       const res = await this.queryChangePrjId(this.listPageId, params[`${this.keyField}Array`][0]);
@@ -1297,7 +1305,7 @@ export default {
       }
     },
 
-    formatSelectListParams(deliverySelectList, deliverySelectListFields, rowData) {
+    formatSelectListParams(deliverySelectList, deliverySelectListFields, fieldConversions, rowData, useArray = true) {
       let params = {};
       let selectList;
       if (rowData) {
@@ -1306,22 +1314,44 @@ export default {
         selectList = this.selectList;
       }
       if (deliverySelectList) {
-        params = { [this.keyField]: selectList[0][this.keyField] || "" };
+        params = { [this.keyField]: selectList[0]?.[this.keyField] || "" };
         // 主键必穿
         if (!deliverySelectListFields.includes(this.keyField)) {
           deliverySelectListFields.push(this.keyField);
         }
-        selectList.map(row => {
-          deliverySelectListFields.map(key => {
-            const value = row[key];
-            if (params[`${key}Array`]) {
-              params[`${key}Array`].push(value);
-            } else {
-              params[`${key}Array`] = [value];
-            }
+
+        if (fieldConversions) {
+          fieldConversions = str2obj(fieldConversions);
+        }
+
+        if (useArray) {
+          selectList.map(row => {
+            deliverySelectListFields.map(key => {
+              const value = row[key];
+              if (fieldConversions) {
+                key = fieldConversions[key] || `${key}Array`;
+              } else {
+                key = `${key}Array`;
+              }
+              if (params[key]) {
+                params[key].push(value);
+              } else {
+                params[key] = [value];
+              }
+            });
           });
-        });
+        } else {
+          rowData = rowData || this.selectList[0] || {};
+          deliverySelectListFields.map(key => {
+            const value = rowData[key];
+            if (fieldConversions) {
+              key = fieldConversions[key] || key;
+            }
+            params[key] = value;
+          });
+        }
       }
+
       return params;
     },
 
@@ -1541,6 +1571,12 @@ export default {
       }
       if (formId) {
         this.curDialogCompRef = previewMode ? "VFPreview" : "VFRuntime";
+        // 某些情况下需要传递参数给表单的extraData，使之一起提交上去
+        if (!isEmpty(this.externalParamsFormRow) && !previewMode) {
+          setTimeout(() => {
+            this.$refs[this.curDialogCompRef]?.addExtraData(this.externalParamsFormRow);
+          }, 300);
+        }
         return previewMode ? (
           <VFPreview
             ref={"VFPreview"}
