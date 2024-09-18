@@ -8,6 +8,7 @@
       style="background: #fff;padding:30px 20px"
       @onSubmit="onSubmit"
       @onClose="onClose"
+      @showRenameDlg="showRenameDlg"
     >
       <template #requestUrl="{ formData }">
         <div>
@@ -28,6 +29,8 @@
     </base-render-form>
 
     <interfaceDlg ref="interfaceDlg" :params-config="paramsConfig" @confirm="handleConfirm"></interfaceDlg>
+
+    <fieldRenameDlg ref="fieldRenameDlg" @confirm="handleFieldRenameConfirm"></fieldRenameDlg>
   </div>
 </template>
 
@@ -36,6 +39,7 @@ import BaseRenderForm from "../../../BaseRenderForm/index";
 import { BtnConfigFormOptions, BtnConfigFrom } from "../../../../baseConfig/btnBaseConfig";
 import { findFromOptionsIndexByfieldName } from "../../../../utils";
 import interfaceDlg from "../dialogs/interfaceDlg.vue";
+import fieldRenameDlg from "../dialogs/fieldRenameDlg.vue";
 
 import IconPicker from "./components/iconPicker";
 import { cloneDeep, merge } from "lodash";
@@ -44,6 +48,7 @@ export default {
   name: "SetupBtnConfig",
   components: {
     interfaceDlg,
+    fieldRenameDlg,
     BaseRenderForm,
     IconPicker
   },
@@ -130,9 +135,24 @@ export default {
     },
 
     expose_setExtraOption(options, field) {
-      const target = this.btnConfigFormOptions.find(item => item.formItem.formField === field);
+      let target;
+      this.btnConfigFormOptions.some(item => {
+        if (item.formItem.child?.length) {
+          const index = item.formItem.child.findIndex(child => child.formField === field);
+          if (index !== -1) {
+            target = item.formItem.child[index];
+          }
+          return target;
+        }
+        if (item.formItem.formField === field) {
+          target = item.formItem;
+        }
+        return target;
+      });
       console.log(target, "target");
-      if (target) target.formItem.extraOption = options;
+      if (target) {
+        target.extraOption = options;
+      }
     },
     expose_delBtnConfigFromArr(index) {
       this.btnConfigFromArr.splice(index, 1);
@@ -180,6 +200,26 @@ export default {
     },
     setBtnType(type) {
       this.btnConfigFrom.tagAttrs.type = type;
+    },
+
+    showRenameDlg() {
+      if (this.btnConfigFrom.extraOption.deliverySelectListFields.length === 0) {
+        return this.$warn("请先选择提交字段！");
+      }
+      const fieldConversions = this.btnConfigFrom.extraOption.fieldConversions;
+      this.btnConfigFrom.extraOption.fieldConversions = [];
+      this.btnConfigFrom.extraOption.deliverySelectListFields?.map(field => {
+        this.btnConfigFrom.extraOption.fieldConversions.push({
+          original: field,
+          renamed: fieldConversions?.find?.(item => item.original === field)?.renamed || ""
+        });
+      });
+      this.$refs.fieldRenameDlg.openDialog(this.btnConfigFrom.extraOption.fieldConversions);
+      console.log("showRenameDlg");
+    },
+
+    handleFieldRenameConfirm(fieldConversions) {
+      this.btnConfigFrom.extraOption.fieldConversions = fieldConversions;
     }
 
     // handleAuthorizeChange (authorize) {

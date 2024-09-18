@@ -1122,7 +1122,7 @@ export function BtnConfigFrom(custom = {}) {
       dialogHeight: "600",
       deliverySelectList: false,
       deliverySelectListFields: [],
-      fieldConversions: "",
+      fieldConversions: [],
       paramName: "",
       paramType: 0,
       validate: [],

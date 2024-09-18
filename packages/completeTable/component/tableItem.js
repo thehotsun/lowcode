@@ -970,7 +970,7 @@ export default {
         paramType = 0,
         deliverySelectList = false,
         deliverySelectListFields = [],
-        fieldConversions = "",
+        fieldConversions = [],
         validate = [],
         requestUrl = "",
         requestType = "post",
@@ -1320,16 +1320,13 @@ export default {
           deliverySelectListFields.push(this.keyField);
         }
 
-        if (fieldConversions) {
-          fieldConversions = str2obj(fieldConversions);
-        }
-
         if (useArray) {
           selectList.map(row => {
             deliverySelectListFields.map(key => {
               const value = row[key];
-              if (fieldConversions) {
-                key = fieldConversions[key] || `${key}Array`;
+              if (fieldConversions?.length) {
+                const renameInfo = fieldConversions?.find?.(item => item.original === key);
+                key = renameInfo?.renamed || `${key}Array`;
               } else {
                 key = `${key}Array`;
               }
@@ -1344,8 +1341,9 @@ export default {
           rowData = rowData || this.selectList[0] || {};
           deliverySelectListFields.map(key => {
             const value = rowData[key];
-            if (fieldConversions) {
-              key = fieldConversions[key] || key;
+            if (fieldConversions?.length) {
+              const renameInfo = fieldConversions?.find?.(item => item.original === key);
+              key = renameInfo?.renamed || key;
             }
             params[key] = value;
           });
