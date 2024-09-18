@@ -2030,7 +2030,7 @@ export default {
         if (target) {
           this.handleBtnClick(target.extraOption, row);
         } else {
-          console.warn("当前列表未找到此操作关联的按钮！");
+          this.$warn("未找到此操作关联的按钮！请检查权限！");
         }
       } catch (error) {
         console.warn(error);
