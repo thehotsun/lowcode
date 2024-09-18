@@ -1314,12 +1314,8 @@ export default {
         selectList = this.selectList;
       }
       if (deliverySelectList) {
-        params = { [this.keyField]: selectList[0]?.[this.keyField] || "" };
-        // 主键必穿
-        if (!deliverySelectListFields.includes(this.keyField)) {
-          deliverySelectListFields.push(this.keyField);
-        }
-
+        // 先把主键搞进去，判断主键名是否被重命名了
+        params = { [fieldConversions?.find?.(item => item.original === `${this.keyField}（主键默认传入）`)?.renamed || this.keyField]: selectList[0]?.[this.keyField] || "" };
         if (useArray) {
           selectList.map(row => {
             deliverySelectListFields.map(key => {

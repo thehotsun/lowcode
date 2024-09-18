@@ -61,7 +61,7 @@
     </div>
 
     <el-drawer title="按钮属性设置" :visible.sync="drawer" :direction="direction">
-      <setupBtnConfig ref="setupBtnConfig" @onSubmit="onSubmit" @onClose="onClose"></setupBtnConfig>
+      <setupBtnConfig ref="setupBtnConfig" :key-field="keyField" @onSubmit="onSubmit" @onClose="onClose"></setupBtnConfig>
     </el-drawer>
 
     <tableAttrsDlg ref="tableAttrsDlg" :delivery-fields-option="deliveryFieldsOption" @changeTableAttrs="changeTableAttrs"></tableAttrsDlg>

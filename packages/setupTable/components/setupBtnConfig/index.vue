@@ -53,7 +53,13 @@ export default {
     IconPicker
   },
   props: {
-    useDialog: Boolean
+    useDialog: Boolean,
+    keyField: {
+      type: String,
+      default: () => {
+        return "";
+      }
+    }
   },
   data() {
     return {
@@ -213,6 +219,10 @@ export default {
           original: field,
           renamed: fieldConversions?.find?.(item => item.original === field)?.renamed || ""
         });
+      });
+      this.btnConfigFrom.extraOption.fieldConversions.unshift({
+        original: `${this.keyField}（主键默认传入）`,
+        renamed: fieldConversions?.find?.(item => item.original === `${this.keyField}（主键默认传入）`)?.renamed || ""
       });
       this.$refs.fieldRenameDlg.openDialog(this.btnConfigFrom.extraOption.fieldConversions);
       console.log("showRenameDlg");
