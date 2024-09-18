@@ -57,6 +57,19 @@ export default {
                   item.listeners[eventName] = (...argus) => originFn.call(this, ...argus);
                 });
               }
+              if (item.child?.length) {
+                item.child.map(child => {
+                  const listeners = child.listeners;
+                  if (!isEmpty(listeners)) {
+                    Object.keys(listeners).map(eventName => {
+                      console.log(eventName, "eventName");
+                      if (listeners[eventName].isWrap) return;
+                      const originFn = listeners[eventName];
+                      child.listeners[eventName] = (...argus) => originFn.call(this, ...argus);
+                    });
+                  }
+                });
+              }
               return item;
             });
           } else {
@@ -67,6 +80,19 @@ export default {
                 if (listeners[eventName].isWrap) return;
                 const originFn = listeners[eventName];
                 ectype.formItem.listeners[eventName] = (...argus) => originFn.call(this, ...argus);
+              });
+            }
+            if (ectype.formItem.child?.length) {
+              ectype.formItem.child.map(child => {
+                const listeners = child.listeners;
+                if (!isEmpty(listeners)) {
+                  Object.keys(listeners).map(eventName => {
+                    console.log(eventName, "eventName");
+                    if (listeners[eventName].isWrap) return;
+                    const originFn = listeners[eventName];
+                    child.listeners[eventName] = (...argus) => originFn.call(this, ...argus);
+                  });
+                }
               });
             }
           }
@@ -336,7 +362,8 @@ export default {
         request = {},
         contentTextFrontTagOptions = {},
         contentTextBehindTagOptions = {},
-        isFlat = false
+        isFlat = false,
+        wrapDivStyle = ""
       } = item;
       // isWrap防止无限循环
       if (!listeners?.input?.isWrap) {
@@ -344,7 +371,7 @@ export default {
       }
       // 若tag为select这种需要别的标签配合使用的组件，则调用getCooperateComp方法
       return (
-        <div>
+        <div style={wrapDivStyle}>
           {slotName
             ? this.$scopedSlots[slotName]
               ? this.$scopedSlots[slotName]({
@@ -369,7 +396,7 @@ export default {
     // 不处理slot
     getPureSingleCompVNode(item) {
       const { formData, onlyShow } = this;
-      let {
+      const {
         // class和style不会被组件的attr所处理，会直接赋值到组件的根节点因此需要单独拿出来赋值
         className,
         style,
@@ -408,7 +435,7 @@ export default {
           }, listeners.focus);
         }
       }
-      let model = getter(formData, formField);
+      const model = getter(formData, formField);
       // tagName必须是eleui提供的已有组件或HTML已有标签,如果是只读标签，则固定使用span标签
       // Tag必须开头大写，否则会被识别为字符串
       const Tag = onlyShow ? "span" : tagName;

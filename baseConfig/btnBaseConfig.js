@@ -549,42 +549,38 @@ export function BtnConfigFormOptions() {
           prop: "extraOption.deliverySelectListFields",
           label: "提交字段："
         },
-        // 对应formData中的属性值
-        formField: "extraOption.deliverySelectListFields",
-        tagName: "el-select",
-        tagAttrs: {
-          placeholder: "不选默认只传主键值",
-          multiple: true
-        },
-        extraOption: {
-          props: {
-            key: "id",
-            label: "cnName"
-          }
-        },
-        renderDependFn: deliverySelectListFieldsRenderDependFn
-      }
-    },
 
-    {
-      elRowAttrs: {
-        gutter: 10
-      },
-      formItem: {
-        formItemAttrs: {
-          prop: "extraOption.fieldConversions",
-          label: "名称转换："
-        },
-        // 对应formData中的属性值
-        formField: "extraOption.fieldConversions",
-        tagName: "el-input",
-        style: "width: 180px",
-        tagAttrs: {
-          type: "textarea",
-          placeholder: "请输入名称转换",
-          autosize: { minRows: 2, maxRows: 4 }
-        },
-        showCodeEditor: true,
+        child: [
+          {
+            wrapDivStyle: "display: inline;",
+            tagName: "el-select",
+            tagAttrs: {
+              placeholder: "不选默认只传主键值",
+              multiple: true
+            },
+            // 对应formData中的属性值
+            formField: "extraOption.deliverySelectListFields",
+            extraOption: {
+              props: {
+                key: "id",
+                label: "cnName"
+              }
+            }
+          },
+          {
+            wrapDivStyle: "display: inline-block;",
+            tagName: "el-button",
+            tagAttrs: {
+              type: "text"
+            },
+            contentText: "重命名",
+            listeners: {
+              click() {
+                this.$emit("showRenameDlg");
+              }
+            }
+          }
+        ],
         renderDependFn: deliverySelectListFieldsRenderDependFn
       }
     },
