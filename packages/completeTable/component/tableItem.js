@@ -970,7 +970,6 @@ export default {
         paramType = 0,
         deliverySelectList = false,
         deliverySelectListFields = [],
-        fieldConversions = [],
         validate = [],
         requestUrl = "",
         requestType = "post",
@@ -1065,7 +1064,7 @@ export default {
                 rowData
               )
             ) {
-              disposeThisPageJump({ openUrl, deliverySelectList, deliverySelectListFields, fieldConversions }, rowData);
+              disposeThisPageJump({ openUrl, deliverySelectList, deliverySelectListFields }, rowData);
             }
           } else if (openType === 3) {
             // openType为3是新窗口打开;
@@ -1149,8 +1148,7 @@ export default {
                   relateFrom,
                   dialogTitle,
                   deliverySelectList,
-                  deliverySelectListFields,
-                  fieldConversions
+                  deliverySelectListFields
                 },
                 rowData
               );
@@ -1174,8 +1172,7 @@ export default {
                   relateTable,
                   dialogTitle,
                   deliverySelectList,
-                  deliverySelectListFields,
-                  fieldConversions
+                  deliverySelectListFields
                 },
                 rowData
               );
@@ -1239,8 +1236,8 @@ export default {
       }
     },
 
-    disposeDynamicFormEvent({ btnType, relateFrom, dialogTitle, deliverySelectList, deliverySelectListFields, fieldConversions }, rowData) {
-      this.externalParamsFormRow = this.formatSelectListParams(deliverySelectList, deliverySelectListFields, fieldConversions, rowData, false);
+    disposeDynamicFormEvent({ btnType, relateFrom, dialogTitle, deliverySelectList, deliverySelectListFields }, rowData) {
+      this.externalParamsFormRow = this.formatSelectListParams(deliverySelectList, deliverySelectListFields, rowData, false);
       switch (btnType) {
         case "add":
           this.expose_showDialog();
@@ -1278,8 +1275,8 @@ export default {
       }
     },
 
-    async disposeDynamicTableEvent({ btnType, relateTable, dialogTitle, deliverySelectList, deliverySelectListFields, fieldConversions }, rowData) {
-      const externalParams = this.formatSelectListParams(deliverySelectList, deliverySelectListFields, fieldConversions, rowData);
+    async disposeDynamicTableEvent({ btnType, relateTable, dialogTitle, deliverySelectList, deliverySelectListFields }, rowData) {
+      const externalParams = this.formatSelectListParams(deliverySelectList, deliverySelectListFields, rowData);
       this.expose_showDialog();
       this.btnConfigs.tableId = relateTable;
       this.onlyRead = true;
@@ -1288,8 +1285,8 @@ export default {
       this.$refs.nestedTable.init(false, null, externalParams);
     },
 
-    async disposeThisPageJump({ openUrl, deliverySelectList, deliverySelectListFields, fieldConversions }, rowData) {
-      const params = this.formatSelectListParams(deliverySelectList, deliverySelectListFields, fieldConversions, rowData);
+    async disposeThisPageJump({ openUrl, deliverySelectList, deliverySelectListFields }, rowData) {
+      const params = this.formatSelectListParams(deliverySelectList, deliverySelectListFields, rowData);
       // 通过sessionStorage传递参数
       sessionStorage.setItem("lowcodeTableThisPageJumpParams", JSON.stringify(params));
       const res = await this.queryChangePrjId(this.listPageId, params[`${this.keyField}Array`][0]);
@@ -1305,8 +1302,8 @@ export default {
       }
     },
 
-    formatSelectListParams(deliverySelectList, deliverySelectListFields, fieldConversions, rowData, useArray = true) {
-      let params = {};
+    formatSelectListParams(deliverySelectList, deliverySelectListFields, rowData, useArray = true) {
+      const params = {};
       let selectList;
       if (rowData) {
         selectList = [rowData];
@@ -1314,17 +1311,16 @@ export default {
         selectList = this.selectList;
       }
       if (deliverySelectList) {
-        // 先把主键搞进去，判断主键名是否被重命名了
-        params = { [fieldConversions?.find?.(item => item.original === `${this.keyField}（主键默认传入）`)?.renamed || this.keyField]: selectList[0]?.[this.keyField] || "" };
         if (useArray) {
           selectList.map(row => {
-            deliverySelectListFields.map(key => {
-              const value = row[key];
-              if (fieldConversions?.length) {
-                const renameInfo = fieldConversions?.find?.(item => item.original === key);
-                key = renameInfo?.renamed || `${key}Array`;
+            deliverySelectListFields.map(item => {
+              let key, value;
+              if (typeof item === "string") {
+                value = row[item];
+                key = `${item}Array`;
               } else {
-                key = `${key}Array`;
+                value = row[item.fieldCode];
+                key = item.renamed || `${item.fieldCode}Array`;
               }
               if (params[key]) {
                 params[key].push(value);
@@ -1332,17 +1328,29 @@ export default {
                 params[key] = [value];
               }
             });
+            // 主键必穿
+            if (!deliverySelectListFields.some(field => field === this.keyField || field.fieldCode === this.keyField)) {
+              const key = `${this.keyField}Array`;
+              params[key] = selectList?.map(row => row[this.keyField]) || "";
+            }
           });
         } else {
           rowData = rowData || this.selectList[0] || {};
-          deliverySelectListFields.map(key => {
-            const value = rowData[key];
-            if (fieldConversions?.length) {
-              const renameInfo = fieldConversions?.find?.(item => item.original === key);
-              key = renameInfo?.renamed || key;
+          deliverySelectListFields.map(item => {
+            let key, value;
+            if (typeof item === "string") {
+              value = rowData[item];
+              key = `${item}`;
+            } else {
+              value = rowData[item.fieldCode];
+              key = item.renamed || `${item.fieldCode}`;
             }
             params[key] = value;
           });
+          // 主键必穿
+          if (!deliverySelectListFields.some(field => field === this.keyField || field.fieldCode === this.keyField)) {
+            params[this.keyField] = rowData[this.keyField];
+          }
         }
       }
 
