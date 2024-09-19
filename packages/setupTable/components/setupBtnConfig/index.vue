@@ -5,10 +5,9 @@
       :form-data="btnConfigFrom"
       :form-options="btnConfigFormOptions"
       :use-dialog="useDialog"
-      style="background: #fff;padding:30px 20px"
+      style="background: #fff;padding:5px 20px 30px"
       @onSubmit="onSubmit"
       @onClose="onClose"
-      @showRenameDlg="showRenameDlg"
     >
       <template #requestUrl="{ formData }">
         <div>
@@ -16,6 +15,20 @@
           <el-button type="text" @click="handleRequestParamsConfigEdit"> 编辑请求 </el-button>
         </div>
       </template>
+
+      <template #deliverySelectListFields="{ formData }">
+        <div>
+          <div class="flex">
+            <div v-if="formData.extraOption.deliverySelectListFields.length > 0" class="showdeliveryField">{{ getLabel(formData.extraOption.deliverySelectListFields[0]) }})</div>
+            <div v-if="formData.extraOption.deliverySelectListFields.length > 1" class="showdeliveryField">
+              {{ getLabel(formData.extraOption.deliverySelectListFields[1]) }}
+            </div>
+            <el-button v-if="formData.extraOption.deliverySelectListFields.length > 0" type="text" @click="showRenameDlg"> 更多设置 </el-button>
+            <el-button v-if="formData.extraOption.deliverySelectListFields.length === 0" type="text" @click="showRenameDlg"> 设置 </el-button>
+          </div>
+        </div>
+      </template>
+
       <template #color>
         <el-row>
           <span v-for="item in colorList" :key="item">
@@ -160,8 +173,27 @@ export default {
         target.extraOption = options;
       }
     },
+
     expose_delBtnConfigFromArr(index) {
       this.btnConfigFromArr.splice(index, 1);
+    },
+
+    getExtraOption(field) {
+      let target;
+      this.btnConfigFormOptions.some(item => {
+        if (item.formItem.child?.length) {
+          const index = item.formItem.child.findIndex(child => child.formField === field);
+          if (index !== -1) {
+            target = item.formItem.child[index];
+          }
+          return target;
+        }
+        if (item.formItem.formField === field) {
+          target = item.formItem;
+        }
+        return target;
+      });
+      return target.extraOption;
     },
 
     handleRequestParamsConfigEdit() {
@@ -209,27 +241,36 @@ export default {
     },
 
     showRenameDlg() {
-      if (this.btnConfigFrom.extraOption.deliverySelectListFields.length === 0) {
-        return this.$warn("请先选择提交字段！");
-      }
-      const fieldConversions = this.btnConfigFrom.extraOption.fieldConversions;
-      this.btnConfigFrom.extraOption.fieldConversions = [];
-      this.btnConfigFrom.extraOption.deliverySelectListFields?.map(field => {
-        this.btnConfigFrom.extraOption.fieldConversions.push({
-          original: field,
-          renamed: fieldConversions?.find?.(item => item.original === field)?.renamed || ""
-        });
+      const deliverySelectListFields = this.btnConfigFrom.extraOption.deliverySelectListFields;
+      const fieldArr = this.getExtraOption("extraOption.deliverySelectListFields")?.options?.map(item => {
+        const target = deliverySelectListFields?.find?.(filedInfo => filedInfo?.fieldCode === item.fieldCode || filedInfo === item.fieldCode);
+        return {
+          fieldCode: item.fieldCode,
+          fieldName: item.fieldName,
+          renamed: target?.renamed || "",
+          isSelected: !!target
+        };
       });
-      this.btnConfigFrom.extraOption.fieldConversions.unshift({
-        original: `${this.keyField}（主键默认传入）`,
-        renamed: fieldConversions?.find?.(item => item.original === `${this.keyField}（主键默认传入）`)?.renamed || ""
+      const target = deliverySelectListFields?.find?.(filedInfo => filedInfo?.fieldCode === this.keyField || filedInfo === this.keyField);
+      fieldArr.unshift({
+        fieldCode: this.keyField,
+        fieldName: "主键",
+        renamed: target?.renamed || "",
+        isSelected: !!target
       });
-      this.$refs.fieldRenameDlg.openDialog(this.btnConfigFrom.extraOption.fieldConversions);
+      this.$refs.fieldRenameDlg.openDialog(fieldArr);
       console.log("showRenameDlg");
     },
 
-    handleFieldRenameConfirm(fieldConversions) {
-      this.btnConfigFrom.extraOption.fieldConversions = fieldConversions;
+    handleFieldRenameConfirm(deliverySelectListFields) {
+      this.btnConfigFrom.extraOption.deliverySelectListFields = deliverySelectListFields;
+    },
+
+    getLabel(field) {
+      if (typeof field === "string") {
+        field = this.getExtraOption("extraOption.deliverySelectListFields")?.options?.find(item => item.fieldCode === field);
+      }
+      return `${field?.fieldName}(${field?.fieldCode})`;
     }
 
     // handleAuthorizeChange (authorize) {
@@ -292,38 +333,49 @@ export default {
 .wrap {
   width: 100%;
   height: 100%;
-}
 
-.middle {
-  vertical-align: -webkit-baseline-middle;
-}
+  .middle {
+    vertical-align: -webkit-baseline-middle;
+  }
 
-.edit {
-  position: fixed;
-  top: 20%;
-  left: 0;
-  right: 0;
-  z-index: 999;
-}
+  .edit {
+    position: fixed;
+    top: 20%;
+    left: 0;
+    right: 0;
+    z-index: 999;
+  }
 
-.flex {
-  display: flex;
-  align-items: center;
-}
+  .flex {
+    display: flex;
+    align-items: center;
+  }
 
-.config {
-  display: flex;
-  align-items: flex-start;
-  font-size: 14px;
-}
+  .config {
+    display: flex;
+    align-items: flex-start;
+    font-size: 14px;
+  }
 
-.configLeft {
-  font-size: 14px;
-  width: 160px;
-}
+  .configLeft {
+    font-size: 14px;
+    width: 160px;
+  }
 
-.configRight {
-  font-size: 14px;
-  flex: 1;
+  .configRight {
+    font-size: 14px;
+    flex: 1;
+  }
+
+  .showdeliveryField {
+    width: 140px;
+    display: inline-block;
+    overflow: hidden; /* 隐藏超出的内容 */
+    white-space: nowrap; /* 不允许文本换行 */
+    text-overflow: ellipsis; /* 显示省略号 */
+  }
+  ::v-deep .el-form-item {
+    margin-bottom: 8px !important;
+  }
 }
 </style>

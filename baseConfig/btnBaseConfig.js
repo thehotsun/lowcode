@@ -550,37 +550,23 @@ export function BtnConfigFormOptions() {
           label: "提交字段："
         },
 
-        child: [
-          {
-            wrapDivStyle: "display: inline;",
-            tagName: "el-select",
-            tagAttrs: {
-              placeholder: "不选默认只传主键值",
-              multiple: true
-            },
-            // 对应formData中的属性值
-            formField: "extraOption.deliverySelectListFields",
-            extraOption: {
-              props: {
-                key: "id",
-                label: "cnName"
-              }
-            }
-          },
-          {
-            wrapDivStyle: "display: inline-block;",
-            tagName: "el-button",
-            tagAttrs: {
-              type: "text"
-            },
-            contentText: "重命名",
-            listeners: {
-              click() {
-                this.$emit("showRenameDlg");
-              }
-            }
+        slotName: "deliverySelectListFields",
+
+        wrapDivStyle: "display: inline;",
+        tagName: "el-select",
+        tagAttrs: {
+          placeholder: "不选默认只传主键值",
+          multiple: true
+        },
+        // 对应formData中的属性值
+        formField: "extraOption.deliverySelectListFields",
+        extraOption: {
+          props: {
+            key: "id",
+            label: "cnName"
           }
-        ],
+        },
+
         renderDependFn: deliverySelectListFieldsRenderDependFn
       }
     },
@@ -1122,7 +1108,6 @@ export function BtnConfigFrom(custom = {}) {
       dialogHeight: "600",
       deliverySelectList: false,
       deliverySelectListFields: [],
-      fieldConversions: [],
       paramName: "",
       paramType: 0,
       validate: [],

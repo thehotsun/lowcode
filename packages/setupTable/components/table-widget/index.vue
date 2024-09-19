@@ -188,10 +188,7 @@ export default {
         };
         tableOptions.map(item => {
           if (!item.isCustom) {
-            this.deliveryFieldsOption.options.push({
-              cnName: `${item.fieldName}(${item.fieldCode})`,
-              id: item.fieldCode
-            });
+            this.deliveryFieldsOption.options.push(item);
           }
         });
 
