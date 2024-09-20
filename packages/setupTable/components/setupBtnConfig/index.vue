@@ -23,8 +23,7 @@
             <div v-if="formData.extraOption.deliverySelectListFields.length > 1" class="showdeliveryField">
               {{ getLabel(formData.extraOption.deliverySelectListFields[1]) }}
             </div>
-            <el-button v-if="formData.extraOption.deliverySelectListFields.length > 0" type="text" @click="showRenameDlg"> 更多设置 </el-button>
-            <el-button v-if="formData.extraOption.deliverySelectListFields.length === 0" type="text" @click="showRenameDlg"> 设置 </el-button>
+            <el-button type="text" @click="showRenameDlg"> 设置 </el-button>
           </div>
         </div>
       </template>
