@@ -244,6 +244,7 @@ export default {
       const fieldArr = this.getExtraOption("extraOption.deliverySelectListFields")?.options?.map(item => {
         const target = deliverySelectListFields?.find?.(filedInfo => filedInfo?.fieldCode === item.fieldCode || filedInfo === item.fieldCode);
         return {
+          errorMessage: "",
           fieldCode: item.fieldCode,
           fieldName: item.fieldName,
           renamed: target?.renamed || "",

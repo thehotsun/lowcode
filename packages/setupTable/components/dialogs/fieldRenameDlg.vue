@@ -6,7 +6,8 @@
       <el-table-column prop="fieldCode" label="字段名称" width="180" sortable></el-table-column>
       <el-table-column label="重命名">
         <template slot-scope="scope">
-          <el-input v-model="scope.row.renamed" placeholder="请输入内容"></el-input>
+          <el-input v-model="scope.row.renamed" placeholder="请输入内容" @blur="validateInput(scope.row)"></el-input>
+          <div v-if="scope.row.errorMessage" style="color: #f56c6c;font-size: 12px;">{{ scope.row.errorMessage }}</div>
         </template>
       </el-table-column>
     </el-table>
@@ -42,8 +43,27 @@ export default {
     },
 
     confirmRename() {
+      if (this.multipleSelection.some(item => item.errorMessage)) {
+        return this.$warn("请处理非法的重命名字段！");
+      }
+
       this.$emit("confirm", this.multipleSelection);
       this.visible = false;
+    },
+
+    validateInput(row) {
+      const value = row.renamed;
+      row.errorMessage = ""; // 重置错误信息
+      const isValid = this.isValidVariableName(value);
+      if (!isValid) {
+        row.errorMessage = "输入的值不是合法的JavaScript变量名";
+      }
+    },
+
+    isValidVariableName(variableName) {
+      // 正则表达式判断是否是合法的变量名
+      const regex = /^[a-zA-Z_$][a-zA-Z0-9_$]*$/;
+      return regex.test(variableName);
     }
   }
 };
