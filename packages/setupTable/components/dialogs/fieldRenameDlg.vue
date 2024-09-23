@@ -7,7 +7,7 @@
       <el-table-column label="重命名">
         <template slot-scope="scope">
           <el-input v-model="scope.row.renamed" placeholder="请输入内容" @blur="validateInput(scope.row)"></el-input>
-          <div v-if="scope.row.errorMessage" style="color: #f56c6c;font-size: 12px;">{{ scope.row.errorMessage }}</div>
+          <div v-show="scope.row.errorMessage" style="color: #f56c6c;font-size: 12px;">{{ scope.row.errorMessage }}</div>
         </template>
       </el-table-column>
     </el-table>
@@ -54,6 +54,7 @@ export default {
     validateInput(row) {
       const value = row.renamed;
       row.errorMessage = ""; // 重置错误信息
+      if ([undefined, ""].includes(value)) return;
       const isValid = this.isValidVariableName(value);
       if (!isValid) {
         row.errorMessage = "输入的值不是合法的JavaScript变量名";

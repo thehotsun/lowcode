@@ -253,6 +253,7 @@ export default {
       });
       const target = deliverySelectListFields?.find?.(filedInfo => filedInfo?.fieldCode === this.keyField || filedInfo === this.keyField);
       fieldArr.unshift({
+        errorMessage: "",
         fieldCode: this.keyField,
         fieldName: "主键",
         renamed: target?.renamed || "",
