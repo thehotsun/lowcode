@@ -269,9 +269,10 @@ export default {
     },
 
     getDisplayText(deliverySelectListFields) {
+      const that = this;
       function getLabel(field) {
         if (typeof field === "string") {
-          field = this.getExtraOption("extraOption.deliverySelectListFields")?.options?.find(item => item.fieldCode === field);
+          field = that.getExtraOption("extraOption.deliverySelectListFields")?.options?.find(item => item.fieldCode === field);
         }
         return `${field?.fieldName}(${field?.renamed || field?.fieldCode})`;
       }
