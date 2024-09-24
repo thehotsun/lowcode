@@ -19,11 +19,12 @@
       <template #deliverySelectListFields="{ formData }">
         <div>
           <div class="flex">
-            <div v-if="formData.extraOption.deliverySelectListFields.length > 0" class="showdeliveryField">{{ getLabel(formData.extraOption.deliverySelectListFields[0]) }})</div>
-            <div v-if="formData.extraOption.deliverySelectListFields.length > 1" class="showdeliveryField">
-              {{ getLabel(formData.extraOption.deliverySelectListFields[1]) }}
+            <div v-if="formData.extraOption.deliverySelectListFields.length > 0" class="showdeliveryField">
+              {{ getDisplayText(formData.extraOption.deliverySelectListFields) }}
             </div>
-            <el-button type="text" @click="showRenameDlg"> 设置 </el-button>
+            <el-button type="text" @click="showRenameDlg">
+              设置 <el-tooltip content="提示：如果不设置提交字段，则默认提交主键字段"><i style="width: 20px" class="el-icon-question"></i> </el-tooltip>
+            </el-button>
           </div>
         </div>
       </template>
@@ -267,11 +268,24 @@ export default {
       this.btnConfigFrom.extraOption.deliverySelectListFields = deliverySelectListFields;
     },
 
-    getLabel(field) {
-      if (typeof field === "string") {
-        field = this.getExtraOption("extraOption.deliverySelectListFields")?.options?.find(item => item.fieldCode === field);
+    getDisplayText(deliverySelectListFields) {
+      function getLabel(field) {
+        if (typeof field === "string") {
+          field = this.getExtraOption("extraOption.deliverySelectListFields")?.options?.find(item => item.fieldCode === field);
+        }
+        return `${field?.fieldName}(${field?.renamed || field?.fieldCode})`;
       }
-      return `${field?.fieldName}(${field?.fieldCode})`;
+      let str = "";
+      str += getLabel(deliverySelectListFields[0]);
+      if (deliverySelectListFields.length > 1) {
+        str += "， ";
+        str += getLabel(deliverySelectListFields[1]);
+      }
+      const maxlength = 30;
+      if (deliverySelectListFields.length > 2 || str.length > maxlength) {
+        str = str.slice(0, maxlength) + "...";
+      }
+      return str;
     }
 
     // handleAuthorizeChange (authorize) {
@@ -369,11 +383,8 @@ export default {
   }
 
   .showdeliveryField {
-    width: 140px;
     display: inline-block;
-    overflow: hidden; /* 隐藏超出的内容 */
     white-space: nowrap; /* 不允许文本换行 */
-    text-overflow: ellipsis; /* 显示省略号 */
   }
   ::v-deep .el-form-item {
     margin-bottom: 8px !important;
