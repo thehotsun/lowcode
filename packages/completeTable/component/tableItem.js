@@ -411,6 +411,13 @@ export default {
     },
 
     expose_setTableData(data) {
+      // 如果当前作为vform组件且处于本地模式，则要重新计算deletelogid
+      if (this.isVformWidget && this.localProcessData) {
+        const oldDataIdList = this.tableData.map(item => item[this.keyField]).filter(v => v);
+        const newDataIdList = data.map(item => item[this.keyField]).filter(v => v);
+        const delIdList = oldDataIdList.filter(id => !newDataIdList.includes(id));
+        this.logDeletedData(delIdList, newDataIdList);
+      }
       this.tableData = data;
       this.updateTotalCount();
     },
@@ -438,9 +445,6 @@ export default {
       const tableSingleData = {};
       this.composeData(tableSingleData);
       this.tableData = [tableSingleData];
-      // for (let index = 0; index < 10; index++) {
-      //   this.tableData.push(tableSingleData);
-      // }
     },
 
     initTableAttrs() {
@@ -1875,7 +1879,7 @@ export default {
       });
     },
     // 记录已删除数据
-    logDeletedData(idList) {
+    logDeletedData(idList, restoreIdList) {
       if (!idList || !idList.length) return;
       const delField = "_DELETE_LIST_";
       const addField = "_SLAVE_LIST_";
@@ -1894,11 +1898,17 @@ export default {
         this.$set(extraData[addField], slaveTableField, []);
       }
       const lastLog = extraData[delField][slaveTableField] || [];
-      const newLog = union(lastLog, idList).filter(d => d);
+      let newLog = union(lastLog, idList).filter(d => d);
+      // 这是可能某些情况要从log中删除id，因为相应数据被恢复了
+      if (restoreIdList?.length) {
+        newLog = newLog.filter(id => !restoreIdList.includes(id));
+      }
       extraData[delField][slaveTableField] = newLog;
-      // 如果删除的id在slavelist中存在，则删除
-      const addListId = extraData[addField][slaveTableField];
-      extraData[addField][slaveTableField] = addListId.filter(addId => !idList.some(delId => delId === addId));
+      if (!this.localProcessData) {
+        // 如果删除的id在slavelist中存在，则删除
+        const addListId = extraData[addField][slaveTableField];
+        extraData[addField][slaveTableField] = addListId.filter(addId => !idList.some(delId => delId === addId));
+      }
     },
 
     // 记录添加或修改数据
