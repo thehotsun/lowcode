@@ -177,9 +177,9 @@ export default {
         const { tableOptions, formOptions, keyField, tableAttrs, fuzzyFieldSearchConfig } = obj;
         this.tableAttrs = merge({}, this.tableAttrs, tableAttrs);
         if (fuzzyFieldSearchConfig && Object.keys(fuzzyFieldSearchConfig).length) {
-          this.$nextTick(() => {
+          setTimeout(() => {
             this.$refs.singleSetupTable.expose_setFuzzyFieldSearchConfig(fuzzyFieldSearchConfig);
-          });
+          }, 100);
         }
         this.keyField = keyField;
         this.tableData = tableOptions;
