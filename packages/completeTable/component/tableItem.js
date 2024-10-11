@@ -96,7 +96,7 @@ export default {
     },
     // 使用动态表单是否要使用网络请求处理提交数据
     localProcessData() {
-      return this.getWidget()?.options?.renderMode === 0;
+      return this.getWidget()?.options?.renderMode === 0 || (this.getWidget()?.options?.renderMode === 1 && this.getDlgConfig()?.btnType === "add");
     },
 
     pageSizes() {
@@ -1208,14 +1208,19 @@ export default {
       const {
         btnConfigs: { dialogHeight, dialogWidth }
       } = this;
+      const mainFieldValue = (row || this.selectList[0])[this.keyField];
       if (btnType === "check") {
-        const res = await this.generalRequest(`/flow/business/${(row || this.selectList[0])[this.keyField]}`, "get");
+        const res = await this.generalRequest(`/flow/business/${mainFieldValue}`, "get");
         this.openFlow({
           ...res.data,
           dialogHeight,
           dialogWidth,
           approveType: "view",
-          enterpriseId: this.enterpriseId
+          enterpriseId: this.enterpriseId,
+          // TODO 添加相关参数
+          sourceData: {
+            mainFieldValue
+          }
         });
       } else {
         const res = await this.queryFlowDef("", "", flowKey);
@@ -1226,6 +1231,10 @@ export default {
         flowInfo.dialogWidth = dialogWidth;
         flowInfo.approveType = "add";
         flowInfo.enterpriseId = this.enterpriseId;
+        // TODO 添加相关参数
+        flowInfo.sourceData = {
+          mainFieldValue
+        };
         // 发起流程
         if (flowInfo.startMode === "stdNew") {
           const routeUrl = this.$router.resolve({
