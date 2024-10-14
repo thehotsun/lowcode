@@ -463,6 +463,25 @@ export default {
       this.expose_hideDialog();
     },
 
+    // 导入列表数据
+    async onSubmitToTable(data) {
+      console.log(data);
+      const { columnMappingList, dataList } = data;
+      const finalData = [];
+      dataList.map((data, index) => {
+        if (index === 0) return;
+        const obj = {};
+        for (const [key, value] of Object.entries(data)) {
+          const fieldName = columnMappingList.find(columnMapping => columnMapping.key === key)?.metaFieldName;
+          obj[fieldName] = value;
+        }
+        finalData.push(obj);
+      });
+      console.log(finalData);
+      this.tableData.unshift(...finalData);
+      this.syncFormDataByVformWidget();
+    },
+
     async init(isPreview, json, externalParams, externalTriggerQueryTableData) {
       this.resetAllData();
       await this.$nextTick();
@@ -1208,7 +1227,7 @@ export default {
       const {
         btnConfigs: { dialogHeight, dialogWidth }
       } = this;
-      const mainFieldValue = (row || this.selectList[0])[this.keyField];
+      const mainFieldValue = (row || this.selectList[0])?.[this.keyField];
       if (btnType === "check") {
         const res = await this.generalRequest(`/flow/business/${mainFieldValue}`, "get");
         this.openFlow({
@@ -1217,7 +1236,6 @@ export default {
           dialogWidth,
           approveType: "view",
           enterpriseId: this.enterpriseId,
-          // TODO 添加相关参数
           sourceData: {
             mainFieldValue
           }
@@ -1231,7 +1249,6 @@ export default {
         flowInfo.dialogWidth = dialogWidth;
         flowInfo.approveType = "add";
         flowInfo.enterpriseId = this.enterpriseId;
-        // TODO 添加相关参数
         flowInfo.sourceData = {
           mainFieldValue
         };
@@ -1730,6 +1747,7 @@ export default {
       const {
         importFileComp: ImportFileComp,
         onSubmit,
+        onSubmitToTable,
         btnConfigs: { importFileCompRelateTableName }
       } = this;
       const baseAttrs = this.getExternalCompBaseAttrs();
@@ -1739,12 +1757,14 @@ export default {
           tableName={importFileCompRelateTableName}
           {...{
             attrs: {
-              ...baseAttrs
+              ...baseAttrs,
+              isVformWidgetTable: this.isVformWidget
             }
           }}
           {...{
             on: {
-              submit: onSubmit
+              submit: onSubmit,
+              submitToTable: onSubmitToTable
             }
           }}
         ></ImportFileComp>
