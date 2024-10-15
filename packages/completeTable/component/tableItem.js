@@ -1091,6 +1091,7 @@ export default {
             }
           } else if (openType === 3) {
             // openType为3是新窗口打开;
+            // TODO这里没处理传参
             var reg = /http(s)?:\/\/([\w-]+\.)+[\w-]+(\/[\w- .\/?%&=]*)?/;
             window.open(reg.test(openUrl) ? openUrl : `${window.location.origin}${openUrl.at(0) === "/" ? "" : "/"}${openUrl}`, "_blank");
           } else if (openType === 4) {
@@ -1150,7 +1151,7 @@ export default {
                 rowData
               )
             ) {
-              disposeFlowEvent({ flowKey, btnType, isRefresh }, rowData);
+              disposeFlowEvent({ flowKey, btnType, isRefresh, deliverySelectList }, rowData);
             }
           } else if (openType === 0) {
             // openType为0是打开表单
@@ -1223,23 +1224,24 @@ export default {
       this.btnConfigs.dialogTitle = dialogTitle || "新增";
     },
 
-    async disposeFlowEvent({ flowKey, btnType, isRefresh }, row) {
+    async disposeFlowEvent({ flowKey, btnType, isRefresh, deliverySelectList }, row) {
       const {
         btnConfigs: { dialogHeight, dialogWidth }
       } = this;
       const mainFieldValue = (row || this.selectList[0])?.[this.keyField];
       if (btnType === "check") {
         const res = await this.generalRequest(`/flow/business/${mainFieldValue}`, "get");
-        this.openFlow({
+        const params = {
           ...res.data,
           dialogHeight,
           dialogWidth,
           approveType: "view",
-          enterpriseId: this.enterpriseId,
-          sourceData: {
-            mainFieldValue
-          }
-        });
+          enterpriseId: this.enterpriseId
+        };
+        if (deliverySelectList) {
+          params.sourceData = { mainFieldValue };
+        }
+        this.openFlow(params);
       } else {
         const res = await this.queryFlowDef("", "", flowKey);
         const flowInfo = res.data;
@@ -1249,9 +1251,9 @@ export default {
         flowInfo.dialogWidth = dialogWidth;
         flowInfo.approveType = "add";
         flowInfo.enterpriseId = this.enterpriseId;
-        flowInfo.sourceData = {
-          mainFieldValue
-        };
+        if (deliverySelectList) {
+          flowInfo.sourceData = { mainFieldValue };
+        }
         // 发起流程
         if (flowInfo.startMode === "stdNew") {
           const routeUrl = this.$router.resolve({
@@ -2050,7 +2052,7 @@ export default {
               break;
             case 2:
               this.btnConfigs.btnType = "check";
-              this.disposeFlowEvent({ btnType: "check" }, row);
+              this.disposeFlowEvent(target.extraOption, row);
               break;
             case 4:
               this.disposeRelateCompEvent(target.extraOption, row);

@@ -110,11 +110,11 @@ const requestBeforeConfirmTextRenderDependFn = function(formData) {
 };
 
 const deliverySelectListRenderDependFn = function(formData) {
-  return formData.extraOption.deliverySelectList && ![0, 1, 6].includes(formData.extraOption.openType);
+  return formData.extraOption.deliverySelectList && [4, 5].includes(formData.extraOption.openType);
 };
 
 const deliverySelectListFieldsRenderDependFn = function(formData) {
-  return formData.extraOption.deliverySelectList && [0, 1, 6].includes(formData.extraOption.openType);
+  return formData.extraOption.deliverySelectList && [0, 1, 3, 6].includes(formData.extraOption.openType);
 };
 
 const excludeDownAndDelRenderDependFn = function(formData) {
