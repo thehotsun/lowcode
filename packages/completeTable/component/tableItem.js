@@ -1826,7 +1826,10 @@ export default {
         selectList,
         keyField,
         btnConfigs: { btnDisposeParamsRule, requestBeforeConfirmHint, requestBeforeConfirmText, deliverySelectList },
-        getRequestConfig
+        getRequestConfig,
+        getPrimaryKeyValue,
+        getDlgConfig,
+        getWidget
       } = this;
       const { finalUrl, finalType, finalData, headers } = getRequestConfig();
       let config = {
@@ -1841,7 +1844,13 @@ export default {
         tableData: this.tableData,
         externalParams: this.externalParams,
         callingFrom: "dynatic-table",
-        dlgFormConfig: this.btnConfigs
+        dlgFormConfig: this.btnConfigs,
+        // 作为vform组件时需要传递以下信息
+        isVformWidget: this.isVformWidget,
+        localProcessData: this.localProcessData,
+        mainDataId: getPrimaryKeyValue?.(),
+        mainFormId: getDlgConfig?.()?.formId,
+        mainRelateFieldName: getWidget?.()?.options?.name
       };
       if (deliverySelectList) {
         config = Object.assign(config, {
