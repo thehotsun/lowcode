@@ -29,6 +29,59 @@ export const openType = [
   }
 ];
 
+export const btnTypeArr = [
+  {
+    name: "add",
+    displayName: "新增",
+    isStatic: false
+  },
+  {
+    name: "edit",
+    displayName: "编辑",
+    isStatic: false
+  },
+  {
+    name: "check",
+    displayName: "查看",
+    isStatic: false
+  },
+  {
+    name: "batchDel",
+    displayName: "批量删除",
+    isStatic: true
+  },
+  {
+    name: "download",
+    displayName: "导出",
+    isStatic: true
+  },
+  {
+    name: "flowDocDownload",
+    displayName: "流程文档导出",
+    isStatic: true
+  },
+  {
+    name: "import",
+    displayName: "导入",
+    isStatic: true
+  },
+  {
+    name: "importRefresh",
+    displayName: "导入更新",
+    isStatic: true
+  },
+  {
+    name: "refresh",
+    displayName: "刷新",
+    isStatic: true
+  },
+  {
+    name: "custom",
+    displayName: "自定义",
+    isStatic: false
+  }
+];
+
 export const requestTypeList = [
   {
     id: 0,
@@ -85,7 +138,7 @@ export const yesOrNo = [
   }
 ];
 
-const staticBtn = ["import", "importRefresh", "download", "flowDocDownload", "batchDel"];
+const staticBtn = btnTypeArr.filter(btn => btn.isStatic).map(btn => btn.name);
 
 const downBtn = ["download", "flowDocDownload"];
 
@@ -97,7 +150,7 @@ const dialogAttrRenderDependFn = function(formData) {
 
 const requestBeforeConfirmRenderDependFn = function(formData) {
   return (
-    !downBtn.includes(formData.extraOption.btnType) &&
+    !downBtn.concat('refresh').includes(formData.extraOption.btnType) &&
     !(
       (formData.extraOption.openType === 4 && formData.extraOption.useDialog && !formData.extraOption.showFooter) ||
       (formData.extraOption.openType === 4 && !formData.extraOption.useDialog)
@@ -118,7 +171,7 @@ const deliverySelectListFieldsRenderDependFn = function(formData) {
 };
 
 const excludeDownAndDelRenderDependFn = function(formData) {
-  return !downBtn.concat("batchDel").includes(formData.extraOption.btnType);
+  return !downBtn.concat("batchDel", "refresh").includes(formData.extraOption.btnType);
 };
 
 const expectOpenTypeRenderDependFnGenerator = openType =>

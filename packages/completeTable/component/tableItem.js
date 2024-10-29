@@ -1071,6 +1071,10 @@ export default {
                 // 处理导入
                 this.dealImportRefresh({ requestBeforeConfirmHint, requestBeforeConfirmText });
                 break;
+              case "refresh":
+                // 处理刷新
+                this.refresh();
+                break;
               default:
                 break;
             }

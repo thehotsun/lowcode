@@ -32,15 +32,7 @@
       <el-dropdown class="btn" szie="small" @command="handleBtnCommand">
         <el-button type="primary" size="small" plain> 添加功能按钮<i class="el-icon-arrow-down el-icon--right"></i> </el-button>
         <el-dropdown-menu slot="dropdown">
-          <el-dropdown-item command="add">新增按钮</el-dropdown-item>
-          <el-dropdown-item command="edit">编辑按钮</el-dropdown-item>
-          <el-dropdown-item command="check">查看按钮</el-dropdown-item>
-          <el-dropdown-item command="batchDel">批量删除按钮</el-dropdown-item>
-          <el-dropdown-item command="download">导出按钮</el-dropdown-item>
-          <el-dropdown-item command="flowDocDownload">流程文档导出按钮</el-dropdown-item>
-          <el-dropdown-item command="import">导入按钮</el-dropdown-item>
-          <el-dropdown-item command="importRefresh">导入更新按钮</el-dropdown-item>
-          <el-dropdown-item command="custom">自定义按钮</el-dropdown-item>
+          <el-dropdown-item v-for="btnType in btnTypeArr" :key="btnType.name" :command="btnType.name">{{ btnType.displayName }}</el-dropdown-item>
         </el-dropdown-menu>
       </el-dropdown>
     </div>
@@ -74,6 +66,7 @@ import setupBtnConfig from "../setupBtnConfig";
 import singleSetupTable from "../singleSetupTable";
 import { getWidgetOptions, getWidgetDefaultVal, depthFirstSearchWithRecursive } from "../../../../utils";
 import { searchWidget } from "/baseConfig/tableSelectConfigs";
+import { btnTypeArr } from "/baseConfig/btnBaseConfig.js";
 import { merge } from "lodash";
 import tableAttrsDlg from "../dialogs/tableAttrsDlg.vue";
 export default {
@@ -100,6 +93,7 @@ export default {
           label: "全部"
         }
       ],
+      btnTypeArr,
       tableData: [],
       setupForm: {},
       groupId: "",
@@ -576,6 +570,12 @@ export default {
             config.extraOption.btnType = "importRefresh";
             config.extraOption.openType = -1;
             config.authorize = "U";
+            break;
+          case "refresh":
+            config.tagAttrs.value = "刷新";
+            config.extraOption.btnType = "refresh";
+            config.extraOption.openType = -1;
+            config.authorize = "defaultShow";
             break;
           case "custom":
             config.extraOption.btnType = "custom";
