@@ -47,7 +47,11 @@ function InstanceData() {
       pageSize: 20,
       totalCount: 0
     },
-    btnRegularOptions: [],
+    btnRegularOptions: [
+      {
+        formItem: []
+      }
+    ],
     showSearchFrom: true,
     showBtns: true,
     primaryKeyValue: "",
@@ -246,6 +250,34 @@ export default {
     },
     wrapHeight() {
       return this.wrapHeightProp || this.getWrapHeight().height;
+    },
+    leftBtnRegularOptions() {
+      const leftBtnRegularOptions = {
+        elRowAttrs: { gutter: 10, type: "flex", align: "middle", justify: "start" },
+        formItem: [],
+        style: "padding-left: 5px"
+      };
+      this.btnRegularOptions?.[0].formItem?.map(item => {
+        if (item?.extraOption?.btnPosition !== "right") {
+          console.log("78787878", item);
+
+          leftBtnRegularOptions.formItem.push(item);
+        }
+      });
+      return [leftBtnRegularOptions];
+    },
+    rightBtnRegularOptions() {
+      const rightBtnRegularOptions = {
+        elRowAttrs: { gutter: 10, type: "flex", align: "middle", justify: "start" },
+        formItem: [],
+        style: "padding-left: 5px"
+      };
+      this.btnRegularOptions?.[0].formItem?.map(item => {
+        if (item?.extraOption?.btnPosition === "right") {
+          rightBtnRegularOptions.formItem.push(item);
+        }
+      });
+      return [rightBtnRegularOptions];
     }
   },
   inject: {
@@ -2130,7 +2162,9 @@ export default {
       onSave,
       tableCellClick,
       localProcessData,
-      finalTableData
+      finalTableData,
+      leftBtnRegularOptions,
+      rightBtnRegularOptions
     } = this;
 
     const curPageListeners = localProcessData
@@ -2201,10 +2235,10 @@ export default {
         <el-main class="main-padding">
           <el-container style="height: 100%">
             <el-header ref="elHeader" class="flex between relative absolute-header-height">
-              {showBtns ? (
+              {showBtns && leftBtnRegularOptions?.[0].formItem.length ? (
                 <base-render-regular
                   ref="btnForm"
-                  render-options={btnRegularOptions}
+                  render-options={leftBtnRegularOptions}
                   {...{
                     on: {
                       btnClick: handleBtnClick
@@ -2215,6 +2249,18 @@ export default {
                 <div>&nbsp;</div>
               )}
               <div class="operate">
+                {showBtns && rightBtnRegularOptions?.[0].formItem.length ? (
+                  <base-render-regular
+                    ref="btnForm"
+                    style="margin-right: 8px;"
+                    render-options={rightBtnRegularOptions}
+                    {...{
+                      on: {
+                        btnClick: handleBtnClick
+                      }
+                    }}
+                  ></base-render-regular>
+                ) : null}
                 {searchFieldList.length ? (
                   <div class="inlineBlock">
                     <el-input

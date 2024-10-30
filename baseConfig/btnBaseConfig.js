@@ -138,6 +138,17 @@ export const yesOrNo = [
   }
 ];
 
+export const leftOrRight = [
+  {
+    value: 'left',
+    label: "左"
+  },
+  {
+    value: 'right',
+    label: "右"
+  }
+];
+
 const staticBtn = btnTypeArr.filter(btn => btn.isStatic).map(btn => btn.name);
 
 const downBtn = ["download", "flowDocDownload"];
@@ -150,7 +161,7 @@ const dialogAttrRenderDependFn = function(formData) {
 
 const requestBeforeConfirmRenderDependFn = function(formData) {
   return (
-    !downBtn.concat('refresh').includes(formData.extraOption.btnType) &&
+    !downBtn.concat("refresh").includes(formData.extraOption.btnType) &&
     !(
       (formData.extraOption.openType === 4 && formData.extraOption.useDialog && !formData.extraOption.showFooter) ||
       (formData.extraOption.openType === 4 && !formData.extraOption.useDialog)
@@ -1055,6 +1066,31 @@ export function BtnConfigFormOptions() {
       },
       formItem: {
         formItemAttrs: {
+          prop: "extraOption.btnPosition",
+          label: "按钮位置："
+        },
+        tagName: "el-radio-group",
+        tagAttrs: {
+          placeholder: ""
+        },
+        // 对应formData中的属性值
+        formField: "extraOption.btnPosition",
+        extraOption: {
+          options: leftOrRight,
+          props: {
+            key: "value",
+            label: "label"
+          }
+        }
+      }
+    },
+
+    {
+      elRowAttrs: {
+        gutter: 10
+      },
+      formItem: {
+        formItemAttrs: {
           prop: "style",
           label: "自定义样式："
         },
@@ -1156,6 +1192,7 @@ export function BtnConfigFrom(custom = {}) {
       flowKey: "",
       isRefresh: false,
       isHidden: false,
+      btnPosition: 'left',
       dialogTitle: "",
       dialogWidth: "900",
       dialogHeight: "600",
