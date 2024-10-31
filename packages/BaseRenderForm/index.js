@@ -47,7 +47,7 @@ export default {
       // 对所有元素的监听事件进行处理， 使其能访问到当前组件的this
       return (
         this.formOptions?.map(rowItem => {
-          const ectype = cloneDeep(rowItem);
+          const ectype = Vue.observable(cloneDeep(rowItem));
           if (Array.isArray(ectype.formItem)) {
             ectype.formItem.map(item => {
               if (!isEmpty(item.listeners)) {
@@ -471,15 +471,23 @@ export default {
       // 一个formItem的content也允许渲染多个组件
       const {
         formItemAttrs: { labelSlotName, labelOptions, ...formItemAttrs },
+        watch,
         renderDependFn,
         ...item
       } = allItemInfo;
       const { isFlat } = item;
+      let renderDepend = renderDependFn;
       if (typeof renderDependFn === "string" && renderDependFn?.length > 0) {
-        item.renderDependFn = renderDependFn = str2Fn(renderDependFn);
+        renderDepend = str2Fn(renderDependFn);
+      }
+      if (watch && typeof watch.handler === "function") {
+        this.$watch("formData", val => watch.handler(val, allItemInfo, this), {
+          deep: watch.deep,
+          immediate: watch.immediate
+        });
       }
       // 先判断是否存在依赖渲染，在判断是否有labelSlotName，在判断是否有labelOptions
-      return renderDependFn && !renderDependFn(this.formData) ? (
+      return renderDepend && !renderDepend(this.formData) ? (
         ""
       ) : (
         <el-form-item

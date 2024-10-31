@@ -140,11 +140,11 @@ export const yesOrNo = [
 
 export const leftOrRight = [
   {
-    value: 'left',
+    value: "left",
     label: "左"
   },
   {
-    value: 'right',
+    value: "right",
     label: "右"
   }
 ];
@@ -501,6 +501,15 @@ export function BtnConfigFormOptions() {
         },
         // 对应formData中的属性值
         formField: "extraOption.flowKey",
+        watch: {
+          handler(formData, item, that) {
+            console.log(formData, item, "handler");
+            if (formData.extraOption.openType === 2) {
+              that.$set(item.formItemAttrs.rules, "required", formData.extraOption.btnType !== "check");
+            }
+          },
+          deep: true
+        },
         renderDependFn: function(formData) {
           return [2].includes(formData.extraOption.openType);
         }
@@ -1192,7 +1201,7 @@ export function BtnConfigFrom(custom = {}) {
       flowKey: "",
       isRefresh: false,
       isHidden: false,
-      btnPosition: 'left',
+      btnPosition: "left",
       dialogTitle: "",
       dialogWidth: "900",
       dialogHeight: "600",
