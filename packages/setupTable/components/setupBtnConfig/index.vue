@@ -257,7 +257,8 @@ export default {
         errorMessage: "",
         fieldCode: this.keyField,
         fieldName: "主键",
-        renamed: target?.renamed || "",
+        // this?.btnConfigFrom?.extraOption?.paramName 是 paramName字段的兼容性代码
+        renamed: target?.renamed || this?.btnConfigFrom?.extraOption?.paramName || "",
         isSelected: !!target
       });
       this.$refs.fieldRenameDlg.openDialog(fieldArr);
@@ -266,6 +267,10 @@ export default {
 
     handleFieldRenameConfirm(deliverySelectListFields) {
       this.btnConfigFrom.extraOption.deliverySelectListFields = deliverySelectListFields;
+      // paramName字段的兼容性代码
+      if (this.btnConfigFrom.extraOption.openType === 5 && this.btnConfigFrom.extraOption.paramName) {
+        this.btnConfigFrom.extraOption.paramName = "";
+      }
     },
 
     getDisplayText(deliverySelectListFields) {

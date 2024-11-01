@@ -985,13 +985,14 @@ export default {
       return btnList;
     },
 
-    validateSelectList({ paramName, paramType, deliverySelectList, validate }, row) {
+    validateSelectList({ paramName, paramType, deliverySelectList, deliverySelectListFields, validate }, row) {
       const { selectList } = this;
       this.btnConfigs.deliverySelectList = deliverySelectList;
       if (deliverySelectList) {
         this.btnConfigs.btnDisposeParamsRule = {
           paramName,
-          paramType
+          paramType,
+          deliverySelectListFields
         };
         if (validate.includes(0) && selectList.length === 0 && !row) {
           this.$warn("请至少勾选一条要处理的数据");
@@ -1117,6 +1118,7 @@ export default {
                 {
                   paramName,
                   paramType,
+                  deliverySelectListFields,
                   deliverySelectList,
                   validate
                 },
@@ -1138,6 +1140,7 @@ export default {
                   paramName,
                   paramType,
                   deliverySelectList,
+                  deliverySelectListFields,
                   validate
                 },
                 rowData
@@ -1161,6 +1164,7 @@ export default {
                   paramName,
                   paramType,
                   deliverySelectList,
+                  deliverySelectListFields,
                   validate
                 },
                 rowData
@@ -1182,6 +1186,7 @@ export default {
                   paramName,
                   paramType,
                   deliverySelectList,
+                  deliverySelectListFields,
                   validate
                 },
                 rowData
@@ -1197,6 +1202,7 @@ export default {
                   paramName,
                   paramType,
                   deliverySelectList,
+                  deliverySelectListFields,
                   validate
                 },
                 rowData
@@ -1221,6 +1227,7 @@ export default {
                   paramName,
                   paramType,
                   deliverySelectList,
+                  deliverySelectListFields,
                   validate
                 },
                 rowData
@@ -1305,7 +1312,7 @@ export default {
     },
 
     disposeDynamicFormEvent({ btnType, relateFrom, dialogTitle, deliverySelectList, deliverySelectListFields }, rowData) {
-      this.externalParamsFormRow = this.formatSelectListParams(deliverySelectList, deliverySelectListFields, rowData, false);
+      this.externalParamsFormRow = this.formatSelectListParams({ deliverySelectList, deliverySelectListFields }, rowData);
       switch (btnType) {
         case "add":
           this.expose_showDialog();
@@ -1344,7 +1351,7 @@ export default {
     },
 
     async disposeDynamicTableEvent({ btnType, relateTable, dialogTitle, deliverySelectList, deliverySelectListFields }, rowData) {
-      const externalParams = this.formatSelectListParams(deliverySelectList, deliverySelectListFields, rowData);
+      const externalParams = this.formatSelectListParams({ deliverySelectList, deliverySelectListFields }, rowData, "useArray");
       this.expose_showDialog();
       this.btnConfigs.tableId = relateTable;
       this.onlyRead = true;
@@ -1354,7 +1361,7 @@ export default {
     },
 
     async disposeThisPageJump({ openUrl, deliverySelectList, deliverySelectListFields }, rowData) {
-      const params = this.formatSelectListParams(deliverySelectList, deliverySelectListFields, rowData);
+      const params = this.formatSelectListParams({ deliverySelectList, deliverySelectListFields }, rowData, "useArray");
       // 通过sessionStorage传递参数
       sessionStorage.setItem("lowcodeTableThisPageJumpParams", JSON.stringify(params));
       const res = await this.queryChangePrjId(this.listPageId, params[`${this.keyField}Array`][0]);
@@ -1370,7 +1377,7 @@ export default {
       }
     },
 
-    formatSelectListParams(deliverySelectList, deliverySelectListFields, rowData, useArray = true) {
+    formatSelectListParams({ deliverySelectList, deliverySelectListFields }, rowData, fieldFormatMode = "default") {
       const params = {};
       let selectList;
       if (rowData) {
@@ -1379,7 +1386,7 @@ export default {
         selectList = this.selectList;
       }
       if (deliverySelectList) {
-        if (useArray) {
+        if (fieldFormatMode === "useArray") {
           selectList.map(row => {
             deliverySelectListFields.map(item => {
               let key, value;
@@ -1401,6 +1408,16 @@ export default {
               const key = `${this.keyField}Array`;
               params[key] = selectList?.map(row => row[this.keyField]) || "";
             }
+          });
+        } else if (fieldFormatMode === "useJoin") {
+          deliverySelectListFields.map(item => {
+            let key;
+            if (typeof item === "string") {
+              key = `${item}`;
+            } else {
+              key = item.renamed || `${item.fieldCode}`;
+            }
+            params[key] = selectList.map(row => row[typeof item === "string" ? item : item.fieldCode]).join(",");
           });
         } else {
           rowData = rowData || this.selectList[0] || {};
@@ -1434,7 +1451,7 @@ export default {
           requestType,
           requestFixedParams = {},
           deliverySelectList,
-          btnDisposeParamsRule: { paramType, paramName }
+          btnDisposeParamsRule: { paramType, paramName, deliverySelectListFields = [] }
         }
       } = this;
 
@@ -1449,7 +1466,7 @@ export default {
         });
         finalUrl = addQueryString(finalParams, requestUrl);
       }
-      const finalData = {};
+      let finalData = {};
       if (data?.length) {
         data.map(item => {
           finalData[item.name] = transformParamsValue(item.value);
@@ -1463,14 +1480,29 @@ export default {
           selectListId = selectList.map(item => item[keyField]);
         }
         if (paramType === 1) {
-          finalUrl = addQueryString(
-            {
-              [paramName]: selectListId.join(",")
-            },
-            finalUrl
-          );
+          // paramName字段的兼容性代码
+          if (paramName) {
+            finalUrl = addQueryString(
+              {
+                [paramName]: selectListId.join(",")
+              },
+              finalUrl
+            );
+          } else if (deliverySelectListFields.length) {
+            const params = this.formatSelectListParams({ deliverySelectList, deliverySelectListFields }, undefined, "useJoin");
+            finalUrl = addQueryString(params, finalUrl);
+          }
         } else if (paramType === 0) {
-          finalData[paramName] = selectListId;
+          // paramName字段的兼容性代码
+          if (paramName) {
+            finalData[paramName] = selectListId;
+          } else if (deliverySelectListFields.length) {
+            const params = this.formatSelectListParams({ deliverySelectList, deliverySelectListFields }, undefined, "useJoin");
+            finalData = {
+              ...finalData,
+              ...params
+            };
+          }
         }
       }
       const finalType = requestTypeList.find(item => item.id === requestType)?.cnName || "";

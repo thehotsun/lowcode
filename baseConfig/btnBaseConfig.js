@@ -178,7 +178,7 @@ const deliverySelectListRenderDependFn = function(formData) {
 };
 
 const deliverySelectListFieldsRenderDependFn = function(formData) {
-  return formData.extraOption.deliverySelectList && [0, 1, 3, 6].includes(formData.extraOption.openType);
+  return formData.extraOption.deliverySelectList && [0, 1, 3, 5, 6].includes(formData.extraOption.openType);
 };
 
 const excludeDownAndDelRenderDependFn = function(formData) {
@@ -644,29 +644,24 @@ export function BtnConfigFormOptions() {
       }
     },
 
-    {
-      elRowAttrs: {
-        gutter: 10
-      },
-      formItem: {
-        formItemAttrs: {
-          prop: "extraOption.paramName",
-          label: "参数名称："
-          // rules: {
-          //   required: true,
-          //   message: '请输入参数名',
-          //   trigger: 'blur',
-          // },
-        },
-        formField: "extraOption.paramName",
-        tagName: "el-input",
-        style: "width: 180px",
-        tagAttrs: {
-          placeholder: "请输入参数名"
-        },
-        renderDependFn: deliverySelectListRenderDependFn
-      }
-    },
+    // {
+    //   elRowAttrs: {
+    //     gutter: 10
+    //   },
+    //   formItem: {
+    //     formItemAttrs: {
+    //       prop: "extraOption.paramName",
+    //       label: "参数名称："
+    //     },
+    //     formField: "extraOption.paramName",
+    //     tagName: "el-input",
+    //     style: "width: 180px",
+    //     tagAttrs: {
+    //       placeholder: "请输入参数名"
+    //     },
+    //     renderDependFn: deliverySelectListRenderDependFn
+    //   }
+    // },
 
     {
       elRowAttrs: {
@@ -1207,6 +1202,7 @@ export function BtnConfigFrom(custom = {}) {
       dialogHeight: "600",
       deliverySelectList: false,
       deliverySelectListFields: [],
+      // 此参数已废弃
       paramName: "",
       paramType: 0,
       validate: [],
