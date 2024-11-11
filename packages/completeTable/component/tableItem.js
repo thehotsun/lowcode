@@ -856,6 +856,12 @@ export default {
                 this.page.totalCount = res.totalCount;
               }
             }
+            // 低代码列表页面，相互切换时，最下面的合计有时展示不出来，需要重新调用此方法
+            if (this.attrs.showSummary) {
+              setTimeout(() => {
+                this.$refs.table.$refs.elTable?.doLayout?.();
+              }, 100);
+            }
           } else {
             console.error(`queryTableData message: ${res.message}`);
           }
