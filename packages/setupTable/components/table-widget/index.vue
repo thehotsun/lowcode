@@ -175,7 +175,13 @@ export default {
             this.$refs.singleSetupTable.expose_setFuzzyFieldSearchConfig(fuzzyFieldSearchConfig);
           }, 100);
         }
-        this.keyField = keyField;
+        if (keyField) {
+          this.keyField = keyField;
+        } else {
+          this.$message("设计时主键缺失！正在重新请求获取主键");
+          this.getPrimekey(true);
+        }
+
         this.tableData = tableOptions;
         this.deliveryFieldsOption = {
           options: []
@@ -349,9 +355,14 @@ export default {
       return this.getListConfigJSON(this.groupId);
     },
 
-    getPrimekey() {
+    getPrimekey(tip) {
       this.requestPrimekey(this.groupId).then(res => {
-        this.keyField = res.data.columnName;
+        if (res.result === "0") {
+          this.keyField = res.data.columnName;
+          if (tip) {
+            this.$success("重新获取主键成功！");
+          }
+        }
       });
     },
 
