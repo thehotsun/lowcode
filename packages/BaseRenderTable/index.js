@@ -180,7 +180,7 @@ export default {
             }
           };
           const style = mergeStyle(null, contentTextAttr);
-          cellOptions.contentText = contentTextAttr.textVal;
+          cellOptions.contentText = contentTextAttr.textVal || row[options.prop];
           if (contentTextAttr.iconName) {
             cellOptions[`${contentTextAttr.iconPosition}TextClass`] = contentTextAttr.iconName;
             cellOptions[`${contentTextAttr.iconPosition}TextStyle`] = `${style};${contentTextAttr.iconStyle}`;
@@ -309,19 +309,21 @@ export default {
     tableColumnRender(item) {
       const { getCellRender, tableColumnRender } = this;
       if (item.formatter && !item.cellFormatterComponent) {
+        const { components = {}, inject = ["getTableRenderInstance", "emitBtnClick"], data, computed = {}, watch = {}, methods = {}, template = "" } = item.formatter();
         item.cellFormatterComponent = Vue.extend({
-          components: item.formatter().components || {},
+          components,
+          inject,
           props: { row: Object, index: Number },
           // eslint-disable-next-line
           data:
-            item.formatter().data ||
+            data ||
             function() {
               return {};
             },
-          computed: item.formatter().computed || {},
-          watch: item.formatter().watch || {},
-          methods: item.formatter().methods || {},
-          render: Vue.compile(item.formatter().template || "").render
+          computed,
+          watch,
+          methods,
+          render: Vue.compile(template).render
         });
       }
       if (item.renderHeader && !item.cellHeaderFormatterComponent) {

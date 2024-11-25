@@ -417,6 +417,7 @@ export default {
   provide() {
     return {
       getTableRenderInstance: () => this.expose_CompleteTableInstance(),
+      emitBtnClick: this.emitBtnClick,
       getWrapHeight: () => {
         return {
           height: 0
@@ -2162,6 +2163,16 @@ export default {
         }
       } catch (error) {
         console.warn(error);
+      }
+    },
+    emitBtnClick(row, btnName, btnId) {
+      if (btnId) {
+        this.tableCellClick(row, btnId);
+      } else if (btnName) {
+        const target = this.btnRegularOptions[0].formItem.find(btn => btn.tagAttrs.value === btnName);
+        this.handleBtnClick(target.extraOption, row);
+      } else {
+        console.warn("调用emitBtnClick参数同时缺失按钮名称和按钮id");
       }
     }
   },

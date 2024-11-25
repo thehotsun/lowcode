@@ -23,13 +23,13 @@ export const tableAttrsCodeExampleList = {
 };
 
 export const tableOptionsCodeExampleList = {
-  filters: "[{text: '2016-05-01(显示值)', value: '2016-05-01(传递给筛选函数的值)'}]",
-  "sort-method":
-    "function sortMethod(a, b) {\n  // a是需要排序的上一个值，b是需要排序的下一个值\n  // 需返回一个数字，和 Array.sort 表现一致\n  if (a < b) {\n    return -1\n  } else if (a > b) {\n    return 1\n  } else {\n    return 0\n  }\n}",
-  "filter-method":
-    "function filterHandler(value, row, column) {\r\n  // value是筛选选中的值，如果选择多个，则会将值挨个遍历此方法\r\n  \r\n  // 取出属性名\r\n  const property = column['property'];\r\n  // 筛选\r\n  return row[property] === value;\r\n}",
-  renderHeader:
-    'function render() {\n  // 此函数直接返回一个类似vue options组件的对象，如data、methods等，\n  // 模板则使用template代替，由于某些原因，尽量使用``来包裹整个字符串\n  return {\n    methods: {\n      getValue () {\n        return this.data.s\n      }\n    },\n    template: `<div><i  class="el-icon-date"></i> <span> {{getValue()}} </span></div>`\n  }\n}',
-  formatter:
-    'function render() {\n  // 此函数直接返回一个类似vue options组件的对象，如data、methods等，\n  // 模板则使用template代替，由于某些原因，尽量使用``来包裹整个字符串\n  return {\n    methods: {\n      getValue () {\n        return this.data.s\n      }\n    },\n    template: `<div><i  class="el-icon-date"></i> <span> {{getValue()}} </span></div>`\n  }\n}'
-};
+         filters: "[{text: '2016-05-01(显示值)', value: '2016-05-01(传递给筛选函数的值)'}]",
+         "sort-method":
+           "function sortMethod(a, b) {\n  // a是需要排序的上一个值，b是需要排序的下一个值\n  // 需返回一个数字，和 Array.sort 表现一致\n  if (a < b) {\n    return -1\n  } else if (a > b) {\n    return 1\n  } else {\n    return 0\n  }\n}",
+         "filter-method":
+           "function filterHandler(value, row, column) {\r\n  // value是筛选选中的值，如果选择多个，则会将值挨个遍历此方法\r\n  \r\n  // 取出属性名\r\n  const property = column['property'];\r\n  // 筛选\r\n  return row[property] === value;\r\n}",
+         renderHeader:
+           'function render() {\n  // 此函数直接返回一个类似vue options组件的对象，如data、methods等，\n  // 可以通过this.row获取当前行数据，this.index获取下标，this.getTableRenderInstance()获取当前渲染实例\n  // 可以通过this.emitBtnClick(this.row, 按钮名称， 按钮id)来触发配置的按钮，其中按钮名称（会找到第一个匹配到的按钮注意重名问题）和按钮id任选其一即可。\n  // 模板则使用template代替，由于某些原因，尽量使用``来包裹整个字符串\n  return {\n    data () {\n      return {\n        s: "22"\n      }\n    },\n    methods: {\n      getValue () {\n        return this.s\n      },\n      btnClick() {\n        this.emitBtnClick(this.row, "后台接口")  \n      }\n    },\n    template: `<div @click.stop="btnClick"><i  class="el-icon-date"></i> <span> {{getValue()}} </span></div>`\n  }\n}',
+         formatter:
+           'function render() {\n  // 此函数直接返回一个类似vue options组件的对象，如data、methods等，\n  // 可以通过this.row获取当前行数据，this.index获取下标，this.getTableRenderInstance()获取当前渲染实例\n  // 可以通过this.emitBtnClick(this.row, 按钮名称， 按钮id)来触发配置的按钮，其中按钮名称（会找到第一个匹配到的按钮注意重名问题）和按钮id任选其一即可。\n  // 模板则使用template代替，由于某些原因，尽量使用``来包裹整个字符串\n  return {\n    data () {\n      return {\n        s: "22"\n      }\n    },\n    methods: {\n      getValue () {\n        return this.s\n      },\n      btnClick() {\n        this.emitBtnClick(this.row, "后台接口")  \n      }\n    },\n    template: `<div @click.stop="btnClick"><i  class="el-icon-date"></i> <span> {{getValue()}} </span></div>`\n  }\n}'
+       };
