@@ -199,7 +199,7 @@
               </el-form-item>
 
               <el-form-item label="显示文本：">
-                <el-tooltip slot="label" class="fontSize14" effect="dark" content="如果输入显示文本，则会覆盖原本prop的值" placement="top-start">
+                <el-tooltip slot="label" class="fontSize14" effect="dark" content="如果输入显示文本，则会覆盖原本prop的值, 如果不想展示任何文本，请输入一个空格" placement="top-start">
                   <span>显示文本<i style="width: 20px" class="el-icon-question"></i>：</span>
                 </el-tooltip>
                 <el-input v-model="contentTextAttrForm.textVal"></el-input>
