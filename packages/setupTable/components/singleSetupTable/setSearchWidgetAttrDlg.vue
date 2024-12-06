@@ -195,6 +195,16 @@ export default {
         }
       ];
     },
+    // 填充options的label
+    supplementLabel(props, options) {
+      const { key, label } = props;
+      return options.map(item => {
+        const obj = {};
+        obj[key] = item[key];
+        obj[label] = `${item[label]}(${item[key]})`;
+        return obj;
+      });
+    },
     handleCloseFrom() {
       this.dialogVisibleFrom = false;
       this.setupForm = {};

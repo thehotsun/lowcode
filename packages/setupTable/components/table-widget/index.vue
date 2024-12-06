@@ -46,6 +46,7 @@
         :save-sql="saveSql"
         :list-page-id-prop="listPageIdProp"
         :btn-config-arr="btnConfigArr"
+        :raw-fuzzy-field-search-config="fuzzyFieldSearchConfig"
         edit-mode
         @searchOptionsChange="searchOptionsChange"
       >
@@ -112,7 +113,8 @@ export default {
       flowListExtraOption: {},
       deliveryFieldsOption: {
         options: []
-      }
+      },
+      fuzzyFieldSearchConfig: null
     };
   },
 
@@ -171,9 +173,9 @@ export default {
         const { tableOptions, formOptions, keyField, tableAttrs, fuzzyFieldSearchConfig } = obj;
         this.tableAttrs = merge({}, this.tableAttrs, tableAttrs);
         if (fuzzyFieldSearchConfig && Object.keys(fuzzyFieldSearchConfig).length) {
-          setTimeout(() => {
-            this.$refs.singleSetupTable.expose_setFuzzyFieldSearchConfig(fuzzyFieldSearchConfig);
-          }, 400);
+          this.fuzzyFieldSearchConfig = fuzzyFieldSearchConfig;
+        } else {
+          this.fuzzyFieldSearchConfig = null;
         }
         if (keyField) {
           this.keyField = keyField;

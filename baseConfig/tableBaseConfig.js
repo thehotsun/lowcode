@@ -197,11 +197,11 @@ const originEditConf = [
   },
   {
     ...baseAttr,
-    label: "筛选数组",
+    label: "设置筛选数组",
     prop: "filters",
     "min-width": "200",
     tagAttrs: getInputAttrs('请输入[{ text, value }]格式"'),
-    showCodeEditor: true
+    slotName: "setupFilterArr"
   },
   {
     ...baseAttr,
