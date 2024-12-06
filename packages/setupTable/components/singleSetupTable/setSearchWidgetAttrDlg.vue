@@ -63,12 +63,6 @@ export default {
         return "";
       }
     },
-    fuzzyFieldSearchConfig: {
-      type: Object,
-      default: () => {
-        return {};
-      }
-    },
     generateQuerySql: {
       type: Function,
       require: true,
@@ -115,11 +109,11 @@ export default {
       // 防止用户赋值给没有声明的属性值，导致其变为非响应式数据
       this.$set(formData.request, "url", `${value}`);
     },
-    querySql(type = "input", isFuzzySearch) {
+    querySql(type = "input") {
       const params = {
         listPageId: this.listPageId,
         displayDataType: type,
-        fieldNameList: isFuzzySearch ? this.fuzzyFieldSearchConfig.searchFieldList : [this.curRowData.fieldCode]
+        fieldNameList: [this.curRowData.fieldCode]
       };
       this.generateQuerySql(params).then(res => {
         this.$refs.ace.codeValue = this.wholeSQL = res.data.querySql;

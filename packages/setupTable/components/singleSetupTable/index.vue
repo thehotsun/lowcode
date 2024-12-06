@@ -175,7 +175,6 @@
       ref="setSearchWidgetAttrDlg"
       :general-request="generalRequest"
       :list-page-id="listPageId"
-      :fuzzy-field-search-config="fuzzyFieldSearchConfig"
       :generate-query-sql="generateQuerySql"
       @searchOptionsChange="searchOptionsChange"
       @handleSaveSql="handleSaveSql"
