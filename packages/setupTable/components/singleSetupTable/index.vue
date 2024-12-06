@@ -51,6 +51,18 @@
           </el-button>
           <slot name="setupContentText" :row="row"></slot>
         </template>
+        // TODO
+        <template #setupFilterArr="{ row }">
+          <el-button
+            type="text"
+            icon="el-icon-edit"
+            :class="row.contentTextAttrArr && row.contentTextAttrArr.length ? 'colorRed' : ''"
+            @click.stop.prevent="handleContentTextAttr(row)"
+          >
+            {{ row.contentTextAttrArr && row.contentTextAttrArr.length ? "修改" : "设置" }}
+          </el-button>
+          <slot name="setupContentText" :row="row"></slot>
+        </template>
 
         <!-- <template #operator="{ row }">
           <el-button v-if="row.$edit" @click.stop.prevent="onSave(row)">
@@ -62,91 +74,7 @@
       <!-- </el-main> -->
     </div>
     <!-- </el-main> -->
-    <el-dialog
-      v-dialogDrag
-      title="设置搜索控件属性"
-      :visible.sync="dialogVisibleFrom"
-      :close-on-click-modal="false"
-      :close-on-press-escape="false"
-      width="1450px"
-      :before-close="handleCloseFrom"
-      append-to-body
-    >
-      <div class="flex">
-        <div class="left">
-          <base-render-form v-if="dialogVisibleFrom" ref="setupForm" :form-data="setupForm" :form-options="setupFormOptions" :use-dialog="false" :show-footer="false">
-            <template #searchWidget>
-              <el-select v-model="setupForm.searchWidgetType" placeholder="请选择控件类型" filterable @change="changeWidget">
-                <el-option v-for="item in searchWidget" :key="item.id" :label="item.cnName" :value="item.id"> </el-option>
-              </el-select>
-            </template>
-            <template #selectDic="{ formData }">
-              <el-select :value="formData.request.url" placeholder="请选择字典项" filterable clearable="" @change="changeFormData($event, formData)">
-                <el-option v-for="item in dicCodeList" :key="item.dicCode" :label="item.dicName" :value="item.dicCode">
-                  <span class="code">{{ item.dicCode.split("dicCode=")[1] }}</span>
-                  <span>{{ item.dicName }}</span>
-                </el-option>
-              </el-select>
-              <el-button @click="requestDicCodeListData">刷新</el-button>
-            </template>
-          </base-render-form>
-          <el-form>
-            <el-form-item label-width="106px" label="生成sql片段：">
-              <el-input v-model="suggestSQL" :autosize="{ minRows: 4, maxRows: 10 }" type="textarea" placeholder="" readonly></el-input>
-            </el-form-item>
-            <el-form-item label="">
-              <div class="color78">提示：生成的sql片段仅供参考</div>
-            </el-form-item>
-          </el-form>
-        </div>
-        <div class="right">
-          <sql-code-editor ref="ace" v-model="wholeSQL"></sql-code-editor>
-        </div>
-      </div>
-      <span slot="footer" class="dialog-footer">
-        <el-button @click="handleCloseFrom">取消</el-button>
-        <el-button type="primary" @click="confirmFrom">确定</el-button>
-      </span>
-    </el-dialog>
 
-    <el-dialog
-      v-dialogDrag
-      title="设置搜索字段"
-      :visible.sync="dialogVisibleFuzzyFrom"
-      :close-on-click-modal="false"
-      :close-on-press-escape="false"
-      width="1450px"
-      :before-close="handleCloseFuzzyFrom"
-      append-to-body
-    >
-      <div class="flex">
-        <div class="left">
-          <el-form ref="fuzzyFrom" :model="fuzzyFieldSearchConfig" :rules="fuzzyFromRules" label-position="top">
-            <el-form-item label="搜索字段列表：" prop="searchFieldList">
-              <el-checkbox-group v-model="fuzzyFieldSearchConfig.searchFieldList" class="fieldList" @change="fuzzySearchFieldListChange">
-                <el-checkbox v-for="row in tableData" :key="row.fieldCode" :label="row.fieldCode">{{ row.fieldName }}</el-checkbox>
-              </el-checkbox-group>
-            </el-form-item>
-            <el-form-item label="提示文本：" prop="placeholder">
-              <el-input v-model="fuzzyFieldSearchConfig.placeholder" placeholder="请输入提示文本"></el-input>
-            </el-form-item>
-            <el-form-item label-width="106px" label="生成sql片段：">
-              <el-input v-model="suggestSQL" :autosize="{ minRows: 4, maxRows: 10 }" type="textarea" placeholder="" readonly></el-input>
-            </el-form-item>
-            <el-form-item label="">
-              <div class="color78">提示：生成的sql片段仅供参考</div>
-            </el-form-item>
-          </el-form>
-        </div>
-        <div class="right">
-          <sql-code-editor ref="ace" v-model="wholeSQL"></sql-code-editor>
-        </div>
-      </div>
-      <span slot="footer" class="dialog-footer">
-        <el-button @click="handleCloseFuzzyFrom">取消</el-button>
-        <el-button type="primary" @click="confirmFuzzyFrom">确定</el-button>
-      </span>
-    </el-dialog>
 
     <el-dialog
       v-dialogDrag
@@ -199,7 +127,13 @@
               </el-form-item>
 
               <el-form-item label="显示文本：">
-                <el-tooltip slot="label" class="fontSize14" effect="dark" content="新增操作列输入什么展示什么，如果不输入则不展示。非新增操作列如果输入显示文本，则会覆盖原本prop的值, 如果不想展示任何文本，请输入一个空格" placement="top-start">
+                <el-tooltip
+                  slot="label"
+                  class="fontSize14"
+                  effect="dark"
+                  content="新增操作列输入什么展示什么，如果不输入则不展示。非新增操作列如果输入显示文本，则会覆盖原本prop的值, 如果不想展示任何文本，请输入一个空格"
+                  placement="top-start"
+                >
                   <span>显示文本<i style="width: 20px" class="el-icon-question"></i>：</span>
                 </el-tooltip>
                 <el-input v-model="contentTextAttrForm.textVal"></el-input>
@@ -237,25 +171,33 @@
         <el-button type="primary" @click="confirmContentTextAttr">确定</el-button>
       </span>
     </el-dialog>
+    <setSearchWidgetAttrDlg
+      ref="setSearchWidgetAttrDlg"
+      :general-request="generalRequest"
+      :list-page-id="listPageId"
+      :fuzzy-field-search-config="fuzzyFieldSearchConfig"
+      :generate-query-sql="generateQuerySql"
+      @searchOptionsChange="searchOptionsChange"
+      @handleSaveSql="handleSaveSql"
+    ></setSearchWidgetAttrDlg>
   </div>
 </template>
 
 <script>
 import BaseRenderTable from "../../../../packages/BaseRenderTable/index";
-import BaseRenderForm from "../../../../packages/BaseRenderForm/index";
+
 import { getSingleTableData, editConf as tableOptions, ContentTextAttrForm } from "../../../../baseConfig/tableBaseConfig";
-import { searchWidget } from "../../../../baseConfig/tableSelectConfigs";
+
 import IconPicker from "../setupBtnConfig/components/iconPicker";
 
-import { str2obj, getSetupForm, getSetupFormOptions, setPlaceholder } from "../../../../utils";
 import { cloneDeep, merge } from "lodash";
-
+import setSearchWidgetAttrDlg from "./setSearchWidgetAttrDlg.vue";
 export default {
   name: "SingleSetupTable",
   components: {
     BaseRenderTable,
-    BaseRenderForm,
-    IconPicker
+    IconPicker,
+    setSearchWidgetAttrDlg
   },
   props: {
     listPageIdProp: {
@@ -296,13 +238,9 @@ export default {
       tableOptions,
       selected: [],
       formDesignData: {},
-      dialogVisibleFrom: false,
       setupForm: {},
-      setupFormOptions: [],
       curRowData: {},
       tableData: [],
-      dicCodeList: [],
-      searchWidget,
       suggestSQL: "",
       wholeSQL: "",
       filterShowField: false,
@@ -372,7 +310,6 @@ export default {
 
   mounted() {
     this.rowDrop();
-    this.requestDicCodeListData();
   },
 
   methods: {
@@ -410,43 +347,6 @@ export default {
       this.filterShowField = !this.filterShowField;
     },
 
-    requestDicCodeListData() {
-      this.generalRequest("/dic/list", "get").then(res => {
-        this.dicCodeList = res.data.map(item => {
-          item.dicCode = `/dic/item/list?dicCode=${item.dicCode}`;
-          return item;
-        });
-      });
-    },
-
-    changeWidget(val) {
-      const target = searchWidget.find(widgetitem => widgetitem.id === val);
-      const searchWidgetName = target?.tagName;
-      const sqlType = target?.sqlType;
-      this.suggestSQL = "";
-      this.querySql(sqlType);
-      this.setupForm = this.getDefaultValueForm(searchWidgetName, this.curRowData.fieldName);
-      this.setupFormOptions = this.composeFormOptions(searchWidgetName, this.curRowData);
-    },
-
-    changeFormData(value, formData) {
-      console.log(formData, value);
-      // 防止用户赋值给没有声明的属性值，导致其变为非响应式数据
-      this.$set(formData.request, "url", `${value}`);
-    },
-    querySql(type = "input", isFuzzySearch) {
-      const params = {
-        listPageId: this.listPageId,
-        displayDataType: type,
-        fieldNameList: isFuzzySearch ? this.fuzzyFieldSearchConfig.searchFieldList : [this.curRowData.fieldCode]
-      };
-      this.generateQuerySql(params).then(res => {
-        this.$refs.ace.codeValue = this.wholeSQL = res.data.querySql;
-        this.$refs.ace.aceEditor.setValue(this.wholeSQL);
-        this.suggestSQL = res.data.querySqlFragment;
-      });
-    },
-
     handleContentTextAttr(row) {
       this.curRowData = row;
       this.editableTabsValue = "0";
@@ -475,23 +375,7 @@ export default {
     // 处理设置控件属性事件
     handleWidgetAttr(row) {
       this.curRowData = row;
-      this.dialogVisibleFrom = true;
-      const target = searchWidget.find(widgetitem => widgetitem.id === row.searchWidget);
-      const searchWidgetName = target?.tagName;
-      const sqlType = target?.sqlType || "input";
-      this.querySql(sqlType);
-      this.setupFormOptions = this.composeFormOptions(searchWidgetName, row);
-      const searchWidgetConfig = row.searchWidgetConfig;
-      const defaultForm = this.getDefaultValueForm(searchWidgetName, row.fieldName);
-      if (Object.keys(searchWidgetConfig).length) {
-        this.setupForm = merge(defaultForm, cloneDeep(searchWidgetConfig));
-        // 针对字典项的特殊处理
-        if (typeof this.setupForm.extraOption?.labelTranslateType === "number") {
-          this.setupForm.extraOption = JSON.stringify(this.setupForm.extraOption);
-        }
-      } else {
-        this.setupForm = defaultForm;
-      }
+      this.$refs.setSearchWidgetAttrDlg.openDlg(row);
     },
 
     getSortNumb() {
@@ -506,17 +390,6 @@ export default {
       return number + 2;
     },
 
-    getDefaultValueForm(searchWidgetName = "el-input", fieldName) {
-      const form = getSetupForm(searchWidgetName);
-      form.formItemAttrs.label = fieldName;
-      form.tagAttrs.placeholder = setPlaceholder(searchWidgetName, fieldName);
-      form.sortNumb = this.getSortNumb();
-      // 针对字典项的特殊处理
-      if (typeof form.extraOption?.labelTranslateType === "number") {
-        form.extraOption = JSON.stringify(form.extraOption);
-      }
-      return form;
-    },
     // 填充options的label
     supplementLabel(props, options) {
       const { key, label } = props;
@@ -526,39 +399,6 @@ export default {
         obj[label] = `${item[label]}(${item[key]})`;
         return obj;
       });
-    },
-
-    // 设置searchForm和装配fromOptions
-    composeFormOptions(searchWidgetName = "el-input", row) {
-      let formOptions = [];
-      // 只有搜索控件有值，才会添加到options中
-      if (searchWidgetName) {
-        formOptions = getSetupFormOptions(searchWidgetName);
-      }
-      // 如果是输入框，则考虑关联其他字段，在这里进行填充 el-select的options
-      // if (searchWidgetName === 'el-input') {
-      //   const target = formOptions.find(item => item.formField === 'relateOtherField')
-      //   const options = this.tableData.filter(item => item.fieldCode !== row.fieldCode && item.searchWidget === '' && item.show);
-      //   const props = { key: 'fieldCode', label: 'fieldName' }
-      //   target.extraOption = {
-      //     props,
-      //     // 去除自己和已存在筛选框的和未显示的
-      //     options: this.supplementLabel(props, options)
-      //   }
-      // }
-      // 由于查询sql接口需要区分单选多选，因此el-select el-cascader 和 dictionary 的多选按钮需要触发相应接口
-      if (["el-select", "el-cascader", "dictionary"].includes(searchWidgetName)) {
-        const target = formOptions.find(item => ["tagAttrs.multiple", "tagAttrs.props.multiple"].includes(item.formField));
-        target.listeners.change = val => this.querySql(val ? "jy-dict-list" : "jy-dict");
-      }
-      return [
-        {
-          elRowAttrs: {
-            gutter: 10
-          },
-          formItem: formOptions
-        }
-      ];
     },
 
     fuzzySearchFieldListChange() {
@@ -723,15 +563,7 @@ export default {
       this.suggestSQL = "";
     },
     // 设置查询控件表单确认事件
-    confirmFrom() {
-      this.saveSql(this.listPageId, this.wholeSQL);
-      if (this.setupForm.extraOption) {
-        this.setupForm.extraOption = str2obj(this.setupForm.extraOption);
-      }
-      // 将已确认的setupForm更新到tabledata的数据上
-      this.curRowData.searchWidgetConfig = this.setupForm;
-      this.curRowData.searchWidget = this.setupForm.searchWidgetType;
-      this.handleCloseFrom();
+    searchOptionsChange() {
       this.$emit("searchOptionsChange");
     },
 
@@ -740,6 +572,10 @@ export default {
       this.dialogVisibleFuzzyFrom = false;
       this.wholeSQL = "";
       this.suggestSQL = "";
+    },
+
+    handleSaveSql(listPageId, wholeSQL) {
+      this.saveSql(listPageId, wholeSQL);
     },
 
     confirmFuzzyFrom() {
@@ -825,7 +661,7 @@ export default {
 }
 
 .flex {
-
+  display: flex;
   .left {
     width: 500px;
     box-sizing: border-box;
