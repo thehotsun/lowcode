@@ -173,7 +173,7 @@ export default {
         if (fuzzyFieldSearchConfig && Object.keys(fuzzyFieldSearchConfig).length) {
           setTimeout(() => {
             this.$refs.singleSetupTable.expose_setFuzzyFieldSearchConfig(fuzzyFieldSearchConfig);
-          }, 100);
+          }, 400);
         }
         if (keyField) {
           this.keyField = keyField;

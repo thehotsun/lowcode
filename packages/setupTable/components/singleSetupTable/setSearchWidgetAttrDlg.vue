@@ -6,6 +6,7 @@
     :close-on-click-modal="false"
     :close-on-press-escape="false"
     width="1450px"
+    class="setSearchWidgetAttrDlg"
     :before-close="handleCloseFrom"
     append-to-body
   >
@@ -206,32 +207,34 @@ export default {
 </script>
 
 <style lang="less" scoped>
-.flex {
-  display: flex;
-  .left {
-    width: 500px;
-    box-sizing: border-box;
-    padding-right: 15px;
+.setSearchWidgetAttrDlg {
+  .flex {
+    display: flex;
+    .left {
+      width: 500px;
+      box-sizing: border-box;
+      padding-right: 15px;
 
-    .fieldList {
-      max-height: 280px;
-      overflow: auto;
+      .fieldList {
+        max-height: 280px;
+        overflow: auto;
+      }
+    }
+
+    .right {
+      width: 990px;
     }
   }
-
-  .right {
-    width: 990px;
+  .code {
+    float: right;
+    color: #999;
   }
-}
-.code {
-  float: right;
-  color: #999;
-}
 
-.colorRed {
-  color: #ef5b5b;
-}
-.color78 {
-  color: #787878;
+  .colorRed {
+    color: #ef5b5b;
+  }
+  .color78 {
+    color: #787878;
+  }
 }
 </style>

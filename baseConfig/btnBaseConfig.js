@@ -294,7 +294,8 @@ export function BtnConfigFormOptions() {
         },
         tagName: "el-select",
         tagAttrs: {
-          placeholder: "请选择表单"
+          placeholder: "请选择表单",
+          filterable: true
         },
         // 对应formData中的属性值
         formField: "extraOption.relateFrom",

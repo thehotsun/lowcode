@@ -75,7 +75,6 @@
     </div>
     <!-- </el-main> -->
 
-
     <el-dialog
       v-dialogDrag
       title="设置点击行为和展示内容"
@@ -179,6 +178,12 @@
       @searchOptionsChange="searchOptionsChange"
       @handleSaveSql="handleSaveSql"
     ></setSearchWidgetAttrDlg>
+    <setSearchFieldDlg
+      ref="setSearchFieldDlg"
+      :list-page-id="listPageId"
+      @handleSaveSql="handleSaveSql"
+      @updateOriginFuzzyFieldSearchConfig="updateOriginFuzzyFieldSearchConfig"
+    ></setSearchFieldDlg>
   </div>
 </template>
 
@@ -191,12 +196,14 @@ import IconPicker from "../setupBtnConfig/components/iconPicker";
 
 import { cloneDeep, merge } from "lodash";
 import setSearchWidgetAttrDlg from "./setSearchWidgetAttrDlg.vue";
+import setSearchFieldDlg from "./setSearchFieldDlg.vue";
 export default {
   name: "SingleSetupTable",
   components: {
     BaseRenderTable,
     IconPicker,
-    setSearchWidgetAttrDlg
+    setSearchWidgetAttrDlg,
+    setSearchFieldDlg
   },
   props: {
     listPageIdProp: {
@@ -243,12 +250,6 @@ export default {
       suggestSQL: "",
       wholeSQL: "",
       filterShowField: false,
-      fuzzyFieldSearchConfig: {
-        placeholder: "",
-        searchFieldList: []
-      },
-      originFuzzyFieldSearchConfig: {},
-      dialogVisibleFuzzyFrom: false,
       dialogVisibleContentTextAttr: false,
       editableTabsValue: "0",
       editableTabs: [
@@ -259,9 +260,9 @@ export default {
         }
       ],
       contentTextAttrForm: new ContentTextAttrForm(),
-      fuzzyFromRules: {
-        searchFieldList: [{ required: true, validator: this.validatePass, message: "请选择搜索字段列表", trigger: "change" }],
-        placeholder: [{ required: true, message: "请输入提示文本", trigger: "change" }]
+      originFuzzyFieldSearchConfig: {
+        placeholder: "",
+        searchFieldList: []
       }
     };
   },
@@ -280,10 +281,6 @@ export default {
   watch: {
     rawTableData(val) {
       this.tableData = val;
-      if (!this.fuzzyFieldSearchConfig.searchFieldList.length && val.length) {
-        this.fuzzyFieldSearchConfig.searchFieldList = [val[0].fieldCode];
-        this.setFuzzySearchPlaceholder();
-      }
     },
     editableTabsValue: {
       handler(val) {
@@ -317,12 +314,11 @@ export default {
     },
 
     expose_getFuzzyFieldSearchConfig() {
-      return this.fuzzyFieldSearchConfig;
+      return this.originFuzzyFieldSearchConfig;
     },
 
     expose_setFuzzyFieldSearchConfig(obj) {
       this.originFuzzyFieldSearchConfig = obj;
-      this.fuzzyFieldSearchConfig = cloneDeep(obj);
     },
 
     expose_getFormDesignData() {
@@ -333,13 +329,8 @@ export default {
       this.tableData = [];
     },
 
-    setFuzzySearchPlaceholder() {
-      const searchFieldList = this.fuzzyFieldSearchConfig.searchFieldList;
-      const fieldNameList = (searchFieldList.length > 2 ? searchFieldList.slice(0, 2) : searchFieldList).map(
-        fieldCode => this.tableData.find(item => item.fieldCode === fieldCode).fieldName
-      );
-      fieldNameList;
-      this.fuzzyFieldSearchConfig.placeholder = `输入${fieldNameList.join("、")}${searchFieldList.length > 2 ? "等" : ""}进行搜索`;
+    updateOriginFuzzyFieldSearchConfig(obj) {
+      this.originFuzzyFieldSearchConfig = obj;
     },
 
     handleShowField() {
@@ -400,28 +391,10 @@ export default {
       });
     },
 
-    fuzzySearchFieldListChange() {
-      this.queryMultiFieldSql("input", true);
-      this.setFuzzySearchPlaceholder();
-    },
     handleSummaryRow() {},
 
     handleFuzzySearch() {
-      this.dialogVisibleFuzzyFrom = true;
-      this.queryMultiFieldSql("input", true);
-    },
-
-    queryMultiFieldSql(type = "input") {
-      const params = {
-        listPageId: this.listPageId,
-        displayDataType: type,
-        fieldNameList: this.fuzzyFieldSearchConfig.searchFieldList
-      };
-      this.queryGenerateMultiFieldSql(params).then(res => {
-        this.$refs.ace.codeValue = this.wholeSQL = res.data.querySql;
-        this.$refs.ace.aceEditor.setValue(this.wholeSQL);
-        this.suggestSQL = res.data.querySqlFragment;
-      });
+      this.$refs.setSearchFieldDlg.openDlg(this.tableData, this.originFuzzyFieldSearchConfig);
     },
 
     rowDrop() {
@@ -566,36 +539,8 @@ export default {
       this.$emit("searchOptionsChange");
     },
 
-    handleCloseFuzzyFrom(resetConfig = true) {
-      if (resetConfig) this.fuzzyFieldSearchConfig = cloneDeep(this.originFuzzyFieldSearchConfig);
-      this.dialogVisibleFuzzyFrom = false;
-      this.wholeSQL = "";
-      this.suggestSQL = "";
-    },
-
     handleSaveSql(listPageId, wholeSQL) {
       this.saveSql(listPageId, wholeSQL);
-    },
-
-    confirmFuzzyFrom() {
-      this.$refs.fuzzyFrom.validate(valid => {
-        if (valid) {
-          this.saveSql(this.listPageId, this.wholeSQL);
-          this.handleCloseFuzzyFrom(false);
-          this.originFuzzyFieldSearchConfig = cloneDeep(this.fuzzyFieldSearchConfig);
-        } else {
-          console.log("error submit!!");
-          return false;
-        }
-      });
-    },
-
-    validatePass(rule, value, callback) {
-      if (value?.length) {
-        callback();
-      } else {
-        callback(new Error("请选择搜索字段列表"));
-      }
     },
 
     handleCloseContentTextAttr() {
