@@ -197,10 +197,9 @@ const originEditConf = [
   },
   {
     ...baseAttr,
-    label: "设置筛选数组",
+    label: "筛选数组",
     prop: "filters",
-    "min-width": "200",
-    tagAttrs: getInputAttrs('请输入[{ text, value }]格式"'),
+    "min-width": "120",
     slotName: "setupFilterArr"
   },
   {
@@ -257,8 +256,8 @@ const addTipsProps = {
   singleFormatter: "简单设置展示内容的样式和点击事件（优先级比列表渲染函数低）",
   renderHeader: "列标题Label区域渲染使用的Function",
   "show-overflow-tooltip": "当内容过长被隐藏时显示 tooltip",
-  "filter-method": "数据过滤使用的方法，如果是多选的筛选项，对每一条数据会执行多次，任意一次返回 true 就会显示",
-  filters: "数据过滤的选项，数组格式，数组中的元素需要有 text 和 value 属性。",
+  "filter-method": "表头过滤配置，需配合filters一起使用",
+  filters: "表头过滤配置，需配合filter-method一起使用",
   sort: "对应列是否可以排序",
   "sort-method": "对数据进行排序的时候使用的方法，仅当 sortable 设置为 true 的时候有效，需返回一个数字，和 Array.sort 表现一致",
   searchWidget: "设置列表上方的搜索区域",
@@ -302,6 +301,14 @@ export function ContentTextAttrForm() {
   };
 }
 
+export function FiltersConfig() {
+  return {
+    isFilter: false,
+    isSplit: false,
+    splitChar: ",",
+    customHandler: ""
+  };
+}
 export function getSingleTableData(params = {}) {
   return {
     fieldCode: "",
@@ -316,7 +323,9 @@ export function getSingleTableData(params = {}) {
     searchWidgetConfig: {},
     sort: true,
     "sort-method": "",
+    // filters 和 filtersConfig 配合使用
     filters: "",
+    filtersConfig: new FiltersConfig(),
     "filter-method": "",
     "show-overflow-tooltip": true,
     formatter: "",

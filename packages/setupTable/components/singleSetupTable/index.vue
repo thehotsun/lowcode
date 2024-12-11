@@ -51,10 +51,9 @@
           </el-button>
           <slot name="setupContentText" :row="row"></slot>
         </template>
-        // TODO
         <template #setupFilterArr="{ row }">
-          <el-button type="text" icon="el-icon-edit" :class="row.contentTextAttrArr && row.contentTextAttrArr.length ? 'colorRed' : ''" @click.stop.prevent="handleFilterAttr(row)">
-            {{ row.contentTextAttrArr && row.contentTextAttrArr.length ? "修改" : "设置" }}
+          <el-button type="text" icon="el-icon-edit" :class="checkIsConfig(row) ? 'colorRed' : ''" @click.stop.prevent="handleFilterAttr(row)">
+            {{ checkIsConfig(row) ? "修改" : "设置" }}
           </el-button>
           <slot name="setupContentText" :row="row"></slot>
         </template>
@@ -86,24 +85,28 @@
     ></setSearchFieldDlg>
 
     <setClickActionAndShowContentDlg ref="setClickActionAndShowContentDlg" :list-page-id="listPageId" :btn-config-arr="btnConfigArr"></setClickActionAndShowContentDlg>
+
+    <setFilterConfigDlg ref="setFilterConfigDlg" :list-page-id="listPageId" :btn-config-arr="btnConfigArr" @handleSave="handleSave"></setFilterConfigDlg>
   </div>
 </template>
 
 <script>
 import BaseRenderTable from "../../../../packages/BaseRenderTable/index";
 
-import { getSingleTableData, editConf as tableOptions } from "../../../../baseConfig/tableBaseConfig";
-
+import { getSingleTableData, editConf as tableOptions, FiltersConfig } from "../../../../baseConfig/tableBaseConfig";
+import { isEqual } from "lodash";
 import setSearchWidgetAttrDlg from "./setSearchWidgetAttrDlg.vue";
 import setSearchFieldDlg from "./setSearchFieldDlg.vue";
 import setClickActionAndShowContentDlg from "./setClickActionAndShowContentDlg.vue";
+import setFilterConfigDlg from "./setFilterConfigDlg.vue";
 export default {
   name: "SingleSetupTable",
   components: {
     BaseRenderTable,
     setSearchWidgetAttrDlg,
     setSearchFieldDlg,
-    setClickActionAndShowContentDlg
+    setClickActionAndShowContentDlg,
+    setFilterConfigDlg
   },
   props: {
     listPageIdProp: {
@@ -147,9 +150,11 @@ export default {
   },
   data() {
     return {
+      isEqual,
       tableOptions,
       selected: [],
       formDesignData: {},
+      rawFiltersConfig: new FiltersConfig(),
       curRowData: {},
       tableData: [],
       filterShowField: false,
@@ -173,7 +178,12 @@ export default {
 
   watch: {
     rawTableData(val) {
-      this.tableData = val;
+      this.tableData = val.map(item => {
+        return {
+          ...getSingleTableData(),
+          ...item
+        };
+      });
     },
     rawFuzzyFieldSearchConfig(val) {
       if (val) {
@@ -221,6 +231,10 @@ export default {
       this.tableData = [];
     },
 
+    checkIsConfig(row) {
+      return row.filters || !isEqual(row.filtersConfig, this.rawFiltersConfig);
+    },
+
     updateOriginFuzzyFieldSearchConfig(obj) {
       this.originFuzzyFieldSearchConfig = obj;
     },
@@ -230,7 +244,15 @@ export default {
       this.$refs.setClickActionAndShowContentDlg.openDlg(row);
     },
 
-    handleFilterAttr() {},
+    handleSave({ filters, filtersConfig }) {
+      this.curRowData.filters = filters;
+      this.curRowData.filtersConfig = filtersConfig;
+    },
+
+    handleFilterAttr(row) {
+      this.curRowData = row;
+      this.$refs.setFilterConfigDlg.openDlg(row);
+    },
 
     // 处理设置控件属性事件
     handleWidgetAttr(row) {

@@ -24,6 +24,8 @@ export const tableAttrsCodeExampleList = {
 
 export const tableOptionsCodeExampleList = {
          filters: "[{text: '2016-05-01(显示值)', value: '2016-05-01(传递给筛选函数的值)'}]",
+         filtersHandleFn:
+           "function getFilterArr (tableData) {\n  // 此函数接受tableData参数，并对tableData进行遍历，然后将处理后的数组当作本列表头的筛选数组\n  return tableData.map(item => {\n    // text是筛选列表中显示的值，value为筛选函数实际接收到的值，一般情况都赋值为 item.xxx就可以，下文中的UserID为当前行的字段名\n    return  {text:  item.UserID, value:  item.UserID}\n  })\n}",
          "sort-method":
            "function sortMethod(a, b) {\n  // a是需要排序的上一个值，b是需要排序的下一个值\n  // 需返回一个数字，和 Array.sort 表现一致\n  if (a < b) {\n    return -1\n  } else if (a > b) {\n    return 1\n  } else {\n    return 0\n  }\n}",
          "filter-method":

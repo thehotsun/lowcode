@@ -71,7 +71,9 @@ function InstanceData() {
     // 当不使用网络请求处理提交数据时，编辑的row
     editRow: {},
     // 一般用来传递当前row给表单
-    externalParamsFormRow: {}
+    externalParamsFormRow: {},
+    // tabledata更改后，需要触发的一系列操作
+    tableDataChangeQueue: []
   };
 }
 
@@ -425,6 +427,16 @@ export default {
       }
     };
   },
+
+  watch: {
+    finalTableData(val = []) {
+      try {
+        this.tableDataChangeQueue.map(fn => fn(val));
+      } catch (error) {
+        console.error("tableDataChangeQueue 执行失败！错误信息：", error);
+      }
+    }
+  },
   created() {
     this.initTableAttrs();
   },
@@ -592,12 +604,44 @@ export default {
       obj.sortable = !!item.sort;
       obj["show-overflow-tooltip"] = item["show-overflow-tooltip"];
       if (item.fixed) obj.fixed = item.fixed;
-      if (item.filters) obj.filters = str2obj(item.filters);
+      if (item.filters) {
+        obj.filters = str2obj(item.filters);
+      } else if (item.filtersConfig.customHandler) {
+        const getFiltersFn = str2Fn(item.filtersConfig.customHandler);
+        obj.filters = [];
+        this.tableDataChangeQueue.push(tableData => {
+          obj.filters = getFiltersFn(tableData);
+        });
+      } else if (item.filtersConfig.isFilter) {
+        obj.filters = [];
+        const getFiltersFn = tableData => {
+          const filters = [];
+          tableData.map(tableDataItem => {
+            if (item.filtersConfig.isSplit) {
+              const arr = (tableDataItem[obj.prop]?.split(item.filtersConfig.splitChar) || []).filter(v => v);
+              arr.map(arrVal => {
+                const filter = { text: arrVal, value: arrVal };
+                if (filter.value && !filters.some(filtersItem => filtersItem.value === filter.value)) {
+                  filters.push(filter);
+                }
+              });
+            } else {
+              const filter = { text: tableDataItem[obj.prop], value: tableDataItem[obj.prop] };
+              if (filter.value && !filters.some(filtersItem => filtersItem.value === filter.value)) {
+                filters.push(filter);
+              }
+            }
+          });
+          obj.filters = filters;
+        };
+        this.tableDataChangeQueue.push(getFiltersFn);
+      }
+
       if (item.contentTextAttrArr) obj.contentTextAttrArr = item.contentTextAttrArr;
 
       // 某些函数转换
       const fnProps = ["sort-method", "formatter", "renderHeader"];
-      if (obj.filters && obj.filters.length) {
+      if (obj.filters) {
         fnProps.push("filter-method");
       }
       fnProps.map(prop => {
