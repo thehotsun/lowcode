@@ -232,7 +232,7 @@ export default {
     },
 
     checkIsConfig(row) {
-      return row.filters || !isEqual(row.filtersConfig, this.rawFiltersConfig);
+      return row.filters || !isEqual({ ...new FiltersConfig(), ...row.filtersConfig }, this.rawFiltersConfig);
     },
 
     updateOriginFuzzyFieldSearchConfig(obj) {

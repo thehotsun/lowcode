@@ -306,7 +306,9 @@ export function FiltersConfig() {
     isFilter: false,
     isSplit: false,
     splitChar: ",",
-    customHandler: ""
+    customHandler: "",
+    limitShowWord: false,
+    maxlength: 30
   };
 }
 export function getSingleTableData(params = {}) {

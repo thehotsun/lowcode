@@ -30,24 +30,65 @@
 
       <el-tab-pane label="配置筛选数组" name="options" class="tab">
         <div></div>
-        <el-form ref="optionsForm" :model="curRowData.filtersConfig" label-width="70px">
+        <el-form ref="optionsForm" :model="curRowData.filtersConfig" label-width="130px">
           <el-form-item label="启用筛选">
-            <template #lable>
-              <el-tooltip class="item" effect="dark" content="启用筛选后，渲染时将自动获取当前列的所有值，统一展示在表头的下拉搜索列表中" placement="top-start">
-                <el-button type="text">启用筛选 <i style="width: 20px" class="el-icon-question"></i> </el-button>
-              </el-tooltip>
+            <template #label>
+              <div class="fz14">
+                启用筛选
+                <el-tooltip class="item" effect="dark" content="启用筛选后，渲染时将自动获取当前列的所有值，统一展示在表头的下拉搜索列表中" placement="top-start">
+                  <i style="width: 20px; color: #606266;" class="el-icon-question"></i>
+                </el-tooltip>
+              </div>
             </template>
             <el-switch v-model="curRowData.filtersConfig.isFilter"></el-switch>
           </el-form-item>
           <!-- <el-row>
             <el-col span="3"> -->
           <el-form-item label="内容分割">
+            <template #label>
+              <div class="fz14">
+                内容分割
+                <el-tooltip class="item" effect="dark" content="是否使用split方法将当前列的值进行分割，一般用于多人使用逗号拼接在一起的场景" placement="top-start">
+                  <i style="width: 20px; color: #606266;" class="el-icon-question"></i>
+                </el-tooltip>
+              </div>
+            </template>
             <el-switch v-model="curRowData.filtersConfig.isSplit"></el-switch>
           </el-form-item>
           <!-- </el-col>
             <el-col v-if="curRowData.filtersConfig.isSplit" span="4"> -->
           <el-form-item label="分割符号">
+            <template #label>
+              <div class="fz14">
+                分割符号
+                <el-tooltip class="item" effect="dark" content="split方法的参数，默认,。例如当前值为A,B。配置此选项后，将分别展示A和B" placement="top-start">
+                  <i style="width: 20px; color: #606266;" class="el-icon-question"></i>
+                </el-tooltip>
+              </div>
+            </template>
             <el-input v-model="curRowData.filtersConfig.splitChar" size="small" style="width: 200px" placeholder="请输入分割符号"></el-input>
+          </el-form-item>
+          <el-form-item label="限制显示长度">
+            <template #label>
+              <div class="fz14">
+                限制显示长度
+                <el-tooltip class="item" effect="dark" content="在表头下拉筛选列表中是否限制显示长度，一般用于当前列的内容字数特别多的场景" placement="top-start">
+                  <i style="width: 20px; color: #606266;" class="el-icon-question"></i>
+                </el-tooltip>
+              </div>
+            </template>
+            <el-switch v-model="curRowData.filtersConfig.limitShowWord"></el-switch>
+          </el-form-item>
+          <el-form-item label="分割符号">
+            <template #label>
+              <div class="fz14">
+                最大字数长度
+                <el-tooltip class="item" effect="dark" content="在表头下拉筛选列表中显示的最大字数长度" placement="top-start">
+                  <i style="width: 20px; color: #606266;" class="el-icon-question"></i>
+                </el-tooltip>
+              </div>
+            </template>
+            <el-input-number v-model="curRowData.filtersConfig.maxlength" size="small" style="width: 200px" placeholder="请输入分割符号"></el-input-number>
           </el-form-item>
           <!-- </el-col>
           </el-row> -->
@@ -137,7 +178,14 @@ export default {
     },
 
     openDlg({ filters, filtersConfig }) {
-      this.curRowData = cloneDeep({ filters, filtersConfig });
+      const defaultFilterConfig = new FiltersConfig();
+      this.curRowData = cloneDeep({
+        filters,
+        filtersConfig: {
+          ...defaultFilterConfig,
+          ...filtersConfig
+        }
+      });
       this.dialogVisibleFrom = true;
     },
 
@@ -188,6 +236,9 @@ export default {
   }
   .color78 {
     color: #787878;
+  }
+  .fx14 {
+    font-size: 14px;
   }
 }
 </style>
