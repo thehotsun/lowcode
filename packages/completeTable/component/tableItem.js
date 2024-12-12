@@ -621,14 +621,14 @@ export default {
             if (item.filtersConfig.isSplit) {
               const arr = (tableDataItem[obj.prop]?.split(item.filtersConfig.splitChar) || []).filter(v => v);
               arr.map(arrVal => {
-                const filter = { text: limitShowWord(arrVal, item.filtersConfig.maxlength), value: arrVal };
+                const filter = { text: item.filtersConfig.limitShowWord ? limitShowWord(arrVal, item.filtersConfig.maxlength) : arrVal, value: arrVal };
                 if (filter.value && !filters.some(filtersItem => filtersItem.value === filter.value)) {
                   filters.push(filter);
                 }
               });
             } else {
               const filter = {
-                text: limitShowWord(tableDataItem[obj.prop], item.filtersConfig.maxlength),
+                text: item.filtersConfig.limitShowWord ? limitShowWord(tableDataItem[obj.prop], item.filtersConfig.maxlength) : tableDataItem[obj.prop],
                 value: tableDataItem[obj.prop]
               };
               if (filter.value && !filters.some(filtersItem => filtersItem.value === filter.value)) {

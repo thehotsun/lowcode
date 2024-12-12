@@ -895,7 +895,7 @@ export function mergeAndClean(a, b) {
   return merged;
 }
 
-export function limitShowWord(text, maxlength, showEllipsis = true) {
+export function limitShowWord(text = '', maxlength, showEllipsis = true) {
   try {
     return `${text.slice(0, maxlength)}${showEllipsis && text.length > maxlength ? "..." : ""}`;
   } catch (error) {
