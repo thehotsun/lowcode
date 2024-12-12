@@ -308,7 +308,7 @@ export function FiltersConfig() {
     splitChar: ",",
     customHandler: "",
     limitShowWord: false,
-    maxlength: 30
+    maxlength: 10
   };
 }
 export function getSingleTableData(params = {}) {

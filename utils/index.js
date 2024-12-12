@@ -895,6 +895,15 @@ export function mergeAndClean(a, b) {
   return merged;
 }
 
+export function limitShowWord(text, maxlength, showEllipsis = true) {
+  try {
+    return `${text.slice(0, maxlength)}${showEllipsis && text.length > maxlength ? "..." : ""}`;
+  } catch (error) {
+    console.error("limitShowWord函数报错！报错信息：", error);
+    return text;
+  }
+}
+
 export default {
   setPlaceholder,
   completeFromItemOptions,
@@ -926,5 +935,6 @@ export default {
   mergeStyle,
   arrayToTree,
   findInTree,
-  mergeAndClean
+  mergeAndClean,
+  limitShowWord
 };

@@ -20,7 +20,8 @@ import {
   transformParamsValue,
   formatterWidthOrHeightStyle,
   setEmptyTableData,
-  arrayToTree
+  arrayToTree,
+  limitShowWord
 } from "../../../utils";
 import { cloneDeep, omit, merge, isEmpty, union } from "lodash";
 
@@ -620,13 +621,16 @@ export default {
             if (item.filtersConfig.isSplit) {
               const arr = (tableDataItem[obj.prop]?.split(item.filtersConfig.splitChar) || []).filter(v => v);
               arr.map(arrVal => {
-                const filter = { text: arrVal, value: arrVal };
+                const filter = { text: limitShowWord(arrVal, item.filtersConfig.maxlength), value: arrVal };
                 if (filter.value && !filters.some(filtersItem => filtersItem.value === filter.value)) {
                   filters.push(filter);
                 }
               });
             } else {
-              const filter = { text: tableDataItem[obj.prop], value: tableDataItem[obj.prop] };
+              const filter = {
+                text: limitShowWord(tableDataItem[obj.prop], item.filtersConfig.maxlength),
+                value: tableDataItem[obj.prop]
+              };
               if (filter.value && !filters.some(filtersItem => filtersItem.value === filter.value)) {
                 filters.push(filter);
               }

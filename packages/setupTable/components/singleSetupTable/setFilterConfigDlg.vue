@@ -108,8 +108,7 @@
 <script>
 import { tableOptionsCodeExampleList } from "/utils/codeExampleList";
 import codeExample from "../dialogs/components/codeExample.vue";
-import { str2obj } from "../../../../utils";
-import { cloneDeep, merge } from "lodash";
+import { cloneDeep } from "lodash";
 import { FiltersConfig } from "/baseConfig/tableBaseConfig";
 export default {
   components: {
