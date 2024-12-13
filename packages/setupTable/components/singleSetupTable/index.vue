@@ -188,6 +188,11 @@ export default {
     rawFuzzyFieldSearchConfig(val) {
       if (val) {
         this.originFuzzyFieldSearchConfig = val;
+      } else {
+        this.originFuzzyFieldSearchConfig = {
+          placeholder: "",
+          searchFieldList: []
+        };
       }
     }
   },
