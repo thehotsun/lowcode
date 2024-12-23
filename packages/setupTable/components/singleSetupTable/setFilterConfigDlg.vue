@@ -11,6 +11,79 @@
     append-to-body
   >
     <el-tabs v-model="activeName">
+      <el-tab-pane label="配置筛选数组" name="options" class="tab">
+        <div></div>
+        <el-form ref="optionsForm" :model="curRowData.filtersConfig" label-width="130px">
+          <el-form-item label="启用配置筛选">
+            <template #label>
+              <div class="fz14">
+                启用配置筛选
+                <el-tooltip class="item" effect="dark" content="启用筛选后，渲染时将自动获取当前列的所有值，统一展示在表头的下拉搜索列表中" placement="top-start">
+                  <i style="width: 20px; color: #606266;" class="el-icon-question"></i>
+                </el-tooltip>
+              </div>
+            </template>
+            <el-switch v-model="curRowData.filtersConfig.isFilter"></el-switch>
+          </el-form-item>
+          <el-row>
+            <el-col :span="6">
+              <el-form-item label="单元格内容分割">
+                <template #label>
+                  <div class="fz14">
+                    单元格内容分割
+                    <el-tooltip class="item" effect="dark" content="是否使用split方法将当前列的值进行分割。如原本展示内容为李xx,高xx, 当开启内容分割后会根据填入的分割符号进行切割。最后的表头筛选列就会有两个，李xx、高xx。" placement="top-start">
+                      <i style="width: 20px; color: #606266;" class="el-icon-question"></i>
+                    </el-tooltip>
+                  </div>
+                </template>
+                <el-switch v-model="curRowData.filtersConfig.isSplit"></el-switch>
+              </el-form-item>
+            </el-col>
+            <el-col :span="8">
+              <el-form-item label="分割符号">
+                <template #label>
+                  <div class="fz14">
+                    分割符号
+                    <el-tooltip class="item" effect="dark" content="split方法的参数，默认,。例如当前值为A,B。配置此选项且开启单元格内容分割后，将分别展示A和B" placement="top-start">
+                      <i style="width: 20px; color: #606266;" class="el-icon-question"></i>
+                    </el-tooltip>
+                  </div>
+                </template>
+                <el-input v-model="curRowData.filtersConfig.splitChar" size="small" style="width: 200px" placeholder="请输入分割符号"></el-input>
+              </el-form-item>
+            </el-col>
+          </el-row>
+          <el-row>
+            <el-col :span="6">
+              <el-form-item label="限制显示长度">
+                <template #label>
+                  <div class="fz14">
+                    限制显示长度
+                    <el-tooltip class="item" effect="dark" content="在表头下拉筛选列表中是否限制显示长度，一般用于当前列的内容字数特别多的场景" placement="top-start">
+                      <i style="width: 20px; color: #606266;" class="el-icon-question"></i>
+                    </el-tooltip>
+                  </div>
+                </template>
+                <el-switch v-model="curRowData.filtersConfig.limitShowWord"></el-switch>
+              </el-form-item>
+            </el-col>
+            <el-col :span="8">
+              <el-form-item label="分割符号">
+                <template #label>
+                  <div class="fz14">
+                    最大字数长度
+                    <el-tooltip class="item" effect="dark" content="在表头下拉筛选列表中显示的最大字数长度，超出显示省略号" placement="top-start">
+                      <i style="width: 20px; color: #606266;" class="el-icon-question"></i>
+                    </el-tooltip>
+                  </div>
+                </template>
+                <el-input-number v-model="curRowData.filtersConfig.maxlength" size="small" style="width: 200px" placeholder="请输入分割符号"></el-input-number>
+              </el-form-item>
+            </el-col>
+          </el-row>
+        </el-form>
+      </el-tab-pane>
+
       <el-tab-pane label="输入筛选数组" name="direct" class="tab">
         <js-code-editor ref="chEditor" mode="javascript" :readonly="false" :value="curRowData.filters" @input="handleEditorInput"></js-code-editor>
         <codeExample :val="filtersExample" @copy="handleCopy"></codeExample>
@@ -27,76 +100,12 @@
         ></js-code-editor>
         <codeExample :val="filtersHandleFnExample" @copy="handleCopy2"></codeExample>
       </el-tab-pane>
-
-      <el-tab-pane label="配置筛选数组" name="options" class="tab">
-        <div></div>
-        <el-form ref="optionsForm" :model="curRowData.filtersConfig" label-width="130px">
-          <el-form-item label="启用筛选">
-            <template #label>
-              <div class="fz14">
-                启用筛选
-                <el-tooltip class="item" effect="dark" content="启用筛选后，渲染时将自动获取当前列的所有值，统一展示在表头的下拉搜索列表中" placement="top-start">
-                  <i style="width: 20px; color: #606266;" class="el-icon-question"></i>
-                </el-tooltip>
-              </div>
-            </template>
-            <el-switch v-model="curRowData.filtersConfig.isFilter"></el-switch>
-          </el-form-item>
-          <!-- <el-row>
-            <el-col span="3"> -->
-          <el-form-item label="内容分割">
-            <template #label>
-              <div class="fz14">
-                内容分割
-                <el-tooltip class="item" effect="dark" content="是否使用split方法将当前列的值进行分割，一般用于多人使用逗号拼接在一起的场景" placement="top-start">
-                  <i style="width: 20px; color: #606266;" class="el-icon-question"></i>
-                </el-tooltip>
-              </div>
-            </template>
-            <el-switch v-model="curRowData.filtersConfig.isSplit"></el-switch>
-          </el-form-item>
-          <!-- </el-col>
-            <el-col v-if="curRowData.filtersConfig.isSplit" span="4"> -->
-          <el-form-item label="分割符号">
-            <template #label>
-              <div class="fz14">
-                分割符号
-                <el-tooltip class="item" effect="dark" content="split方法的参数，默认,。例如当前值为A,B。配置此选项后，将分别展示A和B" placement="top-start">
-                  <i style="width: 20px; color: #606266;" class="el-icon-question"></i>
-                </el-tooltip>
-              </div>
-            </template>
-            <el-input v-model="curRowData.filtersConfig.splitChar" size="small" style="width: 200px" placeholder="请输入分割符号"></el-input>
-          </el-form-item>
-          <el-form-item label="限制显示长度">
-            <template #label>
-              <div class="fz14">
-                限制显示长度
-                <el-tooltip class="item" effect="dark" content="在表头下拉筛选列表中是否限制显示长度，一般用于当前列的内容字数特别多的场景" placement="top-start">
-                  <i style="width: 20px; color: #606266;" class="el-icon-question"></i>
-                </el-tooltip>
-              </div>
-            </template>
-            <el-switch v-model="curRowData.filtersConfig.limitShowWord"></el-switch>
-          </el-form-item>
-          <el-form-item label="分割符号">
-            <template #label>
-              <div class="fz14">
-                最大字数长度
-                <el-tooltip class="item" effect="dark" content="在表头下拉筛选列表中显示的最大字数长度" placement="top-start">
-                  <i style="width: 20px; color: #606266;" class="el-icon-question"></i>
-                </el-tooltip>
-              </div>
-            </template>
-            <el-input-number v-model="curRowData.filtersConfig.maxlength" size="small" style="width: 200px" placeholder="请输入分割符号"></el-input-number>
-          </el-form-item>
-          <!-- </el-col>
-          </el-row> -->
-        </el-form>
-      </el-tab-pane>
     </el-tabs>
     <div>
-      提示：输入筛选数组优先级大于自定义处理函数优先级大于配置筛选数组优先级
+      提示：<br />
+      1.如果使用配置筛选数组，必须打开启用配置筛选开关 <br />
+      2.输入筛选数组和自定义处理函数两个选项，只要有值就会被应用，无需打开任何开关<br />
+      3.输入筛选数组优先级大于自定义处理函数优先级大于配置筛选数组优先级
     </div>
     <span slot="footer" class="dialog-footer">
       <el-button @click="handleCloseFrom">取消</el-button>
@@ -133,7 +142,7 @@ export default {
   },
   data() {
     return {
-      activeName: "direct",
+      activeName: "options",
       filtersExample: tableOptionsCodeExampleList.filters,
       filtersHandleFnExample: tableOptionsCodeExampleList.filtersHandleFn,
       dialogVisibleFrom: false,

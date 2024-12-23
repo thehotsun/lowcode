@@ -129,7 +129,7 @@ export default {
       form.tagAttrs.placeholder = setPlaceholder(searchWidgetName, fieldName);
       form.sortNumb = this.$parent.getSortNumb();
       // 针对字典项的特殊处理
-      if (typeof form.extraOption?.labelTranslateType === "number") {
+      if (form.extraOption) {
         form.extraOption = JSON.stringify(form.extraOption);
       }
       return form;
@@ -156,8 +156,10 @@ export default {
       if (Object.keys(searchWidgetConfig).length) {
         this.setupForm = merge(defaultForm, cloneDeep(searchWidgetConfig));
         // 针对字典项的特殊处理
-        if (typeof this.setupForm.extraOption?.labelTranslateType === "number") {
+        if (this.setupForm.extraOption) {
           this.setupForm.extraOption = JSON.stringify(this.setupForm.extraOption);
+        } else {
+          this.setupForm.extraOption = "";
         }
       } else {
         this.setupForm = defaultForm;
