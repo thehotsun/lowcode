@@ -4,8 +4,7 @@ import BaseRenderRegular from "../../BaseRenderRegular/index";
 import panel from "./panel.vue";
 import { align, searchWidget } from "../../../baseConfig/tableSelectConfigs";
 import { requestTypeList } from "../../../baseConfig/btnBaseConfig";
-
-import { getTableAttrs } from "../../../baseConfig/tableBaseConfig";
+import { getTableAttrs, getSingleTableData } from "../../../baseConfig/tableBaseConfig";
 
 import {
   getWidgetOptions,
@@ -592,6 +591,13 @@ export default {
     },
 
     setSingleTableOptions(item, emptyData) {
+      // 处理前合并一下最新的配置
+      const rawRowData = getSingleTableData();
+      item = {
+        ...rawRowData,
+        ...item
+      };
+      console.log(item);
       const obj = {};
       obj.prop = item.fieldCode;
       emptyData && setEmptyTableData(emptyData, item.fieldCode);
@@ -607,13 +613,13 @@ export default {
       if (item.fixed) obj.fixed = item.fixed;
       if (item.filters) {
         obj.filters = str2obj(item.filters);
-      } else if (item.filtersConfig.customHandler) {
+      } else if (item?.filtersConfig?.customHandler) {
         const getFiltersFn = str2Fn(item.filtersConfig.customHandler);
         obj.filters = [];
         this.tableDataChangeQueue.push(tableData => {
           obj.filters = getFiltersFn(tableData);
         });
-      } else if (item.filtersConfig.isFilter) {
+      } else if (item?.filtersConfig?.isFilter) {
         obj.filters = [];
         const getFiltersFn = tableData => {
           const filters = [];
