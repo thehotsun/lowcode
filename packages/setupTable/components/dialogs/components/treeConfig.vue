@@ -25,13 +25,14 @@
     <el-form-item v-show="!form.isDataModel" :label="requestUrlLabel">
       <el-input v-model="form[requestUrlField]" clearable placeholder="请输入接口地址"></el-input>
       <el-button type="text" @click="handleRequestParamsConfigEdit"> 编辑请求 </el-button>
+      <el-button type="text" @click="handleRequestTest"> 测试 </el-button>
     </el-form-item>
     <el-form-item v-show="!form.isDataModel" :label="requestTypeLabel">
       <el-select v-model="form[requestTypeField]" placeholder="请选择">
         <el-option v-for="item in requestTypeList" :key="item.id" :label="item.cnName" :value="item.id"> </el-option>
       </el-select>
     </el-form-item>
-    <interfaceConfig ref="interfaceDlg" :params-config="paramsConfig" @confirm="handleConfirm"></interfaceConfig>
+    <interfaceConfig ref="interfaceDlg" :params-config="paramsConfig" :interface-config="interfaceConfig" @confirm="handleConfirm"></interfaceConfig>
   </el-form>
 </template>
 
@@ -90,6 +91,16 @@ export default {
       sql: ""
     };
   },
+  computed: {
+    interfaceConfig() {
+      const apiUrl = this.form[this.requestUrlField];
+      const apiMethod = this.form[this.requestTypeField];
+      return {
+        apiUrl,
+        apiMethod
+      };
+    }
+  },
   watch: {
     form: {
       immediate: true,
@@ -111,12 +122,18 @@ export default {
     }
   },
   methods: {
-    handleRequestParamsConfigEdit() {
+    handleRequestParamsConfigEdit(dlgParams) {
       this.paramsConfig = {
         ...this.paramsConfig,
         ...cloneDeep(this.form.requestParamsConfig)
       };
-      this.$refs.interfaceDlg.showDlg();
+      this.$refs.interfaceDlg.showDlg(dlgParams);
+    },
+    handleRequestTest() {
+      this.handleRequestParamsConfigEdit({
+        hiddenFooter: true,
+        showTestRequest: true
+      });
     },
     handleSqlConfigEdit() {
       this.$refs.sqlConfig.showDlg();

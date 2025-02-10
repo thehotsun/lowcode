@@ -22,6 +22,7 @@ import {
   arrayToTree,
   limitShowWord
 } from "../../../utils";
+import { convertDynaticData, disposeParams } from "../../../utils/interfaceParams";
 import { cloneDeep, omit, merge, isEmpty, union } from "lodash";
 
 function InstanceData() {
@@ -1515,24 +1516,11 @@ export default {
           btnDisposeParamsRule: { paramType, paramName, deliverySelectListFields = [] }
         }
       } = this;
+      let { finalUrl, finalType, finalData, requestHeaders: headers } = disposeParams(requestUrl, requestType, requestFixedParams);
+      const baseParams = this.getParams() || {};
+      finalData = convertDynaticData(finalData, baseParams, this);
+      console.log(finalData, "finalData");
 
-      // 这里提交的是用户自己设置的固定参数
-      const { params = [], data = [], headers = [] } = requestFixedParams;
-      // 这里提交的是列表选中的数据
-      let finalUrl = requestUrl;
-      if (params?.length) {
-        const finalParams = {};
-        params.map(item => {
-          finalParams[item.name] = transformParamsValue(item.value);
-        });
-        finalUrl = addQueryString(finalParams, requestUrl);
-      }
-      let finalData = {};
-      if (data?.length) {
-        data.map(item => {
-          finalData[item.name] = transformParamsValue(item.value);
-        });
-      }
       if (deliverySelectList) {
         let selectListId;
         if (row) {
@@ -1566,7 +1554,6 @@ export default {
           }
         }
       }
-      const finalType = requestTypeList.find(item => item.id === requestType)?.cnName || "";
       return {
         finalUrl,
         finalData,
@@ -1579,12 +1566,8 @@ export default {
       if (requestBeforeConfirmHint) {
         await this.$confirm(`${requestBeforeConfirmText}`);
       }
-      const { finalUrl, finalType, finalData, headers } = this.getRequestConfig(rowData);
-      const requestHeaders = {};
-      headers.map(item => {
-        const headerFieldNameRegex = /^[\w-]+$/;
-        if (headerFieldNameRegex.test(item.name)) requestHeaders[item.name] = item.value;
-      });
+      const { finalUrl, finalType, finalData, headers: requestHeaders } = this.getRequestConfig(rowData);
+
       await this.generalRequest(finalUrl, finalType, finalData, requestHeaders);
       this.btnConfigs.isRefresh && this.queryTableData();
     },

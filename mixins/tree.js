@@ -1,5 +1,6 @@
 import { requestTypeList } from "/baseConfig/btnBaseConfig";
 import { addQueryString, transformParamsValue, arrayToTree } from "/utils";
+import { disposeParams, convertDynaticData } from "/utils/interfaceParams";
 export default {
   props: {
     listPageIdProp: String
@@ -108,13 +109,15 @@ export default {
       };
     },
     async disposeRequestEvent(params) {
-      const { finalUrl, finalType, finalData, headers } = this.getRequestConfig(params);
+      const {
+        treeOptions: { requestParamsConfig, requestUrl, requestType }
+      } = this;
+
+      let { finalUrl, finalType, finalData, requestHeaders } = disposeParams(requestUrl, requestType, requestParamsConfig, params);
+      const baseParams = this.getParams() || {};
+      finalData = convertDynaticData(finalData, baseParams, this);
+      console.log(finalData, "finalData");
       if (!finalUrl) return { message: "接口没有设置url" };
-      const requestHeaders = {};
-      headers.map(item => {
-        const headerFieldNameRegex = /^[\w-]+$/;
-        if (headerFieldNameRegex.test(item.name)) requestHeaders[item.name] = item.value;
-      });
       return await this.generalRequest(finalUrl, finalType, finalData, requestHeaders);
     },
     queryTreeData(data = {}, isReturn) {

@@ -13,6 +13,7 @@
         <div>
           <el-input v-model="formData.extraOption.requestUrl" style="width: 180px" placeholder="请输入接口地址"></el-input>
           <el-button type="text" @click="handleRequestParamsConfigEdit"> 编辑请求 </el-button>
+          <el-button type="text" @click="handleRequestTest"> 测试 </el-button>
         </div>
       </template>
 
@@ -41,7 +42,7 @@
       </template>
     </base-render-form>
 
-    <interfaceDlg ref="interfaceDlg" :params-config="paramsConfig" @confirm="handleConfirm"></interfaceDlg>
+    <interfaceDlg ref="interfaceDlg" :params-config="paramsConfig" :interface-config="interfaceConfig" @confirm="handleConfirm"></interfaceDlg>
 
     <fieldRenameDlg ref="fieldRenameDlg" @confirm="handleFieldRenameConfirm"></fieldRenameDlg>
   </div>
@@ -89,6 +90,16 @@ export default {
       }
       // nameRules: { required: true, trigger: ['blur', 'change'], message: '请输入名称' },
     };
+  },
+  computed: {
+    interfaceConfig() {
+      const apiUrl = this.btnConfigFrom.extraOption.requestUrl;
+      const apiMethod = this.btnConfigFrom.extraOption.requestType;
+      return {
+        apiUrl,
+        apiMethod
+      };
+    }
   },
 
   created() {
@@ -196,12 +207,19 @@ export default {
       return target.extraOption;
     },
 
-    handleRequestParamsConfigEdit() {
+    handleRequestParamsConfigEdit(dlgParams) {
       this.paramsConfig = {
         ...this.paramsConfig,
         ...cloneDeep(this.btnConfigFrom.extraOption.requestParamsConfig)
       };
-      this.$refs.interfaceDlg.showDlg();
+      this.$refs.interfaceDlg.showDlg(dlgParams);
+    },
+
+    handleRequestTest() {
+      this.handleRequestParamsConfigEdit({
+        hiddenFooter: true,
+        showTestRequest: true
+      });
     },
 
     handleConfirm(paramsConfig) {
