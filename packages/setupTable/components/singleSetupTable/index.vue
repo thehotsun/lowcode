@@ -1,5 +1,5 @@
 <template>
-  <div class="wrap" style="height: 100%; backg">
+  <div class="wrap" style="height: 100%;">
     <div class="operate">
       <el-button size="small" type="default" @click="handleAdd(1)">新增操作列</el-button>
       <el-button size="small" type="default" :disabled="!selected.length" @click="handleAddParent">新增父级</el-button>
@@ -482,7 +482,7 @@ export default {
 
 .operate {
   margin-left: 20px;
-  padding-top: 20px;
+  padding-top: 0px !important;
   display: flex;
   // justify-content: center;
   align-items: center;
@@ -498,7 +498,7 @@ export default {
 
 .renderwrap {
   height: calc(100% - 20px);
-  padding: 20px;
+  padding: 10px 20px 0 20px;
 }
 
 .marginLeft10 {

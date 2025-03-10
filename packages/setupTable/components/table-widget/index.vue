@@ -572,6 +572,12 @@ export default {
             config.extraOption.openType = -1;
             config.authorize = "E";
             break;
+          case "formDownload":
+            config.tagAttrs.value = "表单打印";
+            config.extraOption.btnType = "formDownload";
+            config.extraOption.openType = -1;
+            config.authorize = "E";
+            break;
           case "import":
             config.tagAttrs.value = "导入";
             config.extraOption.btnType = "import";
@@ -627,7 +633,7 @@ export default {
 
 <style lang="less" scoped>
 .content {
-  height: calc(100% - 60px);
+  height: calc(100% - 30px);
   width: 100%;
   display: flex;
   flex-direction: column;
@@ -664,7 +670,7 @@ export default {
 .btnDesign {
   // margin: -6px 56px 10px 56px;
   background: #fff;
-  min-height: 65px;
+  min-height: 43px;
   display: flex;
   flex-wrap: wrap;
   align-items: center;

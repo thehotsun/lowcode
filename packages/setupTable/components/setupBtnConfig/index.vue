@@ -40,6 +40,9 @@
       <template #iconName="{ formData }">
         <icon-picker v-model="formData.extraOption.iconName"></icon-picker>
       </template>
+      <template #formDownloadSlot="{ formData }">
+        <div>ssss</div>
+      </template>
     </base-render-form>
 
     <interfaceDlg ref="interfaceDlg" :params-config="paramsConfig" :interface-config="interfaceConfig" @confirm="handleConfirm"></interfaceDlg>

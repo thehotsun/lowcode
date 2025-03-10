@@ -61,6 +61,11 @@ export const btnTypeArr = [
     isStatic: true
   },
   {
+    name: "formDownload",
+    displayName: "表单打印",
+    isStatic: true
+  },
+  {
     name: "import",
     displayName: "导入",
     isStatic: true
@@ -151,7 +156,7 @@ export const leftOrRight = [
 
 const staticBtn = btnTypeArr.filter(btn => btn.isStatic).map(btn => btn.name);
 
-const downBtn = ["download", "flowDocDownload"];
+const downBtn = ["download", "flowDocDownload", "formDownload"];
 
 const customBtn = "custom";
 
@@ -914,6 +919,18 @@ export function BtnConfigFormOptions() {
     //     },
     //   },
     // },
+    {
+      elRowAttrs: {
+        gutter: 10
+      },
+      formItem: {
+        formItemAttrs: {
+          label: "",
+          "label-width": "0px"
+        },
+        slotName: "formDownloadSlot"
+      }
+    },
     {
       elRowAttrs: {
         gutter: 10

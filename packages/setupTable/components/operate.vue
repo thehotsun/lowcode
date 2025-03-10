@@ -50,6 +50,6 @@ export default {
   padding: 0 30px;
   align-items: center;
   background: #fff;
-  height: 60px;
+  height: 30px;
 }
 </style>
