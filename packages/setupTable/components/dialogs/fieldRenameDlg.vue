@@ -1,5 +1,5 @@
 <template>
-  <el-dialog :visible.sync="visible" title="提交字段设置" :close-on-click-modal="false" :close-on-press-escape="false" width="40%" append-to-body class="fieldRenameDlg">
+  <el-dialog v-draggable :visible.sync="visible" title="提交字段设置" :close-on-click-modal="false" :close-on-press-escape="false" width="40%" append-to-body class="fieldRenameDlg">
     <el-table ref="tableRef" :data="fieldConversions" height="600px" size="small" border highlight-current-row @selection-change="handleSelectionChange">
       <el-table-column type="selection" :selectable="selectable" width="55" align="center"> </el-table-column>
       <el-table-column prop="fieldName" label="显示名称" width="180" sortable></el-table-column>

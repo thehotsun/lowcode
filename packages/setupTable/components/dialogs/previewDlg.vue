@@ -1,5 +1,5 @@
 <template>
-  <el-dialog title="预览" :visible.sync="dialogVisiblePreview" :close-on-click-modal="false" :close-on-press-escape="false" width="90%" :before-close="handleClosePreview">
+  <el-dialog v-draggable title="预览" :visible.sync="dialogVisiblePreview" :close-on-click-modal="false" :close-on-press-escape="false" width="90%" :before-close="handleClosePreview">
     <complete-table ref="table" class="preview" style="height:650px" :general-request="generalRequest"> </complete-table>
   </el-dialog>
 </template>

@@ -38,10 +38,21 @@
         </el-row>
       </template>
       <template #iconName="{ formData }">
-        <icon-picker v-model="formData.extraOption.iconName"></icon-picker>
-      </template>
+        <icon-picker v-model="formData.extraOption.iconName"></icon-picker> </template
+      >// ... 其他代码保持不变 ...
+
       <template #formDownloadSlot="{ formData }">
-        <div>ssss</div>
+        <div class="file-actions">
+          <el-button type="text" @click="handleUpload(formData)">
+            {{ formData.fileId ? "重新上传" : "上传" }}
+          </el-button>
+          <el-button v-if="formData.fileId" type="text" @click="handleDownload(formData.fileId)" style="color: #67C23A;margin-left:10px">
+            下载
+          </el-button>
+          <el-button v-if="formData.fileId" type="text" @click="handleDelete(formData.fileId)" style="color: #F56C6C;margin-left:10px">
+            删除
+          </el-button>
+        </div>
       </template>
     </base-render-form>
 
@@ -313,6 +324,20 @@ export default {
         str = str.slice(0, maxlength) + "...";
       }
       return str;
+    },
+    handleUpload(formData) {
+      // 文件上传逻辑
+      console.log("触发上传", formData);
+    },
+
+    handleDownload(fileId) {
+      // 文件下载逻辑
+      console.log("下载文件", fileId);
+    },
+
+    handleDelete(fileId) {
+      // 文件删除逻辑
+      console.log("删除文件", fileId);
     }
 
     // handleAuthorizeChange (authorize) {

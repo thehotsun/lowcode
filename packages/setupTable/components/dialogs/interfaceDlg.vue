@@ -1,5 +1,5 @@
 <template>
-  <el-dialog title="请求接口设置" :visible.sync="showParamsConfig" :close-on-click-modal="false" :close-on-press-escape="false" width="40%" append-to-body @close="handleClose">
+  <el-dialog v-draggable title="请求接口设置" :visible.sync="showParamsConfig" :close-on-click-modal="false" :close-on-press-escape="false" width="40%" append-to-body @close="handleClose">
     <template>
       <el-form ref="dsForm" :model="paramsConfig" label-width="0px" label-position="left" class="ds-form">
         <div class="config">

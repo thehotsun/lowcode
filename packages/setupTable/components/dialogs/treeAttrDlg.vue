@@ -1,5 +1,6 @@
 <template>
   <el-dialog
+    v-draggable
     title="树属性设置"
     :visible.sync="dialogVisibleTreeAttrs"
     :close-on-click-modal="false"
@@ -209,7 +210,7 @@
       <el-button @click="handleCloseTreeAttrs">取消</el-button>
       <el-button type="primary" @click="handleConfirm">确定</el-button>
     </span>
-    <el-dialog :before-close="handleClose" :title="codeEditorTil" :visible="showCodeEditor" width="900px" :append-to-body="true">
+    <el-dialog v-draggable :before-close="handleClose" :title="codeEditorTil" :visible="showCodeEditor" width="900px" :append-to-body="true">
       <js-code-editor ref="chEditor" mode="javascript" :readonly="false" :value="treeAttrs[curFn]" @input="handleEditorInput"></js-code-editor>
       <codeExample :val="treeAttrsCodeExampleList[curFn]" @copy="handleCopy"></codeExample>
     </el-dialog>

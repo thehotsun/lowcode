@@ -610,6 +610,7 @@ export default {
         {useDialog ? (
           <el-dialog
             ref={dialogRef}
+            v-draggable
             {...{
               attrs: { ...defaultDialogAttrs, ...dialogOptions }
             }}

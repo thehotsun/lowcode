@@ -1,5 +1,6 @@
 <template>
   <el-dialog
+    v-draggable
     title="tabs属性设置"
     :visible.sync="dialogVisibleTabsAttrs"
     :close-on-click-modal="false"

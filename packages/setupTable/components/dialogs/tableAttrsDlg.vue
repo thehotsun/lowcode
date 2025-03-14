@@ -1,5 +1,6 @@
 <template>
   <el-dialog
+    v-draggable
     title="表格属性设置"
     :visible.sync="dialogVisibleTableAttrs"
     :close-on-click-modal="false"
@@ -160,7 +161,7 @@
               placeholder="请输入列表样式（包括列表、搜索区域和按钮区域）"></el-input>
           </el-form-item> -->
       </el-form>
-      <el-dialog :before-close="handleClose" :title="codeEditorTil" :visible="showCodeEditor" width="900px" :append-to-body="true">
+      <el-dialog v-draggable :before-close="handleClose" :title="codeEditorTil" :visible="showCodeEditor" width="900px" :append-to-body="true">
         <js-code-editor ref="chEditor" mode="javascript" :readonly="false" :value="tableAttrs[curFn]" @input="handleEditorInput"></js-code-editor>
         <codeExample v-if="tableAttrsCodeExampleList[curFn]" :val="tableAttrsCodeExampleList[curFn]" @copy="handleCopy"> </codeExample>
       </el-dialog>
