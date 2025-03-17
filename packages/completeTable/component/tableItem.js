@@ -692,6 +692,12 @@ export default {
           label: "序号",
           align: "center"
         };
+
+        const existFixedLeft = this.tableOptions.some(item => item?.fixed === "left");
+        // 如果已有固定在左边的列，则序号列自动固定在左边
+        if (existFixedLeft) {
+          obj.fixed = "left";
+        }
         if (this.tableAttrs.index) {
           obj.index = this.tableAttrs.index;
         }
