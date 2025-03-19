@@ -60,11 +60,11 @@ export const btnTypeArr = [
     displayName: "流程文档导出",
     isStatic: true
   },
-  {
-    name: "formDownload",
-    displayName: "表单打印",
-    isStatic: true
-  },
+  // {
+  //   name: "formDownload",
+  //   displayName: "表单打印",
+  //   isStatic: true
+  // },
   {
     name: "import",
     displayName: "导入",
@@ -928,7 +928,10 @@ export function BtnConfigFormOptions() {
           label: "",
           "label-width": "0px"
         },
-        slotName: "formDownloadSlot"
+        slotName: "formDownloadSlot",
+        renderDependFn: function(formData) {
+          return ["formDownload"].includes(formData.extraOption.btnType);
+        }
       }
     },
     {

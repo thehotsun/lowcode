@@ -20,7 +20,8 @@ import {
   formatterWidthOrHeightStyle,
   setEmptyTableData,
   arrayToTree,
-  limitShowWord
+  limitShowWord,
+  appendParamsToUrl
 } from "../../../utils";
 import { convertDynaticData, disposeParams } from "../../../utils/interfaceParams";
 import { cloneDeep, omit, merge, isEmpty, union } from "lodash";
@@ -1197,9 +1198,13 @@ export default {
             }
           } else if (openType === 3) {
             // openType为3是新窗口打开;
-            // TODO这里没处理传参
             var reg = /http(s)?:\/\/([\w-]+\.)+[\w-]+(\/[\w- .\/?%&=]*)?/;
-            window.open(reg.test(openUrl) ? openUrl : `${window.location.origin}${openUrl.at(0) === "/" ? "" : "/"}${openUrl}`, "_blank");
+            const externalParams = this.formatSelectListParams({ deliverySelectList, deliverySelectListFields }, null, "useJoin");
+            // 构造目标URL（保持原有逻辑）
+            let targetUrl = reg.test(openUrl) ? openUrl : `${window.location.origin}${openUrl.startsWith("/") ? "" : "/"}${openUrl}`;
+            // 附加参数到所有场景的URL
+            targetUrl = appendParamsToUrl(targetUrl, externalParams);
+            window.open(targetUrl, "_blank");
           } else if (openType === 4) {
             // openType为4是打开本地关联代码
             if (

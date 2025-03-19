@@ -37,20 +37,30 @@
           </span>
         </el-row>
       </template>
-      <template #iconName="{ formData }">
-        <icon-picker v-model="formData.extraOption.iconName"></icon-picker> </template
-      >// ... 其他代码保持不变 ...
+      <template #iconName="{ formData }"> <icon-picker v-model="formData.extraOption.iconName"></icon-picker> </template>
 
       <template #formDownloadSlot="{ formData }">
         <div class="file-actions">
-          <el-button type="text" @click="handleUpload(formData)">
-            {{ formData.fileId ? "重新上传" : "上传" }}
+          <!-- 自定义触发按钮 -->
+          <el-button type="primary" size="small" plain icon="el-icon-upload2" @click="uploadFile">
+            {{ formData.extraOption.printFileId ? "重新上传" : "上传" }}
           </el-button>
-          <el-button v-if="formData.fileId" type="text" @click="handleDownload(formData.fileId)" style="color: #67C23A;margin-left:10px">
+          <!-- 上传格式提示组件 -->
+          <el-tooltip placement="top" content="本地上传只能上传docx或doc格式的模板">
+            <i class="el-icon-question" style="margin-left: 2px; margin-right: 5px"></i>
+          </el-tooltip>
+          <!-- 条件渲染的下载按钮 -->
+          <el-button v-if="formData.extraOption.printFileId" type="" size="mini" @click="handleDesignDown">
             下载
           </el-button>
-          <el-button v-if="formData.fileId" type="text" @click="handleDelete(formData.fileId)" style="color: #F56C6C;margin-left:10px">
+
+          <!-- 带条件渲染的删除按钮 -->
+          <el-button v-if="formData.extraOption.printFileId" type="danger" size="mini" @click="handleDesignDel">
             删除
+          </el-button>
+
+          <el-button v-if="formData.extraOption.printFileId" type="text" @click="handlePreview">
+            预览
           </el-button>
         </div>
       </template>
@@ -79,6 +89,26 @@ export default {
     fieldRenameDlg,
     BaseRenderForm,
     IconPicker
+  },
+  inject: {
+    uploader: {
+      default: () => {}
+    },
+    queryEnterpriseIdhiddenFolder: {
+      default: () => () => {}
+    },
+    enterpriseId: {
+      default: () => {}
+    },
+    downloadUrltoken: {
+      default: () => () => {}
+    },
+    downloadFile: {
+      default: () => () => {}
+    },
+    filePreviewV1: {
+      default: () => () => {}
+    }
   },
   props: {
     useDialog: Boolean,
@@ -171,6 +201,29 @@ export default {
     expose_setBtnConfigFrom(obj) {
       this.originConfigForm = obj;
       const btnDefaultConfigFrom = new BtnConfigFrom();
+      // 获取所有现有ID的集合（性能优化）
+      const existingIds = new Set(this.btnConfigFromArr.map(item => item.btnId));
+      console.log("existingIds", existingIds, existingIds.has(btnDefaultConfigFrom.btnId));
+      // 安全计数器防止无限循环
+      let attempts = 0;
+      const maxAttempts = 200;
+      do {
+        // 首次循环检查初始ID是否可用
+        if (attempts === 0 && !existingIds.has(btnDefaultConfigFrom.btnId)) {
+          console.log("break");
+          break;
+        }
+
+        // 生成新ID
+        btnDefaultConfigFrom.btnId = Math.floor(Math.random() * 900) + 100;
+        attempts++;
+
+        // 当尝试次数超过理论最大值时报错
+        if (attempts > maxAttempts) {
+          throw new Error("无法生成唯一ID，尝试次数超过200次");
+        }
+      } while (existingIds.has(btnDefaultConfigFrom.btnId));
+
       this.btnConfigFrom = merge(btnDefaultConfigFrom, obj);
     },
 
@@ -325,19 +378,60 @@ export default {
       }
       return str;
     },
-    handleUpload(formData) {
-      // 文件上传逻辑
-      console.log("触发上传", formData);
+
+    async uploadFile() {
+      try {
+        const folderId = await this.getFolder();
+        const params = {
+          prjId: "EnterpriseDoc",
+          folderId,
+          versionId: ""
+        };
+        const list = await this.uploader.open({ params, showPanel: false, once: true, accept: ".doc,.docx" });
+        console.log("list", list);
+        const { fileId, fileName, fileType, fileVersion } = list[0];
+        this.btnConfigFrom.extraOption.printFileId = fileId;
+        this.btnConfigFrom.extraOption.printFileName = fileName;
+        this.btnConfigFrom.extraOption.printFileType = fileType;
+        this.btnConfigFrom.extraOption.printFileVersion = fileVersion;
+        this.$success("上传成功");
+      } catch (error) {
+        console.error(error);
+        this.$message.error("上传失败");
+      }
     },
 
-    handleDownload(fileId) {
-      // 文件下载逻辑
-      console.log("下载文件", fileId);
+    // 隐藏文件夹
+    async getFolder() {
+      const { data } = await this.queryEnterpriseIdhiddenFolder(this.enterpriseId);
+      return data || "";
     },
 
-    handleDelete(fileId) {
-      // 文件删除逻辑
-      console.log("删除文件", fileId);
+    // TODO
+    handleDesignDown() {
+      // TODO
+      const fileId = this.btnConfigFrom.extraOption.printFileId;
+      const url = this.downloadUrltoken("EnterpriseDoc", fileId);
+      this.downloadFile(url);
+    },
+
+    handleDesignDel() {
+      this.$confirm("警告：如果删除模板，将不会再生成成果文件，确认继续吗？", {
+        confirmButtonText: "确定",
+        cancelButtonText: "取消",
+        type: "warning"
+      }).then(async () => {
+        // TODO
+        this.btnConfigFrom.extraOption.printFileId = "";
+        this.btnConfigFrom.extraOption.printFileName = "";
+        this.btnConfigFrom.extraOption.printFileType = "";
+        this.btnConfigFrom.extraOption.printFileVersion = "";
+      });
+    },
+    handlePreview() {
+      const { printFileId: fileId, printFileVersion: versionId, printFileType: fileType } = this.btnConfigFrom.extraOption;
+      const data = { fileId, versionId, fileType };
+      this.filePreviewV1(data, this.list);
     }
 
     // handleAuthorizeChange (authorize) {

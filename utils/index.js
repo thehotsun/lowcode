@@ -895,13 +895,38 @@ export function mergeAndClean(a, b) {
   return merged;
 }
 
-export function limitShowWord(text = '', maxlength, showEllipsis = true) {
+export function limitShowWord(text = "", maxlength, showEllipsis = true) {
   try {
     return `${text.slice(0, maxlength)}${showEllipsis && text.length > maxlength ? "..." : ""}`;
   } catch (error) {
     console.error("limitShowWord函数报错！报错信息：", error);
     return text;
   }
+}
+
+/**
+ * 安全附加参数到URL（处理已有参数和哈希片段）
+ * @param {string} url 原始URL
+ * @param {Object} params 需要附加的参数对象
+ * @returns {string} 处理后的完整URL
+ */
+export function appendParamsToUrl(url, params) {
+  // 将对象转为URL查询字符串
+  const query = Object.entries(params)
+    .map(([k, v]) => `${k}=${v}`)
+    .join("&");
+
+  // 分割URL的基础部分、已有查询参数和哈希片段
+  const [base, hash] = url.split("#");
+  const [path, existingQuery] = base.split("?");
+
+  // 组装最终URL
+  let finalUrl = path;
+  if (existingQuery) finalUrl += `?${existingQuery}&${query}`;
+  else if (query) finalUrl += `?${query}`;
+  if (hash) finalUrl += `#${hash}`;
+
+  return finalUrl;
 }
 
 export default {
@@ -936,5 +961,6 @@ export default {
   arrayToTree,
   findInTree,
   mergeAndClean,
-  limitShowWord
+  limitShowWord,
+  appendParamsToUrl
 };
