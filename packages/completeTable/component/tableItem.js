@@ -2,6 +2,7 @@ import BaseRenderTable from "../../BaseRenderTable/index";
 import BaseRenderForm from "../../BaseRenderForm/index";
 import BaseRenderRegular from "../../BaseRenderRegular/index";
 import panel from "./panel.vue";
+import printTemplateDlg from "./printTemplateDlg.vue";
 import { align, searchWidget } from "../../../baseConfig/tableSelectConfigs";
 import { requestTypeList } from "../../../baseConfig/btnBaseConfig";
 import { getTableAttrs, getSingleTableData } from "../../../baseConfig/tableBaseConfig";
@@ -85,7 +86,8 @@ export default {
     BaseRenderTable,
     BaseRenderForm,
     BaseRenderRegular,
-    panel
+    panel,
+    printTemplateDlg
   },
   props: {
     listPageIdProp: String,
@@ -285,6 +287,11 @@ export default {
     }
   },
   inject: {
+    getPrintTemplateInfo: {
+      default: () => () => {
+        console.warn("inject缺失getPrintTemplateInfo!");
+      }
+    },
     openFlow: {
       default: () => () => {
         console.warn("inject缺失openFlow!");
@@ -1104,7 +1111,8 @@ export default {
         useDialog = true,
         showFooter = false,
         validateFn = "",
-        command = ""
+        command = "",
+        btnId
       },
       rowData
     ) {
@@ -1118,6 +1126,7 @@ export default {
         disposeThisPageJump,
         disposeDown,
         disposeFlowDocDown,
+        disposeFormDown,
         disposeDel,
         previewMode
       } = this;
@@ -1133,6 +1142,7 @@ export default {
       this.btnConfigs.requestBeforeConfirmText = requestBeforeConfirmText;
       this.btnConfigs.isRefresh = isRefresh;
       this.btnConfigs.btnType = btnType;
+      this.btnConfigs.btnId = btnId;
       this.btnConfigs.openType = openType;
       this.btnConfigs.dialogHeight = dialogHeight;
       this.btnConfigs.dialogWidth = dialogWidth;
@@ -1156,6 +1166,14 @@ export default {
                 break;
               case "flowDocDownload":
                 disposeFlowDocDown(
+                  {
+                    command
+                  },
+                  rowData
+                );
+                break;
+              case "formDownload":
+                disposeFormDown(
                   {
                     command
                   },
@@ -1632,6 +1650,29 @@ export default {
           command,
           this.selectList.map(item => item[this.keyField])
         );
+      }
+    },
+
+    async disposeFormDown({ command }, row) {
+      if (row) {
+        this.requestBatchFlowDoc(command, [row[this.keyField]]);
+      } else {
+        if (this.selectList.length === 0) {
+          return this.$warn("请至少勾选一条要处理的数据");
+        }
+        if ([undefined, null].includes(this.tableData[0][this.keyField])) {
+          return this.$warn("主键字段未取到值，请检查数据或重新在列表设计页面重新关联主键！");
+        }
+        const {
+          data: { resultFileName }
+        } = await this.getPrintTemplateInfo(this.listPageId, this.btnConfigs.btnId);
+        this.$refs.printTemplateDlg.open({
+          resultFileName
+        });
+        // this.requestBatchFlowDoc(
+        //   command,
+        //   this.selectList.map(item => item[this.keyField])
+        // );
       }
     },
 
@@ -2261,7 +2302,11 @@ export default {
       localProcessData,
       finalTableData,
       leftBtnRegularOptions,
-      rightBtnRegularOptions
+      rightBtnRegularOptions,
+      listPageId,
+      btnConfigs,
+      selectList,
+      keyField
     } = this;
 
     const curPageListeners = localProcessData
@@ -2448,6 +2493,7 @@ export default {
             ) : null}
           </el-container>
         </el-main>
+        <printTemplateDlg ref="printTemplateDlg" listPageId={listPageId} btnId={btnConfigs.btnId + ''} keyField={keyField} selectList={selectList}></printTemplateDlg>
         {btnRelateDialogVNode()}
         {importFileVNode()}
         {importRefreshVNode()}

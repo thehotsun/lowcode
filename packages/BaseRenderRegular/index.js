@@ -115,7 +115,7 @@ export default {
       const options = item.extraOption.btnType === "download" ? downOptions : flowDocDownOptions;
       // 基础版有个添加维护字典的功能，里面返回的字段为id和cnName，因此以此字段为默认取值
       return (
-        <el-dropdown nativeOnClick={e => e.stopPropagation()} oncommand={e => handleCommand(e, item.extraOption)}>
+        <el-dropdown nativeOnClick={e => e.stopPropagation()} oncommand={e => handleCommand(e, { ...item.extraOption, btnId: item.btnId })}>
           {getSingleCompVNode(item, false, false)}
           <el-dropdown-menu slot="dropdown">
             {options.map(elDropdownItem => {
@@ -174,7 +174,8 @@ export default {
         tagName,
         contentTextFrontTagOptions = {},
         contentTextBehindTagOptions = {},
-        authorize
+        authorize,
+        btnId
       } = item;
       // 取代v-model语法糖，因为它不能实现多个点深层级取值赋值操作,例如fromData['a.b']
       if (bindVal) {
@@ -182,7 +183,10 @@ export default {
       }
       // 暂时只针对按钮的点击事件
       if (bindEvent) {
-        listeners.click = btnClick(extraOption);
+        listeners.click = btnClick({
+          ...extraOption,
+          btnId
+        });
       }
       const model = getter(formData, formField);
       // tagName必须是eleui提供的已有组件或HTML已有标签,如果是只读标签，则固定使用span标签

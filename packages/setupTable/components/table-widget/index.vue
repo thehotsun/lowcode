@@ -15,7 +15,7 @@
 
     <div class="btnDesign btns">
       <span v-for="(item, index) in btnConfigArr" :key="item.renderId" class="btn" style="display:inline-block; position: relative;">
-        <el-dropdown v-if="item.authorize === 'E'">
+        <el-dropdown v-if="item.authorize === 'E' && ['download', 'flowDocDownload'].includes(item.btnType)">
           <el-button type="" size="small" :icon="item.tagAttrs.icon" @click="handleBtnDetail(index)"
             >{{ item.tagAttrs.value }} <i :class="item?.contentTextBehindTagOptions?.className"></i
           ></el-button>
@@ -54,7 +54,7 @@
     </div>
 
     <el-drawer title="按钮属性设置" :visible.sync="drawer" :direction="direction">
-      <setupBtnConfig ref="setupBtnConfig" :key-field="keyField" @onSubmit="onSubmit" @onClose="onClose"></setupBtnConfig>
+      <setupBtnConfig ref="setupBtnConfig" :key-field="keyField" :group-id="groupId" @onSubmit="onSubmit" @onClose="onClose"></setupBtnConfig>
     </el-drawer>
 
     <tableAttrsDlg ref="tableAttrsDlg" :delivery-fields-option="deliveryFieldsOption" @changeTableAttrs="changeTableAttrs"></tableAttrsDlg>
@@ -624,7 +624,7 @@ export default {
     handleBtnDetail(index) {
       this.handleBtnCommand(this.btnConfigArr[index].extraOption.btnType);
       this.$nextTick(() => {
-        this.$refs.setupBtnConfig.expose_setBtnConfigFrom(this.btnConfigArr[index]);
+        this.$refs.setupBtnConfig.expose_setBtnConfigFrom(this.btnConfigArr[index], true);
       });
     }
   }
