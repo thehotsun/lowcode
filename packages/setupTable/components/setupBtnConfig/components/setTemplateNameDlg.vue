@@ -69,17 +69,25 @@ export default {
         this.printParamFields = [];
         Object.entries(data).forEach(([key, value]) => {
           const obj = {};
-          obj.btnInfoArr = value;
           obj.type = key;
           switch (key) {
             case "commonColumns":
               obj.typeDispalyName = "公共字段";
+              obj.btnInfoArr = value;
               break;
             case "metaColumns":
               obj.typeDispalyName = "主表字段";
+              obj.btnInfoArr = value.map(item => {
+                item.fieldName = `m.${item.fieldName}`;
+                return item;
+              });
               break;
             case "viewColumns":
               obj.typeDispalyName = "视图字段";
+              obj.btnInfoArr = value.map(item => {
+                item.fieldName = `v.${item.fieldName}`;
+                return item;
+              });
               break;
             default:
               break;

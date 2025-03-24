@@ -925,10 +925,40 @@ export function BtnConfigFormOptions() {
       },
       formItem: {
         formItemAttrs: {
-          label: "打印配置："
+          label: "打印文件模板："
           // "label-width": "0px"
         },
         slotName: "formDownloadSlot",
+        renderDependFn: function(formData) {
+          return ["formDownload"].includes(formData.extraOption.btnType);
+        }
+      }
+    },
+    {
+      elRowAttrs: {
+        gutter: 10
+      },
+      formItem: {
+        formItemAttrs: {
+          label: "打印文件名称："
+          // "label-width": "0px"
+        },
+        slotName: "formDownloadFileNameSlot",
+        renderDependFn: function(formData) {
+          return ["formDownload"].includes(formData.extraOption.btnType);
+        }
+      }
+    },
+    {
+      elRowAttrs: {
+        gutter: 10
+      },
+      formItem: {
+        formItemAttrs: {
+          label: "数据设计："
+          // "label-width": "0px"
+        },
+        slotName: "formDownloadDataSlot",
         renderDependFn: function(formData) {
           return ["formDownload"].includes(formData.extraOption.btnType);
         }

@@ -36,7 +36,7 @@
       <el-form-item label="出现同名文件时">
         <el-select v-model="form.targetPrjFolderSameFilePolicy" size="mini" placeholder="请选择">
           <el-option label="覆盖（升级版本，默认）" :value="0"></el-option>
-          <el-option label="重命名（将在文件名中添加时间戳）" :value="1"></el-option>
+          <!-- <el-option label="重命名（将在文件名中添加时间戳）" :value="1"></el-option> -->
         </el-select>
       </el-form-item>
     </el-form>
@@ -135,7 +135,8 @@ export default {
           dataId: item[this.keyField],
           viewData: item,
           isPdfPrintTemplate: this.form.isPdfPrintTemplate,
-          prjFolderIdForSave: this.form.targetPrjFolderId
+          targetPrjFolderId: this.form.targetPrjFolderId,
+          targetPrjFolderSameFilePolicy: this.form.targetPrjFolderSameFilePolicy
         };
         const { data } = await this.generatePrintFile(params);
         if (this.form.autoDownload) {

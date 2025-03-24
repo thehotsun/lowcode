@@ -40,11 +40,10 @@
       <template #iconName="{ formData }"> <icon-picker v-model="formData.extraOption.iconName"></icon-picker> </template>
 
       <template #formDownloadSlot class="formDownloadSlot">
-        <el-divider content-position="center">打印模板</el-divider>
         <div class="file-actions">
           <!-- 自定义触发按钮 -->
           <el-upload ref="upload" :http-request="uploadFile" class="upload-file" accept=".docx" :show-file-list="false" style="display: inline-block; margin: 0 10px" action="/">
-            <el-button type="primary" size="mini" plain icon="el-icon-upload2">
+            <el-button type="text" size="mini" plain icon="el-icon-upload2">
               {{ printDesignForm.templateFileId ? "重新上传" : "上传" }}
             </el-button>
           </el-upload>
@@ -54,12 +53,12 @@
             <i class="el-icon-question" style="margin-left: 2px; margin-right: 5px"></i>
           </el-tooltip>
           <!-- 条件渲染的下载按钮 -->
-          <el-button v-if="printDesignForm.templateFileId" type="" size="mini" @click="handleDesignDown">
+          <el-button v-if="printDesignForm.templateFileId" type="text" size="mini" @click="handleDesignDown">
             下载
           </el-button>
 
           <!-- 带条件渲染的删除按钮 -->
-          <el-button v-if="printDesignForm.templateFileId" type="danger" size="mini" @click="handleDesignDel">
+          <el-button v-if="printDesignForm.templateFileId" type="text" size="mini" @click="handleDesignDel">
             删除
           </el-button>
 
@@ -67,33 +66,31 @@
             预览
           </el-button>
         </div>
-        <el-divider content-position="center">成果文件</el-divider>
+      </template>
+      <template #formDownloadFileNameSlot class="formDownloadSlot">
         <div>
-          文件名：{{ printDesignForm.resultFileName }} <el-button type="text" @click="handleResultFileName"> {{ printDesignForm.resultFileName ? "编辑" : "命名" }}</el-button>
+          {{ printDesignForm.resultFileName }} <el-button type="text" @click="handleResultFileName"> {{ printDesignForm.resultFileName ? "编辑" : "命名" }}</el-button>
         </div>
-        <el-divider content-position="center">数据设计</el-divider>
-
+      </template>
+      <template #formDownloadDataSlot class="formDownloadSlot">
         <div>
           自定义字段
-          <el-button type="" size="mini" @click="addCustomField">添加</el-button>
+          <el-button type="" size="mini" @click="addCustomField" class="ml10">添加</el-button>
         </div>
 
-        <div>
-          <el-table :data="printDesignForm.customFields" border stripe max-height="300" style="width: 100%">
-            <el-table-column prop="customizedFieldName" label="字段名称" width="150px" align="center" show-overflow-tooltip></el-table-column>
-            <el-table-column prop="customizedFieldDisplayName" label="显示名称" align="center" show-overflow-tooltip></el-table-column>
-            <el-table-column label="操作" prop="" align="center">
-              <template #default="{ row }">
-                <el-button type="text" class="operBtn" @click.stop="editCustomField('customField', row)">编辑</el-button>
-                <el-button type="text" class="operBtn" @click.stop="delCustomField(row)">删除</el-button>
-              </template>
-            </el-table-column>
-          </el-table>
-        </div>
-
+        <el-table :data="printDesignForm.customFields" border stripe max-height="300" style="width: 100%" class="table">
+          <el-table-column prop="customizedFieldName" label="字段名称" width="150px" align="center" show-overflow-tooltip></el-table-column>
+          <el-table-column prop="customizedFieldDisplayName" label="显示名称" align="center" show-overflow-tooltip></el-table-column>
+          <el-table-column label="操作" prop="" align="center">
+            <template #default="{ row }">
+              <el-button type="text" class="operBtn" @click.stop="editCustomField('customField', row)">编辑</el-button>
+              <el-button type="text" class="operBtn" @click.stop="delCustomField(row)">删除</el-button>
+            </template>
+          </el-table-column>
+        </el-table>
         <div>
           自定义数据
-          <el-button type="" size="mini" @click="editCustomField('customData')">编辑</el-button>
+          <el-button type="" size="mini" @click="editCustomField('customData')" class="ml10">编辑</el-button>
         </div>
         <div>自定义方法： {{ printDesignForm?.customizedMethod }}</div>
         <div>自定义SQL： {{ printDesignForm?.customizedSql }}</div>
@@ -641,6 +638,12 @@ export default {
   }
   ::v-deep .el-form-item {
     margin-bottom: 8px !important;
+  }
+  .ml10 {
+    margin-left: 10px;
+  }
+  .table {
+    margin: 5px 0;
   }
 }
 </style>
