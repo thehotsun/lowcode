@@ -43,7 +43,7 @@
         <div class="file-actions">
           <!-- 自定义触发按钮 -->
           <el-upload ref="upload" :http-request="uploadFile" class="upload-file" accept=".docx" :show-file-list="false" style="display: inline-block; margin: 0 10px" action="/">
-            <el-button type="text" size="mini" plain icon="el-icon-upload2">
+            <el-button type="text" size="mini" icon="el-icon-upload2">
               {{ printDesignForm.templateFileId ? "重新上传" : "上传" }}
             </el-button>
           </el-upload>
@@ -66,16 +66,22 @@
             预览
           </el-button>
         </div>
+        <div v-if="printDesignForm.templateFileName">
+          <el-button type="text" class="underline" @click="handlePreview">{{ printDesignForm.templateFileName }}</el-button>
+        </div>
       </template>
       <template #formDownloadFileNameSlot class="formDownloadSlot">
         <div>
-          {{ printDesignForm.resultFileName }} <el-button type="text" @click="handleResultFileName"> {{ printDesignForm.resultFileName ? "编辑" : "命名" }}</el-button>
+          {{ printDesignForm.resultFileName }} <el-button type="text" @click="handleResultFileName"> {{ printDesignForm.resultFileName ? "编辑" : "设计文件名" }}</el-button>
         </div>
       </template>
+      <template #relateFrom>
+        <el-button type="text" @click="openSource">{{ resourceInfo.name }}</el-button>
+      </template>
       <template #formDownloadDataSlot class="formDownloadSlot">
-        <div>
+        <div class="flex">
           自定义字段
-          <el-button type="" size="mini" @click="addCustomField" class="ml10">添加</el-button>
+          <el-button type="text" class="underline" icon="el-icon-plus" @click="addCustomField">添加</el-button>
         </div>
 
         <el-table :data="printDesignForm.customFields" border stripe max-height="300" style="width: 100%" class="table">
@@ -88,9 +94,9 @@
             </template>
           </el-table-column>
         </el-table>
-        <div>
+        <div class="flex">
           自定义数据
-          <el-button type="" size="mini" @click="editCustomField('customData')" class="ml10">编辑</el-button>
+          <el-button type="text" class="underline" icon="el-icon-edit" @click="editCustomField('customData')">编辑</el-button>
         </div>
         <div>自定义方法： {{ printDesignForm?.customizedMethod }}</div>
         <div>自定义SQL： {{ printDesignForm?.customizedSql }}</div>
@@ -167,6 +173,9 @@ export default {
     },
     editPrintTemplateDataDlg: {
       default: () => {}
+    },
+    queryFormNamePath: {
+      default: () => () => {}
     }
   },
   props: {
@@ -197,7 +206,11 @@ export default {
         data: [],
         headers: []
       },
-      printDesignForm: new PrintDesignForm()
+      printDesignForm: new PrintDesignForm(),
+      resourceInfo: {
+        name: "",
+        id: ""
+      }
       // nameRules: { required: true, trigger: ['blur', 'change'], message: '请输入名称' },
     };
   },
@@ -209,6 +222,33 @@ export default {
         apiUrl,
         apiMethod
       };
+    }
+  },
+
+  watch: {
+    "btnConfigFrom.extraOption.relateFrom": {
+      handler(val) {
+        if (this.btnConfigFrom.extraOption.openType === 0 && val) {
+          this.getResourceInfo(val);
+        }
+      },
+      deep: true
+    },
+    "btnConfigFrom.extraOption.relateTable": {
+      handler(val) {
+        if (this.btnConfigFrom.extraOption.openType === 6 && val) {
+          this.getResourceInfo(val);
+        }
+      },
+      deep: true
+    },
+    "btnConfigFrom.extraOption.openType": {
+      handler() {
+        this.resourceInfo = {
+          name: "",
+          id: ""
+        };
+      }
     }
   },
 
@@ -227,6 +267,10 @@ export default {
       this.btnConfigFormOptions = new BtnConfigFormOptions();
       this.btnConfigFrom = new BtnConfigFrom();
       this.printDesignForm = new PrintDesignForm();
+      this.resourceInfo = {
+        name: "",
+        id: ""
+      };
     },
 
     expose_hideSomeFieldOptions(fieldName) {
@@ -300,7 +344,7 @@ export default {
       return this.btnConfigFrom;
     },
 
-    expose_setExtraOption(options, field) {
+    expose_setExtraOption(options, field, objectHierarchy) {
       let target;
       this.btnConfigFormOptions.some(item => {
         if (item.formItem.child?.length) {
@@ -312,6 +356,14 @@ export default {
         }
         if (item.formItem.formField === field) {
           target = item.formItem;
+        }
+        if (objectHierarchy) {
+          const finalObj = objectHierarchy.reduce((acc, cur) => {
+            return acc?.[cur];
+          }, item.formItem);
+          if (finalObj?.formField === field) {
+            target = finalObj;
+          }
         }
         return target;
       });
@@ -385,12 +437,20 @@ export default {
       this.$emit("onSubmit");
       this.btnConfigFrom = new BtnConfigFrom();
       this.printDesignForm = new PrintDesignForm();
+      this.resourceInfo = {
+        name: "",
+        id: ""
+      };
     },
     onClose() {
       this.$emit("onClose");
       this.originConfigForm = {};
       this.printDesignForm = new PrintDesignForm();
       this.btnConfigFrom = new BtnConfigFrom();
+      this.resourceInfo = {
+        name: "",
+        id: ""
+      };
     },
     setBtnType(type) {
       this.btnConfigFrom.tagAttrs.type = type;
@@ -533,6 +593,17 @@ export default {
     async getTemplateInfo() {
       const res = await this.getPrintTemplateInfo(this.groupId, this.btnConfigFrom.btnId);
       this.printDesignForm = res.data || new PrintDesignForm();
+    },
+    async getResourceInfo(formCode) {
+      if (!formCode) {
+        return;
+      }
+      const pathInfo = await this.queryFormNamePath(formCode);
+      this.resourceInfo = pathInfo;
+    },
+    async openSource() {
+      const routeUrl = this.$router.resolve({ name: "meta-data", query: { type: "form", id: this.resourceInfo.id } });
+      window.open(routeUrl.href, "_blank");
     }
 
     // handleAuthorizeChange (authorize) {
@@ -644,6 +715,18 @@ export default {
   }
   .table {
     margin: 5px 0;
+  }
+  .file-actions {
+    .upload-file {
+      margin: 0 !important;
+    }
+    .el-button {
+      margin: 0 !important;
+      padding: 0 !important;
+    }
+  }
+  .underline {
+    text-decoration: underline;
   }
 }
 </style>

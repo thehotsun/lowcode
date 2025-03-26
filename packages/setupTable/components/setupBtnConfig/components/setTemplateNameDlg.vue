@@ -15,7 +15,7 @@
       </el-form-item>
 
       <el-form-item label="当前内容">
-        <el-input ref="inputWord" v-model="currentContent" @blur="handleInputBlur"></el-input>
+        <el-input ref="inputWord" v-model="currentContent" placeholder="示例：任命表-${userName}-$(opDateStr}" @blur="handleInputBlur"></el-input>
         <div>
           <el-button type="text" size="mini" :disabled="isViewMode" @click="handleReset">重置</el-button>
         </div>

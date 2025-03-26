@@ -513,9 +513,9 @@ export default {
         // 还原form配置
         this.$refs.setupBtnConfig.expose_reductionAll();
         // 配置关联的设计表格下拉框
-        this.$refs.setupBtnConfig.expose_setExtraOption(this.formListExtraOption, "extraOption.relateFrom");
+        this.$refs.setupBtnConfig.expose_setExtraOption(this.formListExtraOption, "extraOption.relateFrom", ["contentTextFrontTagOptions"]);
         // 配置关联的设计列表下拉框
-        this.$refs.setupBtnConfig.expose_setExtraOption(this.tableListExtraOption, "extraOption.relateTable");
+        this.$refs.setupBtnConfig.expose_setExtraOption(this.tableListExtraOption, "extraOption.relateTable", ["contentTextFrontTagOptions"]);
         // 配置关联的业务模型下拉框
         this.$refs.setupBtnConfig.expose_setExtraOption(this.metaListExtraOption, "extraOption.relateMeta");
         // 配置关联的流程列表下拉框

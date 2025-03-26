@@ -454,14 +454,14 @@ export default {
           {isEmpty(contentTextFrontTagOptions)
             ? null
             : Array.isArray(contentTextFrontTagOptions)
-            ? contentTextFrontTagOptions.map(options => this.getPureSingleCompVNode(options))
-            : this.getPureSingleCompVNode(contentTextFrontTagOptions)}
+            ? contentTextFrontTagOptions.map(options => this.getSingleCompVNode(options))
+            : this.getSingleCompVNode(contentTextFrontTagOptions)}
           {contentText}
           {isEmpty(contentTextBehindTagOptions)
             ? null
             : Array.isArray(contentTextBehindTagOptions)
-            ? contentTextBehindTagOptions.map(options => this.getPureSingleCompVNode(options))
-            : this.getPureSingleCompVNode(contentTextBehindTagOptions)}
+            ? contentTextBehindTagOptions.map(options => this.getSingleCompVNode(options))
+            : this.getSingleCompVNode(contentTextBehindTagOptions)}
           {behindText ? <span style={behindTextStyle}>{behindText}</span> : null}
         </Tag>
       );

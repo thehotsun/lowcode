@@ -212,7 +212,7 @@ export function BtnConfigFormOptions() {
           }
         },
         tagName: "el-input",
-        style: "width: 180px",
+        style: "max-width: 180px;width: 100%;",
         tagAttrs: {
           placeholder: ""
         },
@@ -297,26 +297,33 @@ export function BtnConfigFormOptions() {
             trigger: "change"
           }
         },
-        tagName: "el-select",
-        tagAttrs: {
-          placeholder: "请选择表单",
-          filterable: true
-        },
-        // 对应formData中的属性值
-        formField: "extraOption.relateFrom",
-        extraOption: {
-          options: [],
-          props: {
-            key: "id",
-            label: "cnName"
+        tagName: "div",
+        contentTextFrontTagOptions: {
+          wrapDivStyle: "display: inline-block;",
+          tagName: "el-select",
+          tagAttrs: {
+            placeholder: "请选择表单",
+            filterable: true
+          },
+          // 对应formData中的属性值
+          formField: "extraOption.relateFrom",
+          extraOption: {
+            options: [],
+            props: {
+              key: "id",
+              label: "cnName"
+            }
+          },
+          request: {
+            require: false,
+            url: "",
+            type: "get",
+            params: "",
+            status: "pending"
           }
         },
-        request: {
-          require: false,
-          url: "",
-          type: "get",
-          params: "",
-          status: "pending"
+        contentTextBehindTagOptions: {
+          slotName: "relateFrom"
         },
         renderDependFn: expectOpenTypeRenderDependFnGenerator(0)
       }
@@ -327,22 +334,6 @@ export function BtnConfigFormOptions() {
         gutter: 10
       },
       formItem: {
-        extraOption: {
-          options: [],
-          props: {
-            emitPath: false,
-            key: "groupId",
-            label: "groupName",
-            children: "children"
-          }
-        },
-        request: {
-          require: false,
-          url: "",
-          type: "get",
-          params: "",
-          status: "pending"
-        },
         formItemAttrs: {
           prop: "extraOption.relateTable",
           label: "选择列表：",
@@ -352,13 +343,36 @@ export function BtnConfigFormOptions() {
             trigger: "change"
           }
         },
-        tagName: "el-cascader",
-        style: "width: 180px",
-        tagAttrs: {
-          placeholder: "请选择列表"
+        tagName: "div",
+        contentTextFrontTagOptions: {
+          extraOption: {
+            options: [],
+            props: {
+              emitPath: false,
+              key: "groupId",
+              label: "groupName",
+              children: "children"
+            }
+          },
+          request: {
+            require: false,
+            url: "",
+            type: "get",
+            params: "",
+            status: "pending"
+          },
+          wrapDivStyle: "display: inline-block;",
+          tagName: "el-cascader",
+          style: "width: 180px",
+          tagAttrs: {
+            placeholder: "请选择列表"
+          },
+          // 对应formData中的属性值
+          formField: "extraOption.relateTable"
         },
-        // 对应formData中的属性值
-        formField: "extraOption.relateTable",
+        contentTextBehindTagOptions: {
+          slotName: "relateFrom"
+        },
         renderDependFn: function(formData) {
           return [6].includes(formData.extraOption.openType);
         }
@@ -458,7 +472,7 @@ export function BtnConfigFormOptions() {
           }
         },
         tagName: "el-input",
-        style: "width: 180px",
+        style: "max-width: 180px;width: 100%;",
         tagAttrs: {
           placeholder: ""
         },
@@ -552,7 +566,7 @@ export function BtnConfigFormOptions() {
         },
         slotName: "requestUrl",
         tagName: "el-input",
-        style: "width: 180px",
+        style: "max-width: 180px;width: 100%;",
         tagAttrs: {
           placeholder: ""
         },
@@ -827,7 +841,7 @@ export function BtnConfigFormOptions() {
           label: "提示文本："
         },
         tagName: "el-input",
-        style: "width: 180px",
+        style: "max-width: 180px;width: 100%;",
         tagAttrs: {
           type: "textarea",
           placeholder: "请输入提示文本",
@@ -848,7 +862,7 @@ export function BtnConfigFormOptions() {
           label: "弹窗标题："
         },
         tagName: "el-input",
-        style: "width: 180px",
+        style: "max-width: 180px;width: 100%;",
         tagAttrs: {
           placeholder: "请输入弹窗标题"
         },
@@ -867,7 +881,7 @@ export function BtnConfigFormOptions() {
           label: "弹窗宽度："
         },
         tagName: "el-input",
-        style: "width: 180px",
+        style: "max-width: 180px;width: 100%;",
         tagAttrs: {
           placeholder: "请输入弹窗宽度"
         },
@@ -886,7 +900,7 @@ export function BtnConfigFormOptions() {
           label: "弹窗高度："
         },
         tagName: "el-input",
-        style: "width: 180px",
+        style: "max-width: 180px;width: 100%;",
         tagAttrs: {
           placeholder: "请输入弹窗高度"
         },
@@ -1150,7 +1164,7 @@ export function BtnConfigFormOptions() {
           label: "自定义样式："
         },
         tagName: "el-input",
-        style: "width: 180px",
+        style: "max-width: 180px;width: 100%;",
         tagAttrs: {
           placeholder: ""
         },
@@ -1169,7 +1183,7 @@ export function BtnConfigFormOptions() {
           prop: "extraOption.validateFn"
         },
         tagName: "el-input",
-        style: "width: 180px",
+        style: "max-width: 180px;width: 100%;",
         tagAttrs: {
           placeholder: "按钮执行前的校验函数，返回true则继续执行按钮操作，false则中断操作",
           type: "textarea",
@@ -1205,7 +1219,7 @@ export function BtnConfigFormOptions() {
           }
         },
         tagName: "el-input",
-        style: "width: 180px",
+        style: "max-width: 180px;width: 100%;",
         tagAttrs: {
           placeholder: "请输入自定义执行函数",
           type: "textarea",

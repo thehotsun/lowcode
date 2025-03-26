@@ -12,7 +12,7 @@
     <el-form label-width="120px">
       <!-- 自动下载 -->
       <el-form-item>
-        <el-checkbox v-model="form.isPdfPrintTemplate" :true-value="1" :false-value="0">输出为pdf（如果不勾选，则输出word文档）</el-checkbox>
+        <el-checkbox v-model="form.isPdfPrintTemplate" :true-label="1" :false-label="0">输出为pdf（如果不勾选，则输出word文档）</el-checkbox>
         <el-checkbox v-model="form.autoDownload">完成后自动下载</el-checkbox>
       </el-form-item>
 
