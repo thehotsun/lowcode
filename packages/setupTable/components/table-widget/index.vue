@@ -54,7 +54,7 @@
     </div>
 
     <el-drawer title="按钮属性设置" :visible.sync="drawer" :direction="direction">
-      <setupBtnConfig ref="setupBtnConfig" :key-field="keyField" :group-id="groupId" @onSubmit="onSubmit" @onClose="onClose"></setupBtnConfig>
+      <setupBtnConfig ref="setupBtnConfig" :key-field="keyField" :group-id="groupId" @refreshList="refreshList" @onSubmit="onSubmit" @onClose="onClose"></setupBtnConfig>
     </el-drawer>
 
     <tableAttrsDlg ref="tableAttrsDlg" :delivery-fields-option="deliveryFieldsOption" @changeTableAttrs="changeTableAttrs"></tableAttrsDlg>
@@ -205,7 +205,7 @@ export default {
       }
     },
 
-    expose_getBtnConfigOptions() {
+    async expose_getBtnConfigOptions() {
       return Promise.all([this.queryTableList(), this.queryFormList(), this.queryMetaList(), this.queryFlowList(), this.queryAuthorizeList()]);
     },
 
@@ -408,7 +408,7 @@ export default {
       });
     },
 
-    queryFormList() {
+    async queryFormList() {
       return this.requestFormList(this.groupId).then(res => {
         console.log(res.data, "queryFormList");
         this.formListExtraOption = {
@@ -422,8 +422,9 @@ export default {
       });
     },
 
-    queryTableList() {
+    async queryTableList() {
       return this.requestTableList().then(res => {
+        console.log(res.data, "queryTableList");
         this.tableListExtraOption = {
           props: {
             emitPath: false,
@@ -458,8 +459,9 @@ export default {
       return res.data;
     },
 
-    queryFlowList() {
+    async queryFlowList() {
       return this.requestFlowList().then(data => {
+        console.log(data, "queryFlowList");
         this.flowListExtraOption = {
           options: data,
           props: {
@@ -519,7 +521,7 @@ export default {
         // 配置关联的业务模型下拉框
         this.$refs.setupBtnConfig.expose_setExtraOption(this.metaListExtraOption, "extraOption.relateMeta");
         // 配置关联的流程列表下拉框
-        this.$refs.setupBtnConfig.expose_setExtraOption(this.flowListExtraOption, "extraOption.flowKey");
+        this.$refs.setupBtnConfig.expose_setExtraOption(this.flowListExtraOption, "extraOption.flowKey", ["contentTextFrontTagOptions"]);
         // 配置关联的组件列表下拉框
         this.$refs.setupBtnConfig.expose_setExtraOption(
           {
@@ -626,6 +628,27 @@ export default {
       this.$nextTick(() => {
         this.$refs.setupBtnConfig.expose_setBtnConfigFrom(this.btnConfigArr[index], true);
       });
+    },
+    async refreshList(openType) {
+      switch (openType) {
+        case 0:
+          await this.queryFormList();
+          this.$refs.setupBtnConfig.expose_setExtraOption(this.formListExtraOption, "extraOption.relateFrom", ["contentTextFrontTagOptions"]);
+          this.$success("刷新成功！");
+          break;
+        case 2:
+          await this.queryFlowList();
+          this.$refs.setupBtnConfig.expose_setExtraOption(this.flowListExtraOption, "extraOption.flowKey", ["contentTextFrontTagOptions"]);
+          this.$success("刷新成功！");
+          break;
+        case 6:
+          await this.queryTableList();
+          this.$refs.setupBtnConfig.expose_setExtraOption(this.tableListExtraOption, "extraOption.relateTable", ["contentTextFrontTagOptions"]);
+          this.$success("刷新成功！");
+          break;
+        default:
+          break;
+      }
     }
   }
 };

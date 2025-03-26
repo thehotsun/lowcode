@@ -75,9 +75,17 @@
           {{ printDesignForm.resultFileName }} <el-button type="text" @click="handleResultFileName"> {{ printDesignForm.resultFileName ? "编辑" : "设计文件名" }}</el-button>
         </div>
       </template>
-      <template #relateFrom>
+      <template v-if="resourceInfo.name" #relateFrom>
         <el-button type="text" @click="openSource">{{ resourceInfo.name }}</el-button>
       </template>
+      <!-- <template #relateFlow>
+        <el-button type="text">{{ flowPath }}</el-button>
+      </template> -->
+
+      <template #refreshList>
+        <el-button type="text" icon="el-icon-refresh-right" @click="refreshList"></el-button>
+      </template>
+
       <template #formDownloadDataSlot class="formDownloadSlot">
         <div class="flex">
           自定义字段
@@ -604,6 +612,10 @@ export default {
     async openSource() {
       const routeUrl = this.$router.resolve({ name: "meta-data", query: { type: "form", id: this.resourceInfo.id } });
       window.open(routeUrl.href, "_blank");
+    },
+    refreshList() {
+      console.log("refreshList");
+      this.$emit("refreshList", this.btnConfigFrom.extraOption.openType);
     }
 
     // handleAuthorizeChange (authorize) {

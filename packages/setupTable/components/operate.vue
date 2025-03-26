@@ -2,7 +2,7 @@
   <div class="top">
     &nbsp;
     <div class="operate">
-      <el-button size="mini" @click="handleTableSetting">页面属性</el-button>
+      <el-button size="mini" @click="handleTableSetting">列表页设置</el-button>
       <slot name="btn"></slot>
       <el-button size="mini" @click="showTableAttrs">表格属性设置</el-button>
       <el-button size="mini" @click="showPreview">预览</el-button>

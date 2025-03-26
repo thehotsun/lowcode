@@ -322,9 +322,15 @@ export function BtnConfigFormOptions() {
             status: "pending"
           }
         },
-        contentTextBehindTagOptions: {
-          slotName: "relateFrom"
-        },
+        contentTextBehindTagOptions: [
+          {
+            wrapDivStyle: "display: inline-block;",
+            slotName: "refreshList"
+          },
+          {
+            slotName: "relateFrom"
+          }
+        ],
         renderDependFn: expectOpenTypeRenderDependFnGenerator(0)
       }
     },
@@ -370,9 +376,15 @@ export function BtnConfigFormOptions() {
           // 对应formData中的属性值
           formField: "extraOption.relateTable"
         },
-        contentTextBehindTagOptions: {
-          slotName: "relateFrom"
-        },
+        contentTextBehindTagOptions: [
+          {
+            wrapDivStyle: "display: inline-block;",
+            slotName: "refreshList"
+          },
+          {
+            slotName: "relateFrom"
+          }
+        ],
         renderDependFn: function(formData) {
           return [6].includes(formData.extraOption.openType);
         }
@@ -489,22 +501,6 @@ export function BtnConfigFormOptions() {
         gutter: 10
       },
       formItem: {
-        extraOption: {
-          options: [],
-          props: {
-            emitPath: false,
-            key: "flowKey",
-            label: "name",
-            children: "flowDefinitionDtoList"
-          }
-        },
-        request: {
-          require: false,
-          url: "",
-          type: "get",
-          params: "",
-          status: "pending"
-        },
         formItemAttrs: {
           prop: "extraOption.flowKey",
           label: "选择流程：",
@@ -514,22 +510,51 @@ export function BtnConfigFormOptions() {
             trigger: "change"
           }
         },
-        tagName: "el-cascader",
-        style: "width: 180px",
-        tagAttrs: {
-          placeholder: "请选择流程"
-        },
-        // 对应formData中的属性值
-        formField: "extraOption.flowKey",
-        watch: {
-          handler(formData, item, that) {
-            console.log(formData, item, "handler");
-            if (formData.extraOption.openType === 2) {
-              that.$set(item.formItemAttrs.rules, "required", formData.extraOption.btnType !== "check");
+        tagName: "div",
+        contentTextFrontTagOptions: {
+          extraOption: {
+            options: [],
+            props: {
+              emitPath: false,
+              key: "flowKey",
+              label: "name",
+              children: "flowDefinitionDtoList"
             }
           },
-          deep: true
+          request: {
+            require: false,
+            url: "",
+            type: "get",
+            params: "",
+            status: "pending"
+          },
+          wrapDivStyle: "display: inline-block;",
+          tagName: "el-cascader",
+          style: "width: 180px",
+          tagAttrs: {
+            placeholder: "请选择流程"
+          },
+          // 对应formData中的属性值
+          formField: "extraOption.flowKey",
+          watch: {
+            handler(formData, item, that) {
+              console.log(formData, item, "handler");
+              if (formData.extraOption.openType === 2) {
+                that.$set(item.formItemAttrs.rules, "required", formData.extraOption.btnType !== "check");
+              }
+            },
+            deep: true
+          }
         },
+        contentTextBehindTagOptions: [
+          {
+            wrapDivStyle: "display: inline-block;",
+            slotName: "refreshList"
+          },
+          {
+            slotName: "relateFlow"
+          }
+        ],
         renderDependFn: function(formData) {
           return [2].includes(formData.extraOption.openType);
         }
