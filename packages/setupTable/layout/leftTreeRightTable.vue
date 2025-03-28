@@ -1,6 +1,6 @@
 <template>
   <div class="leftTreeRightTableWrap">
-    <operate :loading="loading" @handleSave="handleSave" @showTableAttrs="showTableAttrs" @showPreview="showPreview">
+    <operate :loading="loading" @handleSave="handleSave" @showTableAttrs="showTableAttrs" @showPreview="showPreview" @jumpResource="jumpResource">
       <template slot="btn">
         <el-button size="mini" @click="showTreeAttrs">树属性设置</el-button>
       </template>

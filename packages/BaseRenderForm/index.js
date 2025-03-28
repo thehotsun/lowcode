@@ -228,17 +228,17 @@ export default {
       );
     },
 
-    getCascaderCompVNode({ tagAttrs: attrs, listeners, formField, extraOption, request }) {
+    getCascaderCompVNode({ tagAttrs: attrs, listeners, formField, extraOption, request, ref }) {
       this.disposeRequest(request, extraOption);
       const { options = [], props = {} } = extraOption;
       const { formData, onlyShow } = this;
-      console.log(props, "props");
       attrs.options = options;
       attrs.props = props;
       attrs.props.value = props.key;
       let model = getter(formData, formField);
       return (
         <el-cascader
+          {...(ref ? { ref } : {})}
           value={model}
           {...{
             attrs,
@@ -363,7 +363,8 @@ export default {
         contentTextFrontTagOptions = {},
         contentTextBehindTagOptions = {},
         isFlat = false,
-        wrapDivStyle = ""
+        wrapDivStyle = "",
+        ref = ""
       } = item;
       // isWrap防止无限循环
       if (!listeners?.input?.isWrap) {
@@ -386,7 +387,8 @@ export default {
                 formField,
                 extraOption,
                 request,
-                isFlat
+                isFlat,
+                ref
               })
             : getPureSingleCompVNode(item)}
         </div>
@@ -411,6 +413,7 @@ export default {
         extraOption = {},
         // 当前渲染组件（即Tag）所需的属性值
         tagAttrs = {},
+        ref = "",
         // 组件所需的监听事件
         listeners = {},
         // 需要绑定的formData的属性名
@@ -445,6 +448,7 @@ export default {
           value={model}
           style={style}
           class={className}
+          {...(ref ? { ref } : {})}
           {...{
             attrs: tagAttrs,
             on: listeners
@@ -668,6 +672,7 @@ export default {
         )}
         {showCodeEditor ? (
           <el-dialog
+            v-dialog-drag
             {...{
               attrs: { ...defaultCodeEditorDialogAttrs }
             }}

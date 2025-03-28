@@ -23,15 +23,15 @@ export const tableAttrsCodeExampleList = {
 };
 
 export const tableOptionsCodeExampleList = {
-         filters: "[{text: '2016-05-01(显示值)', value: '2016-05-01(传递给筛选函数的值)'}]",
-         filtersHandleFn:
-           "function getFilterArr (tableData) {\n  // 此函数接受tableData参数，并对tableData进行遍历，然后将处理后的数组当作本列表头的筛选数组\n  return tableData.map(item => {\n    // text是筛选列表中显示的值，value为筛选函数实际接收到的值，一般情况都赋值为 item.xxx就可以，下文中的UserID为当前行的字段名\n    return  {text:  item.UserID, value:  item.UserID}\n  })\n}",
-         "sort-method":
-           "function sortMethod(a, b) {\n  // a是需要排序的上一个值，b是需要排序的下一个值\n  // 需返回一个数字，和 Array.sort 表现一致\n  if (a < b) {\n    return -1\n  } else if (a > b) {\n    return 1\n  } else {\n    return 0\n  }\n}",
-         "filter-method":
-           "function filterHandler(value, row, column) {\r\n  // value是筛选选中的值，如果选择多个，则会将值挨个遍历此方法\r\n  \r\n  // 取出属性名\r\n  const property = column['property'];\r\n  // 筛选\r\n  return row[property] === value;\r\n}",
-         renderHeader:
-           'function render() {\n  // 此函数直接返回一个类似vue options组件的对象，如data、methods等，\n  // 可以通过this.row获取当前行数据，this.index获取下标，this.getTableRenderInstance()获取当前渲染实例\n  // 可以通过this.emitBtnClick(this.row, 按钮名称， 按钮id)来触发配置的按钮，其中按钮名称（会找到第一个匹配到的按钮注意重名问题）和按钮id任选其一即可。\n  // 模板则使用template代替，由于某些原因，尽量使用``来包裹整个字符串\n  return {\n    data () {\n      return {\n        s: "22"\n      }\n    },\n    methods: {\n      getValue () {\n        return this.s\n      },\n      btnClick() {\n        this.emitBtnClick(this.row, "后台接口")  \n      }\n    },\n    template: `<div @click.stop="btnClick"><i  class="el-icon-date"></i> <span> {{getValue()}} </span></div>`\n  }\n}',
-         formatter:
-           'function render() {\n  // 此函数直接返回一个类似vue options组件的对象，如data、methods等，\n  // 可以通过this.row获取当前行数据，this.index获取下标，this.getTableRenderInstance()获取当前渲染实例\n  // 可以通过this.emitBtnClick(this.row, 按钮名称， 按钮id)来触发配置的按钮，其中按钮名称（会找到第一个匹配到的按钮注意重名问题）和按钮id任选其一即可。\n  // 模板则使用template代替，由于某些原因，尽量使用``来包裹整个字符串\n  return {\n    data () {\n      return {\n        s: "22"\n      }\n    },\n    methods: {\n      getValue () {\n        return this.s\n      },\n      btnClick() {\n        this.emitBtnClick(this.row, "后台接口")  \n      }\n    },\n    template: `<div @click.stop="btnClick"><i  class="el-icon-date"></i> <span> {{getValue()}} </span></div>`\n  }\n}'
-       };
+  filters: "[{text: '2016-05-01(显示值)', value: '2016-05-01(传递给筛选函数的值)'}]",
+  filtersHandleFn:
+    "function getFilterArr (tableData) {\n  // 此函数接受tableData参数，并对tableData进行遍历，然后将处理后的数组当作本列表头的筛选数组\n  return tableData.map(item => {\n    // text是筛选列表中显示的值，value为筛选函数实际接收到的值，一般情况都赋值为 item.xxx就可以，下文中的UserID为当前行的字段名\n    return  {text:  item.UserID, value:  item.UserID}\n  })\n}",
+  "sort-method":
+    "function sortMethod(a, b) {\n  // a是需要排序的上一个值，b是需要排序的下一个值\n  // 需返回一个数字，和 Array.sort 表现一致\n  if (a < b) {\n    return -1\n  } else if (a > b) {\n    return 1\n  } else {\n    return 0\n  }\n}",
+  "filter-method":
+    "function filterHandler(value, row, column) {\r\n  // value是筛选选中的值，如果选择多个，则会将值挨个遍历此方法\r\n  \r\n  // 取出属性名\r\n  const property = column['property'];\r\n  // 筛选\r\n  return row[property] === value;\r\n}",
+  renderHeader:
+    'function render() {\n  // 此函数直接返回一个类似vue options组件的对象，如data、methods等，\n  // 可以通过this.row获取当前行数据,想渲染当前数据则使用{{row.xxx}}(xxx为当前行的字段名)，this.index获取下标，this.getTableRenderInstance()获取当前渲染实例\n  // 可以通过this.emitBtnClick(this.row, 按钮名称， 按钮id)来触发配置的按钮，其中按钮名称（会找到第一个匹配到的按钮注意重名问题）和按钮id任选其一即可。\n  // 配置样式使用:style="getStyle()"的方式，在getStyle返回要使用的样式\n  // 模板则使用template代替，由于某些原因，尽量使用``来包裹整个字符串\n  return {\n    data () {\n      return {\n        example: "22"\n      }\n    },\n    methods: {\n      getValue () {\n        return this.example\n      },\n      btnClick() {\n        this.emitBtnClick(this.row, "后台接口")  \n      },\n      getStyle() {\n        return "color: red;font-size: 16px;"\n      }\n    },\n    template: `<div :style="getStyle()" @click.stop="btnClick"><i class="el-icon-date"></i> <span> {{row.PreTaskID + getValue()}} </span></div>`\n  }\n}',
+  formatter:
+    'function render() {\n  // 此函数直接返回一个类似vue options组件的对象，如data、methods等，\n  // 可以通过this.row获取当前行数据,想渲染当前数据则使用{{row.xxx}}(xxx为当前行的字段名)，this.index获取下标，this.getTableRenderInstance()获取当前渲染实例\n  // 可以通过this.emitBtnClick(this.row, 按钮名称， 按钮id)来触发配置的按钮，其中按钮名称（会找到第一个匹配到的按钮注意重名问题）和按钮id任选其一即可。\n  // 配置样式使用:style="getStyle()"的方式，在getStyle返回要使用的样式\n  // 模板则使用template代替，由于某些原因，尽量使用``来包裹整个字符串\n  return {\n    data () {\n      return {\n        example: "22"\n      }\n    },\n    methods: {\n      getValue () {\n        return this.example\n      },\n      btnClick() {\n        this.emitBtnClick(this.row, "后台接口")  \n      },\n      getStyle() {\n        return "color: red;font-size: 16px;"\n      }\n    },\n    template: `<div :style="getStyle()" @click.stop="btnClick"><i class="el-icon-date"></i> <span> {{row.PreTaskID + getValue()}} </span></div>`\n  }\n}'
+};

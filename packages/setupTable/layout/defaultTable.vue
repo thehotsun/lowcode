@@ -1,6 +1,6 @@
 <template>
   <div class="wrap">
-    <operate :loading="loading" @handleSave="handleSave" @showTableAttrs="showTableAttrs" @showPreview="showPreview"> </operate>
+    <operate :loading="loading" @handleSave="handleSave" @showTableAttrs="showTableAttrs" @showPreview="showPreview" @jumpResource=jumpResource> </operate>
 
     <TableWidget ref="TableWidget"></TableWidget>
 

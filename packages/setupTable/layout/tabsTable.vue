@@ -1,6 +1,13 @@
 <template>
   <div class="leftTreeRightTableWrap">
-    <operate :loading="loading" :disposeShowTableSetting="disposeShowTableSetting" @handleSave="handleSave" @showTableAttrs="showTableAttrs" @showPreview="showPreview">
+    <operate
+      :loading="loading"
+      :disposeShowTableSetting="disposeShowTableSetting"
+      @handleSave="handleSave"
+      @showTableAttrs="showTableAttrs"
+      @showPreview="showPreview"
+      @jumpResource="jumpResource"
+    >
       <template slot="btn">
         <el-button size="mini" @click="showTabsAttrs">tabs属性设置</el-button>
       </template>
@@ -103,7 +110,7 @@ export default {
 
     initTableWidget(id, formCode, tabTableOptionsArr) {
       tabTableOptionsArr.map((tableOptions, index) => {
-        this.$refs.tableItemTab?.[index]?.init(id, formCode, tableOptions || false, true);
+        this.$refs.tableItemTab?.[index]?.init(id, formCode, tableOptions || undefined, true);
       });
     },
 

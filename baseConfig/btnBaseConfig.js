@@ -534,6 +534,7 @@ export function BtnConfigFormOptions() {
           tagAttrs: {
             placeholder: "请选择流程"
           },
+          ref: "chooseFlow",
           // 对应formData中的属性值
           formField: "extraOption.flowKey",
           watch: {
@@ -552,7 +553,7 @@ export function BtnConfigFormOptions() {
             slotName: "refreshList"
           },
           {
-            slotName: "relateFlow"
+            slotName: "relateFrom"
           }
         ],
         renderDependFn: function(formData) {
@@ -1266,6 +1267,7 @@ export function BtnConfigFrom(custom = {}) {
   return {
     style: "margin-right: 20px;",
     tagName: "el-button",
+    ref: "",
     tagAttrs: {
       value: "",
       type: "primary",

@@ -506,6 +506,7 @@ export default {
         ) : null}
         {showCodeEditor ? (
           <el-dialog
+            v-dialog-drag
             {...{
               attrs: { ...defaultDialogAttrs }
             }}

@@ -54,7 +54,15 @@
     </div>
 
     <el-drawer title="按钮属性设置" :visible.sync="drawer" :direction="direction">
-      <setupBtnConfig ref="setupBtnConfig" :key-field="keyField" :group-id="groupId" @refreshList="refreshList" @onSubmit="onSubmit" @onClose="onClose"></setupBtnConfig>
+      <setupBtnConfig
+        ref="setupBtnConfig"
+        :key-field="keyField"
+        :group-id="groupId"
+        :drawer="drawer"
+        @refreshList="refreshList"
+        @onSubmit="onSubmit"
+        @onClose="onClose"
+      ></setupBtnConfig>
     </el-drawer>
 
     <tableAttrsDlg ref="tableAttrsDlg" :delivery-fields-option="deliveryFieldsOption" @changeTableAttrs="changeTableAttrs"></tableAttrsDlg>
@@ -206,44 +214,17 @@ export default {
     },
 
     async expose_getBtnConfigOptions() {
-      return Promise.all([this.queryTableList(), this.queryFormList(), this.queryMetaList(), this.queryFlowList(), this.queryAuthorizeList()]);
+      return Promise.all([this.queryMetaList(), this.queryAuthorizeList()]);
     },
 
     expose_setBtnConfigOptions(btnConfigOptions = []) {
-      const [tableList, formList, metaList, flowList, authorizeList] = btnConfigOptions;
-      this.tableListExtraOption = {
-        props: {
-          emitPath: false,
-          key: "groupId",
-          label: "groupName",
-          children: "children"
-        },
-        options: tableList
-      };
+      const [metaList, authorizeList] = btnConfigOptions;
 
       this.metaListExtraOption = {
         options: metaList,
         props: {
           label: "businessName",
           key: "tableName"
-        }
-      };
-
-      this.flowListExtraOption = {
-        options: flowList,
-        props: {
-          label: "name",
-          key: "flowKey",
-          children: "flowDefinitionDtoList",
-          emitPath: false
-        }
-      };
-
-      this.formListExtraOption = {
-        options: formList,
-        props: {
-          label: "formName",
-          key: "formId"
         }
       };
 
@@ -505,34 +486,32 @@ export default {
       };
       return json;
     },
+    // 新增或者编辑前对按钮配置的一系列前置处理
+    setupBtnFromOptions() {
+      // 给按钮设计器设置config
+      this.$refs.setupBtnConfig.expose_setBtnConfigFromArr(this.btnConfigArr);
+      // 还原form配置
+      this.$refs.setupBtnConfig.expose_reductionAll();
+      // 配置关联的业务模型下拉框
+      this.$refs.setupBtnConfig.expose_setExtraOption(this.metaListExtraOption, "extraOption.relateMeta");
+      // 配置关联的组件列表下拉框
+      this.$refs.setupBtnConfig.expose_setExtraOption(
+        {
+          options: this.componentDicList
+        },
+        "extraOption.relateComponent"
+      );
+      // 选择提交选择数据中的相应字段
+      this.$refs.setupBtnConfig.expose_setExtraOption(this.deliveryFieldsOption, "extraOption.deliverySelectListFields");
+      // 配置权限下拉框
+      this.$refs.setupBtnConfig.expose_setExtraOption(this._btnAuthorize, "authorize");
+    },
 
     // 添加功能按钮处理事件
     handleBtnCommand(command) {
       this.drawer = true;
       this.$nextTick(() => {
-        // 给按钮设计器设置config
-        this.$refs.setupBtnConfig.expose_setBtnConfigFromArr(this.btnConfigArr);
-        // 还原form配置
-        this.$refs.setupBtnConfig.expose_reductionAll();
-        // 配置关联的设计表格下拉框
-        this.$refs.setupBtnConfig.expose_setExtraOption(this.formListExtraOption, "extraOption.relateFrom", ["contentTextFrontTagOptions"]);
-        // 配置关联的设计列表下拉框
-        this.$refs.setupBtnConfig.expose_setExtraOption(this.tableListExtraOption, "extraOption.relateTable", ["contentTextFrontTagOptions"]);
-        // 配置关联的业务模型下拉框
-        this.$refs.setupBtnConfig.expose_setExtraOption(this.metaListExtraOption, "extraOption.relateMeta");
-        // 配置关联的流程列表下拉框
-        this.$refs.setupBtnConfig.expose_setExtraOption(this.flowListExtraOption, "extraOption.flowKey", ["contentTextFrontTagOptions"]);
-        // 配置关联的组件列表下拉框
-        this.$refs.setupBtnConfig.expose_setExtraOption(
-          {
-            options: this.componentDicList
-          },
-          "extraOption.relateComponent"
-        );
-        // 选择提交选择数据中的相应字段
-        this.$refs.setupBtnConfig.expose_setExtraOption(this.deliveryFieldsOption, "extraOption.deliverySelectListFields");
-        // 配置权限下拉框
-        this.$refs.setupBtnConfig.expose_setExtraOption(this._btnAuthorize, "authorize");
+        this.setupBtnFromOptions();
         // 获取原始按钮配置form
         const config = this.$refs.setupBtnConfig.expose_getBtnConfigFrom();
         console.log(command);
@@ -624,27 +603,28 @@ export default {
 
     // 展开当前按钮详情
     handleBtnDetail(index) {
-      this.handleBtnCommand(this.btnConfigArr[index].extraOption.btnType);
+      this.drawer = true;
       this.$nextTick(() => {
+        this.setupBtnFromOptions();
         this.$refs.setupBtnConfig.expose_setBtnConfigFrom(this.btnConfigArr[index], true);
       });
     },
-    async refreshList(openType) {
+    async refreshList(openType, isTip) {
       switch (openType) {
         case 0:
           await this.queryFormList();
           this.$refs.setupBtnConfig.expose_setExtraOption(this.formListExtraOption, "extraOption.relateFrom", ["contentTextFrontTagOptions"]);
-          this.$success("刷新成功！");
+          isTip && this.$success("刷新成功！");
           break;
         case 2:
           await this.queryFlowList();
           this.$refs.setupBtnConfig.expose_setExtraOption(this.flowListExtraOption, "extraOption.flowKey", ["contentTextFrontTagOptions"]);
-          this.$success("刷新成功！");
+          isTip && this.$success("刷新成功！");
           break;
         case 6:
           await this.queryTableList();
           this.$refs.setupBtnConfig.expose_setExtraOption(this.tableListExtraOption, "extraOption.relateTable", ["contentTextFrontTagOptions"]);
-          this.$success("刷新成功！");
+          isTip && this.$success("刷新成功！");
           break;
         default:
           break;

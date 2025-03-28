@@ -78,9 +78,6 @@
       <template v-if="resourceInfo.name" #relateFrom>
         <el-button type="text" @click="openSource">{{ resourceInfo.name }}</el-button>
       </template>
-      <!-- <template #relateFlow>
-        <el-button type="text">{{ flowPath }}</el-button>
-      </template> -->
 
       <template #refreshList>
         <el-button type="text" icon="el-icon-refresh-right" @click="refreshList"></el-button>
@@ -188,6 +185,7 @@ export default {
   },
   props: {
     useDialog: Boolean,
+    drawer: Boolean,
     keyField: {
       type: String,
       default: () => {
@@ -230,6 +228,9 @@ export default {
         apiUrl,
         apiMethod
       };
+    },
+    watchRefreshData() {
+      return [this.btnConfigFrom.extraOption.openType, this.drawer];
     }
   },
 
@@ -237,7 +238,9 @@ export default {
     "btnConfigFrom.extraOption.relateFrom": {
       handler(val) {
         if (this.btnConfigFrom.extraOption.openType === 0 && val) {
-          this.getResourceInfo(val);
+          this.getResourceInfo({
+            formCode: val
+          });
         }
       },
       deep: true
@@ -245,18 +248,53 @@ export default {
     "btnConfigFrom.extraOption.relateTable": {
       handler(val) {
         if (this.btnConfigFrom.extraOption.openType === 6 && val) {
-          this.getResourceInfo(val);
+          this.getResourceInfo({
+            formCode: val
+          });
         }
       },
       deep: true
     },
-    "btnConfigFrom.extraOption.openType": {
-      handler() {
+    "btnConfigFrom.extraOption.flowKey": {
+      handler(val) {
+        if (this.btnConfigFrom.extraOption.openType === 2 && val) {
+          this.$nextTick(() => {
+            this.getResourceInfo({
+              flowKey: val,
+              enterpriseId: this.enterpriseId
+            });
+            // const node = this.$refs.form.$refs.chooseFlow.getCheckedNodes();
+            // console.log("node", node);
+            // this.resourceInfo.id = node[0].id;
+            // this.resourceInfo.name = node[0].pathLabels.join("/");
+          });
+        }
+      },
+      deep: true
+    },
+    // 当抽屉打开时，一定刷新资源列表，当打卡方式更改时，也刷新资源列表
+    watchRefreshData: {
+      handler(newVal, oldVal) {
+        let newopenType, newdrawer, oldopenType, olddrawer;
+        if (newVal) {
+          [newopenType, newdrawer] = newVal;
+        }
+        if (oldVal) {
+          [oldopenType, olddrawer] = oldVal;
+        }
+        console.log("watchRefreshData", newopenType, newdrawer, oldopenType, olddrawer);
+
+        if (olddrawer !== true && newdrawer === true) {
+          this.refreshList(false);
+        } else if (olddrawer === true && newdrawer === true && newopenType !== oldopenType) {
+          this.refreshList(false);
+        }
         this.resourceInfo = {
           name: "",
           id: ""
         };
-      }
+      },
+      immediate: true
     }
   },
 
@@ -273,12 +311,7 @@ export default {
   methods: {
     expose_reductionAll() {
       this.btnConfigFormOptions = new BtnConfigFormOptions();
-      this.btnConfigFrom = new BtnConfigFrom();
-      this.printDesignForm = new PrintDesignForm();
-      this.resourceInfo = {
-        name: "",
-        id: ""
-      };
+      this.resetData();
     },
 
     expose_hideSomeFieldOptions(fieldName) {
@@ -443,15 +476,13 @@ export default {
         Object.assign(this.originConfigForm, data);
       }
       this.$emit("onSubmit");
-      this.btnConfigFrom = new BtnConfigFrom();
-      this.printDesignForm = new PrintDesignForm();
-      this.resourceInfo = {
-        name: "",
-        id: ""
-      };
+      this.resetData();
     },
     onClose() {
       this.$emit("onClose");
+      this.resetData();
+    },
+    resetData() {
       this.originConfigForm = {};
       this.printDesignForm = new PrintDesignForm();
       this.btnConfigFrom = new BtnConfigFrom();
@@ -459,6 +490,9 @@ export default {
         name: "",
         id: ""
       };
+      this.$nextTick(() => {
+        this.$refs?.form?.$refs?.elForm?.clearValidate();
+      });
     },
     setBtnType(type) {
       this.btnConfigFrom.tagAttrs.type = type;
@@ -602,20 +636,19 @@ export default {
       const res = await this.getPrintTemplateInfo(this.groupId, this.btnConfigFrom.btnId);
       this.printDesignForm = res.data || new PrintDesignForm();
     },
-    async getResourceInfo(formCode) {
-      if (!formCode) {
+    async getResourceInfo({ formCode, flowKey, enterpriseId }) {
+      if (!formCode && !flowKey) {
         return;
       }
-      const pathInfo = await this.queryFormNamePath(formCode);
+      const pathInfo = await this.queryFormNamePath(formCode, null, flowKey, enterpriseId);
       this.resourceInfo = pathInfo;
     },
     async openSource() {
       const routeUrl = this.$router.resolve({ name: "meta-data", query: { type: "form", id: this.resourceInfo.id } });
       window.open(routeUrl.href, "_blank");
     },
-    refreshList() {
-      console.log("refreshList");
-      this.$emit("refreshList", this.btnConfigFrom.extraOption.openType);
+    refreshList(isTip = true) {
+      this.$emit("refreshList", this.btnConfigFrom.extraOption.openType, isTip);
     }
 
     // handleAuthorizeChange (authorize) {
