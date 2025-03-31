@@ -12,7 +12,6 @@
     <el-form label-width="120px">
       <!-- 自动下载 -->
       <el-form-item>
-        <el-checkbox v-model="form.isPdfPrintTemplate" :true-label="1" :false-label="0">输出为pdf（如果不勾选，则输出word文档）</el-checkbox>
         <el-checkbox v-model="form.autoDownload">完成后自动下载</el-checkbox>
       </el-form-item>
 
@@ -26,10 +25,18 @@
         </div>
       </el-form-item>
 
+
       <!-- 成果文件名 -->
       <el-form-item label="成果文件名">
         <div>{{ form.projectFileName }}</div>
         <!-- <el-input v-model="form.projectFileName" placeholder="请输入文件名"></el-input> -->
+      </el-form-item>
+
+      <el-form-item label="输出文件格式">
+        <el-radio-group v-model="form.isPdfPrintTemplate" :disabled="resultFileFormatDisable">
+          <el-radio :label="1">pdf</el-radio>
+          <el-radio :label="0">word</el-radio>
+        </el-radio-group>
       </el-form-item>
 
       <!-- 同名文件处理 -->
@@ -113,14 +120,19 @@ export default {
   data() {
     return {
       dialogVisible: false,
-      form: new From()
+      form: new From(),
+      resultFileFormatDisable: false
     };
   },
 
   methods: {
-    open({ resultFileName }) {
+    open({ resultFileName, resultFileFormat }) {
       this.dialogVisible = true;
       this.form.projectFileName = resultFileName;
+      this.resultFileFormatDisable = !!resultFileFormat;
+      if (this.resultFileFormatDisable) {
+        this.form.isPdfPrintTemplate = resultFileFormat === "pdf" ? 1 : 0;
+      }
     },
 
     async generate() {

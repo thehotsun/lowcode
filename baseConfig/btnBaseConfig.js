@@ -995,6 +995,21 @@ export function BtnConfigFormOptions() {
       },
       formItem: {
         formItemAttrs: {
+          label: "输出文件格式："
+          // "label-width": "0px"
+        },
+        slotName: "formDownloadFileTypeSlot",
+        renderDependFn: function(formData) {
+          return ["formDownload"].includes(formData.extraOption.btnType);
+        }
+      }
+    },
+    {
+      elRowAttrs: {
+        gutter: 10
+      },
+      formItem: {
+        formItemAttrs: {
           label: "数据设计："
           // "label-width": "0px"
         },

@@ -75,6 +75,11 @@
           {{ printDesignForm.resultFileName }} <el-button type="text" @click="handleResultFileName"> {{ printDesignForm.resultFileName ? "编辑" : "设计文件名" }}</el-button>
         </div>
       </template>
+      <template #formDownloadFileTypeSlot class="formDownloadSlot">
+        <el-select v-model="printDesignForm.resultFileFormat" placeholder="请选择" @change="handleUpdateResultFileFormat">
+          <el-option v-for="item in outputFileFormatList" :key="item.id" :label="item.name" :value="item.id"> </el-option>
+        </el-select>
+      </template>
       <template v-if="resourceInfo.name" #relateFrom>
         <el-button type="text" @click="openSource">{{ resourceInfo.name }}</el-button>
       </template>
@@ -129,6 +134,7 @@ import IconPicker from "./components/iconPicker";
 import { cloneDeep, merge } from "lodash";
 function PrintDesignForm() {
   return {
+    resultFileFormat: "",
     templateFileId: "",
     templateFileVersion: 1,
     templateFileName: "",
@@ -216,7 +222,21 @@ export default {
       resourceInfo: {
         name: "",
         id: ""
-      }
+      },
+      outputFileFormatList: [
+        {
+          id: "",
+          name: "打印时用户自行选择"
+        },
+        {
+          id: "pdf",
+          name: "pdf"
+        },
+        {
+          id: "docx",
+          name: "word"
+        }
+      ]
       // nameRules: { required: true, trigger: ['blur', 'change'], message: '请输入名称' },
     };
   },
@@ -589,8 +609,23 @@ export default {
       const params = {
         listPageId: this.groupId,
         buttonId: this.btnConfigFrom.btnId,
-        resultFileName
+        resultFileName,
+        resultFileFormat: this.printDesignForm.resultFileFormat
       };
+      this.updateAttributes(params);
+    },
+
+    handleUpdateResultFileFormat(resultFileFormat) {
+      const params = {
+        listPageId: this.groupId,
+        buttonId: this.btnConfigFrom.btnId,
+        resultFileName: this.printDesignForm.resultFileName,
+        resultFileFormat
+      };
+      this.updateAttributes(params);
+    },
+
+    async updateAttributes(params) {
       await this.updateTemplateName(params);
       this.getTemplateInfo();
     },
@@ -634,6 +669,9 @@ export default {
     },
     async getTemplateInfo() {
       const res = await this.getPrintTemplateInfo(this.groupId, this.btnConfigFrom.btnId);
+      if (!res.data.resultFileFormat) {
+        res.data.resultFileFormat = "";
+      }
       this.printDesignForm = res.data || new PrintDesignForm();
     },
     async getResourceInfo({ formCode, flowKey, enterpriseId }) {

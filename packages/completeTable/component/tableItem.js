@@ -1664,10 +1664,11 @@ export default {
           return this.$warn("主键字段未取到值，请检查数据或重新在列表设计页面重新关联主键！");
         }
         const {
-          data: { resultFileName }
+          data: { resultFileName, resultFileFormat }
         } = await this.getPrintTemplateInfo(this.listPageId, this.btnConfigs.btnId);
         this.$refs.printTemplateDlg.open({
-          resultFileName
+          resultFileName,
+          resultFileFormat
         });
         // this.requestBatchFlowDoc(
         //   command,
@@ -2493,7 +2494,7 @@ export default {
             ) : null}
           </el-container>
         </el-main>
-        <printTemplateDlg ref="printTemplateDlg" listPageId={listPageId} btnId={btnConfigs.btnId + ''} keyField={keyField} selectList={selectList}></printTemplateDlg>
+        <printTemplateDlg ref="printTemplateDlg" listPageId={listPageId} btnId={btnConfigs.btnId + ""} keyField={keyField} selectList={selectList}></printTemplateDlg>
         {btnRelateDialogVNode()}
         {importFileVNode()}
         {importRefreshVNode()}
