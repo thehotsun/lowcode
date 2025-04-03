@@ -305,11 +305,13 @@ export default {
       );
     },
 
-    getTooltipCompVNode({ tagAttrs: { internalTagOption, ...attrs } }) {
+    getTooltipCompVNode({ tagAttrs: { internalTagOption, ...attrs }, style: wrapStyle, className: wrapClassName }) {
       const { getSingleCompVNode } = this;
       const { style = "", className = "", tagAttrs = {}, contentText = "", tagName } = internalTagOption;
       return (
         <el-tooltip
+          style={wrapStyle}
+          class={wrapClassName}
           {...{
             attrs
           }}
@@ -380,16 +382,7 @@ export default {
                 })
               : (console.warn(`slot : ${slotName} 未定义！`), "")
             : isCooperateComp(tagName, contentTextBehindTagOptions, contentTextFrontTagOptions)
-            ? getCooperateComp({
-                tagName,
-                tagAttrs,
-                listeners,
-                formField,
-                extraOption,
-                request,
-                isFlat,
-                ref
-              })
+            ? getCooperateComp(item)
             : getPureSingleCompVNode(item)}
         </div>
       );
@@ -501,13 +494,13 @@ export default {
           style={isFlat ? "width: 100%" : ""}
         >
           {labelSlotName || !isEmpty(labelOptions) ? (
-            <div slot="label">
+            <template slot="label">
               {labelSlotName && this.$scopedSlots[labelSlotName]
                 ? this.$scopedSlots[labelSlotName]({
                     formData: formData
                   })
                 : this.getSingleCompVNode(labelOptions)}
-            </div>
+            </template>
           ) : (
             ""
           )}

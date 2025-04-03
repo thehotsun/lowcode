@@ -83,7 +83,7 @@ export const btnTypeArr = [
   {
     name: "custom",
     displayName: "自定义",
-    isStatic: false
+    isStatic: true
   }
 ];
 
@@ -166,7 +166,7 @@ const dialogAttrRenderDependFn = function(formData) {
 
 const requestBeforeConfirmRenderDependFn = function(formData) {
   return (
-    !downBtn.concat("refresh").includes(formData.extraOption.btnType) &&
+    !downBtn.concat("refresh", "custom").includes(formData.extraOption.btnType) &&
     !(
       (formData.extraOption.openType === 4 && formData.extraOption.useDialog && !formData.extraOption.showFooter) ||
       (formData.extraOption.openType === 4 && !formData.extraOption.useDialog)
@@ -187,7 +187,7 @@ const deliverySelectListFieldsRenderDependFn = function(formData) {
 };
 
 const excludeDownAndDelRenderDependFn = function(formData) {
-  return !downBtn.concat("batchDel", "refresh").includes(formData.extraOption.btnType);
+  return !downBtn.concat("batchDel", "refresh", "custom").includes(formData.extraOption.btnType);
 };
 
 const expectOpenTypeRenderDependFnGenerator = openType =>
@@ -1241,19 +1241,24 @@ export function BtnConfigFormOptions() {
       },
       formItem: {
         formItemAttrs: {
-          label: "自定义执行函数：",
+          label: "执行函数：",
+          rules: {
+            message: "请输入执行函数",
+            trigger: "blur",
+            required: true
+          },
           prop: "extraOption.fn",
           labelSlotName: "",
           labelOptions: {
             tagName: "el-tooltip",
-            style: "width: 180px",
+            wrapDivStyle: "display: inline-block;",
             tagAttrs: {
               effect: "dark",
               content:
                 "点击按钮后只执行当前输入的函数。此函数无入参，this指向当前渲染组件，可以通过this.selectList（这个值代表当前的选中行）等获取你要的相应信息（具体请参阅文档）",
               placement: "top-start",
               internalTagOption: {
-                contentText: "自定义执行函数：",
+                contentText: "执行函数：",
                 style: "font-size: 14px"
               }
             }
@@ -1262,7 +1267,7 @@ export function BtnConfigFormOptions() {
         tagName: "el-input",
         style: "max-width: 180px;width: 100%;",
         tagAttrs: {
-          placeholder: "请输入自定义执行函数",
+          placeholder: "请输入执行函数",
           type: "textarea",
           autosize: true
         },

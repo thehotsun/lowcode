@@ -579,7 +579,7 @@ export default {
             break;
           case "custom":
             config.extraOption.btnType = "custom";
-            config.extraOption.openType = -1;
+            config.extraOption.openType = "";
             config.extraOption.deliverySelectList = false;
             break;
           default:
