@@ -850,6 +850,11 @@ export default {
       this.queryTableData();
     },
 
+    async iconRefresh() {
+      await this.queryTableData();
+      this.$success("刷新成功");
+    },
+
     // 获取列表数据接口参数
     getParams(data = {}) {
       const extraParams = {};
@@ -1600,6 +1605,9 @@ export default {
       await this.generalRequest(finalUrl, finalType, finalData, requestHeaders);
       this.btnConfigs.isRefresh && this.queryTableData();
     },
+    iconDisposeDown(command) {
+      this.disposeDown({ command });
+    },
     disposeDown({ command }, row) {
       let params = {
         prjId: this.getPrjInfo().prjId,
@@ -2276,7 +2284,8 @@ export default {
       formOptions,
       attrs,
       showBtns,
-      btnRegularOptions,
+      iconRefresh,
+      iconDisposeDown,
       handleBtnClick,
       filterTableOptions,
       selectListHandler,
@@ -2446,6 +2455,26 @@ export default {
                     }
                   }}
                 ></i>
+
+                <i
+                  class="el-icon-refresh-right i pointer"
+                  {...{
+                    on: {
+                      click: iconRefresh
+                    }
+                  }}
+                ></i>
+
+                <el-dropdown oncommand={iconDisposeDown}>
+                  <span class="el-dropdown-link">
+                    <i class="el-icon-download i pointer"></i>
+                  </span>
+                  <el-dropdown-menu slot="dropdown">
+                    <el-dropdown-item command="curSelect">当前选中</el-dropdown-item>
+                    <el-dropdown-item command="curPage">当前页</el-dropdown-item>
+                    <el-dropdown-item command="all">全部</el-dropdown-item>
+                  </el-dropdown-menu>
+                </el-dropdown>
 
                 <div class={["custom", "absolute", showPanel ? "" : "none"]}>
                   <panel
