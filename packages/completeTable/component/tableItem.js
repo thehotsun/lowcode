@@ -949,7 +949,7 @@ export default {
 
     parseTableConfig(data) {
       const { tableOptions, formOptions, keyField, tableAttrs, fuzzyFieldSearchConfig } = data;
-      this.tableAttrs = setTableAttrs(merge({}, this.tableAttrs, tableAttrs));
+      this.tableAttrs = setTableAttrs(merge({}, this.tableAttrs, tableAttrs), this);
       this.page.pageSize = this.tableAttrs.paginationSize;
       if (formOptions?.length) {
         this.btnRegularOptions = this.composeBtnRegularOptions(cloneDeep(formOptions));

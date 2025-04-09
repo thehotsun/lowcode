@@ -663,11 +663,11 @@ export function getSummaries(param) {
   return sums;
 }
 
-export function setTableAttrs(data) {
+export function setTableAttrs(data, that) {
   const fnTranslate = ["summaryMethod", "index", "load", "spanMethod", "dataTransitionFn"];
   fnTranslate.map(field => {
     if (data[field]) {
-      data[field] = str2Fn(data[field]);
+      data[field] = str2Fn(data[field]).bind(that);
     } else {
       delete data[field];
     }
