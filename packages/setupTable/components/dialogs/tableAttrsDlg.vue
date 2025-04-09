@@ -161,10 +161,14 @@
               placeholder="请输入列表样式（包括列表、搜索区域和按钮区域）"></el-input>
           </el-form-item> -->
       </el-form>
-      <el-dialog v-draggable :before-close="handleClose" :title="codeEditorTil" :visible="showCodeEditor" width="900px" :append-to-body="true">
-        <js-code-editor ref="chEditor" mode="javascript" :readonly="false" :value="tableAttrs[curFn]" @input="handleEditorInput"></js-code-editor>
-        <codeExample v-if="tableAttrsCodeExampleList[curFn]" :val="tableAttrsCodeExampleList[curFn]" @copy="handleCopy"> </codeExample>
-      </el-dialog>
+      <onlineCode
+        v-if="showCodeEditor"
+        :title="codeEditorTil"
+        :model-value="tableAttrs[curFn]"
+        :code-example-val="tableAttrsCodeExampleList[curFn]"
+        @confirm="handleEditorInput"
+        @close="handleClose"
+      ></onlineCode>
     </div>
     <span slot="footer" class="dialog-footer">
       <el-button @click="handleCloseTableAttrs">取消</el-button>
@@ -174,14 +178,14 @@
 </template>
 
 <script>
-import codeExample from "./components/codeExample.vue";
+import onlineCode from "/packages/completeTable/component/onlineCode.vue";
 import { cloneDeep } from "lodash";
 import { tableAttrsCodeExampleList } from "/utils/codeExampleList";
 import { getTableAttrs } from "/baseConfig/tableBaseConfig";
 import { str2obj } from "/utils";
 export default {
   components: {
-    codeExample
+    onlineCode
   },
   props: {
     deliveryFieldsOption: {

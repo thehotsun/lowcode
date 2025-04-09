@@ -1,7 +1,9 @@
 import { getter, getHandleInput, str2obj, str2Fn, decorator, setter } from "../../utils";
 import { isEmpty, cloneDeep } from "lodash";
+import onlineCode from "/packages/completeTable/component/onlineCode.vue";
 export default {
   name: "BaseRenderForm",
+  components: { onlineCode },
   props: {
     generalRequest: {
       type: Function
@@ -585,22 +587,25 @@ export default {
       appendToBody: true
     };
 
+    const model = getter(formData, this.codeValue.formField);
+
     const defaultCodeEditorDialogAttrs = {
-      beforeClose: handleCodeEditorClose,
-      title: "代码编写",
-      visible: showCodeEditor,
-      width: "900px",
-      appendToBody: true
+      dialogAttrs: {
+        title: "代码编写"
+      },
+      displayHeight: "600px",
+      modelValue: model || "",
+      showExample: false
     };
 
     const codeEditorListeners = {
-      input: val => {
+      confirm: val => {
         console.log(val, "codeEditorListeners");
         setter(formData, codeValue.formField, val);
-      }
+      },
+      close: handleCodeEditorClose
     };
 
-    const model = getter(formData, this.codeValue.formField);
     console.log("baseformrender");
     return (
       <div>
@@ -664,14 +669,14 @@ export default {
           </div>
         )}
         {showCodeEditor ? (
-          <el-dialog
-            v-dialog-drag
+          <onlineCode
             {...{
-              attrs: { ...defaultCodeEditorDialogAttrs }
+              attrs: { ...defaultCodeEditorDialogAttrs },
+              on: {
+                ...codeEditorListeners
+              }
             }}
-          >
-            <js-code-editor ref="chEditor" mode="javascript" readonly={false} value={model} display-height="600px" {...{ on: codeEditorListeners }}></js-code-editor>
-          </el-dialog>
+          ></onlineCode>
         ) : null}
       </div>
     );

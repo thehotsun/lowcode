@@ -2,12 +2,12 @@ import "./table.less";
 import { decorator, mergeStyle } from "../../utils";
 import { omit } from "lodash";
 import { tableOptionsCodeExampleList } from "/utils/codeExampleList";
-import codeExample from "/packages/setupTable/components/dialogs/components/codeExample.vue";
+import onlineCode from "/packages/completeTable/component/onlineCode.vue";
 
 import { h } from "vue";
 export default {
   name: "BaseRenderTable",
-  components: { codeExample },
+  components: { onlineCode },
   data() {
     return {
       zanwu: require("@/assets/noData.png"),
@@ -66,15 +66,6 @@ export default {
 
     expose_clearCurCellPro() {
       this.curCellProperty = "";
-    },
-
-    async handleCopy(val) {
-      this.codeValue.row[this.codeValue.prop] = val;
-      await this.$nextTick();
-      this.$refs.chEditor.aceEditor.setOptions({
-        value: val
-      });
-      this.$refs.chEditor.codeValue = val;
     },
 
     rowClick(row) {
@@ -425,8 +416,7 @@ export default {
       codeValue,
       showCodeEditor,
       handleClose,
-      height,
-      handleCopy
+      height
     } = this;
     const defaultTableAttrs = {
       "row-style": rowStyle,
@@ -443,20 +433,22 @@ export default {
       // 'cell-mouse-enter': handleCellEnter,
       // 'cell-mouse-leave': handleCellLeave,
     };
-
-    const defaultDialogAttrs = {
-      beforeClose: handleClose,
-      title: tableOptions.find(item => item.prop === codeValue.prop)?.label || "代码编写",
-      visible: showCodeEditor,
-      width: "900px",
-      appendToBody: true
-    };
+    let defaultOnlineDialogAttrs;
+    if (showCodeEditor) {
+      defaultOnlineDialogAttrs = {
+        dialogAttrs: {
+          title: tableOptions.find(item => item.prop === codeValue.prop)?.label || "代码编写"
+        },
+        modelValue: codeValue.row[codeValue.prop],
+        codeExampleVal: tableOptionsCodeExampleList[codeValue.prop]
+      };
+    }
 
     const codeEditorListeners = {
-      input: val => {
-        console.log(val, "codeEditorListeners");
+      confirm: val => {
         codeValue.row[codeValue.prop] = val;
-      }
+      },
+      close: handleClose
     };
     // const defaultPageAttrs = {
     //   'current-page': page.pageNum,
@@ -505,15 +497,14 @@ export default {
           </el-table>
         ) : null}
         {showCodeEditor ? (
-          <el-dialog
-            v-dialog-drag
+          <onlineCode
             {...{
-              attrs: { ...defaultDialogAttrs }
+              attrs: { ...defaultOnlineDialogAttrs },
+              on: {
+                ...codeEditorListeners
+              }
             }}
-          >
-            <js-code-editor ref="chEditor" mode="javascript" readonly={false} value={codeValue.row[codeValue.prop]} {...{ on: codeEditorListeners }}></js-code-editor>
-            <codeExample val={tableOptionsCodeExampleList[codeValue.prop]} oncopy={handleCopy}></codeExample>
-          </el-dialog>
+          ></onlineCode>
         ) : null}
       </div>
     );

@@ -210,10 +210,14 @@
       <el-button @click="handleCloseTreeAttrs">取消</el-button>
       <el-button type="primary" @click="handleConfirm">确定</el-button>
     </span>
-    <el-dialog v-draggable :before-close="handleClose" :title="codeEditorTil" :visible="showCodeEditor" width="900px" :append-to-body="true">
-      <js-code-editor ref="chEditor" mode="javascript" :readonly="false" :value="treeAttrs[curFn]" @input="handleEditorInput"></js-code-editor>
-      <codeExample :val="treeAttrsCodeExampleList[curFn]" @copy="handleCopy"></codeExample>
-    </el-dialog>
+    <onlineCode
+      v-if="showCodeEditor"
+      :title="codeEditorTil"
+      :model-value="treeAttrs[curFn]"
+      :code-example-val="treeAttrsCodeExampleList[curFn]"
+      @confirm="handleEditorInput"
+      @close="handleClose"
+    ></onlineCode>
   </el-dialog>
 </template>
 
@@ -222,14 +226,14 @@ import { TreeAttrs } from "/baseConfig/treeBaseConfig";
 import IconPicker from "../setupBtnConfig/components/iconPicker";
 import { cloneDeep } from "lodash";
 import treeConfig from "./components/treeConfig.vue";
-import codeExample from "./components/codeExample.vue";
+import onlineCode from "/packages/completeTable/component/onlineCode.vue";
 import { treeAttrsCodeExampleList } from "/utils/codeExampleList";
 
 export default {
   components: {
     IconPicker,
     treeConfig,
-    codeExample
+    onlineCode
   },
   data() {
     return {
