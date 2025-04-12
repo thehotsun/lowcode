@@ -439,9 +439,14 @@ export default {
         dialogAttrs: {
           title: tableOptions.find(item => item.prop === codeValue.prop)?.label || "代码编写"
         },
-        modelValue: codeValue.row[codeValue.prop],
-        codeExampleVal: tableOptionsCodeExampleList[codeValue.prop]
+        modelValue: codeValue.row[codeValue.prop]
       };
+      if (["formatter", "renderHeader"].includes(codeValue.prop)) {
+        defaultOnlineDialogAttrs.useTabLayout = true;
+        defaultOnlineDialogAttrs.exampleList = tableOptionsCodeExampleList[codeValue.prop];
+      } else {
+        defaultOnlineDialogAttrs.codeExampleVal = tableOptionsCodeExampleList[codeValue.prop];
+      }
     }
 
     const codeEditorListeners = {

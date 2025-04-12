@@ -1,7 +1,12 @@
 <template>
   <el-dialog v-dialog-drag v-bind="mergedDialogAttrs" :visible.sync="visible" @close="handleDialogClose">
     <js-code-editor ref="chEditor" v-model="jsvalue" :mode="editorMode" :readonly="readonly" :display-height="displayHeight"></js-code-editor>
-    <codeExample v-if="showExample" :val="codeExampleVal" @copy="handleCopy"></codeExample>
+    <codeExample v-if="showExample && !useTabLayout" :val="codeExampleVal" @copy="handleCopy"></codeExample>
+    <el-tabs v-if="showExample && useTabLayout" v-model="activeName">
+      <el-tab-pane v-for="(item, index) in exampleList" :key="index" :label="item.label" :name="index + ''">
+        <codeExample :val="item.codeExampleVal" @copy="handleCopy"></codeExample>
+      </el-tab-pane>
+    </el-tabs>
     <span slot="footer" class="dialog-footer">
       <el-button size="small" @click="handleDialogClose">取消</el-button>
       <el-button size="small" type="primary" @click="handleDialogConfirm">确定</el-button>
@@ -17,6 +22,10 @@ export default {
     codeExample
   },
   props: {
+    useTabLayout: {
+      type: Boolean,
+      default: false
+    },
     modelValue: {
       type: String,
       required: true
@@ -28,6 +37,9 @@ export default {
     codeExampleVal: {
       type: String,
       required: false
+    },
+    exampleList: {
+      type: Array
     },
     displayHeight: {
       type: String,
@@ -41,6 +53,7 @@ export default {
   },
   data() {
     return {
+      activeName: "0",
       visible: true,
       // 默认对话框配置
       defaultDialogAttrs: {
@@ -74,8 +87,11 @@ export default {
     //   this.$emit("update:modelValue", value);
     // },
     handleCopy() {
-      this.jsvalue = this.codeExampleVal;
-      // this.$refs.chEditor.setValue(this.jsvalue);
+      if (this.useTabLayout) {
+        this.jsvalue = this.exampleList[this.activeName].codeExampleVal;
+      } else {
+        this.jsvalue = this.codeExampleVal;
+      }
     },
     // 对话框关闭处理
 
