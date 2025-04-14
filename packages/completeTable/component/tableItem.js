@@ -2322,7 +2322,8 @@ export default {
       btnConfigs,
       selectList,
       keyField,
-      hiddenDefaultArea
+      hiddenDefaultArea,
+      getParams
     } = this;
 
     const curPageListeners = localProcessData
@@ -2382,6 +2383,7 @@ export default {
                 generalRequest={generalRequest}
                 form-data={searchFrom}
                 form-options={formOptions}
+                getParams={getParams}
                 showFooter={false}
                 use-dialog={false}
                 label-width=""

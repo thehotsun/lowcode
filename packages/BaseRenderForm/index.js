@@ -1,4 +1,5 @@
 import { getter, getHandleInput, str2obj, str2Fn, decorator, setter } from "../../utils";
+import { convertDynaticData } from "../../utils/interfaceParams";
 import { isEmpty, cloneDeep } from "lodash";
 import onlineCode from "/packages/completeTable/component/onlineCode.vue";
 export default {
@@ -32,6 +33,12 @@ export default {
       type: Boolean,
       default() {
         return true;
+      }
+    },
+    getParams: {
+      type: Function,
+      default() {
+        return () => () => {};
       }
     }
   },
@@ -126,6 +133,8 @@ export default {
 
     requestData({ url = "", type = "get", params = "" }, extraOption) {
       params = str2obj(params);
+      const baseParams = this.getParams() || {};
+      params = convertDynaticData(params, baseParams, this);
       this.generalRequest(url, type, params).then(res => {
         res.data
           .sort((a, b) => a.sortNum - b.sortNum)
