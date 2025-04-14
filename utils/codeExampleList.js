@@ -34,22 +34,22 @@ export const tableOptionsCodeExampleList = {
     {
       label: "数据转换",
       codeExampleVal:
-        "function render() {\n  // 此函数直接返回一个类似vue options组件的对象，如data、methods等，\n  // 可以通过this.row获取当前行数据,想渲染当前数据则使用{{row.xxx}}(xxx为当前行的字段名)，\n  // this.index获取下标，this.getTableRenderInstance()获取当前渲染实例\n  // 模板则使用template代替，由于某些原因，尽量使用``来包裹整个字符串\n  return {\n    methods: {\n      getDisplayContent () {\n        // 在这里进行数据转换，例子是保留两位小数点的万单位转换 \n        return (parseFloat(this.row.PreTaskID) / 10000).toFixed(2) + '万'\n      }\n    },\n    template: `<div>{{ getDisplayContent()}}</div>`\n  }\n}"
+        "function render() {\n  // 此函数直接返回一个类似vue options组件的对象，如data、methods等，\n  // 可以通过this.row获取当前行数据,想渲染当前数据则使用{{row.xxx}}(xxx为当前行的字段名)，\n  // this.index获取下标，this.getTableRenderInstance()获取当前渲染实例\n  // 模板则使用template代替，由于某些原因，尽量使用``来包裹整个字符串\n  return {\n    methods: {\n      getDisplayContent () {\n        // 在这里进行数据转换，例子是保留两位小数点的万单位转换 \n        return (parseFloat(this.row.contractAmount) / 10000).toFixed(2) + '万'\n      }\n    },\n    template: `<div>{{ getDisplayContent()}}</div>`\n  }\n}"
     },
     {
       label: "触发按钮",
       codeExampleVal:
-        'function render() {\n  // 此函数直接返回一个类似vue options组件的对象，如data、methods等，\n  // 可以通过this.row获取当前行数据,想渲染当前数据则使用{{row.xxx}}(xxx为当前行的字段名)，\n  // this.index获取下标，this.getTableRenderInstance()获取当前渲染实例\n  // 可以通过this.emitBtnClick(this.row, 按钮名称， 按钮id)来触发配置的按钮，其中按钮名称（会找到第一个匹配到的按钮注意重名问题）和按钮id任选其一即可。\n  // 配置样式使用:style="getStyle()"的方式，在getStyle返回要使用的样式\n  // 模板则使用template代替，由于某些原因，尽量使用``来包裹整个字符串\n  return {\n    methods: {\n      btnClick() {\n        // 第一个参数是传递数据，需要和按钮配置中的列表提交数据选项配合，如无特殊需要，直接写this.row\n        // 第二个参数是触发的按钮名称\n        // 当前写法效果和选中当前行后点击查看lb2按钮效果是一致的\n        this.emitBtnClick(this.row, "查看lb2")  \n      }\n    },\n    template: `<div  @click.stop="btnClick"><span> {{row.PreTaskID}} </span></div>`\n  }\n}'
+        'function render() {\n  // 此函数直接返回一个类似vue options组件的对象，如data、methods等，\n  // 可以通过this.row获取当前行数据,想渲染当前数据则使用{{row.xxx}}(xxx为当前行的字段名)，\n  // this.index获取下标，this.getTableRenderInstance()获取当前渲染实例\n  // 可以通过this.emitBtnClick(this.row, 按钮名称， 按钮id)来触发配置的按钮，其中按钮名称（会找到第一个匹配到的按钮注意重名问题）和按钮id任选其一即可。\n  // 配置样式使用:style="getStyle()"的方式，在getStyle返回要使用的样式\n  // 模板则使用template代替，由于某些原因，尽量使用``来包裹整个字符串\n  return {\n    methods: {\n      btnClick() {\n        // 第一个参数是传递数据，需要和按钮配置中的列表提交数据选项配合，如无特殊需要，直接写this.row\n        // 第二个参数是触发的按钮名称\n        // 当前写法效果和选中当前行后点击查看合同详情按钮效果是一致的\n        this.emitBtnClick(this.row, "查看合同详情")  \n      }\n    },\n    template: `<div  @click.stop="btnClick"><span> {{row.contractName}} </span></div>`\n  }\n}'
     },
     {
       label: "修改样式",
       codeExampleVal:
-        'function render() {\n  // 此函数直接返回一个类似vue options组件的对象，如data、methods等，\n  // 可以通过this.row获取当前行数据,想渲染当前数据则使用{{row.xxx}}(xxx为当前行的字段名)，this.index获取下标，this.getTableRenderInstance()获取当前渲染实例\n  // 可以通过this.emitBtnClick(this.row, 按钮名称， 按钮id)来触发配置的按钮，其中按钮名称（会找到第一个匹配到的按钮注意重名问题）和按钮id任选其一即可。\n  // 配置样式使用:style="getStyle()"的方式，在getStyle返回要使用的样式\n  // 模板则使用template代替，由于某些原因，尽量使用``来包裹整个字符串\n  return {\n    methods: {\n      getStyle() {\n        return "color: red;font-size: 16px;"\n      }\n  },\n    template: `<div :style="getStyle()"> <span> {{row.PreTaskID}} </span></div>`\n  }\n}'
+        'function render() {\n  // 此函数直接返回一个类似vue options组件的对象，如data、methods等，\n  // 可以通过this.row获取当前行数据,想渲染当前数据则使用{{row.xxx}}(xxx为当前行的字段名)，this.index获取下标，this.getTableRenderInstance()获取当前渲染实例\n  // 可以通过this.emitBtnClick(this.row, 按钮名称， 按钮id)来触发配置的按钮，其中按钮名称（会找到第一个匹配到的按钮注意重名问题）和按钮id任选其一即可。\n  // 配置样式使用:style="getStyle()"的方式，在getStyle返回要使用的样式\n  // 模板则使用template代替，由于某些原因，尽量使用``来包裹整个字符串\n  return {\n    methods: {\n      getStyle() {\n        return "color: red;font-size: 16px;"\n      }\n  },\n    template: `<div :style="getStyle()"> <span> {{row.name}} </span></div>`\n  }\n}'
     },
     {
-      label: "使用全局组件",
+      label: "使用图标",
       codeExampleVal:
-        'function render() {\n  // 此函数直接返回一个类似vue options组件的对象，如data、methods等，\n  // 可以通过this.row获取当前行数据,想渲染当前数据则使用{{row.xxx}}(xxx为当前行的字段名)，this.index获取下标，this.getTableRenderInstance()获取当前渲染实例\n  // 可以通过this.emitBtnClick(this.row, 按钮名称， 按钮id)来触发配置的按钮，其中按钮名称（会找到第一个匹配到的按钮注意重名问题）和按钮id任选其一即可。\n  // 配置样式使用:style="getStyle()"的方式，在getStyle返回要使用的样式\n  // 模板则使用template代替，由于某些原因，尽量使用``来包裹整个字符串\n  return {\n    // 在template中，可以直接使用注册到全局的组件，如element相关\n    template: `<div><i class="el-icon-date"></i> <span> {{row.PreTaskID }} </span></div>`\n  }\n}'
+        'function render() {\n  // 此函数直接返回一个类似vue options组件的对象，如data、methods等，\n  // 可以通过this.row获取当前行数据,想渲染当前数据则使用{{row.xxx}}(xxx为当前行的字段名)，this.index获取下标，this.getTableRenderInstance()获取当前渲染实例\n  // 可以通过this.emitBtnClick(this.row, 按钮名称， 按钮id)来触发配置的按钮，其中按钮名称（会找到第一个匹配到的按钮注意重名问题）和按钮id任选其一即可。\n  // 配置样式使用:style="getStyle()"的方式，在getStyle返回要使用的样式\n  // 模板则使用template代替，由于某些原因，尽量使用``来包裹整个字符串\n  return {\n    // 在template中，可以直接使用element相关的icon\n    template: `<div><i class="el-icon-date"></i> <span> {{row.name }} </span></div>`\n  }\n}'
     },
     {
       label: "综合使用",
@@ -61,27 +61,27 @@ export const tableOptionsCodeExampleList = {
     {
       label: "数据转换",
       codeExampleVal:
-        "function render() {\n  // 此函数直接返回一个类似vue options组件的对象，如data、methods等，\n  // 可以通过this.row获取当前行数据,想渲染当前数据则使用{{row.xxx}}(xxx为当前行的字段名)，\n  // this.index获取下标，this.getTableRenderInstance()获取当前渲染实例\n  // 模板则使用template代替，由于某些原因，尽量使用``来包裹整个字符串\n  return {\n    methods: {\n      getDisplayContent () {\n        // 在这里进行数据转换，例子是保留两位小数点的万单位转换 \n        return (parseFloat(this.row.PreTaskID) / 10000).toFixed(2) + '万'\n      }\n    },\n    template: `<div>{{ getDisplayContent()}}</div>`\n  }\n}"
+        "function render() {\n  // 此函数直接返回一个类似vue options组件的对象，如data、methods等，\n  // 可以通过this.row获取当前行数据,想渲染当前数据则使用{{row.xxx}}(xxx为当前行的字段名)，\n  // this.index获取下标，this.getTableRenderInstance()获取当前渲染实例\n  // 模板则使用template代替，由于某些原因，尽量使用``来包裹整个字符串\n  return {\n    methods: {\n      getDisplayContent () {\n        // 在这里进行数据转换，例子是保留两位小数点的万单位转换 \n        return (parseFloat(this.row.contractAmount) / 10000).toFixed(2) + '万'\n      }\n    },\n    template: `<div>{{ getDisplayContent()}}</div>`\n  }\n}"
     },
     {
       label: "触发按钮",
       codeExampleVal:
-        'function render() {\n  // 此函数直接返回一个类似vue options组件的对象，如data、methods等，\n  // 可以通过this.row获取当前行数据,想渲染当前数据则使用{{row.xxx}}(xxx为当前行的字段名)，\n  // this.index获取下标，this.getTableRenderInstance()获取当前渲染实例\n  // 可以通过this.emitBtnClick(this.row, 按钮名称， 按钮id)来触发配置的按钮，其中按钮名称（会找到第一个匹配到的按钮注意重名问题）和按钮id任选其一即可。\n  // 配置样式使用:style="getStyle()"的方式，在getStyle返回要使用的样式\n  // 模板则使用template代替，由于某些原因，尽量使用``来包裹整个字符串\n  return {\n    methods: {\n      btnClick() {\n        // 第一个参数是传递数据，需要和按钮配置中的列表提交数据选项配合，如无特殊需要，直接写this.row\n        // 第二个参数是触发的按钮名称\n        // 当前写法效果和选中当前行后点击查看lb2按钮效果是一致的\n        this.emitBtnClick(this.row, "查看lb2")  \n      }\n    },\n    template: `<div  @click.stop="btnClick"><span> {{row.PreTaskID}} </span></div>`\n  }\n}'
+        'function render() {\n  // 此函数直接返回一个类似vue options组件的对象，如data、methods等，\n  // 可以通过this.row获取当前行数据,想渲染当前数据则使用{{row.xxx}}(xxx为当前行的字段名)，\n  // this.index获取下标，this.getTableRenderInstance()获取当前渲染实例\n  // 可以通过this.emitBtnClick(this.row, 按钮名称， 按钮id)来触发配置的按钮，其中按钮名称（会找到第一个匹配到的按钮注意重名问题）和按钮id任选其一即可。\n  // 配置样式使用:style="getStyle()"的方式，在getStyle返回要使用的样式\n  // 模板则使用template代替，由于某些原因，尽量使用``来包裹整个字符串\n  return {\n    methods: {\n      btnClick() {\n        // 第一个参数是传递数据，需要和按钮配置中的列表提交数据选项配合，如无特殊需要，直接写this.row\n        // 第二个参数是触发的按钮名称\n        // 当前写法效果和选中当前行后点击查看合同详情按钮效果是一致的\n        this.emitBtnClick(this.row, "查看合同详情")  \n      }\n    },\n    template: `<div  @click.stop="btnClick"><span> {{row.contractName}} </span></div>`\n  }\n}'
     },
     {
       label: "修改样式",
       codeExampleVal:
-        'function render() {\n  // 此函数直接返回一个类似vue options组件的对象，如data、methods等，\n  // 可以通过this.row获取当前行数据,想渲染当前数据则使用{{row.xxx}}(xxx为当前行的字段名)，this.index获取下标，this.getTableRenderInstance()获取当前渲染实例\n  // 可以通过this.emitBtnClick(this.row, 按钮名称， 按钮id)来触发配置的按钮，其中按钮名称（会找到第一个匹配到的按钮注意重名问题）和按钮id任选其一即可。\n  // 配置样式使用:style="getStyle()"的方式，在getStyle返回要使用的样式\n  // 模板则使用template代替，由于某些原因，尽量使用``来包裹整个字符串\n  return {\n    methods: {\n      getStyle() {\n        return "color: red;font-size: 16px;"\n      }\n  },\n    template: `<div :style="getStyle()"> <span> {{row.PreTaskID}} </span></div>`\n  }\n}'
+        'function render() {\n  // 此函数直接返回一个类似vue options组件的对象，如data、methods等，\n  // 可以通过this.row获取当前行数据,想渲染当前数据则使用{{row.xxx}}(xxx为当前行的字段名)，this.index获取下标，this.getTableRenderInstance()获取当前渲染实例\n  // 可以通过this.emitBtnClick(this.row, 按钮名称， 按钮id)来触发配置的按钮，其中按钮名称（会找到第一个匹配到的按钮注意重名问题）和按钮id任选其一即可。\n  // 配置样式使用:style="getStyle()"的方式，在getStyle返回要使用的样式\n  // 模板则使用template代替，由于某些原因，尽量使用``来包裹整个字符串\n  return {\n    methods: {\n      getStyle() {\n        return "color: red;font-size: 16px;"\n      }\n  },\n    template: `<div :style="getStyle()"> <span> {{row.name}} </span></div>`\n  }\n}'
     },
     {
-      label: "使用全局组件",
+      label: "使用图标",
       codeExampleVal:
-        'function render() {\n  // 此函数直接返回一个类似vue options组件的对象，如data、methods等，\n  // 可以通过this.row获取当前行数据,想渲染当前数据则使用{{row.xxx}}(xxx为当前行的字段名)，this.index获取下标，this.getTableRenderInstance()获取当前渲染实例\n  // 可以通过this.emitBtnClick(this.row, 按钮名称， 按钮id)来触发配置的按钮，其中按钮名称（会找到第一个匹配到的按钮注意重名问题）和按钮id任选其一即可。\n  // 配置样式使用:style="getStyle()"的方式，在getStyle返回要使用的样式\n  // 模板则使用template代替，由于某些原因，尽量使用``来包裹整个字符串\n  return {\n    // 在template中，可以直接使用注册到全局的组件，如element相关\n    template: `<div><i class="el-icon-date"></i> <span> {{row.PreTaskID }} </span></div>`\n  }\n}'
+        'function render() {\n  // 此函数直接返回一个类似vue options组件的对象，如data、methods等，\n  // 可以通过this.row获取当前行数据,想渲染当前数据则使用{{row.xxx}}(xxx为当前行的字段名)，this.index获取下标，this.getTableRenderInstance()获取当前渲染实例\n  // 可以通过this.emitBtnClick(this.row, 按钮名称， 按钮id)来触发配置的按钮，其中按钮名称（会找到第一个匹配到的按钮注意重名问题）和按钮id任选其一即可。\n  // 配置样式使用:style="getStyle()"的方式，在getStyle返回要使用的样式\n  // 模板则使用template代替，由于某些原因，尽量使用``来包裹整个字符串\n  return {\n    // 在template中，可以直接使用element相关的icon\n    template: `<div><i class="el-icon-date"></i> <span> {{row.name }} </span></div>`\n  }\n}'
     },
     {
       label: "获取tableData",
       codeExampleVal:
-        'function render() {\n  // 此函数直接返回一个类似vue options组件的对象，如data、methods等，\n  // 可以通过this.row获取当前行数据,想渲染当前数据则使用{{row.xxx}}(xxx为当前行的字段名)，\n  // this.index获取下标，this.getTableRenderInstance()获取当前渲染实例\n  // 模板则使用template代替，由于某些原因，尽量使用``来包裹整个字符串\n  return {\n    methods: {\n      btnClick() {\n        // 获取父级数据\n        console.log(this.getTableRenderInstance().tableData)\n          \n      }\n    },\n    template: `<div  @click.stop="btnClick"><span> {{row.PreTaskID}} </span></div>`\n  }\n}'
+        'function render() {\n  // 此函数直接返回一个类似vue options组件的对象，如data、methods等，\n  // 可以通过this.row获取当前行数据,想渲染当前数据则使用{{row.xxx}}(xxx为当前行的字段名)，\n  // this.index获取下标，this.getTableRenderInstance()获取当前渲染实例\n  // 模板则使用template代替，由于某些原因，尽量使用``来包裹整个字符串\n  return {\n    methods: {\n      btnClick() {\n        // 获取列表数据\n        console.log(this.getTableRenderInstance().expose_getTableData())\n          \n      }\n    },\n    template: `<div  @click.stop="btnClick"><span> {{row.name}} </span></div>`\n  }\n}'
     },
     {
       label: "综合使用",
