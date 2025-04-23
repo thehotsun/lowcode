@@ -76,7 +76,8 @@ export function getElInputNumberConfig() {
 export function getElSelectConfig() {
   const tagAttrs = {
     placeholder: "请选择",
-    clearable: true
+    clearable: true,
+    "collapse-tags": true
   };
   const extraOption = {
     options: [],

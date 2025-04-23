@@ -397,28 +397,6 @@ export function getSetupFormOptions(searchWidgetName) {
         }),
         getSetupFromSingleConfig("标签名：", "请输入标签名", "formItemAttrs.label", { style: "width: 350px" }),
         getSetupFromSingleConfig("提示语：", "请输入提示语", "tagAttrs.placeholder", { style: "width: 350px" })
-        // getSetupFromSingleConfig(
-        //   '关联其他字段：',
-        //   '',
-        //   'relateOtherField',
-        //   {
-        //     style: 'width: 350px',
-        //     extraOption: {
-        //       options: [
-        //         {
-        //           id: '',
-        //           cnName: '',
-        //         },
-        //       ],
-        //     },
-        //     tagAttrs: {
-        //       placeholder: '请选择关联其他字段：',
-        //       clearable: true,
-        //       multiple: true,
-        //     },
-        //   },
-        //   'el-select'
-        // ),
       ];
       break;
     case "el-input-number":
@@ -435,7 +413,7 @@ export function getSetupFormOptions(searchWidgetName) {
       break;
     case "el-select":
       options = complexOptions()
-        .toSpliced(1, 0, ["是否平铺：", null, "isFlat", null, "el-switch"])
+        .toSpliced(1, 0, ["是否平铺：", null, "isFlat", null, "el-switch"], ["折叠选中内容：", null, "tagAttrs.collapse-tags", null, "el-switch"])
         .map(item => getSetupFromSingleConfig(...item));
       break;
     case "el-cascader":
@@ -456,6 +434,7 @@ export function getSetupFormOptions(searchWidgetName) {
           slotName: "searchWidget"
         }),
         getSetupFromSingleConfig("是否平铺：", null, "isFlat", null, "el-switch"),
+        getSetupFromSingleConfig("折叠选中内容：", null, "tagAttrs.collapse-tags", null, "el-switch"),
         getSetupFromSingleConfig("标签名：", "请输入标签名", "formItemAttrs.label", { style: "width: 350px" }),
         getSetupFromSingleConfig("提示语：", "请输入提示语", "tagAttrs.placeholder", {
           style: "width: 350px",
@@ -566,7 +545,8 @@ export function getSetupForm(searchWidgetName) {
           placeholder: "",
           multiple: true,
           filterable: false,
-          clearable: true
+          clearable: true,
+          "collapse-tags": true
         },
         extraOption: "",
         request: {
@@ -614,7 +594,8 @@ export function getSetupForm(searchWidgetName) {
           placeholder: "",
           filterable: false,
           clearable: true,
-          multiple: true
+          multiple: true,
+          "collapse-tags": true
         },
         extraOption: { labelTranslateType: 0 },
         request: {
