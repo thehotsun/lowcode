@@ -384,7 +384,16 @@ export default {
                 })
               : (console.warn(`slot : ${slotName} 未定义！`), "")
             : isCooperateComp(tagName, contentTextBehindTagOptions, contentTextFrontTagOptions)
-            ? getCooperateComp(item)
+            ? getCooperateComp({
+                tagName,
+                tagAttrs,
+                listeners,
+                formField,
+                extraOption,
+                request,
+                isFlat,
+                ref
+              })
             : getPureSingleCompVNode(item)}
         </div>
       );
