@@ -187,7 +187,7 @@ export default {
         isRead: 1,
         priviAll: "1",
         noRightClickMenu: true,
-        prjId: this.getPrjInfo().prjId
+        prjId: this?.getPrjInfo?.()?.prjId
       };
       const { data } = await this.queryTree(params);
       this.$refs.filesDlg.open(

@@ -885,7 +885,7 @@ export default {
         ...extraParams,
         ...this.externalParams,
         multiFieldSearch: this.multiFieldSearch,
-        prjId: this.getPrjInfo().prjId,
+        prjId: this?.getPrjInfo?.()?.prjId,
         enterpriseId: this.enterpriseId
       };
     },
@@ -1462,7 +1462,7 @@ export default {
       sessionStorage.setItem("lowcodeTableThisPageJumpParams", JSON.stringify(params));
       const res = await this.queryChangePrjId(this.listPageId, params[`${this.keyField}Array`][0]);
       console.log(res, "queryChangePrjId");
-      if (res && res !== this.getPrjInfo().prjId) {
+      if (res && res !== this?.getPrjInfo?.()?.prjId) {
         await this.updatePrj({ prjId: res });
         // prjId从外部传入需要时间更改
         setTimeout(() => {
@@ -1610,7 +1610,7 @@ export default {
     },
     disposeDown({ command }, row) {
       let params = {
-        prjId: this.getPrjInfo().prjId,
+        prjId: this?.getPrjInfo?.()?.prjId,
         enterpriseId: this.enterpriseId
       };
       if (row) {

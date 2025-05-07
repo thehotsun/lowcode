@@ -72,7 +72,7 @@ export default {
       return {
         ...data,
         ...this.externalParams,
-        prjId: this.getPrjInfo().prjId,
+        prjId: this?.getPrjInfo?.()?.prjId,
         enterpriseId: this.enterpriseId
       };
     },
