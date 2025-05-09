@@ -111,6 +111,18 @@
         <div>自定义方法： {{ printDesignForm?.customizedMethod }}</div>
         <div>自定义SQL： {{ printDesignForm?.customizedSql }}</div>
       </template>
+
+      <template #QRCodeTitle="{ formData }" class="formDownloadSlot">
+        <div>
+          {{ formData.QRCodeTitle }} <el-button type="text" @click="handleQRCodeTitle"> {{ formData.QRCodeTitle ? "编辑" : "设计标题" }}</el-button>
+        </div>
+      </template>
+
+      <template #QRCodePageData="{ formData }" class="formDownloadSlot">
+        <div>
+          {{ formData.QRCodePageData }} <el-button type="text" @click="handleQRCodePageData"> {{ formData.QRCodePageData ? "编辑" : "添加数据" }}</el-button>
+        </div>
+      </template>
     </base-render-form>
 
     <interfaceDlg ref="interfaceDlg" :params-config="paramsConfig" :interface-config="interfaceConfig" @confirm="handleConfirm"></interfaceDlg>
@@ -255,6 +267,16 @@ export default {
   },
 
   watch: {
+    "btnConfigFrom.extraOption.QRCodeRelateFrom": {
+      handler(val) {
+        if (this.btnConfigFrom.extraOption.openType === -1 && this.btnConfigFrom.extraOption.btnType === "QRCode" && val) {
+          this.getResourceInfo({
+            formCode: val
+          });
+        }
+      },
+      deep: true
+    },
     "btnConfigFrom.extraOption.relateFrom": {
       handler(val) {
         if (this.btnConfigFrom.extraOption.openType === 0 && val) {
@@ -604,6 +626,16 @@ export default {
     handleResultFileName() {
       this.$refs.setTemplateNameDlg.handleGenerateName(this.printDesignForm.resultFileName, this.groupId);
     },
+    // TODO
+    // 设计文件名
+    handleQRCodeTitle() {
+      this.$refs.setTemplateNameDlg.handleGenerateName(this.btnConfigFrom.QRCodeTitle, this.groupId);
+    },
+    // TODO
+    // 设计二维码数据
+    handleQRCodePageData() {
+      this.$refs.setTemplateNameDlg.handleGenerateName(this.btnConfigFrom.QRCodeTitle, this.groupId);
+    },
 
     async handleUpdateTemplateName(resultFileName) {
       const params = {
@@ -686,7 +718,11 @@ export default {
       window.open(routeUrl.href, "_blank");
     },
     refreshList(isTip = true) {
-      this.$emit("refreshList", this.btnConfigFrom.extraOption.openType, isTip);
+      this.$emit("refreshList", {
+        openType: this.btnConfigFrom.extraOption.openType,
+        btnType: this.btnConfigFrom.extraOption.btnType,
+        isTip
+      });
     }
 
     // handleAuthorizeChange (authorize) {

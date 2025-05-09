@@ -577,6 +577,12 @@ export default {
             config.extraOption.openType = -1;
             config.authorize = "defaultShow";
             break;
+          case "QRCode":
+            config.tagAttrs.value = "生成二维码";
+            config.extraOption.btnType = "QRCode";
+            config.extraOption.openType = -1;
+            config.authorize = "E";
+            break;
           case "custom":
             config.extraOption.btnType = "custom";
             config.extraOption.openType = "";
@@ -609,8 +615,15 @@ export default {
         this.$refs.setupBtnConfig.expose_setBtnConfigFrom(this.btnConfigArr[index], true);
       });
     },
-    async refreshList(openType, isTip) {
+    async refreshList({ openType, isTip, btnType }) {
       switch (openType) {
+        case -1:
+          if (btnType === "QRCode") {
+            await this.queryFormList();
+            this.$refs.setupBtnConfig.expose_setExtraOption(this.formListExtraOption, "extraOption.QRCodeRelateFrom", ["contentTextFrontTagOptions"]);
+            isTip && this.$success("刷新成功！");
+          }
+          break;
         case 0:
           await this.queryFormList();
           this.$refs.setupBtnConfig.expose_setExtraOption(this.formListExtraOption, "extraOption.relateFrom", ["contentTextFrontTagOptions"]);

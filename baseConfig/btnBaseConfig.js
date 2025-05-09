@@ -81,6 +81,11 @@ export const btnTypeArr = [
     isStatic: true
   },
   {
+    name: "QRCode",
+    displayName: "生成二维码",
+    isStatic: true
+  },
+  {
     name: "custom",
     displayName: "自定义",
     isStatic: true
@@ -154,6 +159,13 @@ export const leftOrRight = [
   }
 ];
 
+export const QRCodePageOperateList = [
+  {
+    id: "form",
+    cnName: "表单"
+  }
+];
+
 const staticBtn = btnTypeArr.filter(btn => btn.isStatic).map(btn => btn.name);
 
 const downBtn = ["download", "flowDocDownload", "formDownload"];
@@ -166,7 +178,7 @@ const dialogAttrRenderDependFn = function(formData) {
 
 const requestBeforeConfirmRenderDependFn = function(formData) {
   return (
-    !downBtn.concat("refresh", "custom").includes(formData.extraOption.btnType) &&
+    !downBtn.concat("refresh", "QRCode", "custom").includes(formData.extraOption.btnType) &&
     !(
       (formData.extraOption.openType === 4 && formData.extraOption.useDialog && !formData.extraOption.showFooter) ||
       (formData.extraOption.openType === 4 && !formData.extraOption.useDialog)
@@ -187,7 +199,7 @@ const deliverySelectListFieldsRenderDependFn = function(formData) {
 };
 
 const excludeDownAndDelRenderDependFn = function(formData) {
-  return !downBtn.concat("batchDel", "refresh", "custom").includes(formData.extraOption.btnType);
+  return !downBtn.concat("batchDel", "refresh", "QRCode", "custom").includes(formData.extraOption.btnType);
 };
 
 const expectOpenTypeRenderDependFnGenerator = openType =>
@@ -1025,6 +1037,255 @@ export function BtnConfigFormOptions() {
       },
       formItem: {
         formItemAttrs: {
+          label: "二维码长宽："
+        },
+        tagName: "div",
+        contentTextFrontTagOptions: {
+          tagName: "el-input-number",
+          style: "max-width: 180px;width: 100%;",
+          tagAttrs: {
+            size: "mini",
+            step: 1
+          },
+          wrapDivStyle: "display: inline-block;",
+          formField: "extraOption.QRCodeSize"
+        },
+        contentTextBehindTagOptions: {
+          tagName: "span",
+          contentText: "毫米",
+          wrapDivStyle: "display: inline-block;",
+          style: "margin-left: 10px"
+        },
+        renderDependFn: function(formData) {
+          return ["QRCode"].includes(formData.extraOption.btnType);
+        }
+      }
+    },
+    {
+      elRowAttrs: {
+        gutter: 10
+      },
+      formItem: {
+        formItemAttrs: {
+          label: "标题："
+        },
+        slotName: "QRCodeTitle",
+        renderDependFn: function(formData) {
+          return ["QRCode"].includes(formData.extraOption.btnType);
+        }
+      }
+    },
+    {
+      elRowAttrs: {
+        gutter: 10
+      },
+      formItem: {
+        formItemAttrs: {
+          label: "标题位置："
+          // "label-width": "0px"
+        },
+        child: [
+          {
+            formField: "extraOption.QRCodeTiltePosition",
+            tagName: "el-radio",
+            contentText: "位于二维码下面",
+            tagAttrs: {
+              label: "bottom"
+            },
+            wrapDivStyle: "display: inline-block;margin-right: 15px;"
+          },
+          {
+            formField: "extraOption.QRCodeTiltePosition",
+            tagName: "el-radio",
+            contentText: "位于二维码上面",
+            tagAttrs: {
+              label: "top"
+            },
+            wrapDivStyle: "display: inline-block;"
+          }
+        ],
+        renderDependFn: function(formData) {
+          return ["QRCode"].includes(formData.extraOption.btnType);
+        }
+      }
+    },
+    {
+      elRowAttrs: {
+        gutter: 10
+      },
+      formItem: {
+        formItemAttrs: {
+          label: "有效期："
+        },
+        tagName: "div",
+        contentTextFrontTagOptions: {
+          tagName: "el-input-number",
+          style: "max-width: 180px;width: 100%;",
+          tagAttrs: {
+            size: "mini",
+            step: 1
+          },
+          wrapDivStyle: "display: inline-block;",
+          formField: "extraOption.QRCodeExpireTime"
+        },
+        contentTextBehindTagOptions: {
+          tagName: "span",
+          contentText: "天（0表示长期有效）",
+          wrapDivStyle: "display: inline-block;",
+          style: "margin-left: 10px"
+        },
+        renderDependFn: function(formData) {
+          return ["QRCode"].includes(formData.extraOption.btnType);
+        }
+      }
+    },
+    {
+      elRowAttrs: {
+        gutter: 10
+      },
+      formItem: {
+        formItemAttrs: {
+          label: "页面显示数据："
+        },
+        slotName: "QRCodePageData",
+        renderDependFn: function(formData) {
+          return ["QRCode"].includes(formData.extraOption.btnType);
+        }
+      }
+    },
+    {
+      elRowAttrs: {
+        gutter: 10
+      },
+      formItem: {
+        formItemAttrs: {
+          label: "页面操作项："
+        },
+        tagName: "el-select",
+        tagAttrs: {
+          placeholder: "请选择页面操作项",
+          multiple: true
+        },
+        // 对应formData中的属性值
+        formField: "extraOption.QRCodePageOperate",
+        extraOption: {
+          options: QRCodePageOperateList,
+          props: {
+            key: "id",
+            label: "cnName"
+          }
+        }
+      }
+    },
+    {
+      elRowAttrs: {
+        gutter: 10
+      },
+      formItem: {
+        formItemAttrs: {
+          label: "选择表单："
+        },
+        tagName: "div",
+        contentTextFrontTagOptions: {
+          wrapDivStyle: "display: inline-block;",
+          tagName: "el-select",
+          tagAttrs: {
+            placeholder: "请选择表单",
+            filterable: true
+          },
+          // 对应formData中的属性值
+          formField: "extraOption.QRCodeRelateFrom",
+          extraOption: {
+            options: [],
+            props: {
+              key: "id",
+              label: "cnName"
+            }
+          },
+          request: {
+            require: false,
+            url: "",
+            type: "get",
+            params: "",
+            status: "pending"
+          }
+        },
+        contentTextBehindTagOptions: [
+          {
+            wrapDivStyle: "display: inline-block;",
+            slotName: "refreshList"
+          },
+          {
+            slotName: "relateFrom"
+          }
+        ],
+        renderDependFn: function(formData) {
+          return ["QRCode"].includes(formData.extraOption.btnType) && formData.extraOption.QRCodePageOperate.includes("form");
+        }
+      }
+    },
+    {
+      elRowAttrs: {
+        gutter: 10
+      },
+      formItem: {
+        formItemAttrs: {
+          label: "二维码单行个数："
+        },
+        tagName: "el-input-number",
+        behindText: "个",
+        behindTextStyle: "margin-left: 10px",
+        style: "max-width: 180px;width: 100%;",
+        tagAttrs: {
+          size: "mini",
+          step: 1
+        },
+        formField: "extraOption.QRCodeRowLayoutNumber",
+        renderDependFn: function(formData) {
+          return ["QRCode"].includes(formData.extraOption.btnType);
+        }
+      }
+    },
+    {
+      elRowAttrs: {
+        gutter: 10
+      },
+      formItem: {
+        formItemAttrs: {
+          label: "文件格式："
+          // "label-width": "0px"
+        },
+        child: [
+          {
+            formField: "extraOption.QRCodeFileType",
+            tagName: "el-radio",
+            contentText: "word",
+            tagAttrs: {
+              label: "word"
+            },
+            wrapDivStyle: "display: inline-block;margin-right: 15px;"
+          },
+          {
+            formField: "extraOption.QRCodeFileType",
+            tagName: "el-radio",
+            contentText: "pdf",
+            tagAttrs: {
+              label: "pdf"
+            },
+            wrapDivStyle: "display: inline-block;"
+          }
+        ],
+        renderDependFn: function(formData) {
+          return ["QRCode"].includes(formData.extraOption.btnType);
+        }
+      }
+    },
+    {
+      elRowAttrs: {
+        gutter: 10
+      },
+      formItem: {
+        formItemAttrs: {
           label: "颜色："
         },
         slotName: "color"
@@ -1326,6 +1587,15 @@ export function BtnConfigFrom(custom = {}) {
         params: [],
         data: []
       },
+      QRCodeSize: 40,
+      QRCodeTitle: "",
+      QRCodeTiltePosition: "bottom",
+      QRCodeExpireTime: 0,
+      QRCodePageData: [],
+      QRCodePageOperate: [],
+      QRCodeRelateFrom: "",
+      QRCodeRowLayoutNumber: 3,
+      QRCodeFileType: "word",
       iconPosition: "front",
       iconName: "",
       useDialog: true,
