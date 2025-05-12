@@ -119,7 +119,10 @@
       </template>
 
       <template #QRCodePageData="{ formData }" class="formDownloadSlot">
-        <div>
+        <div class="QRCodePageDataConent">
+          <div class="QRCodetextConent">
+            {{ formData.extraOption.QRCodePageData?.length ? formData.extraOption.QRCodePageData.map(item => `${item.fieldName}(${item.fieldCode})`).join(",") : "" }}
+          </div>
           <el-button type="text" @click="handleQRCodePageData"> {{ formData.extraOption.QRCodePageData?.length ? "编辑" : "添加数据" }}</el-button>
         </div>
       </template>
@@ -893,6 +896,15 @@ export default {
   }
   .underline {
     text-decoration: underline;
+  }
+  .QRCodePageDataConent {
+    display: flex;
+    .QRCodetextConent {
+      max-width: 200px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
   }
 }
 </style>
