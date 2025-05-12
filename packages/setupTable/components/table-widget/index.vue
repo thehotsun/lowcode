@@ -145,7 +145,7 @@ export default {
   ],
   provide() {
     return {
-      getTableDesignFields: () => this.tableData
+      getTableDesignFields: () => this.deliveryFieldsOption.options
     };
   },
   watch: {

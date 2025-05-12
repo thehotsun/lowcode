@@ -114,13 +114,13 @@
 
       <template #QRCodeTitle="{ formData }" class="formDownloadSlot">
         <div>
-          {{ formData.QRCodeTitle }} <el-button type="text" @click="handleQRCodeTitle"> {{ formData.QRCodeTitle ? "编辑" : "设计标题" }}</el-button>
+          {{ formData.extraOption.QRCodeTitle }} <el-button type="text" @click="handleQRCodeTitle"> {{ formData.extraOption.QRCodeTitle ? "编辑" : "设计标题" }}</el-button>
         </div>
       </template>
 
       <template #QRCodePageData="{ formData }" class="formDownloadSlot">
         <div>
-          {{ formData.QRCodePageData }} <el-button type="text" @click="handleQRCodePageData"> {{ formData.QRCodePageData ? "编辑" : "添加数据" }}</el-button>
+          <el-button type="text" @click="handleQRCodePageData"> {{ formData.extraOption.QRCodePageData?.length ? "编辑" : "添加数据" }}</el-button>
         </div>
       </template>
     </base-render-form>
@@ -642,10 +642,12 @@ export default {
     // TODO
     // 设计二维码数据
     handleQRCodePageData() {
-      this.$refs.setQRCodePageDataDlg.openDlg();
+      this.$refs.setQRCodePageDataDlg.openDlg(this.btnConfigFrom.extraOption.QRCodePageData);
     },
 
     handleUpdateQRCodePageData(QRCodePageData) {
+      console.log("QRCodePageData", QRCodePageData);
+
       this.btnConfigFrom.extraOption.QRCodePageData = QRCodePageData;
     },
 
