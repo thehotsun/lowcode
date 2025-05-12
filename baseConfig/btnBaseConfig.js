@@ -1045,7 +1045,8 @@ export function BtnConfigFormOptions() {
           style: "max-width: 180px;width: 100%;",
           tagAttrs: {
             size: "mini",
-            step: 1
+            step: 1,
+            min: 1
           },
           wrapDivStyle: "display: inline-block;",
           formField: "extraOption.QRCodeSize"
@@ -1067,7 +1068,7 @@ export function BtnConfigFormOptions() {
       },
       formItem: {
         formItemAttrs: {
-          label: "标题："
+          label: "二维码标题："
         },
         slotName: "QRCodeTitle",
         renderDependFn: function(formData) {
@@ -1123,7 +1124,8 @@ export function BtnConfigFormOptions() {
           style: "max-width: 180px;width: 100%;",
           tagAttrs: {
             size: "mini",
-            step: 1
+            step: 1,
+            min: 0
           },
           wrapDivStyle: "display: inline-block;",
           formField: "extraOption.QRCodeExpireTime"
@@ -1238,6 +1240,7 @@ export function BtnConfigFormOptions() {
         style: "max-width: 180px;width: 100%;",
         tagAttrs: {
           size: "mini",
+          min: 1,
           step: 1
         },
         formField: "extraOption.QRCodeRowLayoutNumber",

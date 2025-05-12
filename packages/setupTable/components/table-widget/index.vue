@@ -143,7 +143,11 @@ export default {
     "checkPermission",
     "getPageInfo"
   ],
-
+  provide() {
+    return {
+      getTableDesignFields: () => this.tableData
+    };
+  },
   watch: {
     showSearchFromArea(val) {
       if (val) {
@@ -193,14 +197,8 @@ export default {
         }
 
         this.tableData = tableOptions;
-        this.deliveryFieldsOption = {
-          options: []
-        };
-        tableOptions.map(item => {
-          if (!item.isCustom) {
-            this.deliveryFieldsOption.options.push(item);
-          }
-        });
+
+        this.setDeliveryFieldsOption(tableOptions);
 
         this.btnConfigArr = formOptions;
         // 更新数据库字段，如果多了新增默认，少了去除
@@ -367,7 +365,8 @@ export default {
       return this.requestFieldList(this.groupId).then(res => {
         const list = res.data;
         list.map(item => {
-          if (!this.tableData.some(tableDataItem => tableDataItem.fieldCode === item.fieldName)) {
+          // this.deliveryFieldsOption.options 是已经提取过的字段（已经考虑到了用户新增父级的情况）
+          if (!this.deliveryFieldsOption.options.some(tableDataItem => tableDataItem.fieldCode === item.fieldName)) {
             const rawData = getSingleTableData();
             this.tableData.push({
               ...rawData,
@@ -377,7 +376,7 @@ export default {
           }
         });
         this.tableData = this.tableData.filter(tableDataItem => {
-          return list.some(item => tableDataItem.isCustom || tableDataItem.fieldCode === item.fieldName);
+          return list.some(item => tableDataItem.isCustom || tableDataItem.children?.length || tableDataItem.fieldCode === item.fieldName);
         });
       });
     },
@@ -642,6 +641,20 @@ export default {
         default:
           break;
       }
+    },
+    setDeliveryFieldsOption(tableOptions) {
+      const options = [];
+      function processItem(item) {
+        if (!item.isCustom && !item.children?.length) {
+          options.push(item);
+        } else if (item.children?.length) {
+          item.children.forEach(child => processItem(child));
+        }
+      }
+      tableOptions.forEach(item => {
+        processItem(item);
+      });
+      this.deliveryFieldsOption.options = options;
     }
   }
 };

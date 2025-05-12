@@ -132,6 +132,8 @@
     <component :is="editPrintTemplateDataDlg" ref="codeMirrorDlg" @ok="getTemplateInfo"></component>
     <!-- 内容构造器 -->
     <setTemplateNameDlg ref="setTemplateNameDlg" @ok="handleUpdateTemplateName"></setTemplateNameDlg>
+    <!-- 二维码页面数据 -->
+    <setQRCodePageDataDlg ref="setQRCodePageDataDlg" @ok="handleUpdateQRCodePageData"></setQRCodePageDataDlg>
   </div>
 </template>
 
@@ -142,6 +144,7 @@ import { findFromOptionsIndexByfieldName } from "../../../../utils";
 import interfaceDlg from "../dialogs/interfaceDlg.vue";
 import fieldRenameDlg from "../dialogs/fieldRenameDlg.vue";
 import setTemplateNameDlg from "./components/setTemplateNameDlg.vue";
+import setQRCodePageDataDlg from "./components/setQRCodePageDataDlg.vue";
 import IconPicker from "./components/iconPicker";
 import { cloneDeep, merge } from "lodash";
 function PrintDesignForm() {
@@ -161,7 +164,8 @@ export default {
     fieldRenameDlg,
     BaseRenderForm,
     IconPicker,
-    setTemplateNameDlg
+    setTemplateNameDlg,
+    setQRCodePageDataDlg
   },
   inject: {
     printTemplateUpload: {
@@ -198,6 +202,9 @@ export default {
       default: () => {}
     },
     queryFormNamePath: {
+      default: () => () => {}
+    },
+    queryPrintParamFields: {
       default: () => () => {}
     }
   },
@@ -618,23 +625,28 @@ export default {
     },
 
     handleDesignDown() {
-      // TODO
       const fileId = this.printDesignForm.templateFileId;
       const url = this.downloadUrltoken("EnterpriseDoc", fileId);
       this.downloadFile(url);
     },
-    handleResultFileName() {
-      this.$refs.setTemplateNameDlg.handleGenerateName(this.printDesignForm.resultFileName, this.groupId);
+    async handleResultFileName() {
+      const fields = await this.getFields("queryPrintParamFields", this.groupId);
+      this.$refs.setTemplateNameDlg.handleGenerateName(this.printDesignForm.resultFileName, fields);
     },
     // TODO
     // 设计文件名
-    handleQRCodeTitle() {
-      this.$refs.setTemplateNameDlg.handleGenerateName(this.btnConfigFrom.QRCodeTitle, this.groupId);
+    async handleQRCodeTitle() {
+      const fields = await this.getFields("queryPrintParamFields", this.groupId);
+      this.$refs.setTemplateNameDlg.handleGenerateName(this.btnConfigFrom.QRCodeTitle, fields);
     },
     // TODO
     // 设计二维码数据
     handleQRCodePageData() {
-      this.$refs.setTemplateNameDlg.handleGenerateName(this.btnConfigFrom.QRCodeTitle, this.groupId);
+      this.$refs.setQRCodePageDataDlg.openDlg();
+    },
+
+    handleUpdateQRCodePageData(QRCodePageData) {
+      this.btnConfigFrom.extraOption.QRCodePageData = QRCodePageData;
     },
 
     async handleUpdateTemplateName(resultFileName) {
@@ -722,6 +734,39 @@ export default {
         openType: this.btnConfigFrom.extraOption.openType,
         btnType: this.btnConfigFrom.extraOption.btnType,
         isTip
+      });
+    },
+    async getFields(interfaceName, ...params) {
+      return this[interfaceName](...params).then(({ data }) => {
+        const fields = [];
+        Object.entries(data).forEach(([key, value]) => {
+          const obj = {};
+          obj.type = key;
+          switch (key) {
+            case "commonColumns":
+              obj.typeDispalyName = "公共字段";
+              obj.btnInfoArr = value;
+              break;
+            case "metaColumns":
+              obj.typeDispalyName = "主表字段";
+              obj.btnInfoArr = value.map(item => {
+                item.fieldName = `m.${item.fieldName}`;
+                return item;
+              });
+              break;
+            case "viewColumns":
+              obj.typeDispalyName = "视图字段";
+              obj.btnInfoArr = value.map(item => {
+                item.fieldName = `v.${item.fieldName}`;
+                return item;
+              });
+              break;
+            default:
+              break;
+          }
+          fields.push(obj);
+        });
+        return fields;
       });
     }
 

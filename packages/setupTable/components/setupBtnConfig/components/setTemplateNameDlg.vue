@@ -19,7 +19,7 @@
         <div>
           <el-button type="text" size="mini" :disabled="isViewMode" @click="handleReset">重置</el-button>
         </div>
-        <div v-for="item in printParamFields" :key="item.type" class="btns">
+        <div v-for="item in fields" :key="item.type" class="btns">
           <!-- 按钮组带工具提示 -->
           <div>{{ item.typeDispalyName }}</div>
           <el-button v-for="(btnInfo, index) in item.btnInfoArr" :key="index" type="" size="mini" @click="handleInput(btnInfo.fieldName)">
@@ -43,7 +43,6 @@
 
 <script>
 export default {
-  inject: ["queryPrintParamFields"],
   props: {},
   data() {
     return {
@@ -51,50 +50,18 @@ export default {
       currentContent: "", // 补全变量
       originContent: "", // 补全变量
       isViewMode: false, // 补全变量
-      printParamFields: [] // 补全变量
+      fields: [] // 补全变量
     };
   },
   methods: {
-    handleGenerateName(content, listPageId) {
+    handleGenerateName(content, fields) {
       if (typeof content !== "string") {
         content = "";
       }
       this.originContent = content;
       this.handleReset();
-      this.getPrintParamFields(listPageId);
+      this.fields = fields || [];
       this.showFileNameDlg = true;
-    },
-    getPrintParamFields(listPageId) {
-      this.queryPrintParamFields(listPageId).then(({ data }) => {
-        this.printParamFields = [];
-        Object.entries(data).forEach(([key, value]) => {
-          const obj = {};
-          obj.type = key;
-          switch (key) {
-            case "commonColumns":
-              obj.typeDispalyName = "公共字段";
-              obj.btnInfoArr = value;
-              break;
-            case "metaColumns":
-              obj.typeDispalyName = "主表字段";
-              obj.btnInfoArr = value.map(item => {
-                item.fieldName = `m.${item.fieldName}`;
-                return item;
-              });
-              break;
-            case "viewColumns":
-              obj.typeDispalyName = "视图字段";
-              obj.btnInfoArr = value.map(item => {
-                item.fieldName = `v.${item.fieldName}`;
-                return item;
-              });
-              break;
-            default:
-              break;
-          }
-          this.printParamFields.push(obj);
-        });
-      });
     },
     handleGenerateNameClose() {
       this.currentContent = "";
