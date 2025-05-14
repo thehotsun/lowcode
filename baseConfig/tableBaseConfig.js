@@ -28,7 +28,9 @@ export function getTableAttrs() {
     dataTransitionParentField: "",
     dataTransitionCurField: "",
     deliveryLoadFnField: "",
-    setPaginationSize: ""
+    setPaginationSize: "",
+    // 隐藏默认搜索刷新等功能区
+    hiddenDefaultArea: false
   };
 }
 

@@ -54,6 +54,11 @@
             </el-checkbox>
           </el-tooltip>
           <el-checkbox v-if="tableAttrs.isTree" v-model="tableAttrs.lazy">懒加载</el-checkbox>
+          <el-tooltip class="item" effect="dark" content="隐藏列表上方右侧默认搜索、刷新、设置、导出功能区域。" placement="top-start">
+            <el-checkbox v-model="tableAttrs.hiddenDefaultArea">
+              <span style="cursor: pointer;font-size: 14px">隐藏右侧默认搜索、刷新等功能区域</span><i style="width: 20px" class="el-icon-question"></i>
+            </el-checkbox>
+          </el-tooltip>
         </el-form-item>
 
         <el-row>

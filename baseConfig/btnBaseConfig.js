@@ -80,11 +80,11 @@ export const btnTypeArr = [
     displayName: "刷新",
     isStatic: true
   },
-  {
-    name: "QRCode",
-    displayName: "生成二维码",
-    isStatic: true
-  },
+  // {
+  //   name: "QRCode",
+  //   displayName: "生成二维码",
+  //   isStatic: true
+  // },
   {
     name: "custom",
     displayName: "自定义",
@@ -166,6 +166,28 @@ export const QRCodePageOperateList = [
   }
 ];
 
+export const QRBtnOptions = function() {
+  return {
+    // 二维码大小
+    QRCodeSize: 40,
+    // 二维码标题
+    QRCodeTitle: "",
+    // 二维码位置 bottom top
+    QRCodeTiltePosition: "bottom",
+    // 二维码过期时间
+    QRCodeExpireTime: 0,
+    // 二维码页面展示数据
+    QRCodePageData: [],
+    // 二维码页面操作项
+    QRCodePageOperate: [],
+    // 二维码页面表单操作项关联的表单id
+    QRCodeRelateFrom: "",
+    // 二维码文件每行几个
+    QRCodeRowLayoutNumber: 3,
+    // 二维码文件导出类型
+    QRCodeFileType: "word"
+  };
+};
 const staticBtn = btnTypeArr.filter(btn => btn.isStatic).map(btn => btn.name);
 
 const downBtn = ["download", "flowDocDownload", "formDownload"];
@@ -1590,15 +1612,7 @@ export function BtnConfigFrom(custom = {}) {
         params: [],
         data: []
       },
-      QRCodeSize: 40,
-      QRCodeTitle: "",
-      QRCodeTiltePosition: "bottom",
-      QRCodeExpireTime: 0,
-      QRCodePageData: [],
-      QRCodePageOperate: [],
-      QRCodeRelateFrom: "",
-      QRCodeRowLayoutNumber: 3,
-      QRCodeFileType: "word",
+      ...new QRBtnOptions(),
       iconPosition: "front",
       iconName: "",
       useDialog: true,

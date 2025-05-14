@@ -120,6 +120,10 @@ export default {
       }
       return options || [10, 20, 50, 100];
     },
+    // 隐藏默认搜索刷新等功能区
+    hiddenDefaultArea() {
+      return this.tableAttrs?.hiddenDefaultArea || false;
+    },
 
     // 处理分页且属于本地请求数据的情况
     attrs() {
@@ -139,7 +143,8 @@ export default {
         "dataTransitionCurField",
         "dataTransitionParentField",
         "dataTransitionFn",
-        "clickRowShowDetialDialog"
+        "clickRowShowDetialDialog",
+        "hiddenDefaultArea"
       ];
       if (!this.tableAttrs.isShowIndex) {
         props.push("index");
@@ -2316,7 +2321,8 @@ export default {
       listPageId,
       btnConfigs,
       selectList,
-      keyField
+      keyField,
+      hiddenDefaultArea
     } = this;
 
     const curPageListeners = localProcessData
@@ -2413,79 +2419,78 @@ export default {
                     }}
                   ></base-render-regular>
                 ) : null}
-                {searchFieldList.length ? (
-                  <div class="inlineBlock">
-                    <el-input
-                      style={{ width: "200px" }}
-                      size="mini"
-                      v-model={this.multiFieldSearch}
-                      placeholder={placeholder}
-                      nativeOnkeydown={handleNativeFilter}
-                      clearable={true}
-                    >
-                      <i slot="prefix" class="el-input__icon el-icon-search"></i>
-                    </el-input>
-                    <el-button
-                      type="primary"
-                      size="mini"
-                      style="margin-left: 10px"
+                {hiddenDefaultArea ? (
+                  ""
+                ) : (
+                  <div class="flex">
+                    {searchFieldList.length ? (
+                      <div class="inlineBlock">
+                        <el-input
+                          style={{ width: "200px" }}
+                          size="mini"
+                          v-model={this.multiFieldSearch}
+                          placeholder={placeholder}
+                          nativeOnkeydown={handleNativeFilter}
+                          clearable={true}
+                        >
+                          <i slot="prefix" class="el-input__icon el-icon-search"></i>
+                        </el-input>
+                        <el-button
+                          type="primary"
+                          size="mini"
+                          style="margin-left: 10px"
+                          {...{
+                            on: {
+                              click: handleFilter
+                            }
+                          }}
+                        >
+                          搜 索
+                        </el-button>
+                      </div>
+                    ) : null}
+
+                    <i
+                      class="el-icon-s-tools i pointer"
                       {...{
                         on: {
-                          click: handleFilter
+                          click: handleSetting
                         }
                       }}
-                    >
-                      搜 索
-                    </el-button>
+                    ></i>
+
+                    <i
+                      class="el-icon-refresh-right i pointer"
+                      {...{
+                        on: {
+                          click: iconRefresh
+                        }
+                      }}
+                    ></i>
+
+                    <el-dropdown oncommand={iconDisposeDown}>
+                      <span class="el-dropdown-link">
+                        <i class="el-icon-download i pointer"></i>
+                      </span>
+                      <el-dropdown-menu slot="dropdown">
+                        <el-dropdown-item command="curSelect">当前选中</el-dropdown-item>
+                        <el-dropdown-item command="curPage">当前页</el-dropdown-item>
+                        <el-dropdown-item command="all">全部</el-dropdown-item>
+                      </el-dropdown-menu>
+                    </el-dropdown>
+
+                    <div class={["custom", "absolute", showPanel ? "" : "none"]}>
+                      <panel
+                        data={panelData}
+                        {...{
+                          on: {
+                            checkedChange: filterFieldChange
+                          }
+                        }}
+                      ></panel>
+                    </div>
                   </div>
-                ) : null}
-                {/* <i
-                  class="el-icon-refresh-left i pointer"
-                  {...{
-                    on: {
-                      click: refresh
-                    }
-                  }}
-                ></i> */}
-                <i
-                  class="el-icon-s-tools i pointer"
-                  {...{
-                    on: {
-                      click: handleSetting
-                    }
-                  }}
-                ></i>
-
-                <i
-                  class="el-icon-refresh-right i pointer"
-                  {...{
-                    on: {
-                      click: iconRefresh
-                    }
-                  }}
-                ></i>
-
-                <el-dropdown oncommand={iconDisposeDown}>
-                  <span class="el-dropdown-link">
-                    <i class="el-icon-download i pointer"></i>
-                  </span>
-                  <el-dropdown-menu slot="dropdown">
-                    <el-dropdown-item command="curSelect">当前选中</el-dropdown-item>
-                    <el-dropdown-item command="curPage">当前页</el-dropdown-item>
-                    <el-dropdown-item command="all">全部</el-dropdown-item>
-                  </el-dropdown-menu>
-                </el-dropdown>
-
-                <div class={["custom", "absolute", showPanel ? "" : "none"]}>
-                  <panel
-                    data={panelData}
-                    {...{
-                      on: {
-                        checkedChange: filterFieldChange
-                      }
-                    }}
-                  ></panel>
-                </div>
+                )}
               </div>
             </el-header>
 
