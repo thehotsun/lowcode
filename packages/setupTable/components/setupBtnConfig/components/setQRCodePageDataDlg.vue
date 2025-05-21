@@ -76,6 +76,7 @@ export default {
           ...baseAttr,
           label: "标题",
           prop: "fieldDisplayName",
+          disabled: true,
           "min-width": "150"
         },
         {

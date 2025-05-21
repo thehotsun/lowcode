@@ -112,10 +112,10 @@ export default {
           label: "重新生成"
         }
       ];
-      const options = item.extraOption.btnType === "download" ? downOptions : flowDocDownOptions;
+      const options = ["download", "qrCode"].includes(item.extraOption.btnType) ? downOptions : flowDocDownOptions;
       // 基础版有个添加维护字典的功能，里面返回的字段为id和cnName，因此以此字段为默认取值
       return (
-        <el-dropdown nativeOnClick={e => e.stopPropagation()} oncommand={e => handleCommand(e, { ...item.extraOption, btnId: item.btnId })}>
+        <el-dropdown nativeOnClick={e => e.stopPropagation()} oncommand={e => handleCommand(e, { ...item.extraOption, btnId: item.btnId, authorize: item.authorize })}>
           {getSingleCompVNode(item, false, false)}
           <el-dropdown-menu slot="dropdown">
             {options.map(elDropdownItem => {
@@ -185,7 +185,8 @@ export default {
       if (bindEvent) {
         listeners.click = btnClick({
           ...extraOption,
-          btnId
+          btnId,
+          authorize
         });
       }
       const model = getter(formData, formField);
@@ -201,7 +202,7 @@ export default {
             })
           ) : isCooperateComp(tagName) ? (
             getCooperateComp(tagName, tagAttrs, listeners, formField, extraOption)
-          ) : authorize === "E" && bindEvent && ["download", "flowDocDownload"].includes(extraOption.btnType) ? (
+          ) : authorize === "E" && bindEvent && ["download", "flowDocDownload", "qrCode"].includes(extraOption.btnType) ? (
             // 导出按钮特殊处理
             getDropdownCompVNode(item)
           ) : (

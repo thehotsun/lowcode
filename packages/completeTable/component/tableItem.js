@@ -372,6 +372,11 @@ export default {
         console.warn("inject缺失requestBatchFlowDoc!");
       }
     },
+    requestBatchQrDoc: {
+      default: () => () => {
+        console.warn("inject缺失requestBatchFlowDoc!");
+      }
+    },
     checkPermission: {
       default: () => () => {
         console.warn("inject缺失checkPermission!");
@@ -1122,7 +1127,8 @@ export default {
         showFooter = false,
         validateFn = "",
         command = "",
-        btnId
+        btnId,
+        authorize
       },
       rowData
     ) {
@@ -1153,6 +1159,7 @@ export default {
       this.btnConfigs.isRefresh = isRefresh;
       this.btnConfigs.btnType = btnType;
       this.btnConfigs.btnId = btnId;
+      this.btnConfigs.authorize = authorize;
       this.btnConfigs.openType = openType;
       this.btnConfigs.dialogHeight = dialogHeight;
       this.btnConfigs.dialogWidth = dialogWidth;
@@ -1204,6 +1211,15 @@ export default {
               case "refresh":
                 // 处理刷新
                 this.refresh();
+                break;
+              case "qrCode":
+                // 处理二维码下载
+                this.dealQrDownload(
+                  {
+                    command
+                  },
+                  rowData
+                );
                 break;
               default:
                 break;
@@ -1687,6 +1703,31 @@ export default {
         //   command,
         //   this.selectList.map(item => item[this.keyField])
         // );
+      }
+    },
+
+    async dealQrDownload({ command }, row) {
+      if (row) {
+        this.requestBatchQrDoc(command, [row[this.keyField]]);
+      } else {
+        if (this.selectList.length === 0) {
+          return this.$warn("请至少勾选一条要处理的数据");
+        }
+        if ([undefined, null].includes(this.tableData[0][this.keyField])) {
+          return this.$warn("主键字段未取到值，请检查数据或重新在列表设计页面重新关联主键！");
+        }
+        if (command === "curPage") {
+          command = "page";
+        } else if (command === "curSelect") {
+          command = "selected";
+        }
+        this.requestBatchQrDoc({
+          dataRange: command,
+          ids: this.selectList.map(item => item[this.keyField]),
+          qrCodeId: `${this.rawRelateId}:${this.btnConfigs.btnId}:${this.btnConfigs.authorize}`,
+          listPageId: this.listPageId,
+          queryJson: JSON.stringify(this.getParams())
+        });
       }
     },
 
