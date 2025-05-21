@@ -96,11 +96,36 @@ export default {
     async handleSubmitTableConfig() {
       const renderParams = this.getRenderParams();
       const actionList = [];
+      const qrButtons = [];
       renderParams.formOptions?.map(item => {
         if (item.authorize !== "defaultShow") {
           actionList.push({
             actionCode: `${this.formCode}:${item.btnId}:${item.authorize}`,
             actionName: item.tagAttrs.value
+          });
+        }
+        if (item.extraOption.btnType === "qrCode") {
+          // 二维码按钮
+          const { qrSize, title, titlePosition, expireDays, briefPageFields, briefPageOperations, targetFormId, printCountPerRow, printFileType } = item.extraOption;
+          qrButtons.push({
+            actionCode: `${this.formCode}:${item.btnId}:${item.authorize}`,
+            qrSize,
+            title,
+            titlePosition,
+            expireDays,
+            briefPageFields: briefPageFields.map((item, index) => {
+                return {
+                  fieldName: item.fieldName,
+                  fieldDisplayName: item.fieldDisplayName,
+                  isShow: item.show ? 1 : 0,
+                  seqNo: index
+                };
+              }),
+            briefPageOperations,
+            targetFormId,
+            printCountPerRow,
+            printFileType,
+            listPageId: this.groupId
           });
         }
       });
@@ -109,6 +134,7 @@ export default {
         {
           json: JSON.stringify(renderParams),
           actionList,
+          qrButtons,
           treeSql: renderParams.treeOptions.treeSql
         },
         this.groupId

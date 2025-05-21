@@ -285,7 +285,7 @@ export default {
 
     rowDrop() {
       // 此时找到的元素是要拖拽元素的父容器
-      const dom = document.querySelector(".el-table__body-wrapper tbody");
+      const dom = document.querySelector(".renderwrap .el-table__body-wrapper tbody");
       this.Sortable.create(dom, {
         handle: ".renderwrap .my-handle",
         onEnd: e => {

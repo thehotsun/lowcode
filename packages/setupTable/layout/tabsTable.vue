@@ -168,6 +168,7 @@ export default {
       const renderParams = this.getRenderParams();
       const { tabTableOptionsArr } = renderParams;
       const actionList = [];
+      const qrButtons = [];
       tabTableOptionsArr.map(tabTableOption => {
         tabTableOption.formOptions?.map((item, index) => {
           if (item.authorize !== "defaultShow") {
@@ -176,13 +177,38 @@ export default {
               actionName: `${this.getPageInfo().tabs[index].tableName}:${item.tagAttrs.value}`
             });
           }
+          if (item.extraOption.btnType === "qrCode") {
+            // 二维码按钮
+            const { qrSize, title, titlePosition, expireDays, briefPageFields, briefPageOperations, targetFormId, printCountPerRow, printFileType } = item.extraOption;
+            qrButtons.push({
+              actionCode: `${this.formCode}:${item.btnId}:${item.authorize}`,
+              qrSize,
+              title,
+              titlePosition,
+              expireDays,
+              briefPageFields: briefPageFields.map((item, index) => {
+                return {
+                  fieldName: item.fieldName,
+                  fieldDisplayName: item.fieldDisplayName,
+                  isShow: item.show ? 1 : 0,
+                  seqNo: index
+                };
+              }),
+              briefPageOperations,
+              targetFormId,
+              printCountPerRow,
+              printFileType,
+              listPageId: this.groupId
+            });
+          }
         });
       });
       console.log("savejson", renderParams);
       return this.saveListConfigJSON(
         {
           json: JSON.stringify(renderParams),
-          actionList
+          actionList,
+          qrButtons
         },
         this.groupId
       ).then(data => {

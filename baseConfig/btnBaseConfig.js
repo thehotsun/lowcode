@@ -80,11 +80,11 @@ export const btnTypeArr = [
     displayName: "刷新",
     isStatic: true
   },
-  // {
-  //   name: "QRCode",
-  //   displayName: "生成二维码",
-  //   isStatic: true
-  // },
+  {
+    name: "qrCode",
+    displayName: "生成二维码",
+    isStatic: true
+  },
   {
     name: "custom",
     displayName: "自定义",
@@ -169,23 +169,23 @@ export const QRCodePageOperateList = [
 export const QRBtnOptions = function() {
   return {
     // 二维码大小
-    QRCodeSize: 40,
+    qrSize: 40,
     // 二维码标题
-    QRCodeTitle: "",
+    title: "",
     // 二维码位置 bottom top
-    QRCodeTiltePosition: "bottom",
+    titlePosition: "bottom",
     // 二维码过期时间
-    QRCodeExpireTime: 0,
+    expireDays: 0,
     // 二维码页面展示数据
-    QRCodePageData: [],
+    briefPageFields: [],
     // 二维码页面操作项
-    QRCodePageOperate: [],
+    briefPageOperations: [],
     // 二维码页面表单操作项关联的表单id
-    QRCodeRelateFrom: "",
+    targetFormId: "",
     // 二维码文件每行几个
-    QRCodeRowLayoutNumber: 3,
+    printCountPerRow: 3,
     // 二维码文件导出类型
-    QRCodeFileType: "word"
+    printFileType: "word"
   };
 };
 const staticBtn = btnTypeArr.filter(btn => btn.isStatic).map(btn => btn.name);
@@ -200,7 +200,7 @@ const dialogAttrRenderDependFn = function(formData) {
 
 const requestBeforeConfirmRenderDependFn = function(formData) {
   return (
-    !downBtn.concat("refresh", "QRCode", "custom").includes(formData.extraOption.btnType) &&
+    !downBtn.concat("refresh", "qrCode", "custom").includes(formData.extraOption.btnType) &&
     !(
       (formData.extraOption.openType === 4 && formData.extraOption.useDialog && !formData.extraOption.showFooter) ||
       (formData.extraOption.openType === 4 && !formData.extraOption.useDialog)
@@ -221,7 +221,7 @@ const deliverySelectListFieldsRenderDependFn = function(formData) {
 };
 
 const excludeDownAndDelRenderDependFn = function(formData) {
-  return !downBtn.concat("batchDel", "refresh", "QRCode", "custom").includes(formData.extraOption.btnType);
+  return !downBtn.concat("batchDel", "refresh", "qrCode", "custom").includes(formData.extraOption.btnType);
 };
 
 const expectOpenTypeRenderDependFnGenerator = openType =>
@@ -1071,7 +1071,7 @@ export function BtnConfigFormOptions() {
             min: 1
           },
           wrapDivStyle: "display: inline-block;",
-          formField: "extraOption.QRCodeSize"
+          formField: "extraOption.qrSize"
         },
         contentTextBehindTagOptions: {
           tagName: "span",
@@ -1080,7 +1080,7 @@ export function BtnConfigFormOptions() {
           style: "margin-left: 10px"
         },
         renderDependFn: function(formData) {
-          return ["QRCode"].includes(formData.extraOption.btnType);
+          return ["qrCode"].includes(formData.extraOption.btnType);
         }
       }
     },
@@ -1092,9 +1092,9 @@ export function BtnConfigFormOptions() {
         formItemAttrs: {
           label: "二维码标题："
         },
-        slotName: "QRCodeTitle",
+        slotName: "title",
         renderDependFn: function(formData) {
-          return ["QRCode"].includes(formData.extraOption.btnType);
+          return ["qrCode"].includes(formData.extraOption.btnType);
         }
       }
     },
@@ -1109,7 +1109,7 @@ export function BtnConfigFormOptions() {
         },
         child: [
           {
-            formField: "extraOption.QRCodeTiltePosition",
+            formField: "extraOption.titlePosition",
             tagName: "el-radio",
             contentText: "位于二维码下面",
             tagAttrs: {
@@ -1118,7 +1118,7 @@ export function BtnConfigFormOptions() {
             wrapDivStyle: "display: inline-block;margin-right: 15px;"
           },
           {
-            formField: "extraOption.QRCodeTiltePosition",
+            formField: "extraOption.titlePosition",
             tagName: "el-radio",
             contentText: "位于二维码上面",
             tagAttrs: {
@@ -1128,7 +1128,7 @@ export function BtnConfigFormOptions() {
           }
         ],
         renderDependFn: function(formData) {
-          return ["QRCode"].includes(formData.extraOption.btnType);
+          return ["qrCode"].includes(formData.extraOption.btnType);
         }
       }
     },
@@ -1150,7 +1150,7 @@ export function BtnConfigFormOptions() {
             min: 0
           },
           wrapDivStyle: "display: inline-block;",
-          formField: "extraOption.QRCodeExpireTime"
+          formField: "extraOption.expireDays"
         },
         contentTextBehindTagOptions: {
           tagName: "span",
@@ -1159,7 +1159,7 @@ export function BtnConfigFormOptions() {
           style: "margin-left: 10px"
         },
         renderDependFn: function(formData) {
-          return ["QRCode"].includes(formData.extraOption.btnType);
+          return ["qrCode"].includes(formData.extraOption.btnType);
         }
       }
     },
@@ -1171,9 +1171,9 @@ export function BtnConfigFormOptions() {
         formItemAttrs: {
           label: "页面显示数据："
         },
-        slotName: "QRCodePageData",
+        slotName: "briefPageFields",
         renderDependFn: function(formData) {
-          return ["QRCode"].includes(formData.extraOption.btnType);
+          return ["qrCode"].includes(formData.extraOption.btnType);
         }
       }
     },
@@ -1191,7 +1191,7 @@ export function BtnConfigFormOptions() {
           multiple: true
         },
         // 对应formData中的属性值
-        formField: "extraOption.QRCodePageOperate",
+        formField: "extraOption.briefPageOperations",
         extraOption: {
           options: QRCodePageOperateList,
           props: {
@@ -1218,7 +1218,7 @@ export function BtnConfigFormOptions() {
             filterable: true
           },
           // 对应formData中的属性值
-          formField: "extraOption.QRCodeRelateFrom",
+          formField: "extraOption.targetFormId",
           extraOption: {
             options: [],
             props: {
@@ -1244,7 +1244,7 @@ export function BtnConfigFormOptions() {
           }
         ],
         renderDependFn: function(formData) {
-          return ["QRCode"].includes(formData.extraOption.btnType) && formData.extraOption.QRCodePageOperate.includes("form");
+          return ["qrCode"].includes(formData.extraOption.btnType) && formData.extraOption.briefPageOperations.includes("form");
         }
       }
     },
@@ -1265,9 +1265,9 @@ export function BtnConfigFormOptions() {
           min: 1,
           step: 1
         },
-        formField: "extraOption.QRCodeRowLayoutNumber",
+        formField: "extraOption.printCountPerRow",
         renderDependFn: function(formData) {
-          return ["QRCode"].includes(formData.extraOption.btnType);
+          return ["qrCode"].includes(formData.extraOption.btnType);
         }
       }
     },
@@ -1282,7 +1282,7 @@ export function BtnConfigFormOptions() {
         },
         child: [
           {
-            formField: "extraOption.QRCodeFileType",
+            formField: "extraOption.printFileType",
             tagName: "el-radio",
             contentText: "word",
             tagAttrs: {
@@ -1291,7 +1291,7 @@ export function BtnConfigFormOptions() {
             wrapDivStyle: "display: inline-block;margin-right: 15px;"
           },
           {
-            formField: "extraOption.QRCodeFileType",
+            formField: "extraOption.printFileType",
             tagName: "el-radio",
             contentText: "pdf",
             tagAttrs: {
@@ -1301,7 +1301,7 @@ export function BtnConfigFormOptions() {
           }
         ],
         renderDependFn: function(formData) {
-          return ["QRCode"].includes(formData.extraOption.btnType);
+          return ["qrCode"].includes(formData.extraOption.btnType);
         }
       }
     },

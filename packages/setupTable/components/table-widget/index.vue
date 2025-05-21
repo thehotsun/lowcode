@@ -197,12 +197,15 @@ export default {
         }
 
         this.tableData = tableOptions;
-
+        // 先获取所有的老数据
         this.setDeliveryFieldsOption(tableOptions);
 
         this.btnConfigArr = formOptions;
         // 更新数据库字段，如果多了新增默认，少了去除
         await this.updateFieldList();
+
+        // 更新数据库字段后，重新设置deliveryFieldsOption
+        this.setDeliveryFieldsOption(this.tableData);
         this.searchFromOptions = this.composeFromOptions(tableOptions);
       } else {
         // 新增状态
@@ -375,8 +378,20 @@ export default {
             });
           }
         });
+
         this.tableData = this.tableData.filter(tableDataItem => {
-          return list.some(item => tableDataItem.isCustom || tableDataItem.children?.length || tableDataItem.fieldCode === item.fieldName);
+          const matchesField = dataItem => {
+            // 判断当前项是否匹配任一字段
+            if (list.some(item => dataItem.fieldCode === item.fieldName)) return true;
+            // 如果有 children，则递归判断
+            if (Array.isArray(dataItem.children)) {
+              return dataItem.children.some(child => matchesField(child));
+            }
+            return false;
+          };
+
+          // 满足三种情况：1) 自定义字段 2) 嵌套 children 匹配 3) 当前字段匹配
+          return tableDataItem.isCustom || matchesField(tableDataItem);
         });
       });
     },
@@ -576,9 +591,9 @@ export default {
             config.extraOption.openType = -1;
             config.authorize = "defaultShow";
             break;
-          case "QRCode":
+          case "qrCode":
             config.tagAttrs.value = "生成二维码";
-            config.extraOption.btnType = "QRCode";
+            config.extraOption.btnType = "qrCode";
             config.extraOption.openType = -1;
             config.authorize = "E";
             break;
@@ -617,9 +632,9 @@ export default {
     async refreshList({ openType, isTip, btnType }) {
       switch (openType) {
         case -1:
-          if (btnType === "QRCode") {
+          if (btnType === "qrCode") {
             await this.queryFormList();
-            this.$refs.setupBtnConfig.expose_setExtraOption(this.formListExtraOption, "extraOption.QRCodeRelateFrom", ["contentTextFrontTagOptions"]);
+            this.$refs.setupBtnConfig.expose_setExtraOption(this.formListExtraOption, "extraOption.targetFormId", ["contentTextFrontTagOptions"]);
             isTip && this.$success("刷新成功！");
           }
           break;

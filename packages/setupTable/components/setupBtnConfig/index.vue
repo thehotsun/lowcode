@@ -112,18 +112,18 @@
         <div>自定义SQL： {{ printDesignForm?.customizedSql }}</div>
       </template>
 
-      <template #QRCodeTitle="{ formData }" class="formDownloadSlot">
+      <template #title="{ formData }" class="formDownloadSlot">
         <div>
-          {{ formData.extraOption.QRCodeTitle }} <el-button type="text" @click="handleQRCodeTitle"> {{ formData.extraOption.QRCodeTitle ? "编辑" : "设计标题" }}</el-button>
+          {{ formData.extraOption.title }} <el-button type="text" @click="handleQRCodeTitle"> {{ formData.extraOption.title ? "编辑" : "设计标题" }}</el-button>
         </div>
       </template>
 
-      <template #QRCodePageData="{ formData }" class="formDownloadSlot">
+      <template #briefPageFields="{ formData }" class="formDownloadSlot">
         <div class="QRCodePageDataConent">
           <div class="QRCodetextConent">
-            {{ formData.extraOption.QRCodePageData?.length ? formData.extraOption.QRCodePageData.map(item => `${item.fieldName}(${item.fieldCode})`).join(",") : "" }}
+            {{ formData.extraOption.briefPageFields?.length ? formData.extraOption.briefPageFields.map(item => `${item.fieldDisplayName}(${item.fieldName})`).join(",") : "" }}
           </div>
-          <el-button type="text" @click="handleQRCodePageData"> {{ formData.extraOption.QRCodePageData?.length ? "编辑" : "添加数据" }}</el-button>
+          <el-button type="text" @click="handleQRCodePageData"> {{ formData.extraOption.briefPageFields?.length ? "编辑" : "添加数据" }}</el-button>
         </div>
       </template>
     </base-render-form>
@@ -277,9 +277,9 @@ export default {
   },
 
   watch: {
-    "btnConfigFrom.extraOption.QRCodeRelateFrom": {
+    "btnConfigFrom.extraOption.targetFormId": {
       handler(val) {
-        if (this.btnConfigFrom.extraOption.openType === -1 && this.btnConfigFrom.extraOption.btnType === "QRCode" && val) {
+        if (this.btnConfigFrom.extraOption.openType === -1 && this.btnConfigFrom.extraOption.btnType === "qrCode" && val) {
           this.getResourceInfo({
             formCode: val
           });
@@ -636,25 +636,33 @@ export default {
       const fields = await this.getFields("queryPrintParamFields", this.groupId);
       this.$refs.setTemplateNameDlg.handleGenerateName(this.printDesignForm.resultFileName, fields);
     },
-    // TODO
     // 设计文件名
     async handleQRCodeTitle() {
       const fields = await this.getFields("queryPrintParamFields", this.groupId);
-      this.$refs.setTemplateNameDlg.handleGenerateName(this.btnConfigFrom.QRCodeTitle, fields);
+      this.$refs.setTemplateNameDlg.handleGenerateName(this.btnConfigFrom.extraOption.title, fields);
     },
-    // TODO
+
     // 设计二维码数据
     handleQRCodePageData() {
-      this.$refs.setQRCodePageDataDlg.openDlg(this.btnConfigFrom.extraOption.QRCodePageData);
+      this.$refs.setQRCodePageDataDlg.openDlg(this.btnConfigFrom.extraOption.briefPageFields);
     },
 
-    handleUpdateQRCodePageData(QRCodePageData) {
-      console.log("QRCodePageData", QRCodePageData);
+    handleUpdateQRCodePageData(briefPageFields) {
+      console.log("briefPageFields", briefPageFields);
 
-      this.btnConfigFrom.extraOption.QRCodePageData = QRCodePageData;
+      this.btnConfigFrom.extraOption.briefPageFields = briefPageFields;
     },
 
     async handleUpdateTemplateName(resultFileName) {
+      if (this.btnConfigFrom.extraOption.btnType === "formDownload") {
+        await this.handleFormBtnPrintTitle(resultFileName);
+      } else if (this.btnConfigFrom.extraOption.btnType === "qrCode") {
+        // 二维码按钮
+        await this.handleQrBtnPrintTitle(resultFileName);
+      }
+    },
+
+    async handleFormBtnPrintTitle(resultFileName) {
       const params = {
         listPageId: this.groupId,
         buttonId: this.btnConfigFrom.btnId,
@@ -662,6 +670,10 @@ export default {
         resultFileFormat: this.printDesignForm.resultFileFormat
       };
       this.updateAttributes(params);
+    },
+
+    async handleQrBtnPrintTitle(resultFileName) {
+      this.btnConfigFrom.extraOption.title = resultFileName;
     },
 
     handleUpdateResultFileFormat(resultFileFormat) {
