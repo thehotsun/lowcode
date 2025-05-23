@@ -40,6 +40,12 @@ export default {
       default() {
         return () => () => {};
       }
+    },
+    listPageId: {
+      type: String,
+      default() {
+        return "";
+      }
     }
   },
   data() {
@@ -147,9 +153,26 @@ export default {
         this.$forceUpdate();
       });
     },
+    // TODO
+    autoFillOptions(request, extraOption, formField) {
+      const baseParams = this.getParams() || {};
+      this.generalRequest(formField, this.listPageId, baseParams).then(res => {
+        res.data.map(item => {
+          if (extraOption.labelTranslateType === 1) {
+            item[extraOption.props.label] = `${item[extraOption.props.key]}-${item[extraOption.props.label]}`;
+          }
+          extraOption.options.push(item);
+        });
+        this.$forceUpdate();
+      });
+    },
 
-    disposeRequest(request, extraOption) {
-      if (request?.require && request?.url && request.status === "pending") {
+    disposeRequest(request, extraOption, formField) {
+      if (request?.autoFillOptions) {
+        extraOption.options = [];
+        this.autoFillOptions(request, extraOption, formField);
+        request.status = "finish";
+      } else if (request?.require && request?.url && request.status === "pending") {
         extraOption.options = [];
         // 这个有值代表是字典类型得，字典类型默认props为此
         if (typeof extraOption.labelTranslateType === "number") {
@@ -215,7 +238,7 @@ export default {
     },
 
     getSelectCompVNode({ tagAttrs: attrs, listeners, formField, extraOption, request, isFlat }) {
-      this.disposeRequest(request, extraOption);
+      this.disposeRequest(request, extraOption, formField);
       let { options = [], props = {} } = extraOption;
       const { formData, onlyShow } = this;
       // 基础版有个添加维护字典的功能，里面返回的字段为id和cnName，因此以此字段为默认取值
@@ -240,7 +263,7 @@ export default {
     },
 
     getCascaderCompVNode({ tagAttrs: attrs, listeners, formField, extraOption, request, ref }) {
-      this.disposeRequest(request, extraOption);
+      this.disposeRequest(request, extraOption, formField);
       const { options = [], props = {} } = extraOption;
       const { formData, onlyShow } = this;
       attrs.options = options;
@@ -261,7 +284,7 @@ export default {
     },
 
     getRadioGroupCompVNode({ tagAttrs: attrs, listeners, formField, extraOption, request }) {
-      this.disposeRequest(request, extraOption);
+      this.disposeRequest(request, extraOption, formField);
       const { options = [], props = {} } = extraOption;
       const { formData, onlyShow } = this;
       // 基础版有个添加维护字典的功能，里面返回的字段为id和cnName，因此以此字段为默认取值
@@ -289,7 +312,7 @@ export default {
     },
 
     getCheckboxGroupCompVNode({ tagAttrs: attrs, listeners, formField, extraOption, request }) {
-      this.disposeRequest(request, extraOption);
+      this.disposeRequest(request, extraOption, formField);
       const { options = [], props = {} } = extraOption;
       const { formData, onlyShow } = this;
       // 基础版有个添加维护字典的功能，里面返回的字段为id和cnName，因此以此字段为默认取值

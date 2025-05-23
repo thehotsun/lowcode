@@ -1198,6 +1198,9 @@ export function BtnConfigFormOptions() {
             key: "id",
             label: "cnName"
           }
+        },
+        renderDependFn: function(formData) {
+          return ["qrCode"].includes(formData.extraOption.btnType);
         }
       }
     },

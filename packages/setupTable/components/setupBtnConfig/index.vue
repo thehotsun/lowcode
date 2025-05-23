@@ -638,7 +638,8 @@ export default {
     },
     // 设计文件名
     async handleQRCodeTitle() {
-      const fields = await this.getFields("queryPrintParamFields", this.groupId);
+      let fields = await this.getFields("queryPrintParamFields", this.groupId);
+      fields = fields.filter(item => item.typeDispalyName === "视图字段");
       this.$refs.setTemplateNameDlg.handleGenerateName(this.btnConfigFrom.extraOption.title, fields);
     },
 

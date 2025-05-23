@@ -413,7 +413,13 @@ export function getSetupFormOptions(searchWidgetName) {
       break;
     case "el-select":
       options = complexOptions()
-        .toSpliced(1, 0, ["是否平铺：", null, "isFlat", null, "el-switch"], ["折叠选中内容：", null, "tagAttrs.collapse-tags", null, "el-switch"])
+        .toSpliced(
+          1,
+          0,
+          ["是否平铺：", null, "isFlat", null, "el-switch"],
+          ["折叠选中内容：", null, "tagAttrs.collapse-tags", null, "el-switch"],
+          // ["自动填充选项：", null, "request.autoFillOptions", null, "el-switch"]
+        )
         .map(item => getSetupFromSingleConfig(...item));
       break;
     case "el-cascader":
@@ -551,6 +557,7 @@ export function getSetupForm(searchWidgetName) {
         extraOption: "",
         request: {
           require: false,
+          autoFillOptions: false,
           url: "",
           type: "get",
           params: "",

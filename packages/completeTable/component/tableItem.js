@@ -76,7 +76,9 @@ function InstanceData() {
     // 一般用来传递当前row给表单
     externalParamsFormRow: {},
     // tabledata更改后，需要触发的一系列操作
-    tableDataChangeQueue: []
+    tableDataChangeQueue: [],
+    // 当前高亮行
+    currentSelectedRow: null
   };
 }
 
@@ -1085,11 +1087,11 @@ export default {
           paramType,
           deliverySelectListFields
         };
-        if (validate.includes(0) && selectList.length === 0 && !row) {
+        if (validate.includes(0) && selectList.length === 0 && !row && !this.currentSelectedRow) {
           this.$warn("请至少勾选一条要处理的数据");
           return false;
         }
-        if (validate.includes(1) && selectList.length !== 1 && !row) {
+        if (validate.includes(1) && selectList.length !== 1 && !row && !this.currentSelectedRow) {
           this.$warn("当前操作只允许勾选一条数据");
           return false;
         }
@@ -1388,7 +1390,7 @@ export default {
       const {
         btnConfigs: { dialogHeight, dialogWidth }
       } = this;
-      const mainFieldValue = (row || this.selectList[0])?.[this.keyField];
+      const mainFieldValue = (row || this.selectList[0] || this.currentSelectedRow)?.[this.keyField];
       if (btnType === "check") {
         const res = await this.generalRequest(`/flow/business/${mainFieldValue}`, "get");
         const params = {
@@ -1445,6 +1447,8 @@ export default {
               this.primaryKeyValue = rowData[this.keyField];
             } else if (this.selectList.length) {
               this.primaryKeyValue = this.selectList[0]?.[this.keyField];
+            } else if (this.currentSelectedRow) {
+              this.primaryKeyValue = this.currentSelectedRow?.[this.keyField];
             } else {
               return this.$warn("请至少勾选一条要处理的数据！");
             }
@@ -1452,11 +1456,11 @@ export default {
               return this.$warn("主键字段未取到值，请检查数据或在列表设计页面重新关联主键！");
             }
           } else {
-            if (!(rowData || this.selectList[0])) {
+            if (!(rowData || this.selectList[0] || this.currentSelectedRow)) {
               return this.$warn("请至少勾选一条要处理的数据！");
             }
           }
-          this.editRow = rowData || this.selectList[0];
+          this.editRow = rowData || this.selectList[0] || this.currentSelectedRow;
           this.expose_showDialog();
           this.btnConfigs.formId = relateFrom;
           this.onlyRead = btnType === "check";
@@ -1499,6 +1503,8 @@ export default {
       let selectList;
       if (rowData) {
         selectList = [rowData];
+      } else if (this.selectList.length === 0 && this.currentSelectedRow) {
+        selectList = [this.currentSelectedRow];
       } else {
         selectList = this.selectList;
       }
@@ -1563,6 +1569,7 @@ export default {
       const {
         selectList,
         keyField,
+        currentSelectedRow,
         btnConfigs: {
           requestUrl,
           requestType,
@@ -1580,6 +1587,8 @@ export default {
         let selectListId;
         if (row) {
           selectListId = [row[keyField]];
+        } else if (selectList.length === 0 && currentSelectedRow) {
+          selectListId = [currentSelectedRow[keyField]];
         } else {
           selectListId = selectList.map(item => item[keyField]);
         }
@@ -1707,8 +1716,22 @@ export default {
     },
 
     async dealQrDownload({ command }, row) {
+      let ids = [];
+      if (command === "curPage") {
+        command = "page";
+        ids = this.tableData.map(item => item[this.keyField]);
+      } else if (command === "curSelect") {
+        command = "selected";
+        ids = this.selectList.map(item => item[this.keyField]);
+      }
       if (row) {
-        this.requestBatchQrDoc(command, [row[this.keyField]]);
+        this.requestBatchQrDoc({
+          dataRange: command,
+          ids: [row[this.keyField]],
+          actionCode: `${this.rawRelateId.split("__")[0]}:${this.btnConfigs.btnId}:${this.btnConfigs.authorize}`,
+          listPageId: this.listPageId,
+          queryJson: JSON.stringify(this.getParams())
+        });
       } else {
         if (this.selectList.length === 0) {
           return this.$warn("请至少勾选一条要处理的数据");
@@ -1716,15 +1739,11 @@ export default {
         if ([undefined, null].includes(this.tableData[0][this.keyField])) {
           return this.$warn("主键字段未取到值，请检查数据或重新在列表设计页面重新关联主键！");
         }
-        if (command === "curPage") {
-          command = "page";
-        } else if (command === "curSelect") {
-          command = "selected";
-        }
+
         this.requestBatchQrDoc({
           dataRange: command,
-          ids: this.selectList.map(item => item[this.keyField]),
-          qrCodeId: `${this.rawRelateId}:${this.btnConfigs.btnId}:${this.btnConfigs.authorize}`,
+          ids,
+          actionCode: `${this.rawRelateId.split("__")[0]}:${this.btnConfigs.btnId}:${this.btnConfigs.authorize}`,
           listPageId: this.listPageId,
           queryJson: JSON.stringify(this.getParams())
         });
@@ -2265,6 +2284,10 @@ export default {
       if (this.showPanel) this.showPanel = false;
       console.log("handleGlobalClick");
     },
+    updateSelectedRow(row) {
+      console.log("updateSelectedRow", row);
+      this.currentSelectedRow = row;
+    },
 
     showCheckDialog(row) {
       console.log("showCheckDialog", row);
@@ -2353,6 +2376,7 @@ export default {
       handleFilter,
       handleGlobalClick,
       showCheckDialog,
+      updateSelectedRow,
       onSave,
       tableCellClick,
       localProcessData,
@@ -2393,6 +2417,7 @@ export default {
           clickBtn: tableCellClick
         }
       : {
+          "current-change": updateSelectedRow,
           "row-dblclick": showCheckDialog,
           "selection-change": selectListHandler,
           clickBtn: tableCellClick
@@ -2427,6 +2452,7 @@ export default {
                 getParams={getParams}
                 showFooter={false}
                 use-dialog={false}
+                list-page-id={listPageId}
                 label-width=""
                 inline={true}
               ></base-render-form>
