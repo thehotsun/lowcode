@@ -27,6 +27,11 @@
             </el-select>
             <el-button @click="requestDicCodeListData">刷新</el-button>
           </template>
+          <template #labelFieldName>
+            <el-select v-model="setupForm.request.labelFieldName" placeholder="请选择选项label" filterable>
+              <el-option v-for="item in labelFieldNameList" :key="item.fieldCode" :label="item.fieldName" :value="item.fieldCode"> </el-option>
+            </el-select>
+          </template>
         </base-render-form>
         <el-form>
           <el-form-item label-width="106px" label="生成sql片段：">
@@ -82,6 +87,17 @@ export default {
       curRowData: null
     };
   },
+  computed: {
+    labelFieldNameList() {
+      try {
+        return this.getTableDesignFields();
+      } catch (error) {
+        console.error("获取表单字段失败，请检查getTableDesignFields方法是否正确", error);
+        return [];
+      }
+    }
+  },
+  inject: ["getTableDesignFields"],
   mounted() {
     this.requestDicCodeListData();
   },

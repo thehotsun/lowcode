@@ -418,7 +418,19 @@ export function getSetupFormOptions(searchWidgetName) {
           0,
           ["是否平铺：", null, "isFlat", null, "el-switch"],
           ["折叠选中内容：", null, "tagAttrs.collapse-tags", null, "el-switch"],
-          // ["自动填充选项：", null, "request.autoFillOptions", null, "el-switch"]
+          ["自动填充选项：", null, "request.autoFillOptions", null, "el-switch"],
+          [
+            "选项label：",
+            "请选择选项label",
+            "",
+            {
+              style: "width: 350px",
+              slotName: "labelFieldName",
+              renderDependFn: function(formData) {
+                return formData.request.autoFillOptions;
+              }
+            }
+          ]
         )
         .map(item => getSetupFromSingleConfig(...item));
       break;
@@ -558,6 +570,7 @@ export function getSetupForm(searchWidgetName) {
         request: {
           require: false,
           autoFillOptions: false,
+          labelFieldName: "",
           url: "",
           type: "get",
           params: "",

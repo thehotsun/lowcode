@@ -9,6 +9,7 @@
         :form-options="searchFromOptions"
         :show-footer="false"
         :use-dialog="false"
+        mode="design"
         label-width=""
       ></base-render-form>
     </div>

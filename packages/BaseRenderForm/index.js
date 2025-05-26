@@ -46,6 +46,12 @@ export default {
       default() {
         return "";
       }
+    },
+    mode: {
+      type: String,
+      default() {
+        return "";
+      }
     }
   },
   data() {
@@ -153,10 +159,15 @@ export default {
         this.$forceUpdate();
       });
     },
-    // TODO
+
     autoFillOptions(request, extraOption, formField) {
       const baseParams = this.getParams() || {};
-      this.generalRequest(formField, this.listPageId, baseParams).then(res => {
+      this.generalRequest("/dyn-common/page-list/queryDictColumnDataList", "post", {
+        listPageId: this.listPageId,
+        idFieldName: formField,
+        titleFieldName: request?.labelFieldName,
+        ...baseParams
+      }).then(res => {
         res.data.map(item => {
           if (extraOption.labelTranslateType === 1) {
             item[extraOption.props.label] = `${item[extraOption.props.key]}-${item[extraOption.props.label]}`;
@@ -168,7 +179,9 @@ export default {
     },
 
     disposeRequest(request, extraOption, formField) {
-      if (request?.autoFillOptions) {
+      // 设计态不请求接口
+      if (this.mode === "design") return;
+      if (request?.autoFillOptions && request.status === "pending") {
         extraOption.options = [];
         this.autoFillOptions(request, extraOption, formField);
         request.status = "finish";

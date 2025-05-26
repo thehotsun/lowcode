@@ -169,7 +169,7 @@ export const QRCodePageOperateList = [
 export const QRBtnOptions = function() {
   return {
     // 二维码大小
-    qrSize: 40,
+    qrSize: 0,
     // 二维码标题
     title: "",
     // 二维码位置 bottom top
@@ -1068,7 +1068,7 @@ export function BtnConfigFormOptions() {
           tagAttrs: {
             size: "mini",
             step: 1,
-            min: 1
+            min: 0
           },
           wrapDivStyle: "display: inline-block;",
           formField: "extraOption.qrSize"
