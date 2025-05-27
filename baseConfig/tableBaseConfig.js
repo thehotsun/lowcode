@@ -31,8 +31,6 @@ export function getTableAttrs() {
     setPaginationSize: "",
     // 隐藏默认搜索刷新等功能区
     hiddenDefaultArea: false,
-    // 是否开启双击事件
-    dbClickEnabled: false,
     // 双击关联的按钮ID
     dbClickRelateBtnId: "",
     // 重置按钮的事件

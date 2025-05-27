@@ -5,7 +5,7 @@
     :visible.sync="dialogVisibleTableAttrs"
     :close-on-click-modal="false"
     :close-on-press-escape="false"
-    width="900px"
+    width="985px"
     :before-close="handleCloseTableAttrs"
   >
     <div style="min-width: 60px;background: #fff;padding: 10px;">
@@ -23,7 +23,7 @@
           <el-tooltip
             class="item"
             effect="dark"
-            content="开启此功能后，单击列表的某行数据会调用其查看按钮相关功能（如果有），不开启此功能，则默认为双击时触发"
+            content="开启此功能后，单击列表的某行数据会调用其查看按钮相关功能（如果有），不开启此功能，则默认为双击时触发，如果设置了双击关联按钮，则双击时会优先触发关联按钮的功能"
             placement="top-start"
           >
             <el-checkbox v-model="tableAttrs.clickRowShowDetialDialog">
@@ -62,17 +62,30 @@
         </el-form-item>
 
         <el-row>
-          <el-col :span="12">
+          <el-col :span="7">
             <el-form-item v-show="tableAttrs.showPagination" label="分页显示条数" prop="showPagination">
               <el-select v-model="tableAttrs.paginationSize" placeholder="请选择">
                 <el-option v-for="item in paginationSizeOptions" :key="item.value" :label="item.label" :value="item.value"> </el-option>
               </el-select>
-              <el-button type="text" @click="handleShow('setPaginationSize', '设置分页', $event)">编辑</el-button>
+              <!-- <el-button type="text" @click="handleShow('setPaginationSize', '设置分页', $event)">编辑</el-button> -->
             </el-form-item>
           </el-col>
-          <el-col :span="12">
+          <el-col :span="3">
+            <el-button type="text" style="margin-top: 8px;" @click="handleShow('setPaginationSize', '设置分页', $event)">编辑</el-button>
+          </el-col>
+          <el-col :span="7">
+            <el-form-item label="双击关联按钮" prop="dbClickRelateBtnId">
+              <el-tooltip slot="label" class="fontSize14" effect="dark" content="双击后要触发的按钮" placement="top-start">
+                <span>双击关联按钮<i style="width: 20px;" class="el-icon-question"></i></span>
+              </el-tooltip>
+              <el-select v-model="tableAttrs.dbClickRelateBtnId" placeholder="请选择关联按钮" filterable clearable="">
+                <el-option v-for="btnItem in btnConfigArr" :key="btnItem.btnId" :label="btnItem.tagAttrs.value" :value="btnItem.btnId"></el-option>
+              </el-select>
+            </el-form-item>
+          </el-col>
+          <el-col :span="7">
             <el-form-item label="组件大小" prop="size">
-              <el-select v-model="tableAttrs.size" placeholder="请选择">
+              <el-select v-model="tableAttrs.size" placeholder="请选择组件大小">
                 <el-option v-for="item in sizeOptions" :key="item.value" :label="item.label" :value="item.value"> </el-option>
               </el-select>
             </el-form-item>
@@ -153,34 +166,12 @@
           </el-select>
         </el-form-item>
 
-        <el-row>
-          <el-col :span="12">
-            <el-form-item label="启动双击" prop="dbClickEnabled">
-              <el-tooltip class="item" effect="dark" content="双击是否触发某个关联按钮" placement="top-start">
-                <el-checkbox v-model="tableAttrs.dbClickEnabled"
-                  ><span style="cursor: pointer;font-size: 14px">启用</span><i style="width: 20px" class="el-icon-question"></i>
-                </el-checkbox>
-              </el-tooltip>
-            </el-form-item>
-          </el-col>
-          <el-col v-if="tableAttrs.dbClickEnabled" :span="12">
-            <el-form-item label="关联按钮" prop="dbClickRelateBtnId">
-              <el-tooltip slot="label" class="fontSize14" effect="dark" content="双击后要触发的按钮" placement="top-start">
-                <span>关联按钮<i style="width: 20px;" class="el-icon-question"></i></span>
-              </el-tooltip>
-              <el-select v-model="tableAttrs.dbClickRelateBtnId" placeholder="请选择关联按钮" filterable clearable="">
-                <el-option v-for="btnItem in btnConfigArr" :key="btnItem.btnId" :label="btnItem.tagAttrs.value" :value="btnItem.btnId"></el-option>
-              </el-select>
-            </el-form-item>
-          </el-col>
-        </el-row>
-
-        <el-form-item label="重置按钮事件">
+        <!-- <el-form-item label="重置按钮事件">
           <el-tooltip slot="label" class="item" effect="dark" content="点击重置按钮触发的js脚本，如不填则执行默认行为（清空搜索数据并重新请求表格）" placement="top-start">
             <span style="cursor: pointer;font-size: 14px">重置按钮事件</span><i style="width: 20px; font-size: 14px;" class="el-icon-question"></i>
           </el-tooltip>
           <el-input v-model="tableAttrs.resetBtnEvent" placeholder="请输入数据转换函数" @focus="handleShow('resetBtnEvent', '数据转换函数', $event)"></el-input>
-        </el-form-item>
+        </el-form-item> -->
 
         <el-form-item label="自定义样式" prop="style">
           <el-input v-model="tableAttrs.style" type="textarea" :rows="2" placeholder="请输入整体样式（包括列表、搜索区域和按钮区域）"></el-input>
@@ -244,9 +235,7 @@ export default {
       showCodeEditor: false,
       curFn: "",
       codeEditorTil: "",
-      rules: {
-        dbClickRelateBtnId: [{ required: true, message: "请选择关联按钮", trigger: "change" }]
-      },
+      rules: {},
       sizeOptions: [
         {
           value: "medium",
@@ -328,3 +317,11 @@ export default {
   }
 };
 </script>
+<style lang="less" scoped>
+.w158 {
+  width: 158px;
+}
+.fontSize14 {
+  font-size: 14px;
+}
+</style>
