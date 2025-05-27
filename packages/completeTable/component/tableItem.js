@@ -1902,7 +1902,7 @@ export default {
         btnRelateDialogVisible,
         previewMode,
         onlyRead,
-        btnConfigs: { showFooter, useDialog, relateComponent, formId, dialogTitle, dialogWidth, dialogHeight },
+        btnConfigs: { showFooter, useDialog, relateComponent, formId, dialogTitle, dialogWidth, dialogHeight, btnType },
         dynamicFormVNode,
         dynamicTableVNode,
         relateComponentVNode,
@@ -1935,7 +1935,7 @@ export default {
             visible={btnRelateDialogVisible}
             {...{ on: visibleListeners }}
             close-on-click-modal={false}
-            close-on-press-escape={false}
+            close-on-press-escape={btnType === "check"}
             append-to-body
             v-draggable
             width={width}
@@ -1944,7 +1944,8 @@ export default {
               class="dialogContent"
               style={{
                 height: "100%",
-                overflow: "auto",
+                "overflow-y": "auto",
+                "overflow-x": "hidden",
                 width: `calc(${width} - '40px')`
               }}
             >
@@ -2341,6 +2342,9 @@ export default {
       } else {
         console.warn("调用emitBtnClick参数同时缺失按钮名称和按钮id");
       }
+    },
+    handleRowDbClick(row) {
+      this.emitBtnClick(row, null, this.tableAttrs.dbClickRelateBtnId);
     }
   },
 
@@ -2375,6 +2379,7 @@ export default {
       fuzzyFieldSearchConfig: { searchFieldList, placeholder },
       handleFilter,
       handleGlobalClick,
+      handleRowDbClick,
       showCheckDialog,
       updateSelectedRow,
       onSave,
@@ -2388,7 +2393,8 @@ export default {
       selectList,
       keyField,
       hiddenDefaultArea,
-      getParams
+      getParams,
+      emitBtnClick
     } = this;
 
     const curPageListeners = localProcessData
@@ -2410,18 +2416,19 @@ export default {
           "size-change": handleSizeChange,
           "current-change": handleCurrentChange
         };
-    const tableEvent = tableAttrs.clickRowShowDetialDialog
-      ? {
-          "row-click": showCheckDialog,
-          "selection-change": selectListHandler,
-          clickBtn: tableCellClick
-        }
-      : {
-          "current-change": updateSelectedRow,
-          "row-dblclick": showCheckDialog,
-          "selection-change": selectListHandler,
-          clickBtn: tableCellClick
-        };
+    const tableEvent = {
+      "selection-change": selectListHandler,
+      clickBtn: tableCellClick
+    };
+
+    if (tableAttrs.clickRowShowDetialDialog) {
+      tableEvent["row-click"] = showCheckDialog;
+    } else {
+      tableEvent["current-change"] = updateSelectedRow;
+    }
+    if (tableAttrs.dbClickEnabled) {
+      tableEvent["row-dblclick"] = handleRowDbClick;
+    }
 
     const scopedSlots = {
       operator: ({ row }) => {

@@ -66,7 +66,7 @@
       ></setupBtnConfig>
     </el-drawer>
 
-    <tableAttrsDlg ref="tableAttrsDlg" :delivery-fields-option="deliveryFieldsOption" @changeTableAttrs="changeTableAttrs"></tableAttrsDlg>
+    <tableAttrsDlg ref="tableAttrsDlg" :btn-config-arr="btnConfigArr" :delivery-fields-option="deliveryFieldsOption" @changeTableAttrs="changeTableAttrs"></tableAttrsDlg>
   </div>
 </template>
 

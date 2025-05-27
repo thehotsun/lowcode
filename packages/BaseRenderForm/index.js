@@ -168,12 +168,7 @@ export default {
         titleFieldName: request?.labelFieldName,
         ...baseParams
       }).then(res => {
-        res.data.map(item => {
-          if (extraOption.labelTranslateType === 1) {
-            item[extraOption.props.label] = `${item[extraOption.props.key]}-${item[extraOption.props.label]}`;
-          }
-          extraOption.options.push(item);
-        });
+        extraOption.options = res.data;
         this.$forceUpdate();
       });
     },
