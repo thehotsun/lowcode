@@ -300,23 +300,10 @@ export default {
       this.tableAttrs = cloneDeep(attrs);
       this.dialogVisibleTableAttrs = true;
     },
-    async handleCopy(val) {
-      this.tableAttrs[this.curFn] = val;
-      await this.$nextTick();
-      this.$refs.chEditor.aceEditor.setOptions({
-        value: this.tableAttrs[this.curFn]
-      });
-      this.$refs.chEditor.codeValue = this.tableAttrs[this.curFn];
-    },
     async handleShow(field, codeEditorTil) {
       this.curFn = field;
       this.codeEditorTil = codeEditorTil;
       this.showCodeEditor = true;
-      await this.$nextTick();
-      this.$refs.chEditor.aceEditor.setOptions({
-        value: this.tableAttrs[this.curFn]
-      });
-      this.$refs.chEditor.codeValue = this.tableAttrs[this.curFn];
     },
     handleClose() {
       this.showCodeEditor = false;

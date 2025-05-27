@@ -805,6 +805,15 @@ export default {
       }
     },
 
+    handleFilterReset() {
+      if (this.previewMode) return;
+      if (this.tableAttrs.resetBtnEvent) {
+        str2Fn(this.tableAttrs.resetBtnEvent).call(this, cloneDeep);
+      } else {
+        this.handleReset();
+      }
+    },
+
     handleNativeFilter(e) {
       if (this.previewMode) return;
       const keyCode = window.event ? e.keyCode : e.which;
@@ -821,6 +830,7 @@ export default {
 
     handleReset() {
       this.searchFrom = cloneDeep(this.rawSearchFrom);
+      this.multiFieldSearch = "";
       this.page.pageNo = 1;
       this.queryTableData();
     },
@@ -2378,6 +2388,7 @@ export default {
       importRefreshVNode,
       fuzzyFieldSearchConfig: { searchFieldList, placeholder },
       handleFilter,
+      handleFilterReset,
       handleGlobalClick,
       handleRowDbClick,
       showCheckDialog,
@@ -2393,8 +2404,7 @@ export default {
       selectList,
       keyField,
       hiddenDefaultArea,
-      getParams,
-      emitBtnClick
+      getParams
     } = this;
 
     const curPageListeners = localProcessData
@@ -2522,6 +2532,18 @@ export default {
                           }}
                         >
                           搜 索
+                        </el-button>
+                        <el-button
+                          type=""
+                          size="mini"
+                          style="margin-left: 10px"
+                          {...{
+                            on: {
+                              click: handleFilterReset
+                            }
+                          }}
+                        >
+                          重 置
                         </el-button>
                       </div>
                     ) : null}

@@ -19,7 +19,9 @@ export const tableAttrsCodeExampleList = {
   dataTransitionFn:
     "function dataTransition(data) {\n  // data 是接口返回的数据\n  // 数组对象中的id字段\n  const idField = 'id';\n  // 数组对象中指向父级的字段\n  const parentField = 'parentField';\n  // 创建一个哈希表，存储每个节点\n  const idMapping = data.reduce((acc, el, i) => {\n    acc[el[idField]] = i;\n    return acc;\n  }, {});\n\n  const root = [];\n  data.forEach(el => {\n    // 如果是根节点（没有父节点），将其加入根节点数组\n    if (el[parentField] === null) {\n      root.push(el);\n      return;\n    }\n\n    // 使用哈希表获取父节点\n    const parentEl = data[idMapping[el[parentField]]];\n\n    // 如果父节点没有子节点数组，则创建一个\n    if (!parentEl.children) {\n      parentEl.children = [];\n    }\n\n    // 将当前节点加入父节点的子节点数组\n    parentEl.children.push(el);\n  });\n\n  return root;\n}",
   setPaginationSize:
-    '[{\r\n  label: "10条/页",\r\n  value: 10\r\n},\r\n{\r\n  label: "20条/页",\r\n  value: 20\r\n},\r\n{\r\n  label: "50条/页",\r\n  value: 50\r\n},\r\n{\r\n  label: "100条/页",\r\n  value: 100\r\n}]'
+    '[{\r\n  label: "10条/页",\r\n  value: 10\r\n},\r\n{\r\n  label: "20条/页",\r\n  value: 20\r\n},\r\n{\r\n  label: "50条/页",\r\n  value: 50\r\n},\r\n{\r\n  label: "100条/页",\r\n  value: 100\r\n}]',
+  resetBtnEvent:
+    "function reset(cloneDeep) {\n  // 重置searchFrom\n  this.searchFrom = cloneDeep(this.rawSearchFrom);\n  // 清空搜索框\n  this.multiFieldSearch = '';\n  // 更改分页下标\n  this.page.pageNo = 1;\n  // 重新请求列表数据\n  this.queryTableData();\n}"
 };
 
 export const tableOptionsCodeExampleList = {
