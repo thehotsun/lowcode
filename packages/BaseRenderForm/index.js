@@ -165,10 +165,19 @@ export default {
       this.generalRequest("/dyn-common/page-list/queryDictColumnDataList", "post", {
         listPageId: this.listPageId,
         idFieldName: formField,
-        titleFieldName: request?.labelFieldName,
+        titleFieldName: request?.labelFieldName || "",
         ...baseParams
       }).then(res => {
-        extraOption.options = res.data;
+        if (!request?.labelFieldName) {
+          extraOption.options = res.data.map(item => {
+            return {
+              id: item.id,
+              cnName: item.id
+            };
+          });
+        } else {
+          extraOption.options = res.data;
+        }
         this.$forceUpdate();
       });
     },

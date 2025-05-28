@@ -28,7 +28,7 @@
             <el-button @click="requestDicCodeListData">刷新</el-button>
           </template>
           <template #labelFieldName>
-            <el-select v-model="setupForm.request.labelFieldName" placeholder="请选择选项label" filterable>
+            <el-select v-model="setupForm.request.labelFieldName" placeholder="请选择选项label" filterable clearable>
               <el-option v-for="item in labelFieldNameList" :key="item.fieldCode" :label="item.fieldName" :value="item.fieldCode"> </el-option>
             </el-select>
           </template>
