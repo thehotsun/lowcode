@@ -376,7 +376,7 @@ export default {
     },
     requestBatchQrDoc: {
       default: () => () => {
-        console.warn("inject缺失requestBatchFlowDoc!");
+        console.warn("inject缺失requestBatchQrDoc!");
       }
     },
     checkPermission: {
@@ -1089,7 +1089,6 @@ export default {
     },
 
     validateSelectList({ paramName, paramType, deliverySelectList, deliverySelectListFields, validate }, row) {
-      const { selectList } = this;
       this.btnConfigs.deliverySelectList = deliverySelectList;
       if (deliverySelectList) {
         this.btnConfigs.btnDisposeParamsRule = {
@@ -1097,11 +1096,11 @@ export default {
           paramType,
           deliverySelectListFields
         };
-        if (validate.includes(0) && selectList.length === 0 && !row && !this.currentSelectedRow) {
+        if (validate.includes(0) && this.checkNoSelection() && !row) {
           this.$warn("请至少勾选一条要处理的数据");
           return false;
         }
-        if (validate.includes(1) && selectList.length !== 1 && !row && !this.currentSelectedRow) {
+        if (validate.includes(1) && !this.checkOnlyOneSelected() && !row) {
           this.$warn("当前操作只允许勾选一条数据");
           return false;
         }
@@ -1400,7 +1399,7 @@ export default {
       const {
         btnConfigs: { dialogHeight, dialogWidth }
       } = this;
-      const mainFieldValue = (row || this.selectList[0] || this.currentSelectedRow)?.[this.keyField];
+      const mainFieldValue = (row || this.getFirstSelectedData())?.[this.keyField];
       if (btnType === "check") {
         const res = await this.generalRequest(`/flow/business/${mainFieldValue}`, "get");
         const params = {
@@ -1455,10 +1454,8 @@ export default {
           if (!this.localProcessData) {
             if (rowData) {
               this.primaryKeyValue = rowData[this.keyField];
-            } else if (this.selectList.length) {
-              this.primaryKeyValue = this.selectList[0]?.[this.keyField];
-            } else if (this.currentSelectedRow) {
-              this.primaryKeyValue = this.currentSelectedRow?.[this.keyField];
+            } else if (this.checkAnySelected()) {
+              this.primaryKeyValue = this.getFirstSelectedData()?.[this.keyField];
             } else {
               return this.$warn("请至少勾选一条要处理的数据！");
             }
@@ -1466,11 +1463,11 @@ export default {
               return this.$warn("主键字段未取到值，请检查数据或在列表设计页面重新关联主键！");
             }
           } else {
-            if (!(rowData || this.selectList[0] || this.currentSelectedRow)) {
+            if (!(rowData || this.getFirstSelectedData())) {
               return this.$warn("请至少勾选一条要处理的数据！");
             }
           }
-          this.editRow = rowData || this.selectList[0] || this.currentSelectedRow;
+          this.editRow = rowData || this.getFirstSelectedData();
           this.expose_showDialog();
           this.btnConfigs.formId = relateFrom;
           this.onlyRead = btnType === "check";
@@ -1513,10 +1510,8 @@ export default {
       let selectList;
       if (rowData) {
         selectList = [rowData];
-      } else if (this.selectList.length === 0 && this.currentSelectedRow) {
-        selectList = [this.currentSelectedRow];
       } else {
-        selectList = this.selectList;
+        selectList = this.getSelectedData();
       }
       if (deliverySelectList) {
         if (fieldFormatMode === "useArray") {
@@ -1597,10 +1592,8 @@ export default {
         let selectListId;
         if (row) {
           selectListId = [row[keyField]];
-        } else if (selectList.length === 0 && currentSelectedRow) {
-          selectListId = [currentSelectedRow[keyField]];
         } else {
-          selectListId = selectList.map(item => item[keyField]);
+          selectListId = this.getSelectedData().map(item => item[keyField]);
         }
         if (paramType === 1) {
           // paramName字段的兼容性代码
@@ -1661,12 +1654,13 @@ export default {
           return this.$warn("主键字段未取到值，请检查数据或重新在列表设计页面重新关联主键！");
         }
 
+        const selectList = this.getSelectedData();
         switch (command) {
           case "curSelect":
-            if (!this.selectList.length) {
+            if (!selectList.length) {
               return this.$warn("当前未选中任何数据，无法下载！");
             }
-            params[this.keyField] = this.selectList.map(item => item[this.keyField]);
+            params[this.keyField] = selectList.map(item => item[this.keyField]);
             break;
           case "curPage":
             if (!this.tableData.length) {
@@ -1688,7 +1682,8 @@ export default {
       if (row) {
         this.requestBatchFlowDoc(command, [row[this.keyField]]);
       } else {
-        if (this.selectList.length === 0) {
+        const selectList = this.getSelectedData();
+        if (selectList.length === 0) {
           return this.$warn("请至少勾选一条要处理的数据");
         }
         if ([undefined, null].includes(this.tableData[0][this.keyField])) {
@@ -1696,7 +1691,7 @@ export default {
         }
         this.requestBatchFlowDoc(
           command,
-          this.selectList.map(item => item[this.keyField])
+          selectList.map(item => item[this.keyField])
         );
       }
     },
@@ -1705,7 +1700,8 @@ export default {
       if (row) {
         this.requestBatchFlowDoc(command, [row[this.keyField]]);
       } else {
-        if (this.selectList.length === 0) {
+        const selectList = this.getSelectedData();
+        if (selectList.length === 0) {
           return this.$warn("请至少勾选一条要处理的数据");
         }
         if ([undefined, null].includes(this.tableData[0][this.keyField])) {
@@ -1727,12 +1723,13 @@ export default {
 
     async dealQrDownload({ command }, row) {
       let ids = [];
+      const selectList = this.getSelectedData();
       if (command === "curPage") {
         command = "page";
         ids = this.tableData.map(item => item[this.keyField]);
       } else if (command === "curSelect") {
         command = "selected";
-        ids = this.selectList.map(item => item[this.keyField]);
+        ids = selectList.map(item => item[this.keyField]);
       }
       if (row) {
         this.requestBatchQrDoc({
@@ -1743,7 +1740,7 @@ export default {
           queryJson: JSON.stringify(this.getParams())
         });
       } else {
-        if (this.selectList.length === 0) {
+        if (selectList.length === 0) {
           return this.$warn("请至少勾选一条要处理的数据");
         }
         if ([undefined, null].includes(this.tableData[0][this.keyField])) {
@@ -1765,15 +1762,16 @@ export default {
         if (row) {
           this.batchDel([row[this.keyField]], [row]);
         } else {
-          if (this.selectList.length === 0) {
+          const selectList = this.getSelectedData();
+          if (selectList.length === 0) {
             return this.$warn("请至少勾选一条要处理的数据");
           }
           if ([undefined, null].includes(this.tableData[0][this.keyField])) {
             return this.$warn("主键字段未取到值，请检查数据或重新在列表设计页面重新关联主键！");
           }
           this.batchDel(
-            this.selectList.map(item => item[this.keyField]),
-            this.selectList
+            selectList.map(item => item[this.keyField]),
+            selectList
           );
         }
       } else if (this.localProcessData && this.isVformWidget) {
@@ -1782,10 +1780,11 @@ export default {
         }
         this.localDataDel(row);
       } else if (!this.localProcessData && this.isVformWidget) {
-        if (this.selectList.length === 0 && !row) {
+        const selectList = this.getSelectedData();
+        if (selectList.length === 0 && !row) {
           return this.$warn("请至少勾选一条要处理的数据");
         }
-        this.batchDelByVformWidget(row ? [row[this.keyField]] : this.selectList.map(item => item[this.keyField]), row || this.selectList);
+        this.batchDelByVformWidget(row ? [row[this.keyField]] : selectList.map(item => item[this.keyField]), row ? [row] : selectList);
       }
     },
 
@@ -1795,8 +1794,9 @@ export default {
         const index = this.tableData.findIndex(rowItem => rowItem === row);
         this.tableData.splice(index, 1);
       } else {
+        const selectList = this.getSelectedData();
         this.tableData = this.tableData.filter(rowItem => {
-          return this.selectList.findIndex(item => item === rowItem) === -1;
+          return selectList.findIndex(item => item === rowItem) === -1;
         });
       }
       // 同步到表单
@@ -2335,7 +2335,7 @@ export default {
       try {
         const target = this.btnRegularOptions[0].formItem.find(btn => btn.btnId === btnId);
         if (target) {
-          this.handleBtnClick(target.extraOption, row);
+          this.handleBtnClick({ ...target.extraOption, btnId: target.btnId, authorize: target.authorize }, row);
         } else {
           this.$warn("未找到此操作关联的按钮！请检查权限！");
         }
@@ -2348,13 +2348,28 @@ export default {
         this.tableCellClick(row, btnId);
       } else if (btnName) {
         const target = this.btnRegularOptions[0].formItem.find(btn => btn.tagAttrs.value === btnName);
-        this.handleBtnClick(target.extraOption, row);
+        this.handleBtnClick({ ...target.extraOption, btnId: target.btnId, authorize: target.authorize }, row);
       } else {
         console.warn("调用emitBtnClick参数同时缺失按钮名称和按钮id");
       }
     },
     handleRowDbClick(row) {
       this.emitBtnClick(row, null, this.tableAttrs.dbClickRelateBtnId);
+    },
+    checkNoSelection() {
+      return this.selectList.length === 0 && !this.currentSelectedRow;
+    },
+    checkOnlyOneSelected() {
+      return this.selectList.length === 1 || (this.selectList.length === 0 && this.currentSelectedRow);
+    },
+    checkAnySelected() {
+      return this.selectList.length || this.currentSelectedRow;
+    },
+    getSelectedData() {
+      return this.selectList.length ? this.selectList : this.currentSelectedRow ? [this.currentSelectedRow] : [];
+    },
+    getFirstSelectedData() {
+      return this.selectList[0] || this.currentSelectedRow;
     }
   },
 
@@ -2389,6 +2404,7 @@ export default {
       fuzzyFieldSearchConfig: { searchFieldList, placeholder },
       handleFilter,
       handleFilterReset,
+      getSelectedData,
       handleGlobalClick,
       handleRowDbClick,
       showCheckDialog,
@@ -2627,7 +2643,7 @@ export default {
             ) : null}
           </el-container>
         </el-main>
-        <printTemplateDlg ref="printTemplateDlg" listPageId={listPageId} btnId={btnConfigs.btnId + ""} keyField={keyField} selectList={selectList}></printTemplateDlg>
+        <printTemplateDlg ref="printTemplateDlg" listPageId={listPageId} btnId={btnConfigs.btnId + ""} keyField={keyField} selectList={getSelectedData()}></printTemplateDlg>
         {btnRelateDialogVNode()}
         {importFileVNode()}
         {importRefreshVNode()}
