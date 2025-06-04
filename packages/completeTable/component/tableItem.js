@@ -2420,7 +2420,8 @@ export default {
       selectList,
       keyField,
       hiddenDefaultArea,
-      getParams
+      getParams,
+      isVformWidget
     } = this;
 
     const curPageListeners = localProcessData
@@ -2509,7 +2510,7 @@ export default {
               ) : (
                 <div>&nbsp;</div>
               )}
-              <div class="operate">
+              <div class={["operate", isVformWidget ? "right_0" : ""]}>
                 {showBtns && rightBtnRegularOptions?.[0].formItem.length ? (
                   <base-render-regular
                     ref="btnForm"
@@ -2564,35 +2565,46 @@ export default {
                         </el-button> */}
                       </div>
                     ) : null}
+                    {isVformWidget ? (
+                      ""
+                    ) : (
+                      <i
+                        class="el-icon-s-tools i pointer"
+                        {...{
+                          on: {
+                            click: handleSetting
+                          }
+                        }}
+                      ></i>
+                    )}
 
-                    <i
-                      class="el-icon-s-tools i pointer"
-                      {...{
-                        on: {
-                          click: handleSetting
-                        }
-                      }}
-                    ></i>
+                    {isVformWidget ? (
+                      ""
+                    ) : (
+                      <i
+                        class="el-icon-refresh-right i pointer"
+                        {...{
+                          on: {
+                            click: iconRefresh
+                          }
+                        }}
+                      ></i>
+                    )}
 
-                    <i
-                      class="el-icon-refresh-right i pointer"
-                      {...{
-                        on: {
-                          click: iconRefresh
-                        }
-                      }}
-                    ></i>
-
-                    <el-dropdown oncommand={iconDisposeDown}>
-                      <span class="el-dropdown-link">
-                        <i class="el-icon-download i pointer"></i>
-                      </span>
-                      <el-dropdown-menu slot="dropdown">
-                        <el-dropdown-item command="curSelect">当前选中</el-dropdown-item>
-                        <el-dropdown-item command="curPage">当前页</el-dropdown-item>
-                        <el-dropdown-item command="all">全部</el-dropdown-item>
-                      </el-dropdown-menu>
-                    </el-dropdown>
+                    {isVformWidget ? (
+                      ""
+                    ) : (
+                      <el-dropdown oncommand={iconDisposeDown}>
+                        <span class="el-dropdown-link">
+                          <i class="el-icon-download i pointer"></i>
+                        </span>
+                        <el-dropdown-menu slot="dropdown">
+                          <el-dropdown-item command="curSelect">当前选中</el-dropdown-item>
+                          <el-dropdown-item command="curPage">当前页</el-dropdown-item>
+                          <el-dropdown-item command="all">全部</el-dropdown-item>
+                        </el-dropdown-menu>
+                      </el-dropdown>
+                    )}
 
                     <div class={["custom", "absolute", showPanel ? "" : "none"]}>
                       <panel
