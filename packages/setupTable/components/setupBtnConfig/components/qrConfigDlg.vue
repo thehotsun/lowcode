@@ -55,8 +55,8 @@
     </el-form>
 
     <span slot="footer" class="dialog-footer">
-      <el-button @click="handleCancel">取消</el-button>
-      <el-button type="primary" @click="handleConfirm">确定</el-button>
+      <el-button size="mini" @click="handleCancel">取消</el-button>
+      <el-button type="primary" size="mini" @click="handleConfirm">确定</el-button>
     </span>
     <!-- 二维码页面数据 -->
     <setQRCodePageDataDlg ref="setQRCodePageDataDlg" @ok="handleUpdateQRCodePageData"></setQRCodePageDataDlg>

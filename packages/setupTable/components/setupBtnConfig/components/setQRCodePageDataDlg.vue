@@ -21,7 +21,7 @@
         class="fullHeight"
         :row-style="{ height: '40px' }"
         :cell-style="{ padding: '4px' }"
-        height="100%"
+        height="500"
       >
       </base-render-table>
     </div>

@@ -95,12 +95,18 @@
         </div>
 
         <el-table :data="printDesignForm.customFields" border stripe max-height="300" style="width: 100%" class="table">
-          <el-table-column prop="customizedFieldName" label="字段名称" width="150px" align="center" show-overflow-tooltip></el-table-column>
-          <el-table-column prop="customizedFieldDisplayName" label="显示名称" align="center" show-overflow-tooltip></el-table-column>
-          <el-table-column label="操作" prop="" align="center">
+          <el-table-column prop="customizedFieldName" label="字段名称" width="150px" align="center" show-overflow-tooltip>
             <template #default="{ row }">
-              <el-button type="text" class="operBtn" @click.stop="editCustomField('customField', row)">编辑</el-button>
-              <el-button type="text" class="operBtn" @click.stop="delCustomField(row)">删除</el-button>
+              <el-button type="text" @click="editCustomField('customField', row)">
+                {{ row.customizedFieldName }}
+              </el-button>
+            </template>
+          </el-table-column>
+          <el-table-column prop="customizedFieldDisplayName" label="显示名称" align="center" show-overflow-tooltip></el-table-column>
+          <el-table-column label="操作" width="80" prop="" align="center">
+            <template #default="{ row }">
+              <el-button type="text" class="operBtn" icon="el-icon-edit" @click.stop="editCustomField('customField', row)"></el-button>
+              <el-button type="text" class="operBtn" icon="el-icon-delete" @click.stop="delCustomField(row)"></el-button>
             </template>
           </el-table-column>
         </el-table>
@@ -119,10 +125,10 @@
             </template>
           </el-table-column>
           <el-table-column prop="fieldDisplayName" label="显示名称" align="center" show-overflow-tooltip></el-table-column>
-          <el-table-column label="操作" prop="" align="center">
+          <el-table-column label="操作" width="80" prop="" align="center">
             <template #default="{ row }">
-              <el-button type="text" class="operBtn" @click.stop="editQrField(row)">编辑</el-button>
-              <el-button type="text" class="operBtn" @click.stop="delQrField(row)">删除</el-button>
+              <el-button type="text" icon="el-icon-edit" class="operBtn" @click.stop="editQrField(row)"></el-button>
+              <el-button type="text" icon="el-icon-delete" class="operBtn" @click.stop="delQrField(row)"></el-button>
             </template>
           </el-table-column>
         </el-table>
@@ -685,9 +691,7 @@ export default {
 
     // 设计二维码数据
     handleQRCodePageData() {
-      this.$refs.setQRCodePageDataDlg.openDlg(
-        this.btnConfigFrom.extraOption.briefPageFields
-      );
+      this.$refs.setQRCodePageDataDlg.openDlg(this.btnConfigFrom.extraOption.briefPageFields);
     },
 
     handleUpdateQRCodePageData(briefPageFields) {
