@@ -146,7 +146,8 @@ export default {
   ],
   provide() {
     return {
-      getTableDesignFields: () => this.deliveryFieldsOption.options
+      getTableDesignFields: () => this.deliveryFieldsOption.options,
+      getFormList: this.queryFormList
     };
   },
   watch: {

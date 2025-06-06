@@ -136,7 +136,7 @@ export default {
           return {
             fieldName: item.fieldCode,
             fieldDisplayName: item.fieldName,
-            show: item.show
+            show: false
           };
         })
       );
@@ -176,7 +176,7 @@ export default {
     handleConfirm() {
       this.$emit(
         "ok",
-        this.tableDataCopy.map(item => this.tableData.find(i => i.fieldName === item.fieldName))
+        this.tableDataCopy.map(item => this.tableData.find(i => i.fieldName === item.fieldName)).filter(item => item.show)
       );
       this.handleClose();
     }

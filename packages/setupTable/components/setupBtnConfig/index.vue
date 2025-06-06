@@ -104,6 +104,29 @@
             </template>
           </el-table-column>
         </el-table>
+
+        <div class="flex">
+          二维码
+          <el-button type="text" class="underline" icon="el-icon-plus" @click="addQrField">添加</el-button>
+        </div>
+
+        <el-table :data="printDesignForm.qrCodeFields" border stripe max-height="300" style="width: 100%" class="table">
+          <el-table-column prop="fieldName" label="字段名称" width="150px" align="center" show-overflow-tooltip>
+            <template #default="{ row }">
+              <el-button type="text" @click="editQrField(row)">
+                {{ row.fieldName }}
+              </el-button>
+            </template>
+          </el-table-column>
+          <el-table-column prop="fieldDisplayName" label="显示名称" align="center" show-overflow-tooltip></el-table-column>
+          <el-table-column label="操作" prop="" align="center">
+            <template #default="{ row }">
+              <el-button type="text" class="operBtn" @click.stop="editQrField(row)">编辑</el-button>
+              <el-button type="text" class="operBtn" @click.stop="delQrField(row)">删除</el-button>
+            </template>
+          </el-table-column>
+        </el-table>
+
         <div class="flex">
           自定义数据
           <el-button type="text" class="underline" icon="el-icon-edit" @click="editCustomField('customData')">编辑</el-button>
@@ -121,7 +144,14 @@
       <template #briefPageFields="{ formData }" class="formDownloadSlot">
         <div class="QRCodePageDataConent">
           <div class="QRCodetextConent">
-            {{ formData.extraOption.briefPageFields?.length ? formData.extraOption.briefPageFields.map(item => `${item.fieldDisplayName}(${item.fieldName})`).join(",") : "" }}
+            {{
+              formData.extraOption.briefPageFields?.filter(item => item.show).length
+                ? formData.extraOption.briefPageFields
+                    ?.filter(item => item.show)
+                    ?.map(item => `${item.fieldDisplayName}(${item.fieldName})`)
+                    .join(",")
+                : ""
+            }}
           </div>
           <el-button type="text" @click="handleQRCodePageData"> {{ formData.extraOption.briefPageFields?.length ? "编辑" : "添加数据" }}</el-button>
         </div>
@@ -137,6 +167,7 @@
     <setTemplateNameDlg ref="setTemplateNameDlg" @ok="handleUpdateTemplateName"></setTemplateNameDlg>
     <!-- 二维码页面数据 -->
     <setQRCodePageDataDlg ref="setQRCodePageDataDlg" @ok="handleUpdateQRCodePageData"></setQRCodePageDataDlg>
+    <qrConfigDlg ref="qrConfigDlg" :btn-id="btnConfigFrom.btnId" :group-id="groupId" @ok="getTemplateInfo"></qrConfigDlg>
   </div>
 </template>
 
@@ -148,6 +179,7 @@ import interfaceDlg from "../dialogs/interfaceDlg.vue";
 import fieldRenameDlg from "../dialogs/fieldRenameDlg.vue";
 import setTemplateNameDlg from "./components/setTemplateNameDlg.vue";
 import setQRCodePageDataDlg from "./components/setQRCodePageDataDlg.vue";
+import qrConfigDlg from "./components/qrConfigDlg.vue";
 import IconPicker from "./components/iconPicker";
 import { cloneDeep, merge } from "lodash";
 function PrintDesignForm() {
@@ -157,7 +189,8 @@ function PrintDesignForm() {
     templateFileVersion: 1,
     templateFileName: "",
     resultFileName: null,
-    customFields: []
+    customFields: [],
+    qrCodeFields: []
   };
 }
 export default {
@@ -168,7 +201,8 @@ export default {
     BaseRenderForm,
     IconPicker,
     setTemplateNameDlg,
-    setQRCodePageDataDlg
+    setQRCodePageDataDlg,
+    qrConfigDlg
   },
   inject: {
     printTemplateUpload: {
@@ -208,6 +242,12 @@ export default {
       default: () => () => {}
     },
     queryPrintParamFields: {
+      default: () => () => {}
+    },
+    queryQrcodeConfigDetail: {
+      default: () => () => {}
+    },
+    deleteQrCodeField: {
       default: () => () => {}
     }
   },
@@ -645,7 +685,9 @@ export default {
 
     // 设计二维码数据
     handleQRCodePageData() {
-      this.$refs.setQRCodePageDataDlg.openDlg(this.btnConfigFrom.extraOption.briefPageFields);
+      this.$refs.setQRCodePageDataDlg.openDlg(
+        this.btnConfigFrom.extraOption.briefPageFields
+      );
     },
 
     handleUpdateQRCodePageData(briefPageFields) {
@@ -710,6 +752,9 @@ export default {
     addCustomField() {
       this.$refs.codeMirrorDlg.open({ val: "customField", mode: 0, listPageId: this.groupId, buttonId: this.btnConfigFrom.btnId }, "table");
     },
+    addQrField() {
+      this.$refs.qrConfigDlg.open();
+    },
     editCustomField(val, row) {
       let params = {};
       if (val === "customField") {
@@ -721,6 +766,16 @@ export default {
         };
       }
       this.$refs.codeMirrorDlg.open({ val, mode: 1, listPageId: this.groupId, buttonId: this.btnConfigFrom.btnId, params }, "table");
+    },
+    async editQrField(row) {
+      const res = await this.queryQrcodeConfigDetail(this.groupId, this.btnConfigFrom.btnId, row.templateFieldId || row.printTemplateId);
+      this.$refs.qrConfigDlg.open(res.data);
+    },
+    async delQrField(row) {
+      await this.$confirm(`您确定要删除这个二维码字段吗?`, { type: "warning" });
+      await this.deleteQrCodeField(this.groupId, this.btnConfigFrom.btnId, row.fieldName);
+      this.$message.success("删除成功");
+      this.getTemplateInfo();
     },
     async delCustomField(row) {
       await this.$confirm(`您确定要删除这个自定义字段吗?`, { type: "warning" });
