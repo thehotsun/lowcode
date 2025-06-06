@@ -117,22 +117,6 @@ export default {
             message: "仅支持字母、数字、划线",
             trigger: "blur"
           }
-        ],
-        "qr.qrSize": [{ type: "number", required: true, message: "请输入有效的大小", trigger: "change" }],
-        "qr.useCustomPage": [{ required: true, message: "请选择跳转类型", trigger: "change" }],
-        "qr.customPageUrlTemplate": [
-          {
-            required: true,
-            message: "请输入自定义页面地址",
-            trigger: "blur",
-            validator: (rule, value, callback, source, options) => {
-              if (source.qr.useCustomPage === 1 && !value) {
-                callback(new Error("请输入自定义页面地址"));
-              } else {
-                callback();
-              }
-            }
-          }
         ]
       }
     };

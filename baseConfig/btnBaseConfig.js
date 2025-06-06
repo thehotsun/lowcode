@@ -918,6 +918,22 @@ export function BtnConfigFormOptions() {
       },
       formItem: {
         formItemAttrs: {
+          prop: "extraOption.closeOnPressEscape",
+          label: "按下ESC关闭弹窗："
+        },
+        tagName: "el-switch",
+        tagAttrs: {},
+        // 对应formData中的属性值
+        formField: "extraOption.closeOnPressEscape",
+        renderDependFn: dialogAttrRenderDependFn
+      }
+    },
+    {
+      elRowAttrs: {
+        gutter: 10
+      },
+      formItem: {
+        formItemAttrs: {
           prop: "extraOption.dialogTitle",
           label: "弹窗标题："
         },
@@ -1598,6 +1614,7 @@ export function BtnConfigFrom(custom = {}) {
       isRefresh: false,
       isHidden: false,
       btnPosition: "left",
+      closeOnPressEscape: false,
       dialogTitle: "",
       dialogWidth: "900",
       dialogHeight: "600",

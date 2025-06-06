@@ -1122,6 +1122,7 @@ export default {
         btnType = "",
         dialogTitle = "",
         dialogHeight = "",
+        closeOnPressEscape = false,
         dialogWidth = "",
         flowKey = "",
         paramName = "",
@@ -1174,6 +1175,7 @@ export default {
       this.btnConfigs.openType = openType;
       this.btnConfigs.dialogHeight = dialogHeight;
       this.btnConfigs.dialogWidth = dialogWidth;
+      this.btnConfigs.closeOnPressEscape = closeOnPressEscape;
       await this.$nextTick();
       // 执行任何操作之前都先进行校验
       if (!validateFn || (validateFn && str2Fn(validateFn).call(this, this.selectList))) {
@@ -1912,7 +1914,7 @@ export default {
         btnRelateDialogVisible,
         previewMode,
         onlyRead,
-        btnConfigs: { showFooter, useDialog, relateComponent, formId, dialogTitle, dialogWidth, dialogHeight, btnType },
+        btnConfigs: { showFooter, useDialog, relateComponent, formId, dialogTitle, dialogWidth, dialogHeight, btnType, closeOnPressEscape },
         dynamicFormVNode,
         dynamicTableVNode,
         relateComponentVNode,
@@ -1945,7 +1947,7 @@ export default {
             visible={btnRelateDialogVisible}
             {...{ on: visibleListeners }}
             close-on-click-modal={false}
-            close-on-press-escape={btnType === "check"}
+            close-on-press-escape={closeOnPressEscape}
             append-to-body
             v-draggable
             width={width}
