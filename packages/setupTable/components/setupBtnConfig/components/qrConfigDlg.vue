@@ -2,7 +2,7 @@
   <el-dialog v-dialogDrag title="字段配置" :visible.sync="dialogVisible" width="600px" append-to-body>
     <el-form ref="dlgForm" :model="form" :rules="rules" label-width="100px" size="small">
       <el-form-item label="字段名称" prop="fieldName" required>
-        <el-input v-model="form.fieldName" placeholder="仅支持字母、数字、划线" />
+        <el-input v-model="form.fieldName" placeholder="仅支持字母、数字、下划线" />
       </el-form-item>
 
       <el-form-item label="显示名称" prop="fieldDisplayName">
@@ -113,7 +113,7 @@ export default {
         fieldName: [
           { required: true, message: "字段名称不能为空", trigger: "blur" },
           {
-            pattern: /^[A-Za-z0-9\-]+$/,
+            pattern: /^[A-Za-z0-9\_]+$/,
             message: "仅支持字母、数字、划线",
             trigger: "blur"
           }

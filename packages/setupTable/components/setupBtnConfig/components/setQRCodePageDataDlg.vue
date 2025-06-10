@@ -10,10 +10,17 @@
     :before-close="handleClose"
     append-to-body
   >
+    <div class="flex">
+      <el-button type="" size="mini" @click="handleShow"> {{ onlyShow ? "列出全部字段" : "仅列出显示字段" }} </el-button>
+      <el-input v-model="keyword" class="w200" placeholder="请输入标题或内容查询" size="small" clearable>
+        <i slot="suffix" class="el-input__icon el-icon-search"></i>
+      </el-input>
+    </div>
     <div class="setQRCodePageDataDlg">
       <base-render-table
         ref="table"
-        :table-data="tableData"
+        :key="tableKey"
+        :table-data="finalTableData"
         :table-options="tableOptions"
         edit-mode
         :row-key="row => row.fieldCode || row.random"
@@ -54,6 +61,9 @@ export default {
   props: {},
   data() {
     return {
+      onlyShow: false,
+      keyword: "",
+      tableKey: 1,
       showDlg: false, // 补全变量
       tableData: [], // 补全变量
       tableOptions: [
@@ -90,6 +100,51 @@ export default {
       ]
     };
   },
+  computed: {
+    finalTableData() {
+      let tableData = this.tableData;
+      if (this.onlyShow) {
+        tableData = tableData.filter(item => item.show);
+        console.log(tableData, "tableData");
+      }
+      if (this.keyword) {
+        tableData = tableData.filter(item => item.fieldDisplayName.includes(this.keyword) || item.fieldName.includes(this.keyword));
+      }
+      return tableData;
+    }
+  },
+  watch: {
+    keyword() {
+      this.$nextTick(() => {
+        this.tableKey++;
+        this.tableDataCopy = this.tableDataCopy.map(item => {
+          const target = this.tableData.find(rawItem => rawItem.fieldName === item.fieldName);
+          item.show = target.show;
+          return item;
+        });
+        this.tableData = cloneDeep(this.tableDataCopy);
+        setTimeout(() => {
+          this.sortableInstance?.destroy();
+          this.rowDrop();
+        }, 200);
+      });
+    },
+    onlyShow() {
+      this.$nextTick(() => {
+        this.tableKey++;
+        this.tableDataCopy = this.tableDataCopy.map(item => {
+          const target = this.tableData.find(rawItem => rawItem.fieldName === item.fieldName);
+          item.show = target.show;
+          return item;
+        });
+        this.tableData = cloneDeep(this.tableDataCopy);
+        setTimeout(() => {
+          this.sortableInstance?.destroy();
+          this.rowDrop();
+        }, 200);
+      });
+    }
+  },
   inject: {
     getTableDesignFields: {
       default: () => () => {
@@ -102,15 +157,23 @@ export default {
   },
   mounted() {},
   methods: {
+    handleShow() {
+      this.onlyShow = !this.onlyShow;
+    },
     rowDrop() {
       // 此时找到的元素是要拖拽元素的父容器
       const dom = document.querySelector(".setQRCodePageDataDlg .el-table__body-wrapper tbody");
       this.sortableInstance = this.Sortable.create(dom, {
         handle: ".setQRCodePageDataDlg .my-handle",
         onEnd: e => {
-          const { oldIndex, newIndex } = e;
+          let { oldIndex, newIndex } = e;
           if (oldIndex === newIndex) return;
-
+          if (this.onlyShow || this.keyword) {
+            const target1 = this.finalTableData[oldIndex];
+            oldIndex = this.tableDataCopy.findIndex(item => item.fieldName === target1.fieldName);
+            const target2 = this.finalTableData[newIndex];
+            newIndex = this.tableDataCopy.findIndex(item => item.fieldName === target2.fieldName);
+          }
           const movedItem = this.tableDataCopy[oldIndex];
 
           // 先删除旧元素，再插入新位置
@@ -142,6 +205,7 @@ export default {
       );
       this.tableData = tableData?.length ? this.syncFields(allFields, tableData) : allFields;
       this.tableDataCopy = cloneDeep(this.tableData);
+      this?.sortableInstance?.destroy();
       this.$nextTick(() => {
         this.rowDrop();
       });
@@ -194,5 +258,14 @@ export default {
 .fullHeight {
   height: 100%;
   overflow: auto;
+}
+.flex {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 0;
+}
+.w200 {
+  width: 200px;
 }
 </style>

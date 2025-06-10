@@ -166,12 +166,12 @@
           </el-select>
         </el-form-item>
 
-        <!-- <el-form-item label="重置按钮事件">
+        <el-form-item label="重置按钮事件">
           <el-tooltip slot="label" class="item" effect="dark" content="点击重置按钮触发的js脚本，如不填则执行默认行为（清空搜索数据并重新请求表格）" placement="top-start">
             <span style="cursor: pointer;font-size: 14px">重置按钮事件</span><i style="width: 20px; font-size: 14px;" class="el-icon-question"></i>
           </el-tooltip>
-          <el-input v-model="tableAttrs.resetBtnEvent" placeholder="请输入数据转换函数" @focus="handleShow('resetBtnEvent', '数据转换函数', $event)"></el-input>
-        </el-form-item> -->
+          <el-input v-model="tableAttrs.resetBtnEvent" placeholder="请输入重置按钮事件" @focus="handleShow('resetBtnEvent', '重置按钮事件', $event)"></el-input>
+        </el-form-item>
 
         <el-form-item label="自定义样式" prop="style">
           <el-input v-model="tableAttrs.style" type="textarea" :rows="2" placeholder="请输入整体样式（包括列表、搜索区域和按钮区域）"></el-input>

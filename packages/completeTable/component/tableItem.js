@@ -2553,7 +2553,7 @@ export default {
                         >
                           搜 索
                         </el-button>
-                        {/* <el-button
+                        <el-button
                           type=""
                           size="mini"
                           style="margin-left: 10px"
@@ -2564,7 +2564,7 @@ export default {
                           }}
                         >
                           重 置
-                        </el-button> */}
+                        </el-button>
                       </div>
                     ) : null}
                     {isVformWidget ? (
