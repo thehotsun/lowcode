@@ -1599,6 +1599,7 @@ export function BtnConfigFrom(custom = {}) {
       size: "small",
       plain: true,
       round: false,
+      disabled: false,
       icon: ""
     },
     extraOption: {

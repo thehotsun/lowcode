@@ -162,6 +162,19 @@ export default {
         this.$refs.tableItem.expose_preview(otherData);
       }
     },
+
+    async expose_refreshData(data) {
+      await this.$refs.tableItem.expose_refreshData(null, data);
+    },
+
+    async expose_setSearchForm(...params) {
+      console.log("expose_setSearchForm");
+      await this.$refs.tableItem.expose_setSearchForm(...params);
+    },
+    async expose_enableAllBtn() {
+      await this.$refs.tableItem.expose_enableAllBtn(otherData);
+    },
+
     async init(isPreview, json, externalParams, externalTriggerQueryTableData = false) {
       if (!json || isEmpty(json)) {
         json = await this.queryTableConfig();

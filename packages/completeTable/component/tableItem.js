@@ -43,8 +43,8 @@ function InstanceData() {
     tableOptions: [],
     tableData: [],
     formOptions: [],
-    searchFrom: {},
-    rawSearchFrom: {},
+    searchForm: {},
+    rawSearchForm: {},
     page: {
       pageNo: 1,
       pageSize: 20,
@@ -64,6 +64,7 @@ function InstanceData() {
     panelData: [],
     filterField: [],
     externalParams: {},
+    dynamicExternalParams: {},
     keyField: "",
     onlyRead: false,
     previewMode: false,
@@ -105,6 +106,10 @@ export default {
     // 当前是否作为Vform的一个组件
     isVformWidget() {
       return !!this.getWidget()?.options;
+    },
+    // 当前是否作为FreeLayout的一个组件
+    isFreeLayoutWidget() {
+      return !!this.getWidgetByFreeLayout()?.options;
     },
     // 使用动态表单是否要使用网络请求处理提交数据
     localProcessData() {
@@ -402,12 +407,25 @@ export default {
         };
       }
     },
+    // 这个是自由布局
+    getWidgetByFreeLayout: {
+      default: () => () => {
+        return {};
+      }
+    },
+    // 这个是自由布局
+    eventBus: {
+      default: () => {
+        return {};
+      }
+    },
     // 下面是和vform结合相关的
     getWidget: {
       default: () => () => {
         return {};
       }
     },
+
     globalModel: {
       default: () => {
         console.warn("inject缺失globalModel！如果不是作为vform组件状态请忽略");
@@ -472,6 +490,39 @@ export default {
   },
 
   methods: {
+    // 外部使用的设置搜索表单方法
+    async expose_setSearchForm(data, multiFieldSearch) {
+      if (Object.prototype.toString.call(data) !== "[object Object]") {
+        return console.warn("expose_setForm方法传入的参数必须是一个对象！");
+      }
+      this.searchForm = cloneDeep(this.rawSearchForm);
+      this.multiFieldSearch = multiFieldSearch || "";
+      this.page.pageNo = 1;
+      Object.keys(this.searchForm).forEach(key => {
+        // eslint-disable-next-line no-prototype-builtins
+        if (data.hasOwnProperty(key)) {
+          this.searchForm[key] = data[key];
+        }
+      });
+      await this.queryTableData();
+    },
+    // 持久化的外部参数存储, data 直接融入externalParams后面不可变， dynamicData可变
+    async expose_refreshData(data = {}, dynamicData = {}) {
+      if (data && typeof data === "object" && Object.keys(data).length > 0) {
+        this.externalParams = {
+          ...this.externalParams,
+          ...data
+        };
+      }
+      this.dynamicExternalParams = dynamicData || {};
+      await this.queryTableData();
+    },
+    // 改变按钮状态
+    async expose_enableAllBtn() {
+      this.btnRegularOptions[0]?.formItem?.forEach(item => {
+        item.tagAttrs.disabled = false;
+      });
+    },
     expose_CompleteTableInstance() {
       return this;
     },
@@ -748,8 +799,8 @@ export default {
         const searchWidgetName = searchWidget.find(widgetitem => widgetitem.id === item.searchWidget)?.tagName;
         // 只有搜索控件有值且开启了搜索项，才会添加到options中
         if (searchWidgetName && item.isSearchWidget) {
-          // this.$set(this.searchFrom, item.fieldCode, '');
-          setFromField(this.searchFrom, item.fieldCode, item.searchWidgetConfig, searchWidgetName);
+          // this.$set(this.searchForm, item.fieldCode, '');
+          setFromField(this.searchForm, item.fieldCode, item.searchWidgetConfig, searchWidgetName);
           const options = getWidgetOptions(searchWidgetName, item);
           const finalOptions = merge(options, depthFirstSearchWithRecursive(item.searchWidgetConfig));
           // 添加搜索表单得change事件，用以触发更新列表
@@ -774,7 +825,7 @@ export default {
         }
         // 如果循环到最后一个且存在其他筛选项，则对formOptions通过sortNumb进行排序，复制一份最原始的form,添加筛选和重置按钮
         if (length - 1 === index && formOptions.length) {
-          this.rawSearchFrom = cloneDeep(this.searchFrom);
+          this.rawSearchForm = cloneDeep(this.searchForm);
           formOptions = formOptions.sort((a, b) => a.sortNumb - b.sortNumb);
           // formOptions.push(...this.getBtnConfig());
           this.showSearchFrom = true;
@@ -829,7 +880,7 @@ export default {
     },
 
     handleReset() {
-      this.searchFrom = cloneDeep(this.rawSearchFrom);
+      this.searchForm = cloneDeep(this.rawSearchForm);
       this.multiFieldSearch = "";
       this.page.pageNo = 1;
       this.queryTableData();
@@ -848,6 +899,7 @@ export default {
 
     selectListHandler(val) {
       this.$emit("selectListHandler", val);
+      this.eventBus?.$emit?.(`${this.getWidgetByFreeLayout()?.id}.selectionChange`, val);
       console.log(val);
       this.selectList = val;
     },
@@ -864,7 +916,10 @@ export default {
 
     // 持久化的外部参数存储
     refreshData(data) {
-      this.externalParams = data;
+      this.externalParams = {
+        ...this.externalParams,
+        ...data
+      };
       this.queryTableData();
     },
 
@@ -891,21 +946,22 @@ export default {
           } = item;
           // if (searchWidgetType === 0 && relateOtherField.length) {
           //   relateOtherField.map((fieldName) => {
-          //     extraParams[fieldName] = this.searchFrom[formField];
+          //     extraParams[fieldName] = this.searchForm[formField];
           //   });
           // }
           // 此处要处理日期选择框数组形式后端不识别，改为字段名加end和start
-          if (searchWidgetType === 4 && this.searchFrom[formField]?.length === 2) {
-            extraParams[`${formField}Start`] = this.searchFrom[formField][0] || "";
-            extraParams[`${formField}End`] = this.searchFrom[formField][1] || "";
+          if (searchWidgetType === 4 && this.searchForm[formField]?.length === 2) {
+            extraParams[`${formField}Start`] = this.searchForm[formField][0] || "";
+            extraParams[`${formField}End`] = this.searchForm[formField][1] || "";
           }
         });
       }
       return {
         ...data,
-        ...this.searchFrom,
+        ...this.searchForm,
         ...extraParams,
         ...this.externalParams,
+        ...this.dynamicExternalParams,
         multiFieldSearch: this.multiFieldSearch,
         prjId: this?.getPrjInfo?.()?.prjId,
         enterpriseId: this.enterpriseId
@@ -1010,10 +1066,13 @@ export default {
         }
       });
       this.showBtns = true;
-      if (!this.isVformWidget) {
-        config = this.filterBtnsByPermission(config);
-      } else {
+
+      if (this.isVformWidget) {
         config = this.filterBtnsByVfromWidgetOptions(config);
+      } else if (this.isFreeLayoutWidget) {
+        // 自由布局暂时不做筛选
+      } else {
+        config = this.filterBtnsByPermission(config);
       }
       if (config.length === 0) this.showBtns = false;
 
@@ -1058,7 +1117,7 @@ export default {
     // 在作为vform组件时，进行不同状态下按钮的显示筛选
     filterBtnsByVfromWidgetOptions(config) {
       if (this.previewMode) return config;
-      let showBtnList;
+      let showBtnList = [];
       const key = this.getDlgConfig()?.btnType;
       switch (key) {
         case "add":
@@ -2307,30 +2366,7 @@ export default {
       if (this.previewMode) return;
       const target = this.btnRegularOptions[0]?.formItem?.find(btnOptions => btnOptions.extraOption.btnType === "check");
       if (target) {
-        const validateFn = target.extraOption.validateFn;
-        console.log(target.extraOption);
-        if (!validateFn || (validateFn && str2Fn(validateFn).call(this, this.selectList))) {
-          switch (target.extraOption.openType) {
-            case 0:
-              this.disposeDynamicFormEvent(target.extraOption, row);
-              break;
-            case 2:
-              this.btnConfigs.btnType = "check";
-              this.disposeFlowEvent(target.extraOption, row);
-              break;
-            case 4:
-              this.disposeRelateCompEvent(target.extraOption, row);
-              break;
-            case 6:
-              this.disposeDynamicTableEvent(target.extraOption, row);
-              break;
-            default:
-              console.warn("当前页面未配置openType为流程或表单或本地组件的按钮！");
-              break;
-          }
-        } else {
-          console.warn("当前页面未配置btnType为check的按钮或校验函数为返回为false！");
-        }
+        this.handleBtnClick({ ...target.extraOption, btnId: target.btnId, authorize: target.authorize }, row);
       }
     },
     tableCellClick(row, btnId) {
@@ -2355,7 +2391,26 @@ export default {
         console.warn("调用emitBtnClick参数同时缺失按钮名称和按钮id");
       }
     },
-    handleRowDbClick(row) {
+    handleRowClickWrap(cb) {
+      return row => {
+        this.eventBus?.$emit?.(`${this.getWidgetByFreeLayout()?.id}.rowClick`, row);
+        cb?.(row);
+      };
+    },
+    handleRowDbClickWrap(cb) {
+      return row => {
+        this.eventBus?.$emit?.(`${this.getWidgetByFreeLayout()?.id}.rowDblclick`, row);
+        cb?.(row);
+      };
+    },
+    updateSelectedRowWrap(cb) {
+      return row => {
+        console.log(this.eventBus, `${this.getWidgetByFreeLayout()?.id}.currentChange`, "asdasdasd");
+        this.eventBus?.$emit?.(`${this.getWidgetByFreeLayout()?.id}.currentChange`, row);
+        cb?.(row);
+      };
+    },
+    handleRowDbClickEmitBtn(row) {
       this.emitBtnClick(row, null, this.tableAttrs.dbClickRelateBtnId);
     },
     checkNoSelection() {
@@ -2380,7 +2435,7 @@ export default {
       tableHeight,
       generalRequest,
       showSearchFrom,
-      searchFrom,
+      searchForm,
       formOptions,
       attrs,
       showBtns,
@@ -2408,7 +2463,10 @@ export default {
       handleFilterReset,
       getSelectedData,
       handleGlobalClick,
-      handleRowDbClick,
+      handleRowDbClickEmitBtn,
+      handleRowClickWrap,
+      handleRowDbClickWrap,
+      updateSelectedRowWrap,
       showCheckDialog,
       updateSelectedRow,
       onSave,
@@ -2419,7 +2477,6 @@ export default {
       rightBtnRegularOptions,
       listPageId,
       btnConfigs,
-      selectList,
       keyField,
       hiddenDefaultArea,
       getParams,
@@ -2447,17 +2504,20 @@ export default {
         };
     const tableEvent = {
       "selection-change": selectListHandler,
-      clickBtn: tableCellClick
+      clickBtn: tableCellClick,
+      "row-click": handleRowClickWrap(),
+      "row-dblclick": handleRowDbClickWrap(),
+      "current-change": updateSelectedRowWrap()
     };
 
     if (tableAttrs.clickRowShowDetialDialog) {
-      tableEvent["row-click"] = showCheckDialog;
+      tableEvent["row-click"] = handleRowClickWrap(showCheckDialog);
     } else {
-      tableEvent["current-change"] = updateSelectedRow;
-      tableEvent["row-dblclick"] = showCheckDialog;
+      tableEvent["current-change"] = updateSelectedRowWrap(updateSelectedRow);
+      tableEvent["row-dblclick"] = handleRowDbClickWrap(showCheckDialog);
     }
     if (tableAttrs.dbClickRelateBtnId) {
-      tableEvent["row-dblclick"] = handleRowDbClick;
+      tableEvent["row-dblclick"] = handleRowDbClickWrap(handleRowDbClickEmitBtn);
     }
 
     const scopedSlots = {
@@ -2484,7 +2544,7 @@ export default {
               <base-render-form
                 ref="form"
                 generalRequest={generalRequest}
-                form-data={searchFrom}
+                form-data={searchForm}
                 form-options={formOptions}
                 getParams={getParams}
                 showFooter={false}
