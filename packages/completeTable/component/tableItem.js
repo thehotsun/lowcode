@@ -67,6 +67,10 @@ function InstanceData() {
     dynamicExternalParams: {},
     keyField: "",
     onlyRead: false,
+    // 针对某些情况，不允许查看外的任何操作
+    tableDisbaled: false,
+    // 状态是否开启，如果开启则会根据情况更改tableDisbaled
+    tableDisbaledStatus: false,
     previewMode: false,
     curDialogCompRef: "",
     tableAttrs: {},
@@ -105,11 +109,11 @@ export default {
   computed: {
     // 当前是否作为Vform的一个组件
     isVformWidget() {
-      return !!this.getWidget()?.options;
+      return this.renderMode === "vformWidget";
     },
     // 当前是否作为FreeLayout的一个组件
     isFreeLayoutWidget() {
-      return !!this.getWidgetByFreeLayout()?.options;
+      return this.renderMode === "freeLayoutWidget";
     },
     // 使用动态表单是否要使用网络请求处理提交数据
     localProcessData() {
@@ -407,6 +411,11 @@ export default {
         };
       }
     },
+    renderMode: {
+      default: () => {
+        return "";
+      }
+    },
     // 这个是自由布局
     getWidgetByFreeLayout: {
       default: () => () => {
@@ -473,6 +482,23 @@ export default {
         this.tableDataChangeQueue.map(fn => fn(val));
       } catch (error) {
         console.error("tableDataChangeQueue 执行失败！错误信息：", error);
+      }
+    },
+    dynamicExternalParams(val = {}) {
+      try {
+        if (this.tableDisbaledStatus) {
+          // 判断是否为对象（非数组）且含多个 key
+          const isValidObject = val && typeof val === "object" && !Array.isArray(val) && Object.keys(val).length > 1;
+          if (isValidObject) {
+            this.tableDisbaled = false;
+            this.setDisabledBtnsByTableDisbaled(null, false);
+          } else {
+            this.tableDisbaled = true;
+            this.setDisabledBtnsByTableDisbaled(null, true);
+          }
+        }
+      } catch (error) {
+        console.error("dynamicExternalParams watch 执行失败！错误信息：", error);
       }
     }
   },
@@ -552,6 +578,10 @@ export default {
       this.resetBtnConfigs();
     },
 
+    expose_setTableDisbaled(bool) {
+      this.tableDisbaled = bool;
+    },
+
     async expose_preview(data) {
       this.previewMode = true;
       if (data) {
@@ -599,10 +629,11 @@ export default {
       this.syncFormDataByVformWidget();
     },
 
-    async init(isPreview, json, externalParams, externalTriggerQueryTableData) {
+    async init(isPreview, json, externalParams, externalTriggerQueryTableData, tableDisbaled) {
       this.resetAllData();
       await this.$nextTick();
       this.previewMode = !!isPreview;
+      this.tableDisbaledStatus = this.tableDisbaled = !!tableDisbaled;
       if (!json || isEmpty(json)) {
         await this.queryTableConfig();
       } else {
@@ -847,7 +878,7 @@ export default {
     },
 
     handleFilter() {
-      if (this.previewMode) return;
+      if (this.previewMode || this.tableDisbaled) return;
       this.page.pageNo = 1;
       if (this.localProcessData) {
         this.multiFieldSearchCopy = this.multiFieldSearch;
@@ -857,7 +888,7 @@ export default {
     },
 
     handleFilterReset() {
-      if (this.previewMode) return;
+      if (this.previewMode || this.tableDisbaled) return;
       if (this.tableAttrs.resetBtnEvent) {
         str2Fn(this.tableAttrs.resetBtnEvent).call(this, cloneDeep);
       } else {
@@ -866,7 +897,7 @@ export default {
     },
 
     handleNativeFilter(e) {
-      if (this.previewMode) return;
+      if (this.previewMode || this.tableDisbaled) return;
       const keyCode = window.event ? e.keyCode : e.which;
       console.log(keyCode);
       if (keyCode === 13) {
@@ -928,6 +959,7 @@ export default {
     },
 
     async iconRefresh() {
+      if (this.tableDisbaled) return;
       await this.queryTableData();
       this.$success("刷新成功");
     },
@@ -1059,6 +1091,9 @@ export default {
       if (this.previewMode) {
         this.disabledBtnsByPreviewStatus(config);
       }
+      if (this.tableDisbaled) {
+        this.setDisabledBtnsByTableDisbaled(config, true);
+      }
       // 处理隐藏按钮逻辑，转为css配置
       config.map(btn => {
         if (btn.extraOption.isHidden) {
@@ -1097,6 +1132,21 @@ export default {
         } else {
           item.tagAttrs = {
             disabled: !["add", "edit", "check"].includes(item.extraOption.btnType)
+          };
+        }
+      });
+    },
+
+    setDisabledBtnsByTableDisbaled(config, bool) {
+      if (!config) {
+        config = this.btnRegularOptions[0]?.formItem;
+      }
+      config.map(item => {
+        if (item.tagAttrs) {
+          item.tagAttrs.disabled = bool;
+        } else {
+          item.tagAttrs = {
+            disabled: bool
           };
         }
       });
@@ -1215,9 +1265,10 @@ export default {
         disposeFlowDocDown,
         disposeFormDown,
         disposeDel,
-        previewMode
+        previewMode,
+        tableDisbaled
       } = this;
-      if (previewMode) return;
+      if (previewMode || tableDisbaled) return;
       this.editRow = null;
       this.externalParamsFormRow = null;
       // 只btnConfigs.要执行点击按钮操作，先置空formid
@@ -1909,6 +1960,8 @@ export default {
         editRow
       } = this;
       const baseAttrs = this.getExternalCompBaseAttrs();
+      console.log("adadasd", this.keyField, baseAttrs);
+
       if (localProcessData && editRow) {
         baseAttrs.editData = cloneDeep(editRow);
       }
@@ -2139,10 +2192,12 @@ export default {
         getRequestConfig,
         getPrimaryKeyValue,
         getDlgConfig,
-        getWidget
+        getWidget,
+        dynamicExternalParams
       } = this;
       const { finalUrl, finalType, finalData, headers } = getRequestConfig();
       let config = {
+        dynamicExternalParams,
         requestConfig: {
           requestType: finalType,
           requestUrl: finalUrl,
@@ -2279,6 +2334,7 @@ export default {
       this.filterField = val;
     },
     handleSetting(e) {
+      if (this.tableDisbaled) return;
       e.stopPropagation();
       this.showPanel = !this.showPanel;
     },
@@ -2363,13 +2419,14 @@ export default {
 
     showCheckDialog(row) {
       console.log("showCheckDialog", row);
-      if (this.previewMode) return;
+      if (this.previewMode || this.tableDisbaled) return;
       const target = this.btnRegularOptions[0]?.formItem?.find(btnOptions => btnOptions.extraOption.btnType === "check");
       if (target) {
         this.handleBtnClick({ ...target.extraOption, btnId: target.btnId, authorize: target.authorize }, row);
       }
     },
     tableCellClick(row, btnId) {
+      if (this.previewMode || this.tableDisbaled) return;
       try {
         const target = this.btnRegularOptions[0].formItem.find(btn => btn.btnId === btnId);
         if (target) {
@@ -2393,19 +2450,21 @@ export default {
     },
     handleRowClickWrap(cb) {
       return row => {
+        if (this.previewMode || this.tableDisbaled) return;
         this.eventBus?.$emit?.(`${this.getWidgetByFreeLayout()?.id}.rowClick`, row);
         cb?.(row);
       };
     },
     handleRowDbClickWrap(cb) {
       return row => {
+        if (this.previewMode || this.tableDisbaled) return;
         this.eventBus?.$emit?.(`${this.getWidgetByFreeLayout()?.id}.rowDblclick`, row);
         cb?.(row);
       };
     },
     updateSelectedRowWrap(cb) {
       return row => {
-        console.log(this.eventBus, `${this.getWidgetByFreeLayout()?.id}.currentChange`, "asdasdasd");
+        if (this.previewMode || this.tableDisbaled) return;
         this.eventBus?.$emit?.(`${this.getWidgetByFreeLayout()?.id}.currentChange`, row);
         cb?.(row);
       };
@@ -2480,7 +2539,8 @@ export default {
       keyField,
       hiddenDefaultArea,
       getParams,
-      isVformWidget
+      isVformWidget,
+      tableDisbaled
     } = this;
 
     const curPageListeners = localProcessData
@@ -2604,6 +2664,7 @@ export default {
                         <el-button
                           type="primary"
                           size="mini"
+                          disabled={tableDisbaled}
                           style="margin-left: 10px"
                           {...{
                             on: {
@@ -2616,6 +2677,7 @@ export default {
                         <el-button
                           type=""
                           size="mini"
+                          disabled={tableDisbaled}
                           style="margin-left: 10px"
                           {...{
                             on: {

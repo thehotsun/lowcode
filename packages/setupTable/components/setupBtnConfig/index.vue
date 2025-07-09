@@ -598,16 +598,19 @@ export default {
 
     showRenameDlg() {
       const deliverySelectListFields = this.btnConfigFrom.extraOption.deliverySelectListFields;
-      const fieldArr = this.getExtraOption("extraOption.deliverySelectListFields")?.options?.map(item => {
-        const target = deliverySelectListFields?.find?.(filedInfo => filedInfo?.fieldCode === item.fieldCode || filedInfo === item.fieldCode);
-        return {
-          errorMessage: "",
-          fieldCode: item.fieldCode,
-          fieldName: item.fieldName,
-          renamed: target?.renamed || "",
-          isSelected: !!target
-        };
-      });
+      const fieldArr = this.getExtraOption("extraOption.deliverySelectListFields")
+        ?.options?.map(item => {
+          const target = deliverySelectListFields?.find?.(filedInfo => filedInfo?.fieldCode === item.fieldCode || filedInfo === item.fieldCode);
+          return {
+            errorMessage: "",
+            fieldCode: item.fieldCode,
+            fieldName: item.fieldName,
+            renamed: target?.renamed || "",
+            isSelected: !!target
+          };
+        })
+        .filter(item => item.fieldCode !== this.keyField);
+      // 一定把主键放在第一位
       const target = deliverySelectListFields?.find?.(filedInfo => filedInfo?.fieldCode === this.keyField || filedInfo === this.keyField);
       fieldArr.unshift({
         errorMessage: "",
@@ -615,7 +618,7 @@ export default {
         fieldName: "主键",
         // this?.btnConfigFrom?.extraOption?.paramName 是 paramName字段的兼容性代码
         renamed: target?.renamed || this?.btnConfigFrom?.extraOption?.paramName || "",
-        isSelected: !!target
+        isSelected: true
       });
       this.$refs.fieldRenameDlg.openDialog(fieldArr);
       console.log("showRenameDlg");

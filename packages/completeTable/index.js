@@ -175,7 +175,7 @@ export default {
       await this.$refs.tableItem.expose_enableAllBtn(otherData);
     },
 
-    async init(isPreview, json, externalParams, externalTriggerQueryTableData = false) {
+    async init(isPreview, json, externalParams, externalTriggerQueryTableData = false, tableDisbaled = false) {
       if (!json || isEmpty(json)) {
         json = await this.queryTableConfig();
       }
@@ -184,7 +184,7 @@ export default {
       await this.$nextTick();
       switch (this.pageLayout) {
         case "table":
-          this.defaultInit(isPreview, json, externalParams, externalTriggerQueryTableData);
+          this.defaultInit(isPreview, json, externalParams, externalTriggerQueryTableData, tableDisbaled);
           break;
         case "tree-table":
           this.leftTreeRightTableInit(isPreview, json, externalParams);
@@ -209,8 +209,8 @@ export default {
       this.$refs.tableItem.init(isPreview, tableOptions, externalParams, true);
       this.$refs.treeItem.init(isPreview, tree, externalParams);
     },
-    async defaultInit(isPreview, json, externalParams, externalTriggerQueryTableData) {
-      this.$refs.tableItem.init(isPreview, json, externalParams, externalTriggerQueryTableData);
+    async defaultInit(isPreview, json, externalParams, externalTriggerQueryTableData, tableDisbaled) {
+      this.$refs.tableItem.init(isPreview, json, externalParams, externalTriggerQueryTableData, tableDisbaled);
     },
     // TODO externalParams不同怎么处理？
     async tabsTableInit(isPreview, json, externalParams = {}, externalTriggerQueryTableData) {
