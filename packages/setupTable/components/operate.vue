@@ -7,6 +7,8 @@
       <el-button size="mini" @click="showTableAttrs">表格属性设置</el-button>
       <el-button size="mini" @click="showPreview">预览</el-button>
       <el-button size="mini" @click="jumpResource">权限设置</el-button>
+      <!-- <el-button size="mini" @click="hanleExport">导出</el-button>
+      <el-button size="mini" @click="hanleInport">导入</el-button> -->
       <el-button :loading="loading" size="mini" type="primary" @click="handleSave">保存</el-button>
     </div>
   </div>

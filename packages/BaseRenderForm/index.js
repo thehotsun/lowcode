@@ -1,3 +1,4 @@
+import "./index.less";
 import { getter, getHandleInput, str2obj, str2Fn, decorator, setter } from "../../utils";
 import { convertDynaticData } from "../../utils/interfaceParams";
 import { isEmpty, cloneDeep } from "lodash";
@@ -6,6 +7,12 @@ export default {
   name: "BaseRenderForm",
   components: { onlineCode },
   props: {
+    isCollapse: {
+      type: Boolean
+    },
+    maxHeight: {
+      type: Number
+    },
     generalRequest: {
       type: Function
     },
@@ -60,7 +67,9 @@ export default {
       dialogRef: "elDialog",
       showDialog: true,
       showCodeEditor: false,
-      codeValue: {}
+      codeValue: {},
+      isExpanded: false,
+      isOverflow: false
     };
   },
   computed: {
@@ -126,6 +135,11 @@ export default {
   async created() {
     // this.init();
   },
+  mounted() {
+    if (this.isCollapse) {
+      this.checkOverflow();
+    }
+  },
   methods: {
     // 可以通过调用此组件的这个方法获取el-form的实例
     expose_getElFormInstance() {
@@ -141,6 +155,19 @@ export default {
     // 设置showDialog
     expose_setShowDialog(bool) {
       this.showDialog = bool;
+    },
+
+    toggleExpand() {
+      this.isExpanded = !this.isExpanded;
+    },
+
+    checkOverflow() {
+      this.$nextTick(() => {
+        const el = this.$refs.flexWrapBox.$el;
+        if (el.scrollHeight > this.maxHeight) {
+          this.isOverflow = true;
+        }
+      });
     },
 
     requestData({ url = "", type = "get", params = "" }, extraOption) {
@@ -581,7 +608,8 @@ export default {
               attrs: elRowAttrs
             }}
             style={style}
-            class={className}
+            class={className + (this.isOverflow ? " flex-container" + (this.isExpanded ? " expanded" : "") : "")}
+            ref="flexWrapBox"
           >
             {Array.isArray(formItem)
               ? rowItem.formItem.map(item => {
@@ -599,6 +627,11 @@ export default {
                   );
                 })
               : this.getFormItemVNode(formItem)}
+            {this.isOverflow ? (
+              <el-button class="collapse-btn" type="text" icon={this.isExpanded ? "el-icon-arrow-down" : "el-icon-arrow-right"} onclick={this.toggleExpand} />
+            ) : (
+              ""
+            )}
           </el-row>
         );
       });
@@ -686,6 +719,7 @@ export default {
                   ...$listeners
                 }
               }}
+              class="BaseRenderFormContainer"
             >
               {customLayoutRender(finalRenderOptions)}
             </el-form>
@@ -709,6 +743,7 @@ export default {
                   ...$listeners
                 }
               }}
+              class="BaseRenderFormContainer"
             >
               {customLayoutRender(finalRenderOptions)}
             </el-form>

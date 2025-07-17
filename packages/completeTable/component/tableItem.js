@@ -1106,6 +1106,7 @@ export default {
         config = this.filterBtnsByVfromWidgetOptions(config);
       } else if (this.isFreeLayoutWidget) {
         // 自由布局暂时不做筛选
+        // config = this.filterBtnsByFreeLayuotPermission(config);
       } else {
         config = this.filterBtnsByPermission(config);
       }
@@ -1195,6 +1196,18 @@ export default {
       //   });
       // }
       return btnList;
+    },
+
+    filterBtnsByFreeLayuotPermission(config) {
+      // 根据权限筛选
+      // 兼容通过弹窗展示的列表，此时rawlistPageId为空，不进行权限校验
+      if (!this.previewMode && this.rawRelateId) {
+        return config.filter(item => {
+          // 这里要进行三层复合校验
+          return this.checkPermission(`${this.rawRelateId}:${this.getWidgetByFreeLayout()?.options.id}:${item.btnId}:${item.authorize}`) || item.authorize === "defaultShow";
+        });
+      }
+      return config;
     },
 
     validateSelectList({ paramName, paramType, deliverySelectList, deliverySelectListFields, validate }, row) {
@@ -2612,6 +2625,8 @@ export default {
                 list-page-id={listPageId}
                 label-width=""
                 inline={true}
+                maxHeight={86}
+                isCollapse={true}
               ></base-render-form>
             ) : null}
           </el-header>

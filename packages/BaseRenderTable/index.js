@@ -82,7 +82,7 @@ export default {
     },
 
     headerStyle() {
-      return "background-color: #F7F9FF;color:#2E384D;padding:6px 0;height:54px;border-top:1px solid #EFF0F9";
+      return "background-color: #F7F9FF;color:#2E384D;padding:6px 0;height:44px;border-top:1px solid #EFF0F9";
     },
 
     // /** 鼠标移入cell */
