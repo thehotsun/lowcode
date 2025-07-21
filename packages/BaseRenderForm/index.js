@@ -628,7 +628,7 @@ export default {
                 })
               : this.getFormItemVNode(formItem)}
             {this.isOverflow ? (
-              <el-button class="collapse-btn" type="text" icon={this.isExpanded ? "el-icon-arrow-down" : "el-icon-arrow-right"} onclick={this.toggleExpand} />
+              <el-button class="collapse-btn" type="text" icon={this.isExpanded ? "el-icon-arrow-down" : "el-icon-arrow-up"} onclick={this.toggleExpand} />
             ) : (
               ""
             )}
