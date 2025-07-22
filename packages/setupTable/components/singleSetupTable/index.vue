@@ -289,14 +289,19 @@ export default {
       this.Sortable.create(dom, {
         handle: ".renderwrap .my-handle",
         onEnd: e => {
+          const listEl = e.from.querySelectorAll("tr");
+          const targetRowEl = e.item;
+          const substituteEl = listEl[e.oldIndex > e.newIndex ? e.newIndex + 1 : e.newIndex - 1];
+          const targetRowFieldCode = targetRowEl.querySelectorAll(".cell")[2].innerText;
+          const substituteFieldCode = substituteEl.querySelectorAll(".cell")[2].innerText;
           // e.oldIndex为拖动一行原来的位置，e.newIndex为拖动后新的位置
-          const targetRow = this.finalTableData[e.oldIndex];
-          const substitute = this.finalTableData[e.newIndex];
-          const oldIndex = this.tableData.indexOf(targetRow);
-          const newIndex = this.tableData.indexOf(substitute);
-          this.tableData.splice(oldIndex, 1);
+          // const targetRow = this.finalTableData[e.oldIndex];
+          // const substitute = this.finalTableData[e.newIndex];
+          const oldIndex = this.tableData.findIndex(item => item.fieldCode === targetRowFieldCode || item.random === targetRowFieldCode);
+          const newIndex = this.tableData.findIndex(item => item.fieldCode === substituteFieldCode || item.random === substituteFieldCode);
+          const [targetRow] = this.tableData.splice(oldIndex, 1);
           this.tableData.splice(newIndex, 0, targetRow);
-          console.log(e.oldIndex, e.newIndex);
+          console.log(e.oldIndex, e.newIndex, e, targetRowFieldCode, substituteFieldCode, oldIndex, newIndex, this.tableData);
         }
       });
     },
