@@ -23,16 +23,6 @@
           <el-tooltip
             class="item"
             effect="dark"
-            content="开启此功能后，单击列表的某行数据会调用其查看按钮相关功能（如果有），不开启此功能，则默认为双击时触发，如果设置了双击关联按钮，则双击时会优先触发关联按钮的功能"
-            placement="top-start"
-          >
-            <el-checkbox v-model="tableAttrs.clickRowShowDetialDialog">
-              <span style="cursor: pointer;font-size: 14px">单击列展示详情</span><i style="width: 20px" class="el-icon-question"></i>
-            </el-checkbox>
-          </el-tooltip>
-          <el-tooltip
-            class="item"
-            effect="dark"
             content="若表格展示的是各类数字，可以在表尾显示各列的合计。默认情况下，对于合计行，第一列不进行数据求合操作，而是显示「合计」二字，其余列会将本列所有数值进行求合操作，并显示出来。当然，你也可以定义自己的合计函数"
             placement="top-start"
           >

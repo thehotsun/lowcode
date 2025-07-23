@@ -21,6 +21,7 @@ export function getTableAttrs() {
     lazy: false,
     isMerge: false,
     spanMethod: "",
+    // 已废弃
     clickRowShowDetialDialog: false,
     style: "",
     elTableStyle: "",

@@ -18,13 +18,12 @@
       <!-- 保存位置 -->
       <el-form-item>
         <div class="option-group">
-          <el-checkbox v-model="form.saveLocation">保存到项目文档</el-checkbox>
+          <el-checkbox v-model="form.saveLocation" :disabled="!prjId">保存到项目文档</el-checkbox>
 
           <el-button v-if="form.selectedDir" type="text" :disabled="!form.saveLocation" @click="handleShowPrjFolderFiles">{{ form.selectedDir }}</el-button>
-          <el-button type="text" :disabled="!form.saveLocation" @click="handleDir">选择目录</el-button>
+          <el-button type="text" :disabled="!form.saveLocation || !prjId" @click="handleDir">选择目录</el-button>
         </div>
       </el-form-item>
-
 
       <!-- 成果文件名 -->
       <el-form-item label="成果文件名">
@@ -55,7 +54,7 @@
       v-if="dialogVisible"
       ref="chooseDirDlg"
       title="选择目录"
-      :prjId="getPrjInfo().prjId"
+      :prjId="prjId"
       :check="getFolderDisableFilter"
       :filter="folderFilter"
       :showTable="false"
@@ -109,6 +108,11 @@ export default {
       default: () => () => {
         console.warn("inject缺失getToken!");
       }
+    },
+    queryChangePrjId: {
+      default: () => () => {
+        console.warn("inject缺失queryChangePrjId!");
+      }
     }
   },
   props: {
@@ -121,13 +125,26 @@ export default {
     return {
       dialogVisible: false,
       form: new From(),
-      resultFileFormatDisable: false
+      resultFileFormatDisable: false,
+      prjId: ""
     };
   },
 
   methods: {
-    open({ resultFileName, resultFileFormat }) {
+    async getPrjId() {
+      const isPrjRoute = this.$route.matched.some(matched => {
+        return matched.path === "/project";
+      });
+      if (isPrjRoute) {
+        return this.getPrjInfo()?.prjId;
+      } else {
+        const prjId = await this.queryChangePrjId(this.listPageId, this.selectList?.[0]?.[this.keyField]);
+        return prjId;
+      }
+    },
+    async open({ resultFileName, resultFileFormat }) {
       this.dialogVisible = true;
+      this.prjId = await this.getPrjId();
       this.form.projectFileName = resultFileName;
       this.resultFileFormatDisable = !!resultFileFormat;
       if (this.resultFileFormatDisable) {

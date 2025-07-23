@@ -157,6 +157,7 @@ export default {
       rawFiltersConfig: new FiltersConfig(),
       curRowData: {},
       tableData: [],
+      flatTableData: [],
       filterShowField: false,
       originFuzzyFieldSearchConfig: {
         placeholder: "",
@@ -178,12 +179,26 @@ export default {
 
   watch: {
     rawTableData(val) {
+      const setParentId = (children, parentId, parent) => {
+        children.forEach(child => {
+          child.parentId = parentId;
+          child.parent = parent;
+          if (child.children?.length) {
+            setParentId(child.children, child.fieldCode, child);
+          }
+        });
+      };
       this.tableData = val.map(item => {
-        return {
+        const newItem = {
           ...getSingleTableData(),
           ...item
         };
+        if (newItem?.children?.length) {
+          setParentId(newItem.children, newItem.fieldCode, newItem);
+        }
+        return newItem;
       });
+      this.flatTableData = this.getFlatTableData(this.tableData);
     },
     rawFuzzyFieldSearchConfig(val) {
       if (val) {
@@ -234,6 +249,22 @@ export default {
 
     init() {
       this.tableData = [];
+    },
+
+    getFlatTableData(treeData = this.tableData) {
+      const result = [];
+
+      const traverse = nodes => {
+        nodes.forEach(node => {
+          result.push(node); // 添加当前节点
+          if (node.children?.length) {
+            traverse(node.children); // 递归子节点
+          }
+        });
+      };
+
+      traverse(treeData);
+      return result;
     },
 
     checkIsConfig(row) {
@@ -288,7 +319,20 @@ export default {
       const dom = document.querySelector(".renderwrap .el-table__body-wrapper tbody");
       this.Sortable.create(dom, {
         handle: ".renderwrap .my-handle",
+        onMove: evt => {
+          const targetRowFieldCode = evt.dragged.querySelectorAll(".cell")[2].innerText;
+          const substituteFieldCode = evt.related.querySelectorAll(".cell")[2].innerText;
+          // console.log(evt, targetRowFieldCode, substituteFieldCode);
+          const oldRow = this.flatTableData.find(item => item.fieldCode === targetRowFieldCode || item.random === targetRowFieldCode);
+          const newRow = this.flatTableData.find(item => item.fieldCode === substituteFieldCode || item.random === substituteFieldCode);
+          // console.log(oldRow, newRow);
+          // 判断是否为同一个父节点（假设你有 parentId 字段）
+          return oldRow.parentId === newRow.parentId;
+        },
         onEnd: e => {
+          if (e.oldIndex === e.newIndex) {
+            return;
+          }
           const listEl = e.from.querySelectorAll("tr");
           const targetRowEl = e.item;
           const substituteEl = listEl[e.oldIndex > e.newIndex ? e.newIndex + 1 : e.newIndex - 1];
@@ -299,9 +343,25 @@ export default {
           // const substitute = this.finalTableData[e.newIndex];
           const oldIndex = this.tableData.findIndex(item => item.fieldCode === targetRowFieldCode || item.random === targetRowFieldCode);
           const newIndex = this.tableData.findIndex(item => item.fieldCode === substituteFieldCode || item.random === substituteFieldCode);
-          const [targetRow] = this.tableData.splice(oldIndex, 1);
-          this.tableData.splice(newIndex, 0, targetRow);
-          console.log(e.oldIndex, e.newIndex, e, targetRowFieldCode, substituteFieldCode, oldIndex, newIndex, this.tableData);
+          console.log(e.oldIndex, e.newIndex);
+
+          if (oldIndex !== -1 && newIndex !== -1) {
+            const [targetRow] = this.tableData.splice(oldIndex, 1);
+            this.tableData.splice(newIndex, 0, targetRow);
+            console.log(targetRowFieldCode, substituteFieldCode, oldIndex, newIndex, this.tableData);
+          } else {
+            const targetRow = this.flatTableData[e.oldIndex];
+            const substitute = this.flatTableData[e.newIndex];
+            console.log("targetRow, substitute,", targetRow, substitute);
+
+            const oldIndex = targetRow.parent.children.findIndex(item => item === targetRow);
+            const newIndex = substitute.parent.children.findIndex(item => item === substitute);
+            targetRow.parent.children.splice(oldIndex, 1);
+            substitute.parent.children.splice(newIndex, 0, targetRow);
+            console.log(oldIndex, newIndex, targetRow.parent);
+          }
+
+          this.flatTableData = this.getFlatTableData(this.tableData);
         }
       });
     },
@@ -366,6 +426,8 @@ export default {
       parentNode.fieldCode = "placeholders" + Math.floor(Math.random() * 4000 + 1000);
       selected.map((item, idx) => {
         const index = tableData.indexOf(item);
+        item.parent = parentNode;
+        item.parentId = parentNode.fieldCode;
         if (parentNode.children) {
           parentNode.children.push(item);
         } else {
@@ -377,6 +439,7 @@ export default {
           tableData.splice(index, 1);
         }
       });
+      this.flatTableData = this.getFlatTableData(this.tableData);
     },
 
     handleDelParent() {
@@ -391,9 +454,14 @@ export default {
             .filter(item => item.children)
             .map(item => {
               const index = tableData.indexOf(item);
-              const children = item.children || [];
+              const children = (item.children || []).map(child => {
+                child.parent = undefined;
+                child.parentId = undefined;
+                return child;
+              });
               tableData.splice(index, 1, ...children);
             });
+          this.flatTableData = this.getFlatTableData(this.tableData);
         })
         .catch(() => {
           this.$message({

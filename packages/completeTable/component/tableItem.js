@@ -4,7 +4,6 @@ import BaseRenderRegular from "../../BaseRenderRegular/index";
 import panel from "./panel.vue";
 import printTemplateDlg from "./printTemplateDlg.vue";
 import { align, searchWidget } from "../../../baseConfig/tableSelectConfigs";
-import { requestTypeList } from "../../../baseConfig/btnBaseConfig";
 import { getTableAttrs, getSingleTableData } from "../../../baseConfig/tableBaseConfig";
 
 import {
@@ -187,37 +186,64 @@ export default {
         tableData,
         tableAttrs: { showPagination },
         multiFieldSearchCopy,
+        searchForm,
+        matchDateRange,
         fuzzyFieldSearchConfig: { searchFieldList = [] }
       } = this;
-      if (localProcessData) {
-        if (showPagination) {
-          console.log("multiFieldSearchCopy", multiFieldSearchCopy, pageNo);
-          return (multiFieldSearchCopy
-            ? tableData.filter(row => {
-                for (const field of searchFieldList) {
-                  const match = `${row[field]}`.toLowerCase().includes(multiFieldSearchCopy.toLowerCase());
-                  if (match) {
-                    return true;
-                  }
-                }
-              })
-            : tableData
-          ).slice((pageNo - 1) * pageSize, (pageNo - 1) * pageSize + pageSize);
-        } else {
-          return multiFieldSearchCopy
-            ? tableData.filter(row => {
-                for (const field of searchFieldList) {
-                  const match = `${row[field]}`.toLowerCase().includes(multiFieldSearchCopy.toLowerCase());
-                  if (match) {
-                    return true;
-                  }
-                }
-              })
-            : tableData;
-        }
-      } else {
-        return tableData;
+
+      if (!localProcessData) return tableData;
+
+      let filteredData = tableData;
+
+      const formItem = this.formOptions[0].formItem;
+
+      // 1. 精确搜索（searchForm）—— 所有字段必须满足条件（AND）
+      filteredData = filteredData.filter(row => {
+        return Object.entries(searchForm).every(([field, val]) => {
+          if (val == null || val == undefined || val === "" || (Array.isArray(val) && val.length === 0)) return true;
+          const rowValue = `${row[field] ?? ""}`;
+          let searchType;
+          formItem.some(item => {
+            if (item.formField === field) {
+              switch (item.searchWidgetType) {
+                case 4:
+                  searchType = "isDateRange";
+                  break;
+                case 3:
+                  searchType = "isDate";
+                  break;
+                default:
+                  break;
+              }
+              return true;
+            }
+          });
+          if (["isDateRange", "isDate"].includes(searchType)) {
+            return matchDateRange(rowValue, val);
+          }
+          if (Array.isArray(val)) {
+            return val.some(v => rowValue.includes(`${v}`));
+          }
+
+          return rowValue.includes(`${val}`);
+        });
+      });
+
+      // 2. 多字段模糊搜索
+      if (multiFieldSearchCopy) {
+        const keyword = multiFieldSearchCopy.toLowerCase();
+        filteredData = filteredData.filter(row => {
+          return searchFieldList.some(field => `${row[field] ?? ""}`.toLowerCase().includes(keyword));
+        });
       }
+
+      // 3. 分页
+      if (showPagination) {
+        const start = (pageNo - 1) * pageSize;
+        return filteredData.slice(start, start + pageSize);
+      }
+
+      return filteredData;
     },
 
     filterTableOptions() {
@@ -2499,6 +2525,31 @@ export default {
     },
     getFirstSelectedData() {
       return this.selectList[0] || this.currentSelectedRow;
+    },
+    matchDateRange(rowValue, val) {
+      const rowTime = new Date(rowValue).getTime();
+      if (isNaN(rowTime)) return false;
+
+      // 区间筛选：val 是 [start, end]
+      if (Array.isArray(val) && val.length === 2) {
+        const [start, end] = val.map(v => new Date(v).getTime());
+        if (isNaN(start) || isNaN(end)) return false;
+        return rowTime >= start && rowTime <= end;
+      }
+
+      if (typeof val === "string" && val.trim()) {
+        const startDate = new Date(val);
+        if (isNaN(startDate.getTime())) return false;
+
+        // 当天的开始时间
+        const startTime = new Date(startDate.setHours(0, 0, 0, 0)).getTime();
+        // 当天的结束时间
+        const endTime = new Date(startDate.setHours(23, 59, 59, 999)).getTime();
+
+        return rowTime >= startTime && rowTime <= endTime;
+      }
+
+      return true;
     }
   },
 
@@ -2579,16 +2630,10 @@ export default {
       "selection-change": selectListHandler,
       clickBtn: tableCellClick,
       "row-click": handleRowClickWrap(),
-      "row-dblclick": handleRowDbClickWrap(),
-      "current-change": updateSelectedRowWrap()
+      "current-change": updateSelectedRowWrap(updateSelectedRow),
+      "row-dblclick": handleRowDbClickWrap(showCheckDialog)
     };
 
-    if (tableAttrs.clickRowShowDetialDialog) {
-      tableEvent["row-click"] = handleRowClickWrap(showCheckDialog);
-    } else {
-      tableEvent["current-change"] = updateSelectedRowWrap(updateSelectedRow);
-      tableEvent["row-dblclick"] = handleRowDbClickWrap(showCheckDialog);
-    }
     if (tableAttrs.dbClickRelateBtnId) {
       tableEvent["row-dblclick"] = handleRowDbClickWrap(handleRowDbClickEmitBtn);
     }
@@ -2689,7 +2734,7 @@ export default {
                         >
                           搜 索
                         </el-button>
-                        <el-button
+                        {/* <el-button
                           type=""
                           size="mini"
                           disabled={tableDisbaled}
@@ -2701,7 +2746,7 @@ export default {
                           }}
                         >
                           重 置
-                        </el-button>
+                        </el-button> */}
                       </div>
                     ) : null}
                     {isVformWidget ? (
