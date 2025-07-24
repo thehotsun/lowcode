@@ -2456,10 +2456,15 @@ export default {
       this.currentSelectedRow = row;
     },
 
-    showCheckDialog(row) {
-      console.log("showCheckDialog", row);
+    showEditOrCheckDialog(row) {
+      console.log("showEditOrCheckDialog", row);
       if (this.previewMode || this.tableDisbaled) return;
-      const target = this.btnRegularOptions[0]?.formItem?.find(btnOptions => btnOptions.extraOption.btnType === "check");
+      // 先检测编辑按钮
+      let target = this.btnRegularOptions[0]?.formItem?.find(btnOptions => btnOptions.extraOption.btnType === "edit");
+      // 再检测查看按钮
+      if (!target) {
+        target = this.btnRegularOptions[0]?.formItem?.find(btnOptions => btnOptions.extraOption.btnType === "check");
+      }
       if (target) {
         this.handleBtnClick({ ...target.extraOption, btnId: target.btnId, authorize: target.authorize }, row);
       }
@@ -2590,7 +2595,7 @@ export default {
       handleRowClickWrap,
       handleRowDbClickWrap,
       updateSelectedRowWrap,
-      showCheckDialog,
+      showEditOrCheckDialog,
       updateSelectedRow,
       onSave,
       tableCellClick,
@@ -2631,7 +2636,7 @@ export default {
       clickBtn: tableCellClick,
       "row-click": handleRowClickWrap(),
       "current-change": updateSelectedRowWrap(updateSelectedRow),
-      "row-dblclick": handleRowDbClickWrap(showCheckDialog)
+      "row-dblclick": handleRowDbClickWrap(showEditOrCheckDialog)
     };
 
     if (tableAttrs.dbClickRelateBtnId) {
