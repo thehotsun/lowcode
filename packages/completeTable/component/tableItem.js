@@ -1182,8 +1182,8 @@ export default {
     // 根据授权筛选按钮
     filterBtnsByPermission(config) {
       // 根据权限筛选
-      // 兼容通过弹窗展示的列表，此时rawlistPageId为空，不进行权限校验
-      if (!this.previewMode && this.rawRelateId) {
+      // 兼容通过弹窗展示的列表，此时rawlistPageId为notVerify，不进行权限校验
+      if (!this.previewMode && this.rawRelateId && this.rawRelateId !== "notVerify") {
         return config.filter(item => {
           return this.checkPermission(`${this.rawRelateId}:${item.btnId}:${item.authorize}`) || item.authorize === "defaultShow";
         });
@@ -1226,8 +1226,8 @@ export default {
 
     filterBtnsByFreeLayuotPermission(config) {
       // 根据权限筛选
-      // 兼容通过弹窗展示的列表，此时rawlistPageId为空，不进行权限校验
-      if (!this.previewMode && this.rawRelateId) {
+      // 兼容通过弹窗展示的列表，此时rawlistPageId为notVerify，不进行权限校验
+      if (!this.previewMode && this.rawRelateId && this.rawRelateId !== "notVerify") {
         return config.filter(item => {
           // 这里要进行三层复合校验
           return this.checkPermission(`${this.rawRelateId}:${this.getWidgetByFreeLayout()?.options.id}:${item.btnId}:${item.authorize}`) || item.authorize === "defaultShow";
@@ -2056,7 +2056,7 @@ export default {
         btnConfigs: { tableId }
       } = this;
       if (tableId) {
-        return <complete-table ref="nestedTable" listPageIdProp={tableId} rawRelateIdProp=""></complete-table>;
+        return <complete-table ref="nestedTable" listPageIdProp={tableId} rawRelateIdProp="notVerify"></complete-table>;
       }
     },
 

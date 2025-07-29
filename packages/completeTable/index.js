@@ -16,6 +16,7 @@ export default {
   mixins: [tabs],
   props: {
     listPageIdProp: String,
+    rawRelateIdProp: String,
     wrapHeightProp: [Number, String]
   },
 
@@ -305,7 +306,8 @@ export default {
       leftWidth,
       onMouseDown,
       tabsOptions: { attrs = {}, showLableInfo = [] },
-      listPageIdProp
+      listPageIdProp,
+      rawRelateIdProp
     } = this;
 
     // eslint-disable-next-line prefer-const
@@ -319,7 +321,7 @@ export default {
           </div>
           <div class="splitpanes__splitter" onmousedown={onMouseDown}></div>
           <div class="contentRight" style={{ width: `calc(100% - ${leftWidth} - 7px)` }}>
-            <tableItem ref="tableItem" listPageIdProp={listPageIdProp}></tableItem>
+            <tableItem ref="tableItem" rawRelateIdProp={rawRelateIdProp} listPageIdProp={listPageIdProp}></tableItem>
           </div>
         </div>
       );
@@ -340,13 +342,13 @@ export default {
         >
           {showLableInfo.map((item, index) => (
             <el-tab-pane ref={"tabpane" + index} label={item.title} name={index + ""} class="panefull">
-              <tableItem ref={"tableItemTab" + index} listPageIdProp={listPageIdProp}></tableItem>
+              <tableItem ref={"tableItemTab" + index} rawRelateIdProp={rawRelateIdProp} listPageIdProp={listPageIdProp}></tableItem>
             </el-tab-pane>
           ))}
         </el-tabs>
       );
     } else {
-      return <tableItem ref="tableItem" listPageIdProp={listPageIdProp}></tableItem>;
+      return <tableItem ref="tableItem" rawRelateIdProp={rawRelateIdProp} listPageIdProp={listPageIdProp}></tableItem>;
     }
   }
 };
