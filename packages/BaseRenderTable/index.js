@@ -1,5 +1,5 @@
 import "./table.less";
-import { decorator, mergeStyle } from "../../utils";
+import { decorator, mergeStyle, str2Fn } from "../../utils";
 import { omit } from "lodash";
 import { tableOptionsCodeExampleList } from "/utils/codeExampleList";
 import onlineCode from "/packages/completeTable/component/onlineCode.vue";
@@ -162,23 +162,37 @@ export default {
       if (options.tagName) {
         return this.cellRender(row, options);
       } else if (options.contentTextAttrArr?.length) {
-        return options.contentTextAttrArr.map(contentTextAttr => {
-          const cellOptions = {};
-          cellOptions.wrapListeners = {
-            click: function(row, $event) {
-              $event.stopPropagation();
-              that.$emit("clickBtn", row, contentTextAttr.clickEvent.relateBtnId);
+        return options.contentTextAttrArr
+          .filter(item => {
+            // 如果有条件判断函数，则需要判断函数返回值是否为true
+            if (item.conditionalJudgment) {
+              try {
+                return str2Fn(item.conditionalJudgment).call(this, row);
+              } catch (e) {
+                console.warn(`contentTextAttr中的conditionalJudgment函数错误：${e}`);
+                return false;
+              }
             }
-          };
-          const style = mergeStyle(null, contentTextAttr);
-          cellOptions.contentText = contentTextAttr.textVal || row[options.prop];
-          if (contentTextAttr.iconName) {
-            cellOptions[`${contentTextAttr.iconPosition}TextClass`] = contentTextAttr.iconName;
-            cellOptions[`${contentTextAttr.iconPosition}TextStyle`] = `${style};${contentTextAttr.iconStyle}`;
-          }
-          cellOptions.style = `${style};${contentTextAttr.textStyle}`;
-          return this.cellRender(row, cellOptions);
-        });
+            // 否则直接返回true
+            return true;
+          })
+          .map(contentTextAttr => {
+            const cellOptions = {};
+            cellOptions.wrapListeners = {
+              click: function(row, $event) {
+                $event.stopPropagation();
+                that.$emit("clickBtn", row, contentTextAttr.clickEvent.relateBtnId);
+              }
+            };
+            const style = mergeStyle(null, contentTextAttr);
+            cellOptions.contentText = contentTextAttr.textVal || row[options.prop];
+            if (contentTextAttr.iconName) {
+              cellOptions[`${contentTextAttr.iconPosition}TextClass`] = contentTextAttr.iconName;
+              cellOptions[`${contentTextAttr.iconPosition}TextStyle`] = `${style};${contentTextAttr.iconStyle}`;
+            }
+            cellOptions.style = `${style};${contentTextAttr.textStyle}`;
+            return this.cellRender(row, cellOptions);
+          });
       } else {
         return row[options.prop];
       }

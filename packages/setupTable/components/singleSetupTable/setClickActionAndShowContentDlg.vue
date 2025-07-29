@@ -86,10 +86,28 @@
               </el-tooltip>
               <el-input v-model="contentTextAttrForm.textStyle"></el-input>
             </el-form-item>
+            <el-form-item label="条件判断：">
+              <el-tooltip slot="label" class="fontSize14" effect="dark" content="通过函数返回值确认当前行为是否被展示，返回true展示，返回false隐藏" placement="top-start">
+                <span>判断显隐<i style="width: 20px" class="el-icon-question"></i>：</span>
+              </el-tooltip>
+              <el-input
+                v-model="contentTextAttrForm.conditionalJudgment"
+                placeholder="请输入function(row){ return true}格式"
+                @focus="handleShow('conditionalJudgment', '判断显隐函数', $event)"
+              ></el-input>
+            </el-form-item>
           </el-form>
         </el-tab-pane>
       </el-tabs>
     </div>
+    <onlineCode
+      v-if="showCodeEditor"
+      :title="codeEditorTil"
+      :model-value="contentTextAttrForm[curFn]"
+      :code-example-val="setClickActionAndShowCodeExampleList[curFn]"
+      @confirm="handleEditorInput"
+      @close="handleClose"
+    ></onlineCode>
     <span slot="footer" class="dialog-footer">
       <el-button @click="handleCloseContentTextAttr">取消</el-button>
       <el-button type="primary" @click="confirmContentTextAttr">确定</el-button>
@@ -100,9 +118,11 @@
 <script>
 import { ContentTextAttrForm } from "../../../../baseConfig/tableBaseConfig";
 import IconPicker from "../setupBtnConfig/components/iconPicker";
+import { setClickActionAndShowCodeExampleList } from "/utils/codeExampleList";
 import { cloneDeep, merge } from "lodash";
+import onlineCode from "/packages/completeTable/component/onlineCode.vue";
 export default {
-  components: { IconPicker },
+  components: { IconPicker, onlineCode },
   props: {
     generalRequest: {
       type: Function,
@@ -128,6 +148,7 @@ export default {
   },
   data() {
     return {
+      setClickActionAndShowCodeExampleList,
       curRowData: null,
       editableTabs: [
         {
@@ -138,7 +159,10 @@ export default {
       ],
       contentTextAttrForm: new ContentTextAttrForm(),
       editableTabsValue: "0",
-      dialogVisibleContentTextAttr: false
+      dialogVisibleContentTextAttr: false,
+      showCodeEditor: false,
+      curFn: "",
+      codeEditorTil: ""
     };
   },
 
@@ -178,6 +202,18 @@ export default {
     },
     handleCloseContentTextAttr() {
       this.dialogVisibleContentTextAttr = false;
+    },
+    async handleShow(field, codeEditorTil) {
+      this.curFn = field;
+      this.codeEditorTil = codeEditorTil;
+      this.showCodeEditor = true;
+    },
+    handleClose() {
+      this.showCodeEditor = false;
+    },
+    handleEditorInput(value) {
+      // 处理编辑器输入的逻辑
+      this.contentTextAttrForm[this.curFn] = value;
     },
     setColor(color) {
       this.contentTextAttrForm.color = color;

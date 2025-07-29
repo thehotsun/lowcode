@@ -92,3 +92,7 @@ export const tableOptionsCodeExampleList = {
     }
   ]
 };
+
+export const setClickActionAndShowCodeExampleList = {
+  conditionalJudgment: "function conditionalJudgment(row) {\r\n  // row是当前行的数据\r\n  \r\n  // 筛选\r\n  return row.status === 1;\r\n}"
+};

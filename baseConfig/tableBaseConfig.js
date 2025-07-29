@@ -304,7 +304,8 @@ export function ContentTextAttrForm() {
     iconPosition: "front",
     iconStyle: "",
     textStyle: "padding-right: 5px;",
-    textVal: ""
+    textVal: "",
+    conditionalJudgment: ""
   };
 }
 
