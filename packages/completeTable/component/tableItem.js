@@ -106,6 +106,12 @@ export default {
   },
 
   computed: {
+    isProjectRoute() {
+      const isPrjRoute = this.$route.matched.some(matched => {
+        return matched.path === "/project";
+      });
+      return isPrjRoute;
+    },
     // 当前是否作为Vform的一个组件
     isVformWidget() {
       return this.renderMode === "vformWidget";
@@ -195,7 +201,7 @@ export default {
 
       let filteredData = tableData;
 
-      const formItem = this.formOptions[0].formItem;
+      const formItem = this.formOptions[0]?.formItem || [];
 
       // 1. 精确搜索（searchForm）—— 所有字段必须满足条件（AND）
       filteredData = filteredData.filter(row => {
@@ -1015,13 +1021,13 @@ export default {
         });
       }
       return {
+        prjId: this?.getPrjInfo?.()?.prjId,
         ...data,
         ...this.searchForm,
         ...extraParams,
         ...this.externalParams,
         ...this.dynamicExternalParams,
         multiFieldSearch: this.multiFieldSearch,
-        prjId: this?.getPrjInfo?.()?.prjId,
         enterpriseId: this.enterpriseId
       };
     },
@@ -1034,6 +1040,10 @@ export default {
     // data为外界组件执行某些行为触发更新的参数(一次性参数，不会存储，如果点击分页就会消失，持久化的外部参数存储请使用refreshData方法)
     queryTableData(data = {}, isReturn) {
       const params = this.getParams(data);
+      // 如果当前不是项目下路由，把prjId删掉
+      if (!this.isProjectRoute) {
+        delete params.prjId;
+      }
       const { isTree, dataTransitionFn, dataTransitionParentField, dataTransitionCurField, showPagination } = this.tableAttrs;
       return (showPagination ? this.requestTablePaginationData(params, this.page, this.listPageId) : this.requestTableData(params, this.listPageId))
         .then(res => {
