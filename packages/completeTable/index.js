@@ -176,7 +176,7 @@ export default {
       await this.$refs.tableItem.expose_enableAllBtn(otherData);
     },
 
-    async init(isPreview, json, externalParams, externalTriggerQueryTableData = false, tableDisbaled = false) {
+    async init(isPreview, json, externalParams = {}, externalTriggerQueryTableData = false, tableDisbaled = false) {
       if (!json || isEmpty(json)) {
         json = await this.queryTableConfig();
       }

@@ -661,7 +661,7 @@ export default {
       this.syncFormDataByVformWidget();
     },
 
-    async init(isPreview, json, externalParams, externalTriggerQueryTableData, tableDisbaled) {
+    async init(isPreview, json, { externalParams = {}, dynamicExternalParams = {} }, externalTriggerQueryTableData, tableDisbaled) {
       this.resetAllData();
       await this.$nextTick();
       this.previewMode = !!isPreview;
@@ -697,6 +697,9 @@ export default {
           finalExternalParams = externalParams;
         } else if (isObj) {
           finalExternalParams = isObj;
+        }
+        if (dynamicExternalParams) {
+          this.dynamicExternalParams = dynamicExternalParams;
         }
         if (!externalTriggerQueryTableData) {
           this.refreshData(finalExternalParams);
@@ -1025,10 +1028,10 @@ export default {
         ...data,
         ...this.searchForm,
         ...extraParams,
-        ...this.externalParams,
-        ...this.dynamicExternalParams,
         multiFieldSearch: this.multiFieldSearch,
-        enterpriseId: this.enterpriseId
+        enterpriseId: this.enterpriseId,
+        ...this.externalParams,
+        ...this.dynamicExternalParams
       };
     },
     async tableDataLoad(tree, treeNode, resolve) {
@@ -1414,10 +1417,17 @@ export default {
             }
           } else if (openType === 3) {
             // openType为3是新窗口打开;
-            var reg = /http(s)?:\/\/([\w-]+\.)+[\w-]+(\/[\w- .\/?%&=]*)?/;
+            const isAbsoluteUrl = url => {
+              try {
+                new URL(url);
+                return true;
+              } catch {
+                return false;
+              }
+            };
             const externalParams = this.formatSelectListParams({ deliverySelectList, deliverySelectListFields }, null, "useJoin");
             // 构造目标URL（保持原有逻辑）
-            let targetUrl = reg.test(openUrl) ? openUrl : `${window.location.origin}${openUrl.startsWith("/") ? "" : "/"}${openUrl}`;
+            let targetUrl = isAbsoluteUrl(openUrl) ? openUrl : `${window.location.origin}${openUrl.startsWith("/") ? "" : "/"}${openUrl}`;
             // 附加参数到所有场景的URL
             targetUrl = appendParamsToUrl(targetUrl, externalParams);
             window.open(targetUrl, "_blank");
@@ -1585,6 +1595,10 @@ export default {
         flowInfo.enterpriseId = this.enterpriseId;
         if (deliverySelectList) {
           flowInfo.sourceData = { mainFieldValue };
+          flowInfo.dataFromList = {
+            selectList: this.selectList,
+            keyFieldName: this.keyField
+          };
         }
         // 发起流程
         if (flowInfo.startMode === "stdNew") {

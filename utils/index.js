@@ -913,22 +913,21 @@ export function limitShowWord(text = "", maxlength, showEllipsis = true) {
  * @returns {string} 处理后的完整URL
  */
 export function appendParamsToUrl(url, params) {
-  // 将对象转为URL查询字符串
   const query = Object.entries(params)
-    .map(([k, v]) => `${k}=${v}`)
+    .map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(v)}`)
     .join("&");
-
-  // 分割URL的基础部分、已有查询参数和哈希片段
-  const [base, hash] = url.split("#");
-  const [path, existingQuery] = base.split("?");
-
-  // 组装最终URL
-  let finalUrl = path;
-  if (existingQuery) finalUrl += `?${existingQuery}&${query}`;
-  else if (query) finalUrl += `?${query}`;
-  if (hash) finalUrl += `#${hash}`;
-
-  return finalUrl;
+  if (url.includes("#")) {
+    // Hash 模式
+    const [base, hashPart = ""] = url.split("#");
+    const [path, existingQuery = ""] = hashPart.split("?");
+    const mergedQuery = [existingQuery, query].filter(Boolean).join("&");
+    return `${base}#${path}?${mergedQuery}`;
+  } else {
+    // History 模式
+    const [basePath, existingQuery = ""] = url.split("?");
+    const mergedQuery = [existingQuery, query].filter(Boolean).join("&");
+    return `${basePath}?${mergedQuery}`;
+  }
 }
 
 export default {
