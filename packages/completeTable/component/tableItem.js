@@ -448,6 +448,26 @@ export default {
         return "";
       }
     },
+    downloadFile: {
+      default: () => () => {
+        console.warn("inject缺失downloadFile!");
+      }
+    },
+    downloadUrltoken: {
+      default: () => () => {
+        console.warn("inject缺失downloadUrltoken!");
+      }
+    },
+    getToken: {
+      default: () => () => {
+        console.warn("inject缺失getToken!");
+      }
+    },
+    filePreviewV1: {
+      default: () => () => {
+        console.warn("inject缺失filePreviewV1!");
+      }
+    },
     // 这个是自由布局
     getWidgetByFreeLayout: {
       default: () => () => {
@@ -633,6 +653,17 @@ export default {
 
     resetBtnConfigs() {
       this.btnConfigs = new BtnConfigs();
+    },
+
+    async batchDownload(fileInfoList) {
+      if (fileInfoList?.length) {
+        const urls = fileInfoList.map(item => {
+          return this.downloadUrltoken(item.prjId, item.fileId, item.fileVersion);
+        });
+        for (let i = 0; i < urls.length; i++) {
+          this.downloadFile(urls[i]);
+        }
+      }
     },
 
     // 保存表单
@@ -1660,7 +1691,7 @@ export default {
       this.onlyRead = true;
       this.btnConfigs.dialogTitle = dialogTitle || (btnType === "check" ? "查看" : "编辑");
       await this.$nextTick();
-      this.$refs.nestedTable.init(false, null, externalParams);
+      this.$refs.nestedTable.init(false, null, { externalParams });
     },
 
     async disposeThisPageJump({ openUrl, deliverySelectList, deliverySelectListFields }, rowData) {

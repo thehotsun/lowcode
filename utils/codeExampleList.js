@@ -86,6 +86,11 @@ export const tableOptionsCodeExampleList = {
         'function render() {\n  // 此函数直接返回一个类似vue options组件的对象，如data、methods等，\n  // 可以通过this.row获取当前行数据,想渲染当前数据则使用{{row.xxx}}(xxx为当前行的字段名)，\n  // this.index获取下标，this.getTableRenderInstance()获取当前渲染实例\n  // 模板则使用template代替，由于某些原因，尽量使用``来包裹整个字符串\n  return {\n    methods: {\n      btnClick() {\n        // 获取列表数据\n        console.log(this.getTableRenderInstance().expose_getTableData())\n          \n      }\n    },\n    template: `<div  @click.stop="btnClick"><span> {{row.name}} </span></div>`\n  }\n}'
     },
     {
+      label: "文件预览",
+      codeExampleVal:
+        'function render() {\n  // 此函数直接返回一个类似vue options组件的对象，如data、methods等，\n  // 可以通过this.row获取当前行数据,想渲染当前数据则使用{{row.xxx}}(xxx为当前行的字段名)，this.index获取下标，this.getTableRenderInstance()获取当前渲染实例\n  // 可以通过this.emitBtnClick(this.row, 按钮名称， 按钮id)来触发配置的按钮，其中按钮名称（会找到第一个匹配到的按钮注意重名问题）和按钮id任选其一即可。\n  // 配置样式使用:style="getStyle()"的方式，在getStyle返回要使用的样式\n  // 模板则使用template代替，由于某些原因，尽量使用``来包裹整个字符串\n  return {\n    methods: {\n      jumpPreview() {\n        var params = {fileId: this.row.fileId, versionId: this.row.Version, fileType: this.row.FileType, status: this.row.Status};\n        this.getTableRenderInstance().filePreviewV1(params)\n      }\n    },\n    template: `<el-button type="text" @click.stop="jumpPreview">  {{row.fileName}}</el-button>`\n  }\n}'
+    },
+    {
       label: "综合使用",
       codeExampleVal:
         'function render() {\n  // 此函数直接返回一个类似vue options组件的对象，如data、methods等，\n  // 可以通过this.row获取当前行数据,想渲染当前数据则使用{{row.xxx}}(xxx为当前行的字段名)，this.index获取下标，this.getTableRenderInstance()获取当前渲染实例\n  // 可以通过this.emitBtnClick(this.row, 按钮名称， 按钮id)来触发配置的按钮，其中按钮名称（会找到第一个匹配到的按钮注意重名问题）和按钮id任选其一即可。\n  // 配置样式使用:style="getStyle()"的方式，在getStyle返回要使用的样式\n  // 模板则使用template代替，由于某些原因，尽量使用``来包裹整个字符串\n  return {\n    data () {\n      return {\n        example: "22"\n      }\n    },\n    methods: {\n      getValue () {\n        return this.example\n      },\n      btnClick() {\n        this.emitBtnClick(this.row, "后台接口")  \n      },\n      getStyle() {\n        return "color: red;font-size: 16px;"\n      }\n    },\n    template: `<div :style="getStyle()" @click.stop="btnClick"><i class="el-icon-date"></i> <span> {{row.PreTaskID + getValue()}} </span></div>`\n  }\n}'

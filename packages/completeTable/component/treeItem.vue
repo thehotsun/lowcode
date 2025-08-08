@@ -33,7 +33,7 @@ export default {
       this.init(true, data);
       this.previewMode = true;
     },
-    async init(isPreview, treeOptions, externalParams = {}) {
+    async init(isPreview, treeOptions, { externalParams }) {
       this.resetAllData();
       await this.$nextTick();
       this.isPreview = !!isPreview;

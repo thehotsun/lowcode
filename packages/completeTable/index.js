@@ -214,7 +214,7 @@ export default {
       this.$refs.tableItem.init(isPreview, json, externalParams, externalTriggerQueryTableData, tableDisbaled);
     },
     // TODO externalParams不同怎么处理？
-    async tabsTableInit(isPreview, json, externalParams = {}, externalTriggerQueryTableData) {
+    async tabsTableInit(isPreview, json, { externalParams }, externalTriggerQueryTableData) {
       const { tabTableOptionsArr, tabsOptions } = json;
       this.tabsOptions = this.tabAttrsFormatter(tabsOptions);
       await this.$nextTick();
@@ -230,7 +230,7 @@ export default {
       //   }
       // }
       tabTableOptionsArr.map((tableOptions, index) => {
-        this.$refs[`tableItemTab${index}`].init(isPreview, tableOptions, { ...externalParams, tabId: tableOptions.id }, externalTriggerQueryTableData);
+        this.$refs[`tableItemTab${index}`].init(isPreview, tableOptions, { externalParams: { ...externalParams, tabId: tableOptions.id } }, externalTriggerQueryTableData);
       });
     },
 
