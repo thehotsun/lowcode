@@ -270,28 +270,28 @@ export default {
     searchAreaDrop() {
       // 此时找到的元素是要拖拽元素的父容器
       const dom = document.querySelector(".searchArea .el-form .el-row");
-      handle: ".el-form-item__label",
-        (this.sortableInstance = this.Sortable.create(dom, {
-          onEnd: e => {
-            // e.oldIndex为拖动一行原来的位置，e.newIndex为拖动后新的位置
-            // 排序后要先获取最新的列表，否则下面list[e.oldIndex]取不到正确的值
-            const tableOptions = this.$refs.singleSetupTable.expose_getTableData();
-            const list = this.composeFromOptions(tableOptions)[0].formItem;
-            const { newIndex, oldIndex } = e;
-            if (newIndex < oldIndex) {
-              list[e.oldIndex].sortNumb = list[e.newIndex].sortNumb - 1;
-            } else {
-              list[e.oldIndex].sortNumb = list[e.newIndex].sortNumb + 1;
-            }
-
-            list
-              .sort((a, b) => a.sortNumb - b.sortNumb)
-              .map((item, index) => {
-                const target = this.tableData.find(tableDataItem => item.formField === tableDataItem.fieldCode);
-                item.sortNumb = target.searchWidgetConfig.sortNumb = index * 2;
-              });
+      this.sortableInstance = this.Sortable.create(dom, {
+        handle: ".el-form-item__label",
+        onEnd: e => {
+          // e.oldIndex为拖动一行原来的位置，e.newIndex为拖动后新的位置
+          // 排序后要先获取最新的列表，否则下面list[e.oldIndex]取不到正确的值
+          const tableOptions = this.$refs.singleSetupTable.expose_getTableData();
+          const list = this.composeFromOptions(tableOptions)[0].formItem;
+          const { newIndex, oldIndex } = e;
+          if (newIndex < oldIndex) {
+            list[e.oldIndex].sortNumb = list[e.newIndex].sortNumb - 1;
+          } else {
+            list[e.oldIndex].sortNumb = list[e.newIndex].sortNumb + 1;
           }
-        }));
+
+          list
+            .sort((a, b) => a.sortNumb - b.sortNumb)
+            .map((item, index) => {
+              const target = this.tableData.find(tableDataItem => item.formField === tableDataItem.fieldCode);
+              item.sortNumb = target.searchWidgetConfig.sortNumb = index * 2;
+            });
+        }
+      });
     },
 
     // 添加查询控件的change事件和控件属性弹窗的确认按钮触发
