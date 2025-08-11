@@ -1447,21 +1447,34 @@ export default {
               disposeThisPageJump({ openUrl, deliverySelectList, deliverySelectListFields }, rowData);
             }
           } else if (openType === 3) {
-            // openType为3是新窗口打开;
-            const isAbsoluteUrl = url => {
-              try {
-                new URL(url);
-                return true;
-              } catch {
-                return false;
-              }
-            };
-            const externalParams = this.formatSelectListParams({ deliverySelectList, deliverySelectListFields }, null, "useJoin");
-            // 构造目标URL（保持原有逻辑）
-            let targetUrl = isAbsoluteUrl(openUrl) ? openUrl : `${window.location.origin}${openUrl.startsWith("/") ? "" : "/"}${openUrl}`;
-            // 附加参数到所有场景的URL
-            targetUrl = appendParamsToUrl(targetUrl, externalParams);
-            window.open(targetUrl, "_blank");
+            if (
+              validateSelectList(
+                {
+                  paramName,
+                  paramType,
+                  deliverySelectList,
+                  deliverySelectListFields,
+                  validate
+                },
+                rowData
+              )
+            ) {
+              // openType为3是新窗口打开;
+              const isAbsoluteUrl = url => {
+                try {
+                  new URL(url);
+                  return true;
+                } catch {
+                  return false;
+                }
+              };
+              const externalParams = this.formatSelectListParams({ deliverySelectList, deliverySelectListFields }, null, "useJoin");
+              // 构造目标URL（保持原有逻辑）
+              let targetUrl = isAbsoluteUrl(openUrl) ? openUrl : `${window.location.origin}${openUrl.startsWith("/") ? "" : "/"}${openUrl}`;
+              // 附加参数到所有场景的URL
+              targetUrl = appendParamsToUrl(targetUrl, externalParams);
+              window.open(targetUrl, "_blank");
+            }
           } else if (openType === 4) {
             // openType为4是打开本地关联代码
             if (
