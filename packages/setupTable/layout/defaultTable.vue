@@ -80,6 +80,8 @@ export default {
           });
         }
       });
+      this.removeParentProps(renderParams.tableOptions);
+
       return this.saveListConfigJSON(
         {
           json: JSON.stringify(renderParams),

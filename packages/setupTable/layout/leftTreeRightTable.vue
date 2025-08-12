@@ -129,6 +129,7 @@ export default {
           });
         }
       });
+      this.removeParentProps(renderParams.tableOptions);
       console.log("savejson", renderParams);
       return this.saveListConfigJSON(
         {
