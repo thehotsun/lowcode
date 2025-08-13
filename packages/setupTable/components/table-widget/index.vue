@@ -163,6 +163,7 @@ export default {
   },
   beforeDestroy() {
     this.sortableInstance?.destroy();
+    this.sortableInstance2?.destroy();
   },
 
   errorCaptured(err) {
@@ -249,7 +250,7 @@ export default {
     btnsColumnDrop() {
       // 此时找到的元素是要拖拽元素的父容器
       const dom = document.querySelector(".btnDesign");
-      this.Sortable.create(dom, {
+      this.sortableInstance2 = this.Sortable.create(dom, {
         onEnd: e => {
           // e.oldIndex为拖动一行原来的位置，e.newIndex为拖动后新的位置
           const targetRow = this.btnConfigArr.splice(e.oldIndex, 1)[0];

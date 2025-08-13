@@ -70,8 +70,7 @@ const originEditConf = [
   {
     // 如需多选，则添加此item
     type: "selection",
-    align: "center",
-    fixed: "left"
+    align: "center"
   },
   // {
   //   // 如需展示索引，则添加此item
@@ -91,23 +90,20 @@ const originEditConf = [
     align: "center",
     className: "iconfont icon-drag drag-option my-handle",
     style: "cursor: pointer",
-    width: "50",
-    fixed: "left"
+    width: "50"
   },
   {
     ...baseAttr,
     label: "字段名称",
     prop: "fieldCode",
     disabled: true,
-    "min-width": "120",
-    fixed: "left"
+    "min-width": "120"
   },
   {
     ...baseAttr,
     label: "标题",
     prop: "fieldName",
-    "min-width": "150",
-    fixed: "left"
+    "min-width": "150"
   },
   {
     ...baseAttr,

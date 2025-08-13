@@ -230,6 +230,10 @@ export default {
     this.rowDrop();
   },
 
+  beforeDestroy() {
+    this.sortableInstance?.destroy();
+  },
+
   methods: {
     expose_getTableData() {
       return this.tableData;
@@ -317,7 +321,7 @@ export default {
     rowDrop() {
       // 此时找到的元素是要拖拽元素的父容器
       const dom = document.querySelector(".renderwrap .el-table__body-wrapper tbody");
-      this.Sortable.create(dom, {
+      this.sortableInstance = this.Sortable.create(dom, {
         handle: ".renderwrap .my-handle",
         onMove: evt => {
           const targetRowFieldCode = evt.dragged.querySelectorAll(".cell")[2].innerText;
