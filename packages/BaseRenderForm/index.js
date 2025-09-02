@@ -3,6 +3,7 @@ import { getter, getHandleInput, str2obj, str2Fn, decorator, setter } from "../.
 import { convertDynaticData } from "../../utils/interfaceParams";
 import { isEmpty, cloneDeep } from "lodash";
 import onlineCode from "/packages/completeTable/component/onlineCode.vue";
+import { tableBtnCodeExampleList } from "/utils/codeExampleList";
 export default {
   name: "BaseRenderForm",
   components: { onlineCode },
@@ -627,11 +628,7 @@ export default {
                   );
                 })
               : this.getFormItemVNode(formItem)}
-            {this.isOverflow ? (
-              <el-button class="collapse-btn" type="text" icon={this.isExpanded ? "el-icon-arrow-down" : "el-icon-arrow-up"} onclick={this.toggleExpand} />
-            ) : (
-              ""
-            )}
+            {this.isOverflow ? <el-button class="collapse-btn" type="text" icon={this.isExpanded ? "el-icon-arrow-down" : "el-icon-arrow-up"} onclick={this.toggleExpand} /> : ""}
           </el-row>
         );
       });
@@ -686,7 +683,9 @@ export default {
       },
       displayHeight: "600px",
       modelValue: model || "",
-      showExample: false
+      showExample: true,
+      useTabLayout: true,
+      exampleList: tableBtnCodeExampleList[this.codeValue?.formField]
     };
 
     const codeEditorListeners = {

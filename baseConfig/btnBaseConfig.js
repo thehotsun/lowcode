@@ -1549,7 +1549,7 @@ export function BtnConfigFormOptions() {
           label: "执行函数：",
           rules: {
             message: "请输入执行函数",
-            trigger: "blur",
+            trigger: "change",
             required: true
           },
           prop: "extraOption.fn",

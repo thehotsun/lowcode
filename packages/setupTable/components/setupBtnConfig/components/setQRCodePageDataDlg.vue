@@ -156,6 +156,9 @@ export default {
     }
   },
   mounted() {},
+  beforeDestroy() {
+    this?.sortableInstance?.destroy();
+  },
   methods: {
     handleShow() {
       this.onlyShow = !this.onlyShow;

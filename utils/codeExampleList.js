@@ -106,3 +106,19 @@ export const tableOptionsCodeExampleList = {
 export const setClickActionAndShowCodeExampleList = {
   conditionalJudgment: "function conditionalJudgment(row) {\r\n  // row是当前行的数据\r\n  \r\n  // 筛选\r\n  return row.status === 1;\r\n}"
 };
+
+export const tableBtnCodeExampleList = {
+  "extraOption.fn": [
+    {
+      label: "请求接口",
+      codeExampleVal:
+        "function request(rowData) {\r\n  const row = this.selectList[0]\r\n  // 直接使用this.generalRequest 请求接口 这是get\r\n  // this.generalRequest(`/flow/business/${row.id}`, 'get').then(res => {\r\n  //   console.log(res, 'res')\r\n  //   // 操作后重新请求列表接口\r\n  //   this.queryTableData();\r\n  // });\r\n\r\n  // 这是post请求\r\n  const ids = this.selectList.map(item => item.id)\r\n  // 这里请求头如果同名则覆盖默认的请求头\r\n  const requestHeaders = {\r\n    // authorization: 'Bearer eyJh'\r\n  }\r\n  const url = 'flow/workbench/myProcessing?pageSize=20&pageNum=1'\r\n  const data = {\r\n    enterpriseId: this.enterpriseId,\r\n    prjId: this?.getPrjInfo?.()?.prjId,\r\n    ids\r\n  }\r\n  this.generalRequest(url, 'post', data, requestHeaders).then(res => {\r\n    console.log(res, 'res')\r\n    // 操作后重新请求列表接口\r\n    this.queryTableData();\r\n  });\r\n}\r\n"
+    },
+    {
+      label: "常用方法和变量",
+      codeExampleVal:
+        "function marker () {\n  // 先介绍常用方法\n  // 可以获得prjId enterpriseId 等所有供接口使用的参数\n  // this.getParams()\n  // 这个是刷新列表数据接口，其中params参数是持久化的参数存储，当使用这个方法调用接口后，\n  // 后续所有关于列表属性刷新的接口参数都会带上这些参数\n  // this.refreshData(params)\n  // 这个是刷新列表数据接口，其中params参数是一次性的参数，仅当次方法调用的时候使用\n  // this.queryTableData(params)\n  // 通过此方法可以直接调用接口,示例具体看请求接口那里\n  // this.generalRequest()\n  // 这个方法是列表作为vform的一个组件时可以调用的，能获取当前组件的各种配置信息\n  // this.getWidget()\n  // 获取token的\n  // this.getToken()\n  // \n  // 再介绍常用变量\n  // 这个是列表头部左侧输入框绑定的变量\n  // multiFieldSearch\n  // 选中的table数据\n  // selectList\n  // 获取当前点击按钮的所有配置\n  // btnConfigs\n  // 列表上方搜索区域绑定的表单数据\n  // searchForm\n  // 列表数据\n  // tableData\n  // \n  // \n  // \n  // \n  // \n  // \n  // \n}"
+    }
+  ],
+  "extraOption.validateFn": [{ label: "校验1", codeExampleVal: "" }]
+};
