@@ -1,6 +1,14 @@
 <template>
   <div class="leftTreeRightTableWrap">
-    <operate :loading="loading" @handleSave="handleSave" @showTableAttrs="showTableAttrs" @showPreview="showPreview" @jumpResource="jumpResource">
+    <operate
+      :loading="loading"
+      @handleSave="handleSave"
+      @showTableAttrs="showTableAttrs"
+      @showPreview="showPreview"
+      @jumpResource="jumpResource"
+      @handleExport="handleExport"
+      @handleImport="handleImport"
+    >
       <template slot="btn">
         <el-button size="mini" @click="showTreeAttrs">树属性设置</el-button>
       </template>
@@ -17,6 +25,8 @@
     <TreeAttrDlg ref="TreeAttrDlg" @changeTreeAttrs="changeTreeAttrs"></TreeAttrDlg>
 
     <previewDlg ref="previewDlg"></previewDlg>
+
+    <operatesJsonDlg ref="operatesJsonDlg" @importComfirm="handleImportComfirm"></operatesJsonDlg>
   </div>
 </template>
 
@@ -28,11 +38,12 @@ import previewDlg from "../components/dialogs/previewDlg.vue";
 
 import operate from "../components/operate.vue";
 import { TreeAttrs } from "/baseConfig/treeBaseConfig";
+import operatesJsonDlg from "../components/dialogs/operatesJsonDlg.vue";
 import tableDesignMixin from "../../../mixins/tableDesign";
 
 import { merge } from "lodash";
 export default {
-  components: { TableWidget, TreeWidget, TreeAttrDlg, operate, previewDlg },
+  components: { TableWidget, TreeWidget, TreeAttrDlg, operate, previewDlg, operatesJsonDlg },
   mixins: [tableDesignMixin],
   props: {
     pageLayout: {
@@ -114,13 +125,13 @@ export default {
             titlePosition,
             expireDays,
             briefPageFields: briefPageFields.map((item, index) => {
-                return {
-                  fieldName: item.fieldName,
-                  fieldDisplayName: item.fieldDisplayName,
-                  isShow: item.show ? 1 : 0,
-                  seqNo: index
-                };
-              }),
+              return {
+                fieldName: item.fieldName,
+                fieldDisplayName: item.fieldDisplayName,
+                isShow: item.show ? 1 : 0,
+                seqNo: index
+              };
+            }),
             briefPageOperations,
             targetFormId,
             printCountPerRow,

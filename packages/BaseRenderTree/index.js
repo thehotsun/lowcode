@@ -127,7 +127,7 @@ export default {
       }
     },
     labelField() {
-      return this.treeAttrs.props.label || "label";
+      return this.treeAttrs?.props?.label || "label";
     },
     treeListeners() {
       const { treeOptions, treeNodeClick } = this;
@@ -198,7 +198,7 @@ export default {
             this.treeListeners["node-click"](data);
           }, 300);
         } else {
-          this.treeListeners["node-click"]({});
+          this.treeListeners?.["node-click"]?.({});
         }
       }
     }

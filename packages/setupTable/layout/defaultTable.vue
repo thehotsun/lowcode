@@ -1,10 +1,21 @@
 <template>
   <div class="wrap">
-    <operate :loading="loading" @handleSave="handleSave" @showTableAttrs="showTableAttrs" @showPreview="showPreview" @jumpResource="jumpResource"> </operate>
+    <operate
+      :loading="loading"
+      @handleSave="handleSave"
+      @showTableAttrs="showTableAttrs"
+      @showPreview="showPreview"
+      @jumpResource="jumpResource"
+      @handleExport="handleExport"
+      @handleImport="handleImport"
+    >
+    </operate>
 
     <TableWidget ref="TableWidget"></TableWidget>
 
     <previewDlg ref="previewDlg"></previewDlg>
+
+    <operatesJsonDlg ref="operatesJsonDlg" @importComfirm="handleImportComfirm"></operatesJsonDlg>
   </div>
 </template>
 
@@ -12,9 +23,10 @@
 import TableWidget from "../components/table-widget";
 import operate from "../components/operate.vue";
 import previewDlg from "../components/dialogs/previewDlg.vue";
+import operatesJsonDlg from "../components/dialogs/operatesJsonDlg.vue";
 import tableDesignMixin from "../../../mixins/tableDesign";
 export default {
-  components: { TableWidget, operate, previewDlg },
+  components: { TableWidget, operate, previewDlg, operatesJsonDlg },
   mixins: [tableDesignMixin],
   props: {
     pageLayout: {
