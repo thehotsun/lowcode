@@ -1371,7 +1371,7 @@ export default {
       this.btnConfigs.closeOnPressEscape = closeOnPressEscape;
       await this.$nextTick();
       // 执行任何操作之前都先进行校验
-      if (!validateFn || (validateFn && str2Fn(validateFn).call(this, this.selectList))) {
+      if (!validateFn || (validateFn && (await Promise.resolve(str2Fn(validateFn).call(this, this.selectList))))) {
         // 如果有自定义事件，则执行自定义事件
         if (fn) {
           str2Fn(fn).call(this, rowData);

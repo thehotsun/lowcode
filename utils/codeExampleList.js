@@ -120,5 +120,16 @@ export const tableBtnCodeExampleList = {
         "function marker () {\n  // 先介绍常用方法\n  // 可以获得prjId enterpriseId 等所有供接口使用的参数\n  // this.getParams()\n  // 这个是刷新列表数据接口，其中params参数是持久化的参数存储，当使用这个方法调用接口后，\n  // 后续所有关于列表属性刷新的接口参数都会带上这些参数\n  // this.refreshData(params)\n  // 这个是刷新列表数据接口，其中params参数是一次性的参数，仅当次方法调用的时候使用\n  // this.queryTableData(params)\n  // 通过此方法可以直接调用接口,示例具体看请求接口那里\n  // this.generalRequest()\n  // 这个方法是列表作为vform的一个组件时可以调用的，能获取当前组件的各种配置信息\n  // this.getWidget()\n  // 获取token的\n  // this.getToken()\n  // \n  // 再介绍常用变量\n  // 这个是列表头部左侧输入框绑定的变量\n  // multiFieldSearch\n  // 选中的table数据\n  // selectList\n  // 获取当前点击按钮的所有配置\n  // btnConfigs\n  // 列表上方搜索区域绑定的表单数据\n  // searchForm\n  // 列表数据\n  // tableData\n  // \n  // \n  // \n  // \n  // \n  // \n  // \n}"
     }
   ],
-  "extraOption.validateFn": [{ label: "校验1", codeExampleVal: "" }]
+  "extraOption.validateFn": [
+    {
+      label: "请求接口(异步函数)",
+      codeExampleVal:
+        "function validate(selectList) { \n  const row = selectList[0] \n  // 直接使用this.generalRequest 请求接口 这是get \n  // this.generalRequest(`/flow/business/${row.id}`, 'get').then(res => { \n  //   console.log(res, 'res') \n  //   // 操作后重新请求列表接口 \n  //   this.queryTableData(); \n  // }); \n \n  // 这是post请求 \n  const ids = this.selectList.map(item => item.id) \n  // 这里请求头如果同名则覆盖默认的请求头 \n  const requestHeaders = { \n    // authorization: 'Bearer eyJh' \n  } \n  const url = 'flow/workbench/myProcessing?pageSize=20&pageNum=1' \n  const data = { \n    enterpriseId: this.enterpriseId, \n    prjId: this?.getPrjInfo?.()?.prjId, \n    ids \n  } \n  // 注意一定要return \n  return this.generalRequest(url, 'post', data, requestHeaders).then(res => { \n    console.log(res, 'res') \n    // 操作后重新请求列表接口 \n    return res.data\n  }); \n} \n"
+    },
+    {
+      label: "普通校验(同步函数)",
+      codeExampleVal:
+        "function validate(selectList) { \n  if (selectList.length !== 1) { \n    this.$warn('当前操作只允许操作一条数据') \n    return false \n  } else {\n    return true\n  }\n} \n"
+    }
+  ]
 };
