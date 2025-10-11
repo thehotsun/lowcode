@@ -253,7 +253,7 @@ export default {
       this.$on("refreshTable", this.dispatcher);
     },
     dispatcher(allData, primaryKeyValue) {
-      this.$refs.tableItem.queryTableData(allData);
+      this.$refs.tableItem.expose_refreshData({}, allData);
     },
 
     bindEvents() {

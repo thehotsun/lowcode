@@ -35,7 +35,10 @@ export function getTableAttrs() {
     // 双击关联的按钮ID
     dbClickRelateBtnId: "",
     // 重置按钮的事件
-    resetBtnEvent: ""
+    onResetBtnEvent: "",
+    onInitEvent: "",
+    onBeforeQueryDataEvent: "",
+    onAfterQueryDataEvent: ""
   };
 }
 

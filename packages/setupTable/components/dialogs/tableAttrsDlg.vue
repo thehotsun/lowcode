@@ -9,7 +9,7 @@
     :before-close="handleCloseTableAttrs"
   >
     <div style="min-width: 60px;background: #fff;padding: 10px;">
-      <el-form ref="ruleForm" :model="tableAttrs" :rules="rules" label-width="130px" style="padding-bottom: 20px">
+      <el-form ref="ruleForm" :model="tableAttrs" :rules="rules" label-width="150px" style="padding-bottom: 20px">
         <el-form-item label="基础配置">
           <el-checkbox v-model="tableAttrs.showPagination">分页</el-checkbox>
           <el-checkbox v-model="tableAttrs.isShowIndex">显示序号</el-checkbox>
@@ -156,15 +156,44 @@
           </el-select>
         </el-form-item>
 
-        <el-form-item label="重置按钮事件">
+        <!-- <el-form-item label="重置按钮事件">
           <el-tooltip slot="label" class="item" effect="dark" content="点击重置按钮触发的js脚本，如不填则执行默认行为（清空搜索数据并重新请求表格）" placement="top-start">
             <span style="cursor: pointer;font-size: 14px">重置按钮事件</span><i style="width: 20px; font-size: 14px;" class="el-icon-question"></i>
           </el-tooltip>
-          <el-input v-model="tableAttrs.resetBtnEvent" placeholder="请输入重置按钮事件" @focus="handleShow('resetBtnEvent', '重置按钮事件', $event)"></el-input>
-        </el-form-item>
+          <el-input v-model="tableAttrs.onResetBtnEvent" placeholder="请输入重置按钮事件" @focus="handleShow('onResetBtnEvent', '重置按钮事件', $event)"></el-input>
+        </el-form-item> -->
 
         <el-form-item label="自定义样式" prop="style">
           <el-input v-model="tableAttrs.style" type="textarea" :rows="2" placeholder="请输入整体样式（包括列表、搜索区域和按钮区域）"></el-input>
+        </el-form-item>
+
+        <el-form-item label="onInit">
+          <el-tooltip slot="label" class="item" effect="dark" content="当配置json渲染完毕后执行的初始化事件钩子" placement="top-start">
+            <span style="cursor: pointer;font-size: 14px">onInit</span><i style="width: 20px; font-size: 14px;" class="el-icon-question"></i>
+          </el-tooltip>
+          <el-input v-model="tableAttrs.onInitEvent" placeholder="请输入onInit方法" @focus="handleShow('onInitEvent', 'onInit', $event)"></el-input>
+        </el-form-item>
+
+        <el-form-item label="onBeforeQueryData">
+          <el-tooltip slot="label" class="item" effect="dark" content="请求列表数据之前的事件钩子" placement="top-start">
+            <span style="cursor: pointer;font-size: 14px">onBeforeQueryData</span><i style="width: 20px; font-size: 14px;" class="el-icon-question"></i>
+          </el-tooltip>
+          <el-input
+            v-model="tableAttrs.onBeforeQueryDataEvent"
+            placeholder="请输入onBeforeQueryData方法"
+            @focus="handleShow('onBeforeQueryDataEvent', 'onBeforeQueryData', $event)"
+          ></el-input>
+        </el-form-item>
+
+        <el-form-item label="onAfterQueryData">
+          <el-tooltip slot="label" class="item" effect="dark" content="请求列表数据之后的事件钩子" placement="top-start">
+            <span style="cursor: pointer;font-size: 14px">onAfterQueryData</span><i style="width: 20px; font-size: 14px;" class="el-icon-question"></i>
+          </el-tooltip>
+          <el-input
+            v-model="tableAttrs.onAfterQueryDataEvent"
+            placeholder="请输入onAfterQueryData方法"
+            @focus="handleShow('onAfterQueryDataEvent', 'onAfterQueryData', $event)"
+          ></el-input>
         </el-form-item>
 
         <!-- <el-form-item label="列表自定义样式" prop="elTableStyle">

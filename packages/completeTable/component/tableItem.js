@@ -712,6 +712,9 @@ export default {
         }
       } else {
         this.composeData();
+        if (this.tableAttrs.onInitEvent) {
+          str2Fn(this.tableAttrs.onInitEvent).call(this);
+        }
         try {
           // 有些参数通过sessionStorage传递
           var jumpParams = JSON.parse(sessionStorage.getItem("lowcodeTableThisPageJumpParams"));
@@ -955,8 +958,8 @@ export default {
 
     handleFilterReset() {
       if (this.previewMode || this.tableDisbaled) return;
-      if (this.tableAttrs.resetBtnEvent) {
-        str2Fn(this.tableAttrs.resetBtnEvent).call(this, cloneDeep);
+      if (this.tableAttrs.onResetBtnEvent) {
+        str2Fn(this.tableAttrs.onResetBtnEvent).call(this, cloneDeep);
       } else {
         this.handleReset();
       }
@@ -1078,10 +1081,17 @@ export default {
       if (!this.isProjectRoute) {
         delete params.prjId;
       }
-      const { isTree, dataTransitionFn, dataTransitionParentField, dataTransitionCurField, showPagination } = this.tableAttrs;
+      const { isTree, dataTransitionFn, dataTransitionParentField, dataTransitionCurField, showPagination, onBeforeQueryDataEvent, onAfterQueryDataEvent } = this.tableAttrs;
+      if (onBeforeQueryDataEvent) {
+        const isContinue = str2Fn(onBeforeQueryDataEvent).call(this, params);
+        if (isContinue === false) return;
+      }
       return (showPagination ? this.requestTablePaginationData(params, this.page, this.listPageId) : this.requestTableData(params, this.listPageId))
         .then(res => {
           if (res.result === "0") {
+            if (onAfterQueryDataEvent) {
+              str2Fn(onAfterQueryDataEvent).call(this, params, res.data);
+            }
             if (isReturn) {
               return res.data;
             } else {
@@ -2124,6 +2134,7 @@ export default {
         btnConfigs: { tableId }
       } = this;
       if (tableId) {
+        this.curDialogCompRef = "nestedTable";
         return <complete-table ref="nestedTable" listPageIdProp={tableId} rawRelateIdProp="notVerify"></complete-table>;
       }
     },
