@@ -129,7 +129,8 @@ export default {
           if (res.result === "0") {
             let data = res.data;
             if (isDataModel) {
-              if (Object.keys(data[0] || {}).includes("id", "pid")) {
+              const keys = Object.keys(data[0] || {});
+              if (keys.includes("id") && keys.includes("pid")) {
                 data = arrayToTree(data);
               } else {
                 console.warn("当前接口返回的对象缺失id和pid字段！重组为树状结构失败");
@@ -138,7 +139,7 @@ export default {
             if (isReturn) {
               return data;
             } else {
-              this.treeData = res.data;
+              this.treeData = data;
             }
           } else {
             this.treeData = [];
