@@ -138,7 +138,7 @@ export default {
     },
     // 隐藏默认搜索刷新等功能区
     hiddenDefaultArea() {
-      return this.tableAttrs?.hiddenDefaultArea || false;
+      return this.filterTableOptions?.length ? this.tableAttrs?.hiddenDefaultArea : true;
     },
 
     // 处理分页且属于本地请求数据的情况
@@ -2634,6 +2634,90 @@ export default {
       }
 
       return true;
+    },
+    renderLeftBtns() {
+      const { showBtns, leftBtnRegularOptions, handleBtnClick } = this;
+      if (showBtns && leftBtnRegularOptions?.[0].formItem.length) {
+        return <base-render-regular ref="leftBtnForm" render-options={leftBtnRegularOptions} on={{ btnClick: handleBtnClick }} />;
+      }
+      return <div class="height_0">&nbsp;</div>;
+    },
+    renderRightBtns() {
+      const { showBtns, rightBtnRegularOptions, handleBtnClick } = this;
+      if (showBtns && rightBtnRegularOptions?.[0].formItem.length) {
+        return <base-render-regular ref="rightBtnForm" style="margin-right: 8px;" render-options={rightBtnRegularOptions} on={{ btnClick: handleBtnClick }} />;
+      }
+      return null;
+    },
+    renderOperateArea() {
+      const {
+        hiddenDefaultArea,
+        multiFieldSearch,
+        handleNativeFilter,
+        handleFilter,
+        tableDisbaled,
+        isVformWidget,
+        handleSetting,
+        iconRefresh,
+        iconDisposeDown,
+        fuzzyFieldSearchConfig: { searchFieldList, placeholder }
+      } = this;
+
+      if (hiddenDefaultArea) return "";
+
+      return (
+        <div class="flex">
+          {searchFieldList.length ? (
+            <div class="inlineBlock">
+              <el-input style={{ width: "200px" }} size="mini" v-model={multiFieldSearch} placeholder={placeholder} nativeOnkeydown={handleNativeFilter} clearable>
+                <i slot="prefix" class="el-input__icon el-icon-search"></i>
+              </el-input>
+              <el-button type="primary" size="mini" disabled={tableDisbaled} style="margin-left: 10px" onClick={handleFilter}>
+                搜 索
+              </el-button>
+            </div>
+          ) : null}
+
+          {!isVformWidget && (
+            <div>
+              <i class="el-icon-s-tools i pointer" onClick={handleSetting}></i>
+              <i class="el-icon-refresh-right i pointer" onClick={iconRefresh}></i>
+              <el-dropdown onCommand={iconDisposeDown}>
+                <span class="el-dropdown-link">
+                  <i class="el-icon-download i pointer"></i>
+                </span>
+                <el-dropdown-menu slot="dropdown">
+                  <el-dropdown-item command="curSelect">当前选中</el-dropdown-item>
+                  <el-dropdown-item command="curPage">当前页</el-dropdown-item>
+                  <el-dropdown-item command="all">全部</el-dropdown-item>
+                </el-dropdown-menu>
+              </el-dropdown>
+            </div>
+          )}
+
+          {this.renderPanel()}
+        </div>
+      );
+    },
+    renderPanel() {
+      const { showPanel, panelData, filterFieldChange } = this;
+      return (
+        <div class={["custom", "absolute", showPanel ? "" : "none"]}>
+          <panel data={panelData} on={{ checkedChange: filterFieldChange }} />
+        </div>
+      );
+    },
+    renderHeader() {
+      const { isVformWidget } = this;
+      return (
+        <el-header ref="elHeader" class="flex between relative absolute-header-height">
+          {this.renderLeftBtns()}
+          <div class={["operate", isVformWidget ? "right_0" : ""]}>
+            {this.renderRightBtns()}
+            {this.renderOperateArea()}
+          </div>
+        </el-header>
+      );
     }
   },
 
@@ -2645,10 +2729,6 @@ export default {
       searchForm,
       formOptions,
       attrs,
-      showBtns,
-      iconRefresh,
-      iconDisposeDown,
-      handleBtnClick,
       filterTableOptions,
       selectListHandler,
       tableAttrs,
@@ -2657,17 +2737,9 @@ export default {
       pageSizes,
       handleSizeChange,
       handleCurrentChange,
-      showPanel,
-      panelData,
-      filterFieldChange,
-      handleSetting,
-      handleNativeFilter,
       btnRelateDialogVNode,
       importFileVNode,
       importRefreshVNode,
-      fuzzyFieldSearchConfig: { searchFieldList, placeholder },
-      handleFilter,
-      handleFilterReset,
       getSelectedData,
       handleGlobalClick,
       handleRowDbClickEmitBtn,
@@ -2680,15 +2752,11 @@ export default {
       tableCellClick,
       localProcessData,
       finalTableData,
-      leftBtnRegularOptions,
-      rightBtnRegularOptions,
       listPageId,
       btnConfigs,
       keyField,
-      hiddenDefaultArea,
       getParams,
-      isVformWidget,
-      tableDisbaled
+      renderHeader
     } = this;
 
     const curPageListeners = localProcessData
@@ -2762,133 +2830,7 @@ export default {
         ) : null}
         <el-main class="main-padding">
           <el-container style="height: 100%">
-            <el-header ref="elHeader" class="flex between relative absolute-header-height">
-              {showBtns && leftBtnRegularOptions?.[0].formItem.length ? (
-                <base-render-regular
-                  ref="btnForm"
-                  render-options={leftBtnRegularOptions}
-                  {...{
-                    on: {
-                      btnClick: handleBtnClick
-                    }
-                  }}
-                ></base-render-regular>
-              ) : (
-                <div>&nbsp;</div>
-              )}
-              <div class={["operate", isVformWidget ? "right_0" : ""]}>
-                {showBtns && rightBtnRegularOptions?.[0].formItem.length ? (
-                  <base-render-regular
-                    ref="btnForm"
-                    style="margin-right: 8px;"
-                    render-options={rightBtnRegularOptions}
-                    {...{
-                      on: {
-                        btnClick: handleBtnClick
-                      }
-                    }}
-                  ></base-render-regular>
-                ) : null}
-                {hiddenDefaultArea ? (
-                  ""
-                ) : (
-                  <div class="flex">
-                    {searchFieldList.length ? (
-                      <div class="inlineBlock">
-                        <el-input
-                          style={{ width: "200px" }}
-                          size="mini"
-                          v-model={this.multiFieldSearch}
-                          placeholder={placeholder}
-                          nativeOnkeydown={handleNativeFilter}
-                          clearable={true}
-                        >
-                          <i slot="prefix" class="el-input__icon el-icon-search"></i>
-                        </el-input>
-                        <el-button
-                          type="primary"
-                          size="mini"
-                          disabled={tableDisbaled}
-                          style="margin-left: 10px"
-                          {...{
-                            on: {
-                              click: handleFilter
-                            }
-                          }}
-                        >
-                          搜 索
-                        </el-button>
-                        {/* <el-button
-                          type=""
-                          size="mini"
-                          disabled={tableDisbaled}
-                          style="margin-left: 10px"
-                          {...{
-                            on: {
-                              click: handleFilterReset
-                            }
-                          }}
-                        >
-                          重 置
-                        </el-button> */}
-                      </div>
-                    ) : null}
-                    {isVformWidget ? (
-                      ""
-                    ) : (
-                      <i
-                        class="el-icon-s-tools i pointer"
-                        {...{
-                          on: {
-                            click: handleSetting
-                          }
-                        }}
-                      ></i>
-                    )}
-
-                    {isVformWidget ? (
-                      ""
-                    ) : (
-                      <i
-                        class="el-icon-refresh-right i pointer"
-                        {...{
-                          on: {
-                            click: iconRefresh
-                          }
-                        }}
-                      ></i>
-                    )}
-
-                    {isVformWidget ? (
-                      ""
-                    ) : (
-                      <el-dropdown oncommand={iconDisposeDown}>
-                        <span class="el-dropdown-link">
-                          <i class="el-icon-download i pointer"></i>
-                        </span>
-                        <el-dropdown-menu slot="dropdown">
-                          <el-dropdown-item command="curSelect">当前选中</el-dropdown-item>
-                          <el-dropdown-item command="curPage">当前页</el-dropdown-item>
-                          <el-dropdown-item command="all">全部</el-dropdown-item>
-                        </el-dropdown-menu>
-                      </el-dropdown>
-                    )}
-
-                    <div class={["custom", "absolute", showPanel ? "" : "none"]}>
-                      <panel
-                        data={panelData}
-                        {...{
-                          on: {
-                            checkedChange: filterFieldChange
-                          }
-                        }}
-                      ></panel>
-                    </div>
-                  </div>
-                )}
-              </div>
-            </el-header>
-
+            {renderHeader()}
             <el-main>
               <base-render-table
                 ref="table"
