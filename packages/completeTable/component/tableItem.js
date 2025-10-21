@@ -1478,7 +1478,7 @@ export default {
                   return false;
                 }
               };
-              const externalParams = this.formatSelectListParams({ deliverySelectList, deliverySelectListFields }, null, "useJoin");
+              const externalParams = this.formatSelectListParams({ deliverySelectList, deliverySelectListFields }, rowData, "useJoin");
               // 构造目标URL（保持原有逻辑）
               let targetUrl = isAbsoluteUrl(openUrl) ? openUrl : `${window.location.origin}${openUrl.startsWith("/") ? "" : "/"}${openUrl}`;
               // 附加参数到所有场景的URL
