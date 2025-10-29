@@ -2650,7 +2650,7 @@ export default {
       return null;
     },
     renderOperateArea() {
-      const {
+      let {
         hiddenDefaultArea,
         multiFieldSearch,
         handleNativeFilter,
@@ -2669,7 +2669,7 @@ export default {
         <div class="flex">
           {searchFieldList.length ? (
             <div class="inlineBlock">
-              <el-input style={{ width: "200px" }} size="mini" v-model={multiFieldSearch} placeholder={placeholder} nativeOnkeydown={handleNativeFilter} clearable>
+              <el-input style={{ width: "200px" }} size="mini" v-model={this.multiFieldSearch} placeholder={placeholder} nativeOnkeydown={handleNativeFilter} clearable>
                 <i slot="prefix" class="el-input__icon el-icon-search"></i>
               </el-input>
               <el-button type="primary" size="mini" disabled={tableDisbaled} style="margin-left: 10px" onClick={handleFilter}>
