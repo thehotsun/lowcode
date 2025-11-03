@@ -42,6 +42,7 @@
                 <span style="margin-left: 10px">
                   快捷按钮：
                 </span>
+                <el-button type="text" style="color: #606266;" @click="setColor('#606266')">基础-黑色</el-button>
                 <el-button type="text" style="color: #409eff;" @click="setColor('#409eff')">主要-蓝色</el-button>
                 <el-button type="text" style="color: #67c23a;" @click="setColor('#67c23a')">成功-绿色</el-button>
                 <el-button type="text" style="color: #e6a23c;" @click="setColor('#e6a23c')">警告-橙色</el-button>

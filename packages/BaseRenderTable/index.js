@@ -190,7 +190,7 @@ export default {
               cellOptions[`${contentTextAttr.iconPosition}TextClass`] = contentTextAttr.iconName;
               cellOptions[`${contentTextAttr.iconPosition}TextStyle`] = `${style};${contentTextAttr.iconStyle}`;
             }
-            cellOptions.style = `${style};${contentTextAttr.textStyle}`;
+            cellOptions.style = `${style};flex: 1; overflow: hidden;white-space: nowrap; text-overflow: ellipsis;${contentTextAttr.textStyle}`;
             return this.cellRender(row, cellOptions);
           });
       } else {
@@ -281,7 +281,7 @@ export default {
       } else {
         return (
           <div
-            style="display: inline-block;"
+            style="display: flex;align-items: center;"
             {...{
               on: finalWrapListeners
             }}
