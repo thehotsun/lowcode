@@ -21,7 +21,8 @@ import {
   setEmptyTableData,
   arrayToTree,
   limitShowWord,
-  appendParamsToUrl
+  appendParamsToUrl,
+  parseValue
 } from "../../../utils";
 import { convertDynaticData, disposeParams } from "../../../utils/interfaceParams";
 import { cloneDeep, omit, merge, isEmpty, union } from "lodash";
@@ -82,7 +83,8 @@ function InstanceData() {
     // tabledata更改后，需要触发的一系列操作
     tableDataChangeQueue: [],
     // 当前高亮行
-    currentSelectedRow: null
+    currentSelectedRow: null,
+    searchFormValueParsers: []
   };
 }
 
@@ -884,45 +886,47 @@ export default {
     },
 
     // 由数据组成searchFrom
-    setFromField(source, fieldCode, formOptions, searchWidgetName) {
-      this.$set(source, fieldCode, getWidgetDefaultVal(formOptions, searchWidgetName));
+    setFormField(source, fieldCode, formOptions, searchWidgetName) {
+      // 为1代表数值范围，后端要求是数字，前端需要在提交的时候再转换一遍
+      if (formOptions?.searchWidgetType === 1) {
+        this.$set(source, `${fieldCode}Start`, "");
+        this.$set(source, `${fieldCode}End`, "");
+        this.searchFormValueParsers.push({
+          searchFormField: `${fieldCode}Start`,
+          targetType: "number"
+        });
+        this.searchFormValueParsers.push({
+          searchFormField: `${fieldCode}End`,
+          targetType: "number"
+        });
+      } else {
+        this.$set(source, fieldCode, getWidgetDefaultVal(formOptions, searchWidgetName));
+      }
     },
 
     // 设置searchFrom和装配fromOptions
     composeFromOptions(tableData) {
       this.showSearchFrom = false;
       if (!tableData || !tableData.length) return [];
-      const { setFromField } = this;
+      const { setFormField } = this;
       let formOptions = [];
       const length = tableData.length;
       tableData.map((item, index) => {
         const searchWidgetName = searchWidget.find(widgetitem => widgetitem.id === item.searchWidget)?.tagName;
         // 只有搜索控件有值且开启了搜索项，才会添加到options中
         if (searchWidgetName && item.isSearchWidget) {
-          // this.$set(this.searchForm, item.fieldCode, '');
-          setFromField(this.searchForm, item.fieldCode, item.searchWidgetConfig, searchWidgetName);
+          setFormField(this.searchForm, item.fieldCode, item.searchWidgetConfig, searchWidgetName);
           const options = getWidgetOptions(searchWidgetName, item);
           const finalOptions = merge(options, depthFirstSearchWithRecursive(item.searchWidgetConfig));
-          // 添加搜索表单得change事件，用以触发更新列表
-          if (finalOptions.listeners) {
-            const fn = finalOptions.listeners.change;
-            const changeFn = (...argus) => {
-              this.handleFilter(...argus);
-              fn && fn.call(this, ...argus);
-            };
-            changeFn.isWrap = true;
-            finalOptions.listeners.change = changeFn;
+          if (searchWidgetName === "el-input-range") {
+            this.addEventListener(finalOptions.child[0]);
+            this.addEventListener(finalOptions.child[2]);
           } else {
-            const changeFn = (...argus) => {
-              this.handleFilter(...argus);
-            };
-            changeFn.isWrap = true;
-            finalOptions.listeners = {
-              change: changeFn
-            };
+            this.addEventListener(finalOptions);
           }
           formOptions.push(finalOptions);
         }
+
         // 如果循环到最后一个且存在其他筛选项，则对formOptions通过sortNumb进行排序，复制一份最原始的form,添加筛选和重置按钮
         if (length - 1 === index && formOptions.length) {
           this.rawSearchForm = cloneDeep(this.searchForm);
@@ -944,6 +948,27 @@ export default {
           formItem: formOptions
         }
       ];
+    },
+
+    addEventListener(finalOptions) {
+      if (finalOptions.listeners) {
+        // 添加搜索表单得change事件，用以触发更新列表
+        const fn = finalOptions.listeners.change;
+        const changeFn = (...argus) => {
+          this.handleFilter(...argus);
+          fn && fn.call(this, ...argus);
+        };
+        changeFn.isWrap = true;
+        finalOptions.listeners.change = changeFn;
+      } else {
+        const changeFn = (...argus) => {
+          this.handleFilter(...argus);
+        };
+        changeFn.isWrap = true;
+        finalOptions.listeners = {
+          change: changeFn
+        };
+      }
     },
 
     handleFilter() {
@@ -1054,6 +1079,11 @@ export default {
           if (searchWidgetType === 4 && this.searchForm[formField]?.length === 2) {
             extraParams[`${formField}Start`] = this.searchForm[formField][0] || "";
             extraParams[`${formField}End`] = this.searchForm[formField][1] || "";
+          }
+          if (this.searchFormValueParsers.length) {
+            this.searchFormValueParsers.map(item => {
+              extraParams[item.searchFormField] = parseValue(this.searchForm[item.searchFormField], item.targetType);
+            });
           }
         });
       }

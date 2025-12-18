@@ -316,7 +316,7 @@ export default {
         const searchWidgetName = searchWidget.find(widgetitem => widgetitem.id === item.searchWidget)?.tagName;
         // 只有搜索控件有值且开启了搜索项，才会添加到options中
         if (searchWidgetName && item.isSearchWidget) {
-          this.setFromField(this.searchFrom, item.fieldCode, item.searchWidgetConfig, searchWidgetName);
+          this.setFormField(this.searchFrom, item.fieldCode, item.searchWidgetConfig, searchWidgetName);
           const options = getWidgetOptions(searchWidgetName, item);
           // 给formitem加个key，因为只有设计区可以拖拽排序，防止渲染错乱
           options.formItemAttrs.key = Math.random();
@@ -342,8 +342,13 @@ export default {
     },
 
     // 由数据组成searchFrom
-    setFromField(source, fieldCode, formOptions, searchWidgetName) {
-      this.$set(source, fieldCode, getWidgetDefaultVal(formOptions, searchWidgetName));
+    setFormField(source, fieldCode, formOptions, searchWidgetName) {
+      if (formOptions?.searchWidgetType === 1) {
+        this.$set(source, `${fieldCode}Start`, "");
+        this.$set(source, `${fieldCode}End`, "");
+      } else {
+        this.$set(source, fieldCode, getWidgetDefaultVal(formOptions, searchWidgetName));
+      }
     },
 
     requestTableConfig() {

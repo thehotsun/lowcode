@@ -73,6 +73,50 @@ export function getElInputNumberConfig() {
   });
 }
 
+export function getElInputRangeConfig(item) {
+  const tagAttrs = {
+    label: "请输入",
+    type: "number",
+    size: "mini",
+    placeholder: item?.searchWidgetConfig?.tagAttrs?.placeholder || "请输入"
+    // 注意不要写为驼峰形式
+    // 'show-password': true,
+  };
+  return composeConfig({
+    customAttr: {
+      child: [
+        {
+          formField: item.fieldCode + "Start",
+          tagName: "el-input",
+          tagAttrs,
+          wrapDivStyle: {
+            display: "inline-block"
+          }
+        },
+        {
+          formField: "",
+          tagName: "span",
+          tagAttrs: {},
+          contentText: "——",
+          wrapDivStyle: {
+            display: "inline-block",
+            padding: "0 10px",
+            color: "#ccc"
+          }
+        },
+        {
+          formField: item.fieldCode + "End",
+          tagName: "el-input",
+          tagAttrs,
+          wrapDivStyle: {
+            display: "inline-block"
+          }
+        }
+      ]
+    }
+  });
+}
+
 export function getElSelectConfig() {
   const tagAttrs = {
     placeholder: "请选择",

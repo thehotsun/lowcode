@@ -36,11 +36,11 @@ export const searchWidget = [
     tagName: "el-input",
     sqlType: "input"
   },
-  // {
-  //   id: 1,
-  //   cnName: '计数器',
-  //   tagName: 'el-input-number',
-  // },
+  {
+    id: 1,
+    cnName: "数值范围",
+    tagName: "el-input-range"
+  },
   {
     id: 6,
     cnName: "字典选择器",

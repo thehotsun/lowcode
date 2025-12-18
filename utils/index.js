@@ -4,7 +4,8 @@ import {
   getElInputConfig,
   getElSelectConfig,
   getElCascaderConfig,
-  getElInputNumberConfig
+  getElInputNumberConfig,
+  getElInputRangeConfig
 } from "../baseConfig/widgetBaseConfig";
 
 import { searchWidget } from "../baseConfig/tableSelectConfigs";
@@ -13,7 +14,7 @@ import { requestTypeList } from "../baseConfig/btnBaseConfig";
 import { pickBy, merge, isObject } from "lodash";
 
 export function setPlaceholder(tagName, fieldName) {
-  const inputs = ["el-input", "el-input-number"];
+  const inputs = ["el-input", "el-input-number", "el-input-range"];
   return `请${inputs.includes(tagName) ? "输入" : "选择"}${fieldName}`;
 }
 
@@ -34,6 +35,8 @@ export function getWidgetOptions(searchWidgetName, item) {
       return completeFromItemOptions(getElInputConfig(), item);
     case "el-input-number":
       return completeFromItemOptions(getElInputNumberConfig(), item);
+    case "el-input-range":
+      return completeFromItemOptions(getElInputRangeConfig(item), item);
     case "el-select":
       return completeFromItemOptions(getElSelectConfig(), item);
     case "el-date-picker":
@@ -390,6 +393,7 @@ export function getSetupFormOptions(searchWidgetName) {
   ];
   switch (searchWidgetName) {
     case "el-input":
+    case "el-input-range":
       options = [
         getSetupFromSingleConfig("控件类型：", "请选择控件类型", "", {
           style: "width: 350px",
@@ -540,6 +544,19 @@ export function getSetupForm(searchWidgetName) {
         },
         sortNumb: 0
       };
+      break;
+    case "el-input-range":
+      form = {
+        // relateOtherField: [],
+        formItemAttrs: {
+          label: ""
+        },
+        tagAttrs: {
+          placeholder: ""
+        },
+        sortNumb: 0
+      };
+
       break;
     case "el-input-number":
     case "el-date-picker":
@@ -827,7 +844,7 @@ export function arrayToTree(data, idField = "id", parentField = "pid") {
   const root = [];
   data.forEach(el => {
     // 如果是根节点（没有父节点），将其加入根节点数组
-    if ([null, 0, '0'].includes(el[parentField])) {
+    if ([null, 0, "0"].includes(el[parentField])) {
       root.push(el);
       return;
     }
@@ -930,6 +947,65 @@ export function appendParamsToUrl(url, params) {
   }
 }
 
+// 1. 定义类型解析器（parsers）
+const valueParsers = {
+  string: val => String(val),
+
+  number: val => {
+    const num = Number(val);
+    return isNaN(num) ? 0 : num; // 可根据需求改为返回 null 或抛错
+  },
+
+  boolean: val => {
+    if (typeof val === "string") {
+      return ["true", "1", "yes"].includes(val.toLowerCase());
+    }
+    return Boolean(val);
+  },
+
+  array: (val, delimiter = ",") => {
+    if (Array.isArray(val)) return val;
+    if (val == null || val === "") return [];
+    if (typeof val !== "string") return [val];
+    return val
+      .split(delimiter)
+      .map(v => v.trim())
+      .filter(v => v !== "");
+  },
+
+  json: val => {
+    if (val == null) return null;
+    if (typeof val === "object" && !Array.isArray(val)) return val;
+    if (typeof val !== "string") return null;
+    try {
+      return JSON.parse(val);
+    } catch (e) {
+      return null; // 或可选：console.warn('Invalid JSON:', val); return {};
+    }
+  }
+
+  // 可继续扩展其他类型，例如：
+  // date: (val) => new Date(val),
+  // bigint: (val) => BigInt(val),
+};
+
+// 3. 通用转换函数
+export function parseValue(value, type) {
+  if (value == null || value === "") {
+    // 可根据需求返回 undefined / null / 原值
+    return value;
+  }
+
+  const parser = valueParsers[type];
+  if (parser) {
+    return parser(value);
+  }
+
+  // 未知类型：返回原值（或抛错）
+  console.warn(`Unsupported type: "${type}"`);
+  return value;
+}
+
 export default {
   setPlaceholder,
   completeFromItemOptions,
@@ -963,5 +1039,6 @@ export default {
   findInTree,
   mergeAndClean,
   limitShowWord,
-  appendParamsToUrl
+  appendParamsToUrl,
+  parseValue
 };
