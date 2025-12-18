@@ -39,7 +39,8 @@ export const searchWidget = [
   {
     id: 1,
     cnName: "数值范围",
-    tagName: "el-input-range"
+    tagName: "el-input-range",
+    sqlType: "el-input-range"
   },
   {
     id: 6,
