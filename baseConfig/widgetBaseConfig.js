@@ -89,15 +89,17 @@ export function getElInputRangeConfig(item) {
           formField: item.fieldCode + "Start",
           tagName: "el-input",
           tagAttrs,
+          className: "noappearance",
           wrapDivStyle: {
-            display: "inline-block"
+            display: "inline-block",
+            width: "100px"
           }
         },
         {
           formField: "",
           tagName: "span",
           tagAttrs: {},
-          contentText: "——",
+          contentText: "-",
           wrapDivStyle: {
             display: "inline-block",
             padding: "0 10px",
@@ -108,8 +110,10 @@ export function getElInputRangeConfig(item) {
           formField: item.fieldCode + "End",
           tagName: "el-input",
           tagAttrs,
+          className: "noappearance",
           wrapDivStyle: {
-            display: "inline-block"
+            display: "inline-block",
+            width: "100px"
           }
         }
       ]
