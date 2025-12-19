@@ -22,7 +22,8 @@ import {
   arrayToTree,
   limitShowWord,
   appendParamsToUrl,
-  parseValue
+  parseValue,
+  isValid
 } from "../../../utils";
 import { convertDynaticData, disposeParams } from "../../../utils/interfaceParams";
 import { cloneDeep, omit, merge, isEmpty, union } from "lodash";
@@ -889,8 +890,8 @@ export default {
     setFormField(source, fieldCode, formOptions, searchWidgetName) {
       // 为1代表数值范围，后端要求是数字，前端需要在提交的时候再转换一遍
       if (formOptions?.searchWidgetType === 1) {
-        this.$set(source, `${fieldCode}Start`, "");
-        this.$set(source, `${fieldCode}End`, "");
+        this.$set(source, `${fieldCode}Start`, null);
+        this.$set(source, `${fieldCode}End`, null);
         this.searchFormValueParsers.push({
           searchFormField: `${fieldCode}Start`,
           targetType: "number"
@@ -919,8 +920,9 @@ export default {
           const options = getWidgetOptions(searchWidgetName, item);
           const finalOptions = merge(options, depthFirstSearchWithRecursive(item.searchWidgetConfig));
           if (searchWidgetName === "el-input-range") {
-            this.addEventListener(finalOptions.child[0]);
-            this.addEventListener(finalOptions.child[2]);
+            const triggerConditionFn = () => isValid(this.searchForm[`${item.fieldCode}Start`]) && isValid(this.searchForm[`${item.fieldCode}End`]);
+            this.addEventListener(finalOptions.child[0], triggerConditionFn);
+            this.addEventListener(finalOptions.child[2], triggerConditionFn);
           } else {
             this.addEventListener(finalOptions);
           }
@@ -950,19 +952,27 @@ export default {
       ];
     },
 
-    addEventListener(finalOptions) {
+    addEventListener(finalOptions, triggerConditionFn) {
       if (finalOptions.listeners) {
         // 添加搜索表单得change事件，用以触发更新列表
         const fn = finalOptions.listeners.change;
         const changeFn = (...argus) => {
-          this.handleFilter(...argus);
+          if (triggerConditionFn) {
+            triggerConditionFn() && this.handleFilter(...argus);
+          } else {
+            this.handleFilter(...argus);
+          }
           fn && fn.call(this, ...argus);
         };
         changeFn.isWrap = true;
         finalOptions.listeners.change = changeFn;
       } else {
         const changeFn = (...argus) => {
-          this.handleFilter(...argus);
+          if (triggerConditionFn) {
+            triggerConditionFn() && this.handleFilter(...argus);
+          } else {
+            this.handleFilter(...argus);
+          }
         };
         changeFn.isWrap = true;
         finalOptions.listeners = {

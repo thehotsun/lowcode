@@ -1006,6 +1006,10 @@ export function parseValue(value, type) {
   return value;
 }
 
+export function isValid(v) {
+  return v !== "" && v !== null && v !== undefined;
+}
+
 export default {
   setPlaceholder,
   completeFromItemOptions,
@@ -1040,5 +1044,6 @@ export default {
   mergeAndClean,
   limitShowWord,
   appendParamsToUrl,
-  parseValue
+  parseValue,
+  isValid
 };

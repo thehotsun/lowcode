@@ -344,8 +344,8 @@ export default {
     // 由数据组成searchFrom
     setFormField(source, fieldCode, formOptions, searchWidgetName) {
       if (formOptions?.searchWidgetType === 1) {
-        this.$set(source, `${fieldCode}Start`, "");
-        this.$set(source, `${fieldCode}End`, "");
+        this.$set(source, `${fieldCode}Start`, null);
+        this.$set(source, `${fieldCode}End`, null);
       } else {
         this.$set(source, fieldCode, getWidgetDefaultVal(formOptions, searchWidgetName));
       }
