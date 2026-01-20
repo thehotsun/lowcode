@@ -1,7 +1,5 @@
 export function disposeParams(requestUrl, requestType, requestFixedParams, externalParams = {}) {
   const { params = [], data = [], headers = [] } = requestFixedParams;
-  console.log(requestFixedParams, "requestFixedParams");
-
   let finalUrl = requestUrl;
   if (params?.length) {
     const finalParams = {};
@@ -115,6 +113,7 @@ function processValue(value, context = {}, that) {
   if (typeof value === "object") {
     const result = {};
     for (const key in value) {
+      // eslint-disable-next-line no-prototype-builtins
       if (value.hasOwnProperty(key)) {
         result[key] = processValue(value[key], context, that); // 递归处理对象的每个值
       }

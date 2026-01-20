@@ -316,8 +316,6 @@ export default {
       };
       this.btnRegularOptions?.[0].formItem?.map(item => {
         if (item?.extraOption?.btnPosition !== "right") {
-          console.log("78787878", item);
-
           leftBtnRegularOptions.formItem.push(item);
         }
       });
@@ -782,6 +780,8 @@ export default {
         obj.prop = item.random;
       }
       obj.align = align.find(alignitem => alignitem.id === item.align).value;
+      // 表头直接全部居中
+      obj["header-align"] = "center";
       obj["min-width"] = item.columnWidth;
       obj.sortable = !!item.sort;
       obj["show-overflow-tooltip"] = item["show-overflow-tooltip"];
@@ -1029,7 +1029,6 @@ export default {
 
     rowClick(val) {
       this.$emit("rowClick", val);
-      console.log(val);
     },
 
     selectListHandler(val) {
@@ -1855,7 +1854,6 @@ export default {
       let { finalUrl, finalType, finalData, requestHeaders: headers } = disposeParams(requestUrl, requestType, requestFixedParams);
       const baseParams = this.getParams() || {};
       finalData = convertDynaticData(finalData, baseParams, this);
-      console.log(finalData, "finalData");
 
       if (deliverySelectList) {
         let selectListId;
@@ -2568,10 +2566,8 @@ export default {
 
     handleGlobalClick() {
       if (this.showPanel) this.showPanel = false;
-      console.log("handleGlobalClick");
     },
     updateSelectedRow(row) {
-      console.log("updateSelectedRow", row);
       this.currentSelectedRow = row;
     },
 
