@@ -23,7 +23,8 @@ import {
   limitShowWord,
   appendParamsToUrl,
   parseValue,
-  isValid
+  isValid,
+  setDefaultIconName
 } from "../../../utils";
 import { convertDynaticData, disposeParams } from "../../../utils/interfaceParams";
 import { cloneDeep, omit, merge, isEmpty, union } from "lodash";
@@ -1213,11 +1214,12 @@ export default {
       if (this.tableDisbaled) {
         this.setDisabledBtnsByTableDisbaled(config, true);
       }
-      // 处理隐藏按钮逻辑，转为css配置
+      // 处理隐藏按钮逻辑，转为css配置 同时处理如果当前iconName为空，则设置一个默认值
       config.map(btn => {
         if (btn.extraOption.isHidden) {
           btn.style += ";display: none;";
         }
+        setDefaultIconName(btn, ["iconName", "icon"]);
       });
       this.showBtns = true;
 

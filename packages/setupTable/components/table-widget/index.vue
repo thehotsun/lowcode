@@ -74,7 +74,7 @@
 import { getSingleTableData, getTableAttrs } from "/baseConfig/tableBaseConfig";
 import setupBtnConfig from "../setupBtnConfig";
 import singleSetupTable from "../singleSetupTable";
-import { getWidgetOptions, getWidgetDefaultVal, depthFirstSearchWithRecursive } from "../../../../utils";
+import { getWidgetOptions, getWidgetDefaultVal, depthFirstSearchWithRecursive, setDefaultIconName } from "../../../../utils";
 import { searchWidget } from "/baseConfig/tableSelectConfigs";
 import { btnTypeArr } from "/baseConfig/btnBaseConfig.js";
 import { merge } from "lodash";
@@ -550,13 +550,11 @@ export default {
           case "add":
             config.extraOption.dialogTitle = config.tagAttrs.value = "新增";
             config.extraOption.btnType = "add";
-            config.extraOption.iconName = "el-icon-plus";
             config.authorize = "A";
             break;
           case "edit":
             config.extraOption.dialogTitle = config.tagAttrs.value = "编辑";
             config.extraOption.btnType = "edit";
-            config.extraOption.iconName = "el-icon-edit";
             config.extraOption.deliverySelectList = true;
             config.authorize = "U";
             break;
@@ -564,14 +562,12 @@ export default {
             config.extraOption.dialogTitle = config.tagAttrs.value = "查看";
             config.extraOption.btnType = "check";
             config.extraOption.deliverySelectList = true;
-            config.extraOption.iconName = "el-icon-view";
             config.authorize = "V";
             break;
           case "batchDel":
             config.tagAttrs.value = "批量删除";
             config.extraOption.btnType = "batchDel";
             config.extraOption.openType = -1;
-            config.extraOption.iconName = "el-icon-delete";
             config.authorize = "D";
 
             break;
@@ -579,60 +575,53 @@ export default {
             config.tagAttrs.value = "导出";
             config.extraOption.btnType = "download";
             config.extraOption.openType = -1;
-            config.extraOption.iconName = "el-icon-download";
             config.authorize = "E";
             break;
           case "flowDocDownload":
             config.tagAttrs.value = "流程文档导出";
             config.extraOption.btnType = "flowDocDownload";
             config.extraOption.openType = -1;
-            config.extraOption.iconName = "el-icon-download";
             config.authorize = "E";
             break;
           case "formDownload":
             config.tagAttrs.value = "表单打印";
             config.extraOption.btnType = "formDownload";
             config.extraOption.openType = -1;
-            config.extraOption.iconName = "el-icon-printer";
             config.authorize = "E";
             break;
           case "import":
             config.tagAttrs.value = "导入";
             config.extraOption.btnType = "import";
             config.extraOption.openType = -1;
-            config.extraOption.iconName = "el-icon-upload2";
             config.authorize = "I";
             break;
           case "importRefresh":
             config.tagAttrs.value = "导入更新";
             config.extraOption.btnType = "importRefresh";
             config.extraOption.openType = -1;
-            config.extraOption.iconName = "el-icon-upload";
             config.authorize = "U";
             break;
           case "refresh":
             config.tagAttrs.value = "刷新";
             config.extraOption.btnType = "refresh";
             config.extraOption.openType = -1;
-            config.extraOption.iconName = "el-icon-refresh-right";
             config.authorize = "defaultShow";
             break;
           case "qrCode":
             config.tagAttrs.value = "生成二维码";
             config.extraOption.btnType = "qrCode";
             config.extraOption.openType = -1;
-            config.extraOption.iconName = "el-icon-camera";
             config.authorize = "E";
             break;
           case "custom":
             config.extraOption.btnType = "custom";
             config.extraOption.openType = "";
             config.extraOption.deliverySelectList = false;
-            config.extraOption.iconName = "el-icon-plus";
             break;
           default:
             break;
         }
+        setDefaultIconName(config, ['iconName']);
         // 设置装配好的按钮form
         this.$refs.setupBtnConfig.expose_setBtnConfigFrom(config);
       });

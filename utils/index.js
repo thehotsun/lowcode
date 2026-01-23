@@ -1010,6 +1010,70 @@ export function isValid(v) {
   return v !== "" && v !== null && v !== undefined;
 }
 
+export function setDefaultIconName(config, fieldNames = []) {
+  // 如果 config.extraOption 不存在，直接返回
+  if (!config?.extraOption) return;
+  // 如果已经有 iconName，直接返回
+  if (config.extraOption.iconName) return;
+
+  const btnType = config.extraOption.btnType;
+  let iconName;
+  switch (btnType) {
+    case "add":
+      iconName = config.extraOption.iconName || "el-icon-plus";
+      break;
+    case "edit":
+      iconName = config.extraOption.iconName || "el-icon-edit";
+      break;
+    case "check":
+      iconName = config.extraOption.iconName || "el-icon-view";
+      break;
+    case "batchDel":
+      iconName = config.extraOption.iconName || "el-icon-delete";
+      break;
+    case "download":
+    case "flowDocDownload":
+      iconName = config.extraOption.iconName || "el-icon-download";
+      break;
+    case "formDownload":
+      iconName = config.extraOption.iconName || "el-icon-printer";
+      break;
+    case "import":
+      iconName = config.extraOption.iconName || "el-icon-upload2";
+      break;
+    case "importRefresh":
+      iconName = config.extraOption.iconName || "el-icon-upload";
+      break;
+    case "refresh":
+      iconName = config.extraOption.iconName || "el-icon-refresh-right";
+      break;
+    case "qrCode":
+      iconName = config.extraOption.iconName || "el-icon-camera";
+      break;
+    case "custom":
+      iconName = config.extraOption.iconName || "el-icon-plus";
+      break;
+  }
+  if (!iconName) return;
+  fieldNames.map(fieldName => {
+    if (fieldName === "iconName") {
+      config.extraOption.iconName = iconName;
+    }
+    if (fieldName === "icon") {
+      if (config.extraOption.iconPosition === "front") {
+        config.tagAttrs.icon = iconName;
+        config.contentTextBehindTagOptions = {};
+      } else {
+        config.tagAttrs.icon = "";
+        config.contentTextBehindTagOptions = {
+          tagName: "i",
+          className: iconName
+        };
+      }
+    }
+  });
+}
+
 export default {
   setPlaceholder,
   completeFromItemOptions,
@@ -1045,5 +1109,6 @@ export default {
   limitShowWord,
   appendParamsToUrl,
   parseValue,
-  isValid
+  isValid,
+  setDefaultIconName
 };
