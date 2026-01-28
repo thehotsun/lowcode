@@ -751,7 +751,7 @@ export function BtnConfigs() {
     importFileCompRelateTableName: "",
     formId: "",
     tableId: "",
-    closeOnPressEscape: false,
+    closeOnPressEscape: true,
     dialogTitle: "表单",
     dialogWidth: "",
     dialogHeight: "",

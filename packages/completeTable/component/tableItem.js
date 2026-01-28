@@ -1667,6 +1667,9 @@ export default {
       } = this;
       const mainFieldValue = (row || this.getFirstSelectedData())?.[this.keyField];
       if (btnType === "check") {
+        if (!mainFieldValue) {
+          return this.$warn("请至少勾选一条要处理的数据！");
+        }
         const res = await this.generalRequest(`/flow/business/${mainFieldValue}`, "get");
         const params = {
           ...res.data,
@@ -1742,6 +1745,7 @@ export default {
           this.btnConfigs.formId = relateFrom;
           this.onlyRead = btnType === "check";
           this.btnConfigs.dialogTitle = dialogTitle || (btnType === "check" ? "查看" : "编辑");
+          this.btnConfigs.closeOnPressEscape = this.onlyRead ? true : this.btnConfigs.closeOnPressEscap;
           break;
         default:
           break;
@@ -1754,6 +1758,11 @@ export default {
       this.btnConfigs.tableId = relateTable;
       this.onlyRead = true;
       this.btnConfigs.dialogTitle = dialogTitle || (btnType === "check" ? "查看" : "编辑");
+      if (["check", "edit"].includes(btnType)) {
+        if (!(rowData || this.getFirstSelectedData())) {
+          return this.$warn("请至少勾选一条要处理的数据！");
+        }
+      }
       await this.$nextTick();
       this.$refs.nestedTable.init(false, null, { externalParams });
     },
@@ -1919,11 +1928,14 @@ export default {
         params[this.keyField] = [row[this.keyField]];
       } else {
         console.log(command, "command");
+        const selectList = this.getSelectedData();
+        if (selectList.length === 0) {
+          return this.$warn("请至少勾选一条要处理的数据");
+        }
         if ([undefined, null].includes(this.tableData[0][this.keyField])) {
           return this.$warn("主键字段未取到值，请检查数据或重新在列表设计页面重新关联主键！");
         }
 
-        const selectList = this.getSelectedData();
         switch (command) {
           case "curSelect":
             if (!selectList.length) {
