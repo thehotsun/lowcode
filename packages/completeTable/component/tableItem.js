@@ -24,7 +24,8 @@ import {
   appendParamsToUrl,
   parseValue,
   isValid,
-  setDefaultIconName
+  setDefaultIconName,
+  defaultSortMethod
 } from "../../../utils";
 import { convertDynaticData, disposeParams } from "../../../utils/interfaceParams";
 import { cloneDeep, omit, merge, isEmpty, union } from "lodash";
@@ -826,7 +827,7 @@ export default {
       if (item.contentTextAttrArr) obj.contentTextAttrArr = item.contentTextAttrArr;
 
       // 某些函数转换
-      const fnProps = ["sort-method", "formatter", "renderHeader"];
+      const fnProps = ["formatter", "renderHeader"];
       if (obj.filters) {
         fnProps.push("filter-method");
       }
@@ -835,6 +836,7 @@ export default {
           obj[prop] = str2Fn(item[prop]);
         }
       });
+      obj["sort-method"] = item["sort-method"] ? str2Fn(item["sort-method"]) : defaultSortMethod(item.fieldCode);
 
       if (item.children) {
         obj.children = item.children.map(item => this.setSingleTableOptions(item, emptyData));

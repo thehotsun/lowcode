@@ -1074,6 +1074,37 @@ export function setDefaultIconName(config, fieldNames = []) {
   });
 }
 
+export function defaultSortMethod(prop) {
+  return (a, b) => {
+    // ============ 1. 规范化值：判断是否为空（含全空格） + 提取可比较值 ============
+    const normalize = val => {
+      if (val == null) return { isEmpty: true, cmpVal: "" }; // null/undefined
+      if (typeof val === "string") {
+        const trimmed = val.trim();
+        return trimmed === ""
+          ? { isEmpty: true, cmpVal: "" } // 全空格视为“空”
+          : { isEmpty: false, cmpVal: trimmed }; // 非空：trim后参与比较
+      }
+      // 非字符串（数字/布尔等）：转字符串后trim（保留业务语义）
+      return { isEmpty: false, cmpVal: String(val).trim() };
+    };
+
+    const itemA = normalize(a[prop]);
+    const itemB = normalize(b[prop]);
+
+    // ============ 2. 空值统一置顶（升序时空值在最前，降序时在最后） ============
+    if (itemA.isEmpty && itemB.isEmpty) return 0;
+    if (itemA.isEmpty) return -1; // a为空 → a排b前
+    if (itemB.isEmpty) return 1; // b为空 → b排a前
+
+    // ============ 3. 非空值智能比较 ============
+    return itemA.cmpVal.localeCompare(itemB.cmpVal, "zh-CN", {
+      sensitivity: "base", // 忽略大小写、变音符号（A=a, é=e）
+      numeric: true, // 关键！"2" < "10"，"任务2" < "任务10"
+      ignorePunctuation: true // 可选：忽略标点（按需启用）
+    });
+  };
+}
 export default {
   setPlaceholder,
   completeFromItemOptions,
@@ -1110,5 +1141,6 @@ export default {
   appendParamsToUrl,
   parseValue,
   isValid,
-  setDefaultIconName
+  setDefaultIconName,
+  defaultSortMethod
 };
