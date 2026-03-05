@@ -171,11 +171,12 @@ export default {
       });
     },
 
-    requestData({ url = "", type = "get", params = "" }, extraOption) {
+    requestData({ url = "", type, params = "" }, extraOption) {
+      const finalType = typeof type === "string" ? type : type === 0 ? "post" : "get";
       params = str2obj(params);
       const baseParams = this.getParams() || {};
       params = convertDynaticData(params, baseParams, this);
-      this.generalRequest(url, type, params).then(res => {
+      this.generalRequest(url, finalType, params).then(res => {
         res.data
           .sort((a, b) => a.sortNum - b.sortNum)
           .map(item => {
