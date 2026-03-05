@@ -16,7 +16,7 @@
           <el-form ref="form" :model="contentTextAttrForm" label-width="160px">
             <el-form-item label="关联按钮：">
               <el-tooltip slot="label" class="fontSize14" effect="dark" content="此渲染内容的点击行为相当于选中当前行后立刻点击关联的这个按钮" placement="top-start">
-                <span>关联按钮<i style=";width: 20px;" class="el-icon-question"></i>：</span>
+                <span>关联按钮<i style="width: 20px;" class="el-icon-question"></i>：</span>
               </el-tooltip>
               <el-select v-model="contentTextAttrForm.clickEvent.relateBtnId" placeholder="请选择关联按钮" filterable clearable="">
                 <el-option v-for="btnItem in btnConfigArr" :key="btnItem.btnId" :label="btnItem.tagAttrs.value" :value="btnItem.btnId"></el-option>

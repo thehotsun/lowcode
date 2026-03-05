@@ -269,8 +269,11 @@ export default {
     },
 
     searchAreaDrop() {
+      this.sortableInstance?.destroy();
       // 此时找到的元素是要拖拽元素的父容器
       const dom = document.querySelector(".searchArea .el-form .el-row");
+      console.log(dom, "dom");
+      if (!dom) return;
       this.sortableInstance = this.Sortable.create(dom, {
         handle: ".el-form-item__label",
         onEnd: e => {
@@ -299,7 +302,6 @@ export default {
     searchOptionsChange() {
       const tableOptions = this.$refs.singleSetupTable.expose_getTableData();
       this.searchFromOptions = this.composeFromOptions(tableOptions);
-      this.sortableInstance?.destroy();
       this.$nextTick(() => {
         this.searchAreaDrop();
       });
