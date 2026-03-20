@@ -346,6 +346,7 @@ export function getSingleTableData(params = {}) {
     listeners: {},
     contentTextAttrArr: [],
     isCustom: false,
+    dataType: "",
     ...params
   };
 }

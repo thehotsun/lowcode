@@ -64,8 +64,13 @@ module.exports = {
         exclude: /node_modules/
       },
       {
-        test: /.(jpg|png)$/,
-        use: "file-loader"
+        test: /\.(jpg|png)$/,
+        use: {
+          loader: "url-loader",
+          options: {
+            limit: 8192 // 小于 8kb 内联，png 图标一般都很小
+          }
+        }
       },
       {
         test: /\.vue$/,

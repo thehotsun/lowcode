@@ -5,7 +5,7 @@ import panel from "./panel.vue";
 import printTemplateDlg from "./printTemplateDlg.vue";
 import { align, searchWidget } from "../../../baseConfig/tableSelectConfigs";
 import { getTableAttrs, getSingleTableData } from "../../../baseConfig/tableBaseConfig";
-
+import advSearch from "../../../src/assets/advSearch.png";
 import {
   getWidgetOptions,
   getWidgetDefaultVal,
@@ -28,7 +28,7 @@ import {
   defaultSortMethod
 } from "../../../utils";
 import { convertDynaticData, disposeParams } from "../../../utils/interfaceParams";
-import { cloneDeep, omit, merge, isEmpty, union } from "lodash";
+import { cloneDeep, omit, merge, isEmpty, union, debounce } from "lodash";
 
 function InstanceData() {
   return {
@@ -62,6 +62,9 @@ function InstanceData() {
     showBtns: true,
     primaryKeyValue: "",
     showPanel: false,
+    showSqlConditionDlg: false,
+    exprGroupList: [],
+    exprJoinOp: "and",
     // 选中的table数据
     selectList: [],
     panelData: [],
@@ -354,6 +357,9 @@ export default {
     importRefreshComp: {
       default: () => {}
     },
+    SqlConditionDlg: {
+      default: () => {}
+    },
     queryFlowDef: {
       default: () => () => {
         console.warn("inject缺失queryFlowDef!");
@@ -490,6 +496,12 @@ export default {
       }
     },
 
+    requestFieldList: {
+      default: () => () => {
+        console.warn("inject缺失requestFieldList!");
+        return [];
+      }
+    },
     globalModel: {
       default: () => {
         console.warn("inject缺失globalModel！如果不是作为vform组件状态请忽略");
@@ -559,9 +571,34 @@ export default {
   },
   created() {
     this.initTableAttrs();
+    this._debouncedHandleFilter = debounce(function() {
+      if (this.previewMode || this.tableDisbaled) return;
+      this.page.pageNo = 1;
+      if (this.localProcessData) {
+        this.multiFieldSearchCopy = this.multiFieldSearch;
+      } else {
+        this.queryTableData();
+      }
+    }, 300).bind(this);
   },
   mounted() {
     // this.init()
+  },
+  beforeDestroy() {
+    this._debouncedHandleFilter?.cancel();
+    // 清理 addEventListener 注入的 change 监听器
+    if (this.formOptions?.[0]?.formItem) {
+      this.formOptions[0].formItem.forEach(item => {
+        if (item.listeners?.change?.isWrap) {
+          item.listeners.change = null;
+        }
+        item.child?.forEach(child => {
+          if (child.listeners?.change?.isWrap) {
+            child.listeners.change = null;
+          }
+        });
+      });
+    }
   },
 
   errorCaptured(err) {
@@ -705,6 +742,13 @@ export default {
       } else {
         this.parseTableConfig(json);
         await this.$nextTick();
+      }
+      try {
+        const SqlConditionState = JSON.parse(localStorage.getItem(`tableSqlConditionState_${this.listPageId}`));
+        this.exprGroupList = SqlConditionState.exprGroupList;
+        this.exprJoinOp = SqlConditionState.exprJoinOp;
+      } catch (error) {
+        console.error(error);
       }
       if (isPreview) {
         const tableSingleData = {};
@@ -961,9 +1005,9 @@ export default {
         const fn = finalOptions.listeners.change;
         const changeFn = (...argus) => {
           if (triggerConditionFn) {
-            triggerConditionFn() && this.handleFilter(...argus);
+            triggerConditionFn() && this._debouncedHandleFilter(...argus);
           } else {
-            this.handleFilter(...argus);
+            this._debouncedHandleFilter(...argus);
           }
           fn && fn.call(this, ...argus);
         };
@@ -972,9 +1016,9 @@ export default {
       } else {
         const changeFn = (...argus) => {
           if (triggerConditionFn) {
-            triggerConditionFn() && this.handleFilter(...argus);
+            triggerConditionFn() && this._debouncedHandleFilter(...argus);
           } else {
-            this.handleFilter(...argus);
+            this._debouncedHandleFilter(...argus);
           }
         };
         changeFn.isWrap = true;
@@ -983,7 +1027,66 @@ export default {
         };
       }
     },
+    async handleAdvancedFilter() {
+      if (this.tableDisbaled) return;
+      this.showSqlConditionDlg = true;
 
+      // 递归取最底层 children，过滤掉 isCustom 为 true 的字段
+      const flattenLeafFields = list => {
+        const result = [];
+        const traverse = items => {
+          items.forEach(item => {
+            if (item.isCustom) return;
+            if (item.children && item.children.length > 0) {
+              traverse(item.children);
+            } else {
+              result.push(item);
+            }
+          });
+        };
+        traverse(list);
+        return result;
+      };
+
+      const formFields = flattenLeafFields(this.tableConfigJSON);
+
+      // 取第一个字段判断是否有 dataType 属性，没有则调接口补全所有字段
+      const needFetch = formFields.length > 0 && !Object.prototype.hasOwnProperty.call(formFields[0], "dataType");
+      if (needFetch) {
+        const { data: columns } = await this.requestFieldList(this.listPageId);
+        formFields.forEach(field => {
+          const matched = columns.find(col => col.fieldName === field.fieldCode);
+          if (matched) {
+            field.dataType = matched.dataType;
+            field.columnName = field.fieldCode;
+            field.columnDisplayName = field.fieldName;
+          }
+        });
+      } else {
+        formFields.forEach(field => {
+          field.columnName = field.fieldCode;
+          field.columnDisplayName = field.fieldName;
+        });
+      }
+
+      this.$nextTick(() => {
+        this.$refs.SqlConditionDlg.show({
+          formFields,
+          exprGroupList: this.exprGroupList,
+          exprJoinOp: this.exprJoinOp
+        });
+      });
+    },
+    handleAdvancedFilterCb(config) {
+      this.exprGroupList = config.exprGroupList;
+      this.exprJoinOp = config.exprJoinOp;
+      this.queryTableData();
+      try {
+        localStorage.setItem(`tableSqlConditionState_${this.listPageId}`, JSON.stringify(config));
+      } catch (error) {
+        console.error(error);
+      }
+    },
     handleFilter() {
       if (this.previewMode || this.tableDisbaled) return;
       this.page.pageNo = 1;
@@ -1106,6 +1209,8 @@ export default {
         ...extraParams,
         multiFieldSearch: this.multiFieldSearch,
         enterpriseId: this.enterpriseId,
+        advSearchExpr: this.exprGroupList,
+        advSearchExprJoinOp: this.exprJoinOp,
         ...this.externalParams,
         ...this.dynamicExternalParams
       };
@@ -2704,7 +2809,7 @@ export default {
     renderOperateArea() {
       let {
         hiddenDefaultArea,
-        multiFieldSearch,
+        handleAdvancedFilter,
         handleNativeFilter,
         handleFilter,
         tableDisbaled,
@@ -2724,14 +2829,16 @@ export default {
               <el-input style={{ width: "200px" }} size="mini" v-model={this.multiFieldSearch} placeholder={placeholder} nativeOnkeydown={handleNativeFilter} clearable>
                 <i slot="prefix" class="el-input__icon el-icon-search"></i>
               </el-input>
-              <el-button type="primary" size="mini" disabled={tableDisbaled} style="margin-left: 10px" onClick={handleFilter}>
+              <el-button type="primary" size="mini" disabled={tableDisbaled} style="margin-left: 5px" onClick={handleFilter}>
                 搜 索
               </el-button>
             </div>
           ) : null}
 
           {!isVformWidget && (
-            <div>
+            <div class="flex">
+              {/* tableDisbaled 时禁用点击 */}
+              <img src={advSearch} class={`i pointer`} style="width: 20px; height: 20px; margin-left: 5px" onClick={handleAdvancedFilter}></img>
               <i class="el-icon-s-tools i pointer" onClick={handleSetting}></i>
               <i class="el-icon-refresh-right i pointer" onClick={iconRefresh}></i>
               <el-dropdown onCommand={iconDisposeDown}>
@@ -2748,6 +2855,7 @@ export default {
           )}
 
           {this.renderPanel()}
+          {this.renderSqlConditionDlg()}
         </div>
       );
     },
@@ -2759,6 +2867,11 @@ export default {
         </div>
       );
     },
+    renderSqlConditionDlg() {
+      const { showSqlConditionDlg, handleAdvancedFilterCb, SqlConditionDlg } = this;
+      return showSqlConditionDlg ? <SqlConditionDlg ref="SqlConditionDlg" on={{ resolve: handleAdvancedFilterCb }}></SqlConditionDlg> : "";
+    },
+
     renderHeader() {
       const { isVformWidget } = this;
       return (

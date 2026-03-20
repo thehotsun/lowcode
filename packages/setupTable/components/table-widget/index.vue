@@ -374,7 +374,8 @@ export default {
         return {
           ...rawData,
           fieldCode: item.fieldName,
-          fieldName: item.fieldDisplayName
+          fieldName: item.fieldDisplayName,
+          dataType: item.dataType
         };
       });
     },
@@ -390,7 +391,8 @@ export default {
             this.tableData.push({
               ...rawData,
               fieldCode: item.fieldName,
-              fieldName: item.fieldDisplayName
+              fieldName: item.fieldDisplayName,
+              dataType: item.dataType
             });
           }
         });
@@ -409,6 +411,15 @@ export default {
           // 满足三种情况：1) 自定义字段 2) 嵌套 children 匹配 3) 当前字段匹配
           return tableDataItem.isCustom || matchesField(tableDataItem);
         });
+
+        // 取第一个判断，没有 dataType 则补全所有叶子字段
+        const leafFields = this.deliveryFieldsOption.options;
+        if (leafFields.length > 0 && !Object.prototype.hasOwnProperty.call(leafFields[0], 'dataType')) {
+          leafFields.forEach(item => {
+            const matched = list.find(col => col.fieldName === item.fieldCode);
+            if (matched) item.dataType = matched.dataType;
+          });
+        }
       });
     },
 
@@ -621,7 +632,7 @@ export default {
           default:
             break;
         }
-        setDefaultIconName(config, ['iconName']);
+        setDefaultIconName(config, ["iconName"]);
         // 设置装配好的按钮form
         this.$refs.setupBtnConfig.expose_setBtnConfigFrom(config);
       });
