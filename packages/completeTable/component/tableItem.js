@@ -571,21 +571,24 @@ export default {
   },
   created() {
     this.initTableAttrs();
-    this._debouncedHandleFilter = debounce(function() {
-      if (this.previewMode || this.tableDisbaled) return;
-      this.page.pageNo = 1;
-      if (this.localProcessData) {
-        this.multiFieldSearchCopy = this.multiFieldSearch;
-      } else {
-        this.queryTableData();
-      }
-    }, 300).bind(this);
+    this._debouncedHandleFilter = debounce(
+      function() {
+        if (this.previewMode || this.tableDisbaled) return;
+        this.page.pageNo = 1;
+        if (this.localProcessData) {
+          this.multiFieldSearchCopy = this.multiFieldSearch;
+        } else {
+          this.queryTableData();
+        }
+      }.bind(this),
+      300
+    );
   },
   mounted() {
     // this.init()
   },
   beforeDestroy() {
-    this._debouncedHandleFilter?.cancel();
+    this._debouncedHandleFilter?.cancel?.();
     // 清理 addEventListener 注入的 change 监听器
     if (this.formOptions?.[0]?.formItem) {
       this.formOptions[0].formItem.forEach(item => {
@@ -745,8 +748,8 @@ export default {
       }
       try {
         const SqlConditionState = JSON.parse(localStorage.getItem(`tableSqlConditionState_${this.listPageId}`));
-        this.exprGroupList = SqlConditionState.exprGroupList;
-        this.exprJoinOp = SqlConditionState.exprJoinOp;
+        this.exprGroupList = SqlConditionState?.exprGroupList || [];
+        this.exprJoinOp = SqlConditionState?.exprJoinOp || "and";
       } catch (error) {
         console.error(error);
       }
