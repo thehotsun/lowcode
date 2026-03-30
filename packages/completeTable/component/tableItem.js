@@ -2039,9 +2039,6 @@ export default {
       } else {
         console.log(command, "command");
         const selectList = this.getSelectedData();
-        if (selectList.length === 0) {
-          return this.$warn("请至少勾选一条要处理的数据");
-        }
         if ([undefined, null].includes(this.tableData[0][this.keyField])) {
           return this.$warn("主键字段未取到值，请检查数据或重新在列表设计页面重新关联主键！");
         }
@@ -2518,11 +2515,19 @@ export default {
 
     download(params) {
       this.requestDownload(params, this.listPageId).then(response => {
+        let header = response.getHeaders();
+        let disposition = header["content-disposition"];
+        let filename = "";
+        const match = disposition.match(/filename\*=([^']*)''([^;]+)/i);
+
+        if (match) {
+          filename = decodeURIComponent(match[2]);
+        }
         const link = document.createElement("a");
         const blob = response;
         link.style.display = "none";
         link.href = URL.createObjectURL(blob);
-        link.setAttribute("download", "导出表格.xlsx");
+        link.setAttribute("download", `${filename || "导出表格"}.xlsx`);
         console.log(link, "link");
         document.body.appendChild(link);
         link.click();
