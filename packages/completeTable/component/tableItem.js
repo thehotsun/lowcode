@@ -746,13 +746,14 @@ export default {
         this.parseTableConfig(json);
         await this.$nextTick();
       }
-      try {
-        const SqlConditionState = JSON.parse(localStorage.getItem(`tableSqlConditionState_${this.listPageId}`));
-        this.exprGroupList = SqlConditionState?.exprGroupList || [];
-        this.exprJoinOp = SqlConditionState?.exprJoinOp || "and";
-      } catch (error) {
-        console.error(error);
-      }
+      // 原来要求保存最后一次查询状态现在暂时取消
+      // try {
+      //   const SqlConditionState = JSON.parse(localStorage.getItem(`tableSqlConditionState_${this.listPageId}`));
+      //   this.exprGroupList = SqlConditionState?.exprGroupList || [];
+      //   this.exprJoinOp = SqlConditionState?.exprJoinOp || "and";
+      // } catch (error) {
+      //   console.error(error);
+      // }
       if (isPreview) {
         const tableSingleData = {};
         this.composeData(tableSingleData);
@@ -1058,7 +1059,7 @@ export default {
       if (needFetch) {
         const { data: columns } = await this.requestFieldList(this.listPageId);
         formFields.forEach(field => {
-          const matched = columns.find(col => col.fieldName === field.fieldCode);
+          const matched = (columns || []).find(col => col.fieldName === field.fieldCode);
           if (matched) {
             field.dataType = matched.dataType;
             field.columnName = field.fieldCode;
@@ -1084,11 +1085,12 @@ export default {
       this.exprGroupList = config.exprGroupList;
       this.exprJoinOp = config.exprJoinOp;
       this.queryTableData();
-      try {
-        localStorage.setItem(`tableSqlConditionState_${this.listPageId}`, JSON.stringify(config));
-      } catch (error) {
-        console.error(error);
-      }
+      // 原来要求保存最后一次查询状态现在暂时取消
+      // try {
+      //   localStorage.setItem(`tableSqlConditionState_${this.listPageId}`, JSON.stringify(config));
+      // } catch (error) {
+      //   console.error(error);
+      // }
     },
     handleFilter() {
       if (this.previewMode || this.tableDisbaled) return;
