@@ -97,6 +97,18 @@ module.exports = {
             cacheDirectory: true
           }
         }
+      },
+      {
+        test: /\.svg$/i,
+        type: "asset",
+        parser: {
+          dataUrlCondition: {
+            maxSize: 8 * 1024 // 小于8KB的svg转为Base64内联，大于则作为独立文件
+          }
+        },
+        generator: {
+          filename: "static/media/[name].[hash:8][ext]" // 输出文件名格式
+        }
       }
     ]
   },

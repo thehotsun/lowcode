@@ -5,7 +5,10 @@ import panel from "./panel.vue";
 import printTemplateDlg from "./printTemplateDlg.vue";
 import { align, searchWidget } from "../../../baseConfig/tableSelectConfigs";
 import { getTableAttrs, getSingleTableData } from "../../../baseConfig/tableBaseConfig";
-import advSearch from "../../../src/assets/advSearch.png";
+import advSearch from "../../../src/assets/advSearch.svg";
+import settingSvg from "../../../src/assets/setting.svg";
+import refreshSvg from "../../../src/assets/refresh.svg";
+import downloadSvg from "../../../src/assets/downloadSvg.svg";
 import {
   getWidgetOptions,
   getWidgetDefaultVal,
@@ -2849,11 +2852,11 @@ export default {
             <div class="flex">
               {/* tableDisbaled 时禁用点击 */}
               <img src={advSearch} class={`i pointer`} style="width: 20px; height: 20px; margin-left: 5px" onClick={handleAdvancedFilter}></img>
-              <i class="el-icon-s-tools i pointer" onClick={handleSetting}></i>
-              <i class="el-icon-refresh-right i pointer" onClick={iconRefresh}></i>
+              <img src={settingSvg} class={`i pointer`} style="width: 20px; height: 20px; margin-left: 5px" onClick={handleSetting}></img>
+              <img src={refreshSvg} class={`i pointer`} style="width: 20px; height: 20px; margin-left: 5px" onClick={iconRefresh}></img>
               <el-dropdown onCommand={iconDisposeDown}>
                 <span class="el-dropdown-link">
-                  <i class="el-icon-download i pointer"></i>
+                  <img src={downloadSvg} class={`i pointer`} style="width: 20px; height: 20px; margin-left: 5px; margin-top: 5px"></img>
                 </span>
                 <el-dropdown-menu slot="dropdown">
                   <el-dropdown-item command="curSelect">当前选中</el-dropdown-item>
