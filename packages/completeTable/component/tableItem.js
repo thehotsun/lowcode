@@ -1777,9 +1777,11 @@ export default {
     },
 
     async disposeFlowEvent({ flowKey, btnType, isRefresh, deliverySelectList }, row) {
-      const {
+      let {
         btnConfigs: { dialogHeight, dialogWidth }
       } = this;
+      if (dialogHeight && !String(dialogHeight).endsWith("px")) dialogHeight += "px";
+      if (dialogWidth && !String(dialogWidth).endsWith("px")) dialogWidth += "px";
       const mainFieldValue = (row || this.getFirstSelectedData())?.[this.keyField];
       if (btnType === "check") {
         if (!mainFieldValue) {
