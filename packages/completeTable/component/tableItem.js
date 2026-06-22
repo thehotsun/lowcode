@@ -33,6 +33,8 @@ import {
 import { convertDynaticData, disposeParams } from "../../../utils/interfaceParams";
 import { cloneDeep, omit, merge, isEmpty, union, debounce } from "lodash";
 
+const ICON_BLUE_FILTER = "brightness(0) saturate(100%) invert(37%) sepia(72%) saturate(5753%) hue-rotate(207deg) brightness(95%) contrast(92%)";
+
 function InstanceData() {
   return {
     fuzzyFieldSearchConfig: { placeholder: "", searchFieldList: [] },
@@ -93,7 +95,9 @@ function InstanceData() {
     tableDataChangeQueue: [],
     // 当前高亮行
     currentSelectedRow: null,
-    searchFormValueParsers: []
+    searchFormValueParsers: [],
+    // 图标点击时高亮
+    clickedIcon: null
   };
 }
 
@@ -2807,6 +2811,28 @@ export default {
 
       return true;
     },
+    getIconProps(name, mode = "click", extraStyle = {}) {
+      const isActive = this.clickedIcon === name;
+      const style = {
+        width: "20px",
+        height: "20px",
+        marginLeft: "5px",
+        filter: isActive ? ICON_BLUE_FILTER : "none",
+        ...extraStyle
+      };
+      const events =
+        mode === "hover"
+          ? {
+              mouseenter: () => (this.clickedIcon = name),
+              mouseleave: () => (this.clickedIcon = null)
+            }
+          : {
+              mousedown: () => (this.clickedIcon = name),
+              mouseup: () => (this.clickedIcon = null),
+              mouseleave: () => (this.clickedIcon = null)
+            };
+      return { style, on: events };
+    },
     renderLeftBtns() {
       const { showBtns, leftBtnRegularOptions, handleBtnClick } = this;
       if (showBtns && leftBtnRegularOptions?.[0].formItem.length) {
@@ -2853,12 +2879,12 @@ export default {
           {!isVformWidget && (
             <div class="flex">
               {/* tableDisbaled 时禁用点击 */}
-              <img src={advSearch} class={`i pointer`} style="width: 20px; height: 20px; margin-left: 5px" onClick={handleAdvancedFilter}></img>
-              <img src={settingSvg} class={`i pointer`} style="width: 20px; height: 20px; margin-left: 5px" onClick={handleSetting}></img>
-              <img src={refreshSvg} class={`i pointer`} style="width: 20px; height: 20px; margin-left: 5px" onClick={iconRefresh}></img>
-              <el-dropdown onCommand={iconDisposeDown}>
+              <img src={advSearch} class="i pointer" {...this.getIconProps("advSearch")} onClick={handleAdvancedFilter} />
+              <img src={settingSvg} class="i pointer" {...this.getIconProps("setting")} onClick={handleSetting} />
+              <img src={refreshSvg} class="i pointer" {...this.getIconProps("refresh")} onClick={iconRefresh} />
+               <el-dropdown onCommand={iconDisposeDown}>
                 <span class="el-dropdown-link">
-                  <img src={downloadSvg} class={`i pointer`} style="width: 20px; height: 20px; margin-left: 5px; margin-top: 5px"></img>
+                  <img src={downloadSvg} class="i pointer" {...this.getIconProps("download", "hover", { marginTop: "5px" })} />
                 </span>
                 <el-dropdown-menu slot="dropdown">
                   <el-dropdown-item command="curSelect">当前选中</el-dropdown-item>
