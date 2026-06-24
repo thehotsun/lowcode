@@ -249,6 +249,14 @@ const originEditConf = [
     "min-width": "200",
     tagAttrs: getInputAttrs("请输入Function(h, { column, $index })格式"),
     showCodeEditor: true
+  },
+  {
+    ...baseAttr,
+    label: "更多设置",
+    prop: "setupMore",
+    "min-width": "120",
+    align: "center",
+    slotName: "setupMore"
   }
 
   // 如需使用slot功能，请添加slotName属性，并在template中使用相同的slot名称

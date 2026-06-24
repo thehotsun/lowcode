@@ -58,6 +58,12 @@
           <slot name="setupContentText" :row="row"></slot>
         </template>
 
+        <template #setupMore="{ row }">
+          <el-button type="text" icon="el-icon-more" @click.stop.prevent="handleSetupMore(row)">
+            {{ "更多设置" }}
+          </el-button>
+        </template>
+
         <!-- <template #operator="{ row }">
           <el-button v-if="row.$edit" @click.stop.prevent="onSave(row)">
             保存
@@ -74,6 +80,7 @@
       :general-request="generalRequest"
       :list-page-id="listPageId"
       :generate-query-sql="generateQuerySql"
+      :get-sort-numb="getSortNumb"
       @searchOptionsChange="searchOptionsChange"
       @handleSaveSql="handleSaveSql"
     ></setSearchWidgetAttrDlg>
@@ -87,6 +94,18 @@
     <setClickActionAndShowContentDlg ref="setClickActionAndShowContentDlg" :list-page-id="listPageId" :btn-config-arr="btnConfigArr"></setClickActionAndShowContentDlg>
 
     <setFilterConfigDlg ref="setFilterConfigDlg" :list-page-id="listPageId" :btn-config-arr="btnConfigArr" @handleSave="handleSave"></setFilterConfigDlg>
+
+    <singRowSetupDlg
+      ref="singRowSetupDlg"
+      :list-page-id="listPageId"
+      :general-request="generalRequest"
+      :generate-query-sql="generateQuerySql"
+      :btn-config-arr="btnConfigArr"
+      :get-sort-numb="getSortNumb"
+      @handleSaveRow="handleSaveRow"
+      @searchOptionsChange="searchOptionsChange"
+      @handleSaveSql="handleSaveSql"
+    ></singRowSetupDlg>
   </div>
 </template>
 
@@ -99,6 +118,7 @@ import setSearchWidgetAttrDlg from "./setSearchWidgetAttrDlg.vue";
 import setSearchFieldDlg from "./setSearchFieldDlg.vue";
 import setClickActionAndShowContentDlg from "./setClickActionAndShowContentDlg.vue";
 import setFilterConfigDlg from "./setFilterConfigDlg.vue";
+import singRowSetupDlg from "./singRowSetupDlg.vue";
 export default {
   name: "SingleSetupTable",
   components: {
@@ -106,7 +126,8 @@ export default {
     setSearchWidgetAttrDlg,
     setSearchFieldDlg,
     setClickActionAndShowContentDlg,
-    setFilterConfigDlg
+    setFilterConfigDlg,
+    singRowSetupDlg
   },
   props: {
     listPageIdProp: {
@@ -505,6 +526,19 @@ export default {
 
     handleShowAll() {
       this.tableData.forEach(row => (row.show = true));
+    },
+
+    handleSetupMore(row) {
+      this.curRowData = row;
+      this.$refs.singRowSetupDlg.openDlg(row);
+    },
+    handleSaveRow(columnInfo) {
+      const index = this.tableData.findIndex(item => item.fieldCode === columnInfo.fieldCode);
+      console.log("handleSaveRow", columnInfo, index);
+      if (index !== -1) {
+        this.tableData.splice(index, 1, columnInfo);
+      }
+      console.log(this.tableData);
     }
   }
 };

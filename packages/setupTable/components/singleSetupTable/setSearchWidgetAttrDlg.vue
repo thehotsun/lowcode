@@ -59,6 +59,11 @@ import { cloneDeep, merge } from "lodash";
 import { searchWidget } from "../../../../baseConfig/tableSelectConfigs";
 export default {
   props: {
+    getSortNumb: {
+      type: Function,
+      require: true,
+      default: () => {}
+    },
     generalRequest: {
       type: Function,
       default: () => {}
@@ -143,7 +148,7 @@ export default {
       const form = getSetupForm(searchWidgetName);
       form.formItemAttrs.label = fieldName;
       form.tagAttrs.placeholder = setPlaceholder(searchWidgetName, fieldName);
-      form.sortNumb = this.$parent.getSortNumb();
+      form.sortNumb = this.getSortNumb();
       // 针对字典项的特殊处理
       if (form.extraOption) {
         form.extraOption = JSON.stringify(form.extraOption);
