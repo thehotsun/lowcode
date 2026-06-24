@@ -180,7 +180,7 @@ export function exec(fn) {
 export function str2Fn(strFn) {
   if (strFn === "") return () => {};
   try {
-    return new Function(`return ${strFn}`)();
+    return new Function(`return ${strFn.trim()}`)();
   } catch (error) {
     console.error(`报错的strFn: ${strFn}`, `error: ${error}`);
   }
