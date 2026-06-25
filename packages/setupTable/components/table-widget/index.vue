@@ -272,7 +272,6 @@ export default {
       this.sortableInstance?.destroy();
       // 此时找到的元素是要拖拽元素的父容器
       const dom = document.querySelector(".searchArea .el-form .el-row");
-      console.log(dom, "dom");
       if (!dom) return;
       this.sortableInstance = this.Sortable.create(dom, {
         handle: ".el-form-item__label",

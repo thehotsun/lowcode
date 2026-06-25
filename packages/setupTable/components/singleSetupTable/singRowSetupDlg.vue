@@ -10,70 +10,96 @@
     append-to-body
   >
     <div class="flex">
-      <el-form ref="form" :model="formData" label-width="120px" class="setup-form">
-        <el-form-item label="字段名称">
-          <el-input v-model="formData.fieldName" placeholder="请输入字段名称"></el-input>
-        </el-form-item>
-
-        <el-form-item label="是否显示">
-          <el-switch v-model="formData.show"></el-switch>
-        </el-form-item>
-
-        <el-form-item label="列宽">
-          <el-input-number v-model="formData.columnWidth" controls-position="right"></el-input-number>
-        </el-form-item>
-
-        <el-form-item label="对齐方式">
+      <el-form :model="formData" label-width="120px" class="setup-form">
+        <!-- <el-form-item label="对齐方式">
           <el-radio-group v-model="formData.align">
             <el-radio :label="0">左对齐</el-radio>
             <el-radio :label="1">居中</el-radio>
             <el-radio :label="2">右对齐</el-radio>
           </el-radio-group>
-        </el-form-item>
+        </el-form-item> -->
 
-        <el-form-item label="固定列位置">
+        <!-- <el-form-item label="固定列位置">
           <el-radio-group v-model="formData.fixed">
             <el-radio label="">不固定</el-radio>
             <el-radio label="left">左侧固定</el-radio>
             <el-radio label="right">右侧固定</el-radio>
           </el-radio-group>
-        </el-form-item>
+        </el-form-item> -->
 
-        <el-form-item label="是否作为搜索组件">
-          <el-switch v-model="formData.isSearchWidget"></el-switch>
+        <!-- <el-form-item label="是否作为搜索组件">
+          <el-switch v-model="formData.isSearchWidget" @change="onSearchWidgetChange"></el-switch>
           <el-button v-if="formData.isSearchWidget" type="primary" size="small" @click="openSearchWidgetConfig">设置</el-button>
-        </el-form-item>
+        </el-form-item> -->
 
-        <el-form-item label="是否支持排序">
+        <!-- <el-form-item label="是否支持排序">
           <el-switch v-model="formData.sort"></el-switch>
-        </el-form-item>
+        </el-form-item> -->
 
-        <el-form-item label="排序函数">
-          <el-input v-model="formData['sort-method']" placeholder="请输入排序方法"></el-input>
-        </el-form-item>
+        <!-- <el-form-item label="点击行为">
+          <div style="display: flex; align-items: center;">
+            <el-button type="primary" size="small" @click="openContentTextAttr">设置</el-button>
+            <el-tooltip :content="tipsMap.singleFormatter">
+              <i class="el-icon-question" style="margin-left: 4px; cursor: pointer; color: #909399;"/>
+            </el-tooltip>
+          </div>
+        </el-form-item> -->
 
         <el-form-item label="筛选数组">
-          <el-button type="primary" size="small" @click="openFiltersConfig">设置</el-button>
+          <div style="display: flex; align-items: center;">
+            <el-button type="primary" size="small" @click="openFiltersConfig">设置</el-button>
+            <el-tooltip :content="tipsMap.filters">
+              <i class="el-icon-question" style="margin-left: 4px; cursor: pointer; color: #909399;" />
+            </el-tooltip>
+          </div>
         </el-form-item>
 
         <el-form-item label="筛选函数">
-          <el-input v-model="formData['filter-method']" placeholder="请输入过滤方法"></el-input>
+          <div style="display: flex; align-items: center;">
+            <el-input v-model="formData['filter-method']" placeholder="请输入过滤方法">
+              <el-button slot="append" @click="openCodeEditor('filter-method', '过滤方法')">编辑</el-button>
+            </el-input>
+            <el-tooltip :content="tipsMap['filter-method']">
+              <i class="el-icon-question" style="margin-left: 4px; cursor: pointer; color: #909399;" />
+            </el-tooltip>
+          </div>
         </el-form-item>
 
+        <el-form-item label="排序函数">
+          <div style="display: flex; align-items: center;">
+            <el-input v-model="formData['sort-method']" placeholder="请输入排序方法">
+              <el-button slot="append" @click="openCodeEditor('sort-method', '排序方法')">编辑</el-button>
+            </el-input>
+            <el-tooltip :content="tipsMap['sort-method']">
+              <i class="el-icon-question" style="margin-left: 4px; cursor: pointer; color: #909399;" />
+            </el-tooltip>
+          </div>
+        </el-form-item>
+        <!--
         <el-form-item label="是否单行显示">
           <el-switch v-model="formData['show-overflow-tooltip']"></el-switch>
-        </el-form-item>
+        </el-form-item> -->
 
         <el-form-item label="列表渲染函数">
-          <el-input v-model="formData.formatter" placeholder="请输入渲染函数"></el-input>
+          <div style="display: flex; align-items: center;">
+            <el-input v-model="formData.formatter" placeholder="请输入渲染函数">
+              <el-button slot="append" @click="openCodeEditor('formatter', '列表渲染函数')">编辑</el-button>
+            </el-input>
+            <el-tooltip :content="tipsMap.formatter">
+              <i class="el-icon-question" style="margin-left: 4px; cursor: pointer; color: #909399;" />
+            </el-tooltip>
+          </div>
         </el-form-item>
 
         <el-form-item label="自定义表头渲染">
-          <el-input v-model="formData.renderHeader" placeholder="请输入表头渲染函数"></el-input>
-        </el-form-item>
-
-        <el-form-item label="点击行为">
-          <el-button type="primary" size="small" @click="openContentTextAttr">设置</el-button>
+          <div style="display: flex; align-items: center;">
+            <el-input v-model="formData.renderHeader" placeholder="请输入表头渲染函数">
+              <el-button slot="append" @click="openCodeEditor('renderHeader', '表头渲染函数')">编辑</el-button>
+            </el-input>
+            <el-tooltip :content="tipsMap.renderHeader">
+              <i class="el-icon-question" style="margin-left: 4px; cursor: pointer; color: #909399;" />
+            </el-tooltip>
+          </div>
         </el-form-item>
       </el-form>
     </div>
@@ -82,6 +108,16 @@
       <el-button @click="handleClose">取消</el-button>
       <el-button type="primary" @click="handleConfirm">确定</el-button>
     </span>
+
+    <!-- 代码编辑器 -->
+    <onlineCode
+      v-if="showCodeEditor"
+      :title="codeEditorTil"
+      :model-value="formData[curFn]"
+      :code-example-val="codeExampleList[curFn]"
+      @confirm="handleEditorInput"
+      @close="handleCloseCodeEditor"
+    ></onlineCode>
 
     <!-- 搜索组件配置弹窗 -->
     <setSearchWidgetAttrDlg
@@ -106,12 +142,15 @@ import { cloneDeep } from "lodash";
 import setSearchWidgetAttrDlg from "./setSearchWidgetAttrDlg.vue";
 import setClickActionAndShowContentDlg from "./setClickActionAndShowContentDlg.vue";
 import setFilterConfigDlg from "./setFilterConfigDlg.vue";
+import onlineCode from "/packages/completeTable/component/onlineCode.vue";
+import { tableOptionsCodeExampleList } from "/utils/codeExampleList";
+import { getSingleTableData, addTipsProps } from "../../../../baseConfig/tableBaseConfig";
 export default {
-  components: { setSearchWidgetAttrDlg, setClickActionAndShowContentDlg, setFilterConfigDlg },
+  components: { setSearchWidgetAttrDlg, setClickActionAndShowContentDlg, setFilterConfigDlg, onlineCode },
   props: {
     getSortNumb: {
       type: Function,
-      require: true,
+      required: true,
       default: () => {}
     },
     listPageId: {
@@ -135,43 +174,41 @@ export default {
   },
   data() {
     return {
+      codeExampleList: tableOptionsCodeExampleList,
       dialogVisible: false,
-      formData: {
-        fieldCode: "id",
-        fieldName: "主键",
-        show: false,
-        columnWidth: 110,
-        align: 1,
-        fixed: "",
-        searchWidget: "",
-        isSearchWidget: false,
-        searchWidgetConfig: {},
-        sort: true,
-        "sort-method": "",
-        filters: "",
-        filtersConfig: {
-          isFilter: false,
-          isSplit: false,
-          splitChar: ",",
-          customHandler: "",
-          limitShowWord: false,
-          maxlength: 10
-        },
-        "filter-method": "",
-        "show-overflow-tooltip": true,
-        formatter: "",
-        renderHeader: "",
-        listeners: {},
-        contentTextAttrArr: []
-      }
+      showCodeEditor: false,
+      curFn: "",
+      codeEditorTil: "",
+      formData: getSingleTableData(),
+      tipsMap: addTipsProps
     };
   },
 
-  watch: {},
   methods: {
     openDlg(row) {
       this.formData = cloneDeep(row);
       this.dialogVisible = true;
+    },
+
+    onSearchWidgetChange(val) {
+      if (!val) {
+        this.formData.searchWidgetConfig = {};
+        this.formData.searchWidget = "";
+      }
+    },
+
+    openCodeEditor(field, title) {
+      this.curFn = field;
+      this.codeEditorTil = title;
+      this.showCodeEditor = true;
+    },
+
+    handleEditorInput(value) {
+      this.formData[this.curFn] = value;
+    },
+
+    handleCloseCodeEditor() {
+      this.showCodeEditor = false;
     },
 
     // 打开搜索组件配置弹窗
@@ -192,15 +229,6 @@ export default {
       this.$refs.setClickActionAndShowContentDlg.openDlg(this.formData);
     },
 
-    handleCloseContentTextAttr() {
-      this.dialogVisible = false;
-    },
-
-    // 处理搜索选项变更
-    searchOptionsChange() {
-      this.$emit("searchOptionsChange");
-    },
-
     // 处理保存SQL
     handleSaveSql(listPageId, wholeSQL) {
       this.$emit("handleSaveSql", listPageId, wholeSQL);
@@ -214,7 +242,6 @@ export default {
 
     handleConfirm() {
       this.$emit("handleSaveRow", this.formData);
-      this.searchOptionsChange();
       this.handleClose();
     },
 
@@ -224,5 +251,3 @@ export default {
   }
 };
 </script>
-
-<style lang="less" scoped></style>

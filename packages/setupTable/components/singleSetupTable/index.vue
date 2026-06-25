@@ -103,7 +103,6 @@
       :btn-config-arr="btnConfigArr"
       :get-sort-numb="getSortNumb"
       @handleSaveRow="handleSaveRow"
-      @searchOptionsChange="searchOptionsChange"
       @handleSaveSql="handleSaveSql"
     ></singRowSetupDlg>
   </div>
@@ -533,12 +532,8 @@ export default {
       this.$refs.singRowSetupDlg.openDlg(row);
     },
     handleSaveRow(columnInfo) {
-      const index = this.tableData.findIndex(item => item.fieldCode === columnInfo.fieldCode);
-      console.log("handleSaveRow", columnInfo, index);
-      if (index !== -1) {
-        this.tableData.splice(index, 1, columnInfo);
-      }
-      console.log(this.tableData);
+      Object.assign(this.curRowData, columnInfo);
+      this.searchOptionsChange();
     }
   }
 };

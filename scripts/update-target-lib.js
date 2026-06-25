@@ -30,7 +30,7 @@ const copy = (sd, td) => {
       // 文件时目录且已存在
       copy(srcFile, tagFile);
     }
-    !file.isDirectory() && fs.copyFileSync(srcFile, tagFile, fs.constants.COPYFILE_FICLONE);
+    !file.isDirectory() && fs.copyFileSync(srcFile, tagFile);
   }
 };
 
@@ -66,11 +66,11 @@ const run2 = async (sourceDir, targetDir) => {
   console.log("run2耗时:", ((endTime - startTime) / 1000).toFixed(2) + "s");
 };
 run();
-targetDirArr.map((targetDir, index) => {
+targetDirArr.forEach((targetDir, index) => {
   const sourceDir = sourceDirArr[index];
-  run2(sourceDir, targetDir);
+  run2(sourceDir, targetDir).catch(err => console.error("run2 error:", err.message));
 });
 const srcFile = path.resolve("../lowcode", "package.json");
 const tagFile = path.resolve("../../../prj/tablepro", "package.json");
 console.log(srcFile, tagFile);
-fs.copyFileSync(srcFile, tagFile, fs.constants.COPYFILE_FICLONE);
+fs.copyFileSync(srcFile, tagFile);

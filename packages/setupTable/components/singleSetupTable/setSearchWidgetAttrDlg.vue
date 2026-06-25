@@ -61,7 +61,7 @@ export default {
   props: {
     getSortNumb: {
       type: Function,
-      require: true,
+      required: true,
       default: () => {}
     },
     generalRequest: {

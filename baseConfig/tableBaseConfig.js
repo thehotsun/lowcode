@@ -133,7 +133,7 @@ const originEditConf = [
     ...baseAttr,
     label: "对齐",
     prop: "align",
-    "min-width": "110",
+    "min-width": "100",
     tagName: "el-select",
     // 特殊组件的额外属性值例如select组件下的option组件所需的options
     extraOption: {
@@ -148,7 +148,7 @@ const originEditConf = [
     tagAttrs: {
       clearable: true
     },
-    "min-width": "110",
+    "min-width": "100",
     // 特殊组件的额外属性值例如select组件下的option组件所需的options
     extraOption: {
       options: fixed
@@ -176,7 +176,7 @@ const originEditConf = [
     tagAttrs: {
       clearable: true
     },
-    "min-width": "100",
+    "min-width": "77",
     // 特殊组件的额外属性值例如select组件下的option组件所需的options
     extraOption: {
       options: searchWidget
@@ -193,68 +193,67 @@ const originEditConf = [
     ...baseAttr,
     label: "排序",
     prop: "sort",
-    "min-width": "70",
+    "min-width": "77",
     tagName: "el-switch"
   },
-
+  // {
+  //   ...baseAttr,
+  //   label: "排序函数",
+  //   prop: "sort-method",
+  //   "min-width": "200",
+  //   tagAttrs: getInputAttrs(),
+  //   showCodeEditor: true
+  // },
+  // {
+  //   ...baseAttr,
+  //   label: "筛选数组",
+  //   prop: "filters",
+  //   "min-width": "120",
+  //   slotName: "setupFilterArr"
+  // },
+  // {
+  //   ...baseAttr,
+  //   label: "筛选函数",
+  //   prop: "filter-method",
+  //   "min-width": "200",
+  //   tagAttrs: getInputAttrs("请输入function(value, row, column){}格式"),
+  //   showCodeEditor: true
+  // },
   {
     ...baseAttr,
-    label: "排序函数",
-    prop: "sort-method",
-    "min-width": "200",
-    tagAttrs: getInputAttrs(),
-    showCodeEditor: true
-  },
-  {
-    ...baseAttr,
-    label: "筛选数组",
-    prop: "filters",
-    "min-width": "120",
-    slotName: "setupFilterArr"
-  },
-  {
-    ...baseAttr,
-    label: "筛选函数",
-    prop: "filter-method",
-    "min-width": "200",
-    tagAttrs: getInputAttrs("请输入function(value, row, column){}格式"),
-    showCodeEditor: true
-  },
-  {
-    ...baseAttr,
-    label: "是否单行显示",
+    label: "单行显示",
     prop: "show-overflow-tooltip",
-    "min-width": "120",
+    "min-width": "77",
     tagName: "el-switch"
   },
   {
     label: "点击行为",
     prop: "singleFormatter",
-    "min-width": "120",
+    "min-width": "100",
     align: "center",
     slotName: "setupContentText"
   },
-  {
-    ...baseAttr,
-    label: "列表渲染函数",
-    prop: "formatter",
-    "min-width": "200",
-    tagAttrs: getInputAttrs("请输入Function(row, column, cellValue, index)格式"),
-    showCodeEditor: true
-  },
-  {
-    ...baseAttr,
-    label: "表头渲染函数",
-    prop: "renderHeader",
-    "min-width": "200",
-    tagAttrs: getInputAttrs("请输入Function(h, { column, $index })格式"),
-    showCodeEditor: true
-  },
+  // {
+  //   ...baseAttr,
+  //   label: "列表渲染函数",
+  //   prop: "formatter",
+  //   "min-width": "200",
+  //   tagAttrs: getInputAttrs("请输入Function(row, column, cellValue, index)格式"),
+  //   showCodeEditor: true
+  // },
+  // {
+  //   ...baseAttr,
+  //   label: "表头渲染函数",
+  //   prop: "renderHeader",
+  //   "min-width": "200",
+  //   tagAttrs: getInputAttrs("请输入Function(h, { column, $index })格式"),
+  //   showCodeEditor: true
+  // },
   {
     ...baseAttr,
     label: "更多设置",
     prop: "setupMore",
-    "min-width": "120",
+    "min-width": "100",
     align: "center",
     slotName: "setupMore"
   }
@@ -269,15 +268,15 @@ const originEditConf = [
   // },
 ];
 
-const addTipsProps = {
+export const addTipsProps = {
   formatter: "列内容区域渲染使用的Function（优先级最高）",
   singleFormatter: "简单设置展示内容的样式和点击事件（优先级比列表渲染函数低）",
   renderHeader: "列标题Label区域渲染使用的Function",
   "show-overflow-tooltip": "当内容过长被隐藏时显示 tooltip",
-  "filter-method": "表头过滤配置，需配合filters一起使用",
-  filters: "表头过滤配置，需配合filter-method一起使用",
-  sort: "对应列是否可以排序",
-  "sort-method": "对数据进行排序的时候使用的方法，仅当 sortable 设置为 true 的时候有效，需返回一个数字，和 Array.sort 表现一致",
+  "filter-method": "表头过滤配置，需配合筛选数组（filters）一起使用",
+  filters: "表头过滤配置，需配合筛选函数（filter-method）一起使用",
+  sort: "对应列是否可以排序，可以通过设置排序函数（sort-method）实现高级筛选",
+  "sort-method": "对数据进行排序的时候使用的方法，仅当 排序（sortable） 设置为 true 的时候有效，需返回一个数字，和 Array.sort 表现一致",
   searchWidget: "设置列表上方的搜索区域",
   fixed: "列是否固定在左侧或者右侧，"
 };
