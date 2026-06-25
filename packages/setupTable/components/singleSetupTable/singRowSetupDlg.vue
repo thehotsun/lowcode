@@ -1,7 +1,7 @@
 <template>
   <el-dialog
     v-dialogDrag
-    title="设置更多"
+    title="更多设置"
     :visible.sync="dialogVisible"
     :close-on-click-modal="false"
     :close-on-press-escape="false"
@@ -56,7 +56,7 @@
 
         <el-form-item label="筛选函数">
           <div style="display: flex; align-items: center;">
-            <el-input v-model="formData['filter-method']" placeholder="请输入过滤方法">
+            <el-input v-model="formData['filter-method']" placeholder="请输入过滤方法" readonly @click.native="openCodeEditor('filter-method', '过滤方法')">
               <el-button slot="append" @click="openCodeEditor('filter-method', '过滤方法')">编辑</el-button>
             </el-input>
             <el-tooltip :content="tipsMap['filter-method']">
@@ -67,7 +67,7 @@
 
         <el-form-item label="排序函数">
           <div style="display: flex; align-items: center;">
-            <el-input v-model="formData['sort-method']" placeholder="请输入排序方法">
+            <el-input v-model="formData['sort-method']" placeholder="请输入排序方法" readonly @click.native="openCodeEditor('sort-method', '排序方法')">
               <el-button slot="append" @click="openCodeEditor('sort-method', '排序方法')">编辑</el-button>
             </el-input>
             <el-tooltip :content="tipsMap['sort-method']">
@@ -82,7 +82,7 @@
 
         <el-form-item label="列表渲染函数">
           <div style="display: flex; align-items: center;">
-            <el-input v-model="formData.formatter" placeholder="请输入渲染函数">
+            <el-input v-model="formData.formatter" placeholder="请输入渲染函数" readonly @click.native="openCodeEditor('formatter', '列表渲染函数')">
               <el-button slot="append" @click="openCodeEditor('formatter', '列表渲染函数')">编辑</el-button>
             </el-input>
             <el-tooltip :content="tipsMap.formatter">
@@ -93,7 +93,7 @@
 
         <el-form-item label="自定义表头渲染">
           <div style="display: flex; align-items: center;">
-            <el-input v-model="formData.renderHeader" placeholder="请输入表头渲染函数">
+            <el-input v-model="formData.renderHeader" placeholder="请输入表头渲染函数" readonly @click.native="openCodeEditor('renderHeader', '表头渲染函数')">
               <el-button slot="append" @click="openCodeEditor('renderHeader', '表头渲染函数')">编辑</el-button>
             </el-input>
             <el-tooltip :content="tipsMap.renderHeader">
@@ -104,17 +104,14 @@
       </el-form>
     </div>
 
-    <span slot="footer" class="dialog-footer">
-      <el-button @click="handleClose">取消</el-button>
-      <el-button type="primary" @click="handleConfirm">确定</el-button>
-    </span>
-
     <!-- 代码编辑器 -->
     <onlineCode
       v-if="showCodeEditor"
       :title="codeEditorTil"
       :model-value="formData[curFn]"
-      :code-example-val="codeExampleList[curFn]"
+      :code-example-val="codeExampleIsList ? '' : codeExampleList[curFn]"
+      :example-list="codeExampleIsList ? codeExampleList[curFn] : []"
+      :use-tab-layout="codeExampleIsList"
       @confirm="handleEditorInput"
       @close="handleCloseCodeEditor"
     ></onlineCode>
@@ -138,7 +135,6 @@
 </template>
 
 <script>
-import { cloneDeep } from "lodash";
 import setSearchWidgetAttrDlg from "./setSearchWidgetAttrDlg.vue";
 import setClickActionAndShowContentDlg from "./setClickActionAndShowContentDlg.vue";
 import setFilterConfigDlg from "./setFilterConfigDlg.vue";
@@ -184,9 +180,15 @@ export default {
     };
   },
 
+  computed: {
+    codeExampleIsList() {
+      return ["formatter", "renderHeader"].includes(this.curFn);
+    }
+  },
+
   methods: {
     openDlg(row) {
-      this.formData = cloneDeep(row);
+      this.formData = row;
       this.dialogVisible = true;
     },
 
