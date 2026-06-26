@@ -37,7 +37,7 @@
                       v-for="c in presetColors"
                       :key="c"
                       class="enumDicTreeDlg-color-block"
-                      :class="{ 'enumDicTreeDlg-color-block--active': (row.styleConfig && row.styleConfig.backgroudColor) === c }"
+                      :class="{ 'enumDicTreeDlg-color-block--active': (row.styleConfig && row.styleConfig.backgroundColor) === c }"
                       :style="{ backgroundColor: c }"
                       @click="handleColorSelect(row, c)"
                     />
@@ -189,7 +189,7 @@ export default {
     },
 
     handleColorSelect(row, color) {
-      this.$set(row, "styleConfig", { ...row.styleConfig, backgroudColor: color });
+      this.$set(row, "styleConfig", { ...row.styleConfig, backgroundColor: color });
       if (typeof this.onUpdateItemColor === "function") {
         this.onUpdateItemColor(row.dicId, color);
       }

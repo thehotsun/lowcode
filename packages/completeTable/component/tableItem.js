@@ -880,6 +880,14 @@ export default {
       }
 
       if (item.contentTextAttrArr) obj.contentTextAttrArr = item.contentTextAttrArr;
+      if (item.enumDisplayConfig.dicCode) {
+        // 如果有字典项，要先获取接口
+        obj.enumDisplayConfig = item.enumDisplayConfig;
+        obj.enumDisplayConfig.dicList = [];
+        this.getDicList(item.enumDisplayConfig.dicCode).then(list => {
+          obj.enumDisplayConfig.dicList = list;
+        });
+      }
 
       // 某些函数转换
       const fnProps = ["formatter", "renderHeader"];
@@ -897,6 +905,16 @@ export default {
         obj.children = item.children.map(item => this.setSingleTableOptions(item, emptyData));
       }
       return obj;
+    },
+    // 获取字典
+    async getDicList(dicCode) {
+      try {
+        const res = await this.generalRequest(`/dic/content/list?dicCode=${dicCode}`, "get");
+        return res.data || [];
+      } catch (e) {
+        console.error("获取字典列表失败:", dicCode, e);
+        return [];
+      }
     },
 
     composeData(emptyData) {
@@ -2882,7 +2900,7 @@ export default {
               <img src={advSearch} class="i pointer" {...this.getIconProps("advSearch")} onClick={handleAdvancedFilter} />
               <img src={settingSvg} class="i pointer" {...this.getIconProps("setting")} onClick={handleSetting} />
               <img src={refreshSvg} class="i pointer" {...this.getIconProps("refresh")} onClick={iconRefresh} />
-               <el-dropdown onCommand={iconDisposeDown}>
+              <el-dropdown onCommand={iconDisposeDown}>
                 <span class="el-dropdown-link">
                   <img src={downloadSvg} class="i pointer" {...this.getIconProps("download", "hover", { marginTop: "5px" })} />
                 </span>

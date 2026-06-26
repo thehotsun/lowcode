@@ -160,8 +160,10 @@ export default {
     getCellRender(row, options) {
       const that = this;
       if (options.tagName) {
+        // 正常设置的tableJson没有，只有自定义的时候有tagName
         return this.cellRender(row, options);
       } else if (options.contentTextAttrArr?.length) {
+        // 检查是否有点击行为的设置
         return options.contentTextAttrArr
           .filter(item => {
             // 如果有条件判断函数，则需要判断函数返回值是否为true
@@ -193,6 +195,12 @@ export default {
             cellOptions.style = `${style};flex: 1; overflow: hidden;white-space: nowrap; text-overflow: ellipsis;${contentTextAttr.textStyle}`;
             return this.cellRender(row, cellOptions);
           });
+      } else if (options.enumDisplayConfig?.dicList?.length) {
+        // 检查是否有枚举的设置（实际上就是关联一个字典）,字典现在value只有字符串
+        const target = options.enumDisplayConfig.dicList.find(item => item.dicId === `${row[options.prop]}`);
+        const label = target?.cnName || row[options.prop];
+        const bcgColor = target?.backgroundColor;
+        return <div style={`padding: 6px 10px; border: 1px solid #ccc; color: #fff; ${bcgColor ? "backgroundColor:" + bcgColor : ""}`}> {label}</div>;
       } else {
         return row[options.prop];
       }
@@ -371,7 +379,16 @@ export default {
           : getCellRender(row, item);
       };
 
-      const attr = omit(item, ["className", "style", "formatter", "cellFormatterComponent", "renderHeader", "cellHeaderFormatterComponent", "contentTextAttrArr"]);
+      const attr = omit(item, [
+        "className",
+        "style",
+        "formatter",
+        "cellFormatterComponent",
+        "renderHeader",
+        "cellHeaderFormatterComponent",
+        "contentTextAttrArr",
+        "enumDisplayConfig"
+      ]);
 
       return (
         <el-table-column
