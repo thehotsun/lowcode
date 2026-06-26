@@ -102,8 +102,8 @@
       :generate-query-sql="generateQuerySql"
       :btn-config-arr="btnConfigArr"
       :get-sort-numb="getSortNumb"
-      @handleSaveRow="handleSaveRow"
       @handleSaveSql="handleSaveSql"
+      @searchOptionsChange="searchOptionsChange"
     ></singRowSetupDlg>
   </div>
 </template>
@@ -530,10 +530,6 @@ export default {
     handleSetupMore(row) {
       this.curRowData = row;
       this.$refs.singRowSetupDlg.openDlg(row);
-    },
-    handleSaveRow(columnInfo) {
-      Object.assign(this.curRowData, columnInfo);
-      this.searchOptionsChange();
     }
   }
 };

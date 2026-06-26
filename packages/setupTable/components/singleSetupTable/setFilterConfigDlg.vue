@@ -13,7 +13,7 @@
     <el-tabs v-model="activeName">
       <el-tab-pane label="配置筛选数组" name="options" class="tab">
         <div></div>
-        <el-form ref="optionsForm" :model="curRowData.filtersConfig" label-width="130px">
+        <el-form ref="optionsForm" :model="curRowData.filtersConfig" label-width="137px">
           <el-form-item label="启用配置筛选">
             <template #label>
               <div class="fz14">

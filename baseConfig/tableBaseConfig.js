@@ -223,7 +223,7 @@ const originEditConf = [
     ...baseAttr,
     label: "单行显示",
     prop: "show-overflow-tooltip",
-    "min-width": "77",
+    "min-width": "82",
     tagName: "el-switch"
   },
   {
@@ -278,7 +278,8 @@ export const addTipsProps = {
   sort: "对应列是否可以排序，可以通过设置排序函数（sort-method）实现高级筛选",
   "sort-method": "对数据进行排序的时候使用的方法，仅当 排序（sortable） 设置为 true 的时候有效，需返回一个数字，和 Array.sort 表现一致",
   searchWidget: "设置列表上方的搜索区域",
-  fixed: "列是否固定在左侧或者右侧，"
+  fixed: "列是否固定在左侧或者右侧，",
+  enumDisplayConfig: "设置枚举值展示（如流程状态等）"
 };
 function getEditConf() {
   return originEditConf.map(item => {
@@ -329,6 +330,14 @@ export function FiltersConfig() {
     maxlength: 10
   };
 }
+
+function EnumDisplayConfig() {
+  return {
+    dicCode: "",
+    dicName: ""
+  };
+}
+
 export function getSingleTableData(params = {}) {
   return {
     fieldCode: "",
@@ -354,6 +363,8 @@ export function getSingleTableData(params = {}) {
     contentTextAttrArr: [],
     isCustom: false,
     dataType: "",
+    // 枚举值的展示设置
+    enumDisplayConfig: new EnumDisplayConfig(),
     ...params
   };
 }
