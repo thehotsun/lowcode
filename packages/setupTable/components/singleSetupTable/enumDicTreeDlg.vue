@@ -1,5 +1,5 @@
 <template>
-  <el-dialog title="选择字典" :visible.sync="dialogVisible" width="700px" append-to-body :close-on-click-modal="false">
+  <el-dialog title="选择字典" :visible.sync="dialogVisible" width="750px" append-to-body :close-on-click-modal="false">
     <el-input v-model="filterText" placeholder="搜索字典名称或编码" size="small" clearable style="margin-bottom: 10px" />
     <div class="enumDicTreeDlg-body">
       <div class="enumDicTreeDlg-left">
@@ -24,26 +24,14 @@
       </div>
       <div class="enumDicTreeDlg-right">
         <template v-if="selectedNode && enumItems.length">
-          <el-table :data="enumItems" size="small" align="center" max-height="380">
-            <el-table-column prop="dicId" label="值" width="100" />
-            <el-table-column prop="cnName" label="名称" min-width="100" />
-            <el-table-column prop="remark" label="备注" min-width="100" show-overflow-tooltip />
-            <el-table-column prop="tag" label="标签" width="80" />
-            <el-table-column label="操作" width="80" align="center">
+          <el-table :data="enumItems" size="small" max-height="380">
+            <el-table-column prop="dicId" label="值" width="100" align="center" />
+            <el-table-column prop="cnName" label="名称" min-width="100" align="center" />
+            <el-table-column prop="remark" label="备注" min-width="100" show-overflow-tooltip align="center" />
+            <el-table-column prop="tag" label="标签" width="80" align="center" />
+            <el-table-column label="操作" width="130" align="center">
               <template slot-scope="{ row }">
-                <el-popover placement="bottom" trigger="click" width="200">
-                  <div class="enumDicTreeDlg-color-popover">
-                    <div
-                      v-for="c in presetColors"
-                      :key="c"
-                      class="enumDicTreeDlg-color-block"
-                      :class="{ 'enumDicTreeDlg-color-block--active': (row.styleConfig && row.styleConfig.backgroundColor) === c }"
-                      :style="{ backgroundColor: c }"
-                      @click="handleColorSelect(row, c)"
-                    />
-                  </div>
-                  <el-button slot="reference" size="mini" icon="el-icon-brush" circle />
-                </el-popover>
+                <color-picker :value="(row.styleConfig && row.styleConfig.backgroundColor) || ''" @change="handleColorSelect(row, $event)" />
               </template>
             </el-table-column>
           </el-table>
@@ -61,7 +49,10 @@
 </template>
 
 <script>
+import ColorPicker from "../setupBtnConfig/components/colorPicker.vue";
+
 export default {
+  components: { ColorPicker },
   inject: {
     onUpdateItemColor: {
       default: () => (dicId, color) => {
@@ -82,8 +73,7 @@ export default {
       treeList: [],
       filterText: "",
       selectedNode: null,
-      enumItems: [],
-      presetColors: ["#F56C6C", "#E6A23C", "#F5DE0A", "#67C23A", "#409EFF", "#5470C6", "#9B59B6", "#909399", "#FF69B4", "#FF8C00", "#00CED1", "#191919"]
+      enumItems: []
     };
   },
   computed: {},
@@ -228,22 +218,5 @@ export default {
   justify-content: center;
   color: #c0c4cc;
   font-size: 14px;
-}
-.enumDicTreeDlg-color-popover {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-.enumDicTreeDlg-color-block {
-  width: 24px;
-  height: 24px;
-  border-radius: 4px;
-  cursor: pointer;
-  border: 2px solid transparent;
-  box-sizing: border-box;
-}
-.enumDicTreeDlg-color-block--active {
-  border-color: #303133;
-  box-shadow: 0 0 0 1px #fff inset;
 }
 </style>
