@@ -181,7 +181,7 @@ export default {
     handleColorSelect(row, color) {
       this.$set(row, "styleConfig", { ...row.styleConfig, backgroundColor: color });
       if (typeof this.onUpdateItemColor === "function") {
-        this.onUpdateItemColor(row.dicId, color);
+        this.onUpdateItemColor({ ...row, newDicId: row.dicId, styleConfig: JSON.stringify(row.styleConfig) });
       }
     },
 

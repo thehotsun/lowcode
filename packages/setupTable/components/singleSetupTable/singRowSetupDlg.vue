@@ -148,7 +148,7 @@
               <el-button type="text" size="small" icon="el-icon-edit" :class="selectedEnumDisplayLabel ? 'color-red' : ''" @click="openDicTreeDlg">{{
                 selectedEnumDisplayLabel ? "修改" : "设置"
               }}</el-button>
-              <el-button v-if="formData.enumDisplayConfig.dicCode" size="small" @click="clearEnumDic">清除</el-button>
+              <el-button v-if="formData.enumDisplayConfig.dicCode" type="text" icon="el-icon-delete" size="small" @click="clearEnumDic">清除</el-button>
               <el-tooltip :content="tipsMap.enumDisplayConfig">
                 <i class="el-icon-question form-help-icon" />
               </el-tooltip>

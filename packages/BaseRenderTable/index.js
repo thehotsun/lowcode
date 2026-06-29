@@ -199,8 +199,15 @@ export default {
         // 检查是否有枚举的设置（实际上就是关联一个字典）,字典现在value只有字符串
         const target = options.enumDisplayConfig.dicList.find(item => item.dicId === `${row[options.prop]}`);
         const label = target?.cnName || row[options.prop];
-        const bcgColor = target?.backgroundColor;
-        return <div style={`padding: 6px 10px; border: 1px solid #ccc; color: #fff; ${bcgColor ? "backgroundColor:" + bcgColor : ""}`}> {label}</div>;
+        let bcgColor;
+        try {
+          const styleConfig = JSON.parse(target.styleConfig);
+          bcgColor = styleConfig?.backgroundColor;
+        } catch (e) {
+          console.error(e);
+        }
+        const baseStyle = `display: inline-block; padding: 4px 6px; border-radius: 8px; color: #fff; ${bcgColor ? "backgroundColor:" + bcgColor : ""}`;
+        return bcgColor ? <div style={baseStyle}> {label}</div> : <span>{label}</span>;
       } else {
         return row[options.prop];
       }
