@@ -42,7 +42,7 @@
     <!-- Trigger button -->
     <el-button slot="reference" size="small" :disabled="disabled" type="text">
       <span v-if="value" class="color-picker-trigger-swatch" :style="{ backgroundColor: value }" />
-      <span v-else class="color-picker-trigger-text">{{ value || "填充颜色" }}</span>
+      <span v-else class="color-picker-trigger-text">{{ value || "颜色" }}</span>
     </el-button>
   </el-popover>
 </template>

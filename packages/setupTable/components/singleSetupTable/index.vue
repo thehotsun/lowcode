@@ -24,6 +24,7 @@
         :table-data="finalTableData"
         :table-options="tableOptions"
         edit-mode
+        :header-below-search-list="headerBelowSearchList"
         :row-key="row => row.fieldCode || row.random"
         border
         class="fullHeight"
@@ -148,6 +149,12 @@ export default {
       }
     },
     btnConfigArr: {
+      type: Array,
+      default: () => {
+        return [];
+      }
+    },
+    headerBelowSearchList: {
       type: Array,
       default: () => {
         return [];

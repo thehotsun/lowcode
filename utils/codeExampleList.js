@@ -21,7 +21,7 @@ export const tableAttrsCodeExampleList = {
          setPaginationSize:
            '[{\r\n  label: "10条/页",\r\n  value: 10\r\n},\r\n{\r\n  label: "20条/页",\r\n  value: 20\r\n},\r\n{\r\n  label: "50条/页",\r\n  value: 50\r\n},\r\n{\r\n  label: "100条/页",\r\n  value: 100\r\n}]',
          onResetBtnEvent:
-           "function onReset(cloneDeep) {\n  // 重置searchFrom\n  this.searchFrom = cloneDeep(this.rawSearchFrom);\n  // 清空搜索框\n  this.multiFieldSearch = '';\n  // 更改分页下标\n  this.page.pageNo = 1;\n  // 重新请求列表数据\n  this.queryTableData();\n}",
+           "function onReset() {\n  // 重置searchFrom\n  this._resetSearchForm();\n  // 清空搜索框\n  this.multiFieldSearch = '';\n  // 更改分页下标\n  this.page.pageNo = 1;\n  // 重新请求列表数据\n  this.queryTableData();\n}",
          onInitEvent: "function onInit() {\n  // 直接对searchForm相关字段进行赋值\n  this.searchForm.prjType = 1;\n  // 赋值搜索框\n  this.multiFieldSearch = '萧衍';\n}",
          onBeforeQueryDataEvent:
            "function onBeforeQueryData(params) {\n  // params是请求接口传递的参数，在这个函数里对params进行修改\n  params.prjId = '1234';\n  // 返回false代表终止请求，如果不返回值或者返回true都可以继续请求\n  return false;\n}",

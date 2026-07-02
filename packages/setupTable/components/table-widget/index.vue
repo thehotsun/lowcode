@@ -48,6 +48,7 @@
         :list-page-id-prop="listPageIdProp"
         :btn-config-arr="btnConfigArr"
         :raw-fuzzy-field-search-config="fuzzyFieldSearchConfig"
+        :header-below-search-list="headerBelowSearchList"
         edit-mode
         @searchOptionsChange="searchOptionsChange"
       >
@@ -123,7 +124,8 @@ export default {
       deliveryFieldsOption: {
         options: []
       },
-      fuzzyFieldSearchConfig: null
+      fuzzyFieldSearchConfig: null,
+      headerBelowSearchList: []
     };
   },
 
@@ -312,16 +314,21 @@ export default {
       this.setupForm = {};
       if (!tableData.length) return [];
       let formOptions = [];
+      let headerBelowSearchList = [];
       const length = tableData.length;
       tableData.map((item, index) => {
         const searchWidgetName = searchWidget.find(widgetitem => widgetitem.id === item.searchWidget)?.tagName;
         // 只有搜索控件有值且开启了搜索项，才会添加到options中
         if (searchWidgetName && item.isSearchWidget) {
           this.setFormField(this.searchFrom, item.fieldCode, item.searchWidgetConfig, searchWidgetName);
-          const options = getWidgetOptions(searchWidgetName, item);
-          // 给formitem加个key，因为只有设计区可以拖拽排序，防止渲染错乱
-          options.formItemAttrs.key = Math.random();
-          formOptions.push(merge(options, depthFirstSearchWithRecursive(item.searchWidgetConfig)));
+          if (item.searchWidgetConfig.position !== "below-header") {
+            const options = getWidgetOptions(searchWidgetName, item);
+            // 给formitem加个key，因为只有设计区可以拖拽排序，防止渲染错乱
+            options.formItemAttrs.key = Math.random();
+            formOptions.push(merge(options, depthFirstSearchWithRecursive(item.searchWidgetConfig)));
+          } else {
+            headerBelowSearchList.push(item);
+          }
         }
         // 如果循环到最后一个且存在其他筛选项，则对formOptions通过sortNumb进行排序且添加按钮到最后一个
         if (length - 1 === index && formOptions.length) {
@@ -329,6 +336,7 @@ export default {
           this.showSearchFromArea = true;
         }
       });
+      this.headerBelowSearchList = headerBelowSearchList;
       return [
         {
           elRowAttrs: {
@@ -415,7 +423,7 @@ export default {
 
         // 取第一个判断，没有 dataType 则补全所有叶子字段
         const leafFields = this.deliveryFieldsOption.options;
-        if (leafFields.length > 0 && !Object.prototype.hasOwnProperty.call(leafFields[0], 'dataType')) {
+        if (leafFields.length > 0 && !Object.prototype.hasOwnProperty.call(leafFields[0], "dataType")) {
           leafFields.forEach(item => {
             const matched = list.find(col => col.fieldName === item.fieldCode);
             if (matched) item.dataType = matched.dataType;

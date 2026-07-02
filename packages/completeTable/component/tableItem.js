@@ -9,6 +9,7 @@ import advSearch from "../../../src/assets/advSearch.svg";
 import settingSvg from "../../../src/assets/setting.svg";
 import refreshSvg from "../../../src/assets/refresh.svg";
 import downloadSvg from "../../../src/assets/downloadSvg.svg";
+import resetSvg from "../../../src/assets/reset.svg";
 import {
   getWidgetOptions,
   getWidgetDefaultVal,
@@ -97,7 +98,9 @@ function InstanceData() {
     currentSelectedRow: null,
     searchFormValueParsers: [],
     // 图标点击时高亮
-    clickedIcon: null
+    clickedIcon: null,
+    // 非得在表头下面放搜索，这是需要放的列的list
+    headerBelowSearchList: []
   };
 }
 
@@ -623,7 +626,7 @@ export default {
       if (Object.prototype.toString.call(data) !== "[object Object]") {
         return console.warn("expose_setForm方法传入的参数必须是一个对象！");
       }
-      this.searchForm = cloneDeep(this.rawSearchForm);
+      this._resetSearchForm();
       this.multiFieldSearch = multiFieldSearch || "";
       this.page.pageNo = 1;
       Object.keys(this.searchForm).forEach(key => {
@@ -987,33 +990,40 @@ export default {
       if (!tableData || !tableData.length) return [];
       const { setFormField } = this;
       let formOptions = [];
+      let headerBelowSearchList = [];
       const length = tableData.length;
       tableData.map((item, index) => {
         const searchWidgetName = searchWidget.find(widgetitem => widgetitem.id === item.searchWidget)?.tagName;
         // 只有搜索控件有值且开启了搜索项，才会添加到options中
         if (searchWidgetName && item.isSearchWidget) {
           setFormField(this.searchForm, item.fieldCode, item.searchWidgetConfig, searchWidgetName);
-          const options = getWidgetOptions(searchWidgetName, item);
-          const finalOptions = merge(options, depthFirstSearchWithRecursive(item.searchWidgetConfig));
-          if (searchWidgetName === "el-input-range") {
-            const triggerConditionFn = () => isValid(this.searchForm[`${item.fieldCode}Start`]) && isValid(this.searchForm[`${item.fieldCode}End`]);
-            this.addEventListener(finalOptions.child[0], triggerConditionFn);
-            this.addEventListener(finalOptions.child[2], triggerConditionFn);
+          // 搜索控件可能是放在列表上面也可能是放在表头下面
+          // TODO 表头下的怎么触发事件？
+          if (item.searchWidgetConfig.position !== "below-header") {
+            const options = getWidgetOptions(searchWidgetName, item);
+            const finalOptions = merge(options, depthFirstSearchWithRecursive(item.searchWidgetConfig));
+            if (searchWidgetName === "el-input-range") {
+              const triggerConditionFn = () => isValid(this.searchForm[`${item.fieldCode}Start`]) && isValid(this.searchForm[`${item.fieldCode}End`]);
+              this.addEventListener(finalOptions.child[0], triggerConditionFn);
+              this.addEventListener(finalOptions.child[2], triggerConditionFn);
+            } else {
+              this.addEventListener(finalOptions);
+            }
+            formOptions.push(finalOptions);
           } else {
-            this.addEventListener(finalOptions);
+            headerBelowSearchList.push(item);
           }
-          formOptions.push(finalOptions);
         }
 
         // 如果循环到最后一个且存在其他筛选项，则对formOptions通过sortNumb进行排序，复制一份最原始的form,添加筛选和重置按钮
         if (length - 1 === index && formOptions.length) {
-          this.rawSearchForm = cloneDeep(this.searchForm);
           formOptions = formOptions.sort((a, b) => a.sortNumb - b.sortNumb);
           // formOptions.push(...this.getBtnConfig());
           this.showSearchFrom = true;
         }
       });
-
+      this.headerBelowSearchList = headerBelowSearchList;
+      this.rawSearchForm = cloneDeep(this.searchForm);
       return [
         {
           elRowAttrs: {
@@ -1150,8 +1160,14 @@ export default {
       }
     },
 
+    _resetSearchForm() {
+      Object.keys(this.searchForm).forEach(key => {
+        this.searchForm[key] = this.rawSearchForm[key];
+      });
+    },
+
     handleReset() {
-      this.searchForm = cloneDeep(this.rawSearchForm);
+      this._resetSearchForm();
       this.multiFieldSearch = "";
       this.page.pageNo = 1;
       this.queryTableData();
@@ -1206,30 +1222,27 @@ export default {
     // 获取列表数据接口参数
     getParams(data = {}) {
       const extraParams = {};
+      // 处理日期选择框：数组形式后端不识别，拆分为 fieldStart/fieldEnd
+      const splitDateRange = ({ field, widgetType }) => {
+        if (widgetType === 4 && this.searchForm[field]?.length === 2) {
+          extraParams[`${field}Start`] = this.searchForm[field][0] || "";
+          extraParams[`${field}End`] = this.searchForm[field][1] || "";
+        }
+      };
       if (this.formOptions?.length) {
-        const formItem = this.formOptions[0].formItem;
-        formItem.map(item => {
-          // 此处要处理两个字段使用同一input的模糊搜索
-          const {
-            // relateOtherField = [],
-            formField = "",
-            searchWidgetType
-          } = item;
-          // if (searchWidgetType === 0 && relateOtherField.length) {
-          //   relateOtherField.map((fieldName) => {
-          //     extraParams[fieldName] = this.searchForm[formField];
-          //   });
-          // }
-          // 此处要处理日期选择框数组形式后端不识别，改为字段名加end和start
-          if (searchWidgetType === 4 && this.searchForm[formField]?.length === 2) {
-            extraParams[`${formField}Start`] = this.searchForm[formField][0] || "";
-            extraParams[`${formField}End`] = this.searchForm[formField][1] || "";
-          }
-          if (this.searchFormValueParsers.length) {
-            this.searchFormValueParsers.map(item => {
-              extraParams[item.searchFormField] = parseValue(this.searchForm[item.searchFormField], item.targetType);
-            });
-          }
+        this.formOptions[0].formItem.forEach(item => {
+          splitDateRange({ field: item.formField || "", widgetType: item.searchWidgetType });
+        });
+      }
+      if (this.headerBelowSearchList?.length) {
+        this.headerBelowSearchList.forEach(item => {
+          splitDateRange({ field: item.fieldCode || "", widgetType: item.searchWidgetConfig?.searchWidgetType });
+        });
+      }
+      // 处理数值范围字段的类型转换（后端要求数字类型）
+      if (this.searchFormValueParsers.length) {
+        this.searchFormValueParsers.forEach(item => {
+          extraParams[item.searchFormField] = parseValue(this.searchForm[item.searchFormField], item.targetType);
         });
       }
       return {
@@ -2871,6 +2884,7 @@ export default {
         handleAdvancedFilter,
         handleNativeFilter,
         handleFilter,
+        handleFilterReset,
         tableDisbaled,
         isVformWidget,
         handleSetting,
@@ -2897,9 +2911,9 @@ export default {
           {!isVformWidget && (
             <div class="flex">
               {/* tableDisbaled 时禁用点击 */}
-              <img src={advSearch} class="i pointer" {...this.getIconProps("advSearch")} onClick={handleAdvancedFilter} />
-              <img src={settingSvg} class="i pointer" {...this.getIconProps("setting")} onClick={handleSetting} />
               <img src={refreshSvg} class="i pointer" {...this.getIconProps("refresh")} onClick={iconRefresh} />
+              <img src={advSearch} class="i pointer" {...this.getIconProps("advSearch")} onClick={handleAdvancedFilter} />
+              <img src={resetSvg} class="i pointer" {...this.getIconProps("reset")} onClick={handleFilterReset} />
               <el-dropdown onCommand={iconDisposeDown}>
                 <span class="el-dropdown-link">
                   <img src={downloadSvg} class="i pointer" {...this.getIconProps("download", "hover", { marginTop: "5px" })} />
@@ -2910,6 +2924,7 @@ export default {
                   <el-dropdown-item command="all">全部</el-dropdown-item>
                 </el-dropdown-menu>
               </el-dropdown>
+              <img src={settingSvg} class="i pointer" {...this.getIconProps("setting")} onClick={handleSetting} />
             </div>
           )}
 
@@ -2980,7 +2995,9 @@ export default {
       btnConfigs,
       keyField,
       getParams,
-      renderHeader
+      renderHeader,
+      headerBelowSearchList,
+      _debouncedHandleFilter
     } = this;
 
     const curPageListeners = localProcessData
@@ -3071,7 +3088,12 @@ export default {
                     ...attrs
                   }
                 }}
+                headerBelowSearchList={headerBelowSearchList}
+                searchForm={searchForm}
+                generalRequest={generalRequest}
+                debouncedFilter={_debouncedHandleFilter}
                 scopedSlots={scopedSlots}
+                listPageId={listPageId}
               ></base-render-table>
             </el-main>
             {tableAttrs.showPagination ? (

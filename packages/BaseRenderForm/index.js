@@ -312,9 +312,11 @@ export default {
       this.disposeRequest(request, extraOption, formField);
       const { options = [], props = {} } = extraOption;
       const { formData, onlyShow } = this;
+      props.emitPath = false;
+      props.value = props.key;
       attrs.options = options;
-      attrs.props = props;
-      attrs.props.value = props.key;
+      attrs["show-all-levels"] = false;
+      Object.assign(attrs.props, props);
       let model = getter(formData, formField);
       return (
         <el-cascader
