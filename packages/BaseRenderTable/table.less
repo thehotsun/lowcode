@@ -16,13 +16,14 @@
   .el-table {
     th > .cell:has(.hb-search-header) {
       height: 100%;
+      overflow: visible;
     }
 
     th > .cell {
       .hb-search-header {
         display: inline-flex;
         flex-direction: column;
-        width: calc(100% - 18px);
+        width: calc(100% - 8px);
         vertical-align: top;
         height: 100%;
         .hb-search-label {
@@ -33,12 +34,21 @@
           align-items: center;
           justify-content: center;
         }
+        // 只让搜索控件变宽，标签不受影响
+        > :not(.hb-search-label) {
+          width: calc(100% + 13px);
+          margin-left: -9px;
+          margin-right: -4px;
+        }
+        .el-input__inner {
+          border-radius: 0 !important;
+        }
       }
       .hb-search-header + .caret-wrapper {
         position: absolute;
         top: calc(50% - 14px);
         transform: translateY(-50%);
-        right: -2px;
+        right: -5px;
       }
     }
   }

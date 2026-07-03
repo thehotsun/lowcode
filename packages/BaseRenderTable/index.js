@@ -231,12 +231,12 @@ export default {
         const label = target?.cnName || row[options.prop];
         let bcgColor;
         try {
-          if (target.styleConfig) {
-            const styleConfig = JSON.parse(target.styleConfig);
-            bcgColor = styleConfig?.backgroundColor;
+          if (target.contentStyle) {
+            const contentStyle = JSON.parse(target.contentStyle);
+            bcgColor = contentStyle?.backgroundColor;
           }
         } catch (e) {
-          console.error("解析styleConfig失败", e);
+          console.warn("解析contentStyle失败", e);
         }
         const baseStyle = `display: inline-block; padding: 2px 4px; border-radius: 6px; color: #fff; ${bcgColor ? "backgroundColor:" + bcgColor : ""}`;
         return bcgColor ? <div style={baseStyle}> {label}</div> : <span>{label}</span>;
@@ -492,13 +492,11 @@ export default {
       const value = this.searchForm?.[fieldCode];
 
       const baseAttrs = {
-        placeholder: tagAttrs.placeholder || `请输入${column.label}`,
         clearable: true,
         size: "small",
         ...tagAttrs
       };
-      const baseStyle = { width: "100%" };
-
+      delete baseAttrs.placeholder;
       const setValue = val => {
         if (this.searchForm) {
           this.$set(this.searchForm, fieldCode, val);
@@ -518,7 +516,6 @@ export default {
         case 0:
           // el-input 单行文本框
           return createEl("el-input", {
-            style: baseStyle,
             attrs: baseAttrs,
             model: { value, callback: setValue },
             on: { change: filterHandler }
@@ -579,12 +576,11 @@ export default {
             [
               createEl("el-input", {
                 slot: "reference",
-                style: { ...baseStyle, cursor: "pointer" },
+                style: { cursor: "pointer" },
                 attrs: {
                   ...baseAttrs,
                   readonly: true,
-                  value: displayText,
-                  placeholder: baseAttrs.placeholder || `请输入${column.label}`
+                  value: displayText
                 }
               }),
               createEl("div", { style: "padding: 12px; width: 340px;" }, [
@@ -640,8 +636,10 @@ export default {
           return createEl(
             "el-select",
             {
-              style: baseStyle,
-              attrs: baseAttrs,
+              attrs: {
+                ...baseAttrs,
+                placeholder: " "
+              },
               model: { value, callback: setValueAndFilter }
             },
             this.getSelectOptions(headerItem, createEl)
@@ -649,7 +647,6 @@ export default {
         case 3:
           // el-date-picker 日期选择框
           return createEl("el-date-picker", {
-            style: baseStyle,
             attrs: {
               ...baseAttrs,
               type: "date",
@@ -660,11 +657,11 @@ export default {
         case 5:
           // el-cascader 级联选择器
           return createEl("el-cascader", {
-            style: baseStyle,
             attrs: {
               "show-all-levels": false,
               ...baseAttrs,
-              ...this.getCascaderOptions(headerItem)
+              ...this.getCascaderOptions(headerItem),
+              placeholder: " "
             },
             props: { value },
             on: { change: setValueAndFilter }
@@ -689,8 +686,7 @@ export default {
           return createEl(
             "el-select",
             {
-              style: baseStyle,
-              attrs: baseAttrs,
+              attrs: { ...baseAttrs, placeholder: " " },
               model: { value, callback: setValueAndFilter }
             },
             dictOptions.map(opt =>
@@ -707,21 +703,17 @@ export default {
         case 4:
           // 日期范围选择器 - 表现是一个input，操作同日期范围选择器
           return createEl("el-date-picker", {
-            style: baseStyle,
             class: "no-date-picker-icons",
             attrs: {
               ...baseAttrs,
               type: "daterange",
               "range-separator": "-",
-              "value-format": "yyyy-MM-dd",
-              "start-placeholder": "开始日期",
-              "end-placeholder": "结束日期"
+              "value-format": "yyyy-MM-dd"
             },
             model: { value, callback: setValueAndFilter }
           });
         default:
           return createEl("el-input", {
-            style: baseStyle,
             attrs: baseAttrs,
             model: { value, callback: setValue },
             on: { change: filterHandler }

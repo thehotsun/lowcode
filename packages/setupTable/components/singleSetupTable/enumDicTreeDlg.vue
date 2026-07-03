@@ -31,7 +31,7 @@
             <el-table-column prop="tag" label="标签" width="80" align="center" />
             <el-table-column label="操作" width="130" align="center">
               <template slot-scope="{ row }">
-                <color-picker :value="(row.styleConfig && row.styleConfig.backgroundColor) || ''" @change="handleColorSelect(row, $event)" />
+                <color-picker :value="(row.contentStyle && row.contentStyle.backgroundColor) || ''" @change="handleColorSelect(row, $event)" />
               </template>
             </el-table-column>
           </el-table>
@@ -153,15 +153,15 @@ export default {
       try {
         const res = await this.generalRequest("/admin/dic/getDicContentList", "get", { dicCode: groupId });
         const items = (res.data || []).map(item => {
-          let styleConfig = {};
-          if (item.styleConfig) {
+          let contentStyle = {};
+          if (item.contentStyle) {
             try {
-              styleConfig = JSON.parse(item.styleConfig);
+              contentStyle = JSON.parse(item.contentStyle);
             } catch (e) {
               /* ignore */
             }
           }
-          return { ...item, styleConfig };
+          return { ...item, contentStyle };
         });
         this.enumItems = items;
       } catch (e) {
@@ -179,9 +179,9 @@ export default {
     },
 
     handleColorSelect(row, color) {
-      this.$set(row, "styleConfig", { ...row.styleConfig, backgroundColor: color });
+      this.$set(row, "contentStyle", { ...row.contentStyle, backgroundColor: color });
       if (typeof this.onUpdateItemColor === "function") {
-        this.onUpdateItemColor({ ...row, newDicId: row.dicId, styleConfig: JSON.stringify(row.styleConfig) });
+        this.onUpdateItemColor({ ...row, newDicId: row.dicId, contentStyle: JSON.stringify(row.contentStyle) });
       }
     },
 
