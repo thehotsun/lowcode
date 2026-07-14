@@ -911,6 +911,7 @@ export default {
     },
     // 获取字典
     async getDicList(dicCode) {
+      if (this.previewMode) return;
       try {
         const res = await this.generalRequest(`/dic/content/list?dicCode=${dicCode}`, "get");
         return res.data || [];
@@ -2708,6 +2709,7 @@ export default {
         updateTotalCount,
         syncFormDataByVformWidget
       } = this;
+      // TODO: 这里可能还要考虑触发表单的onSubmit钩子，而不是直接getFormData
       const rowData = await this.$refs[this.curDialogCompRef]?.getFormData();
       // 根据按钮类型判断怎么处理提交数据
       if (btnType === "edit") {
@@ -2997,7 +2999,8 @@ export default {
       getParams,
       renderHeader,
       headerBelowSearchList,
-      _debouncedHandleFilter
+      _debouncedHandleFilter,
+      previewMode
     } = this;
 
     const curPageListeners = localProcessData
@@ -3094,6 +3097,7 @@ export default {
                 debouncedFilter={_debouncedHandleFilter}
                 scopedSlots={scopedSlots}
                 listPageId={listPageId}
+                previewMode={previewMode}
               ></base-render-table>
             </el-main>
             {tableAttrs.showPagination ? (

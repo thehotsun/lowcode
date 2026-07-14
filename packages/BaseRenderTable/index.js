@@ -65,7 +65,8 @@ export default {
       default() {
         return null;
       }
-    }
+    },
+    previewMode: Boolean
     // page: {
     //   type: Object,
     //   default() {
@@ -430,6 +431,7 @@ export default {
 
     disposeCascaderRequest(request, cacheEntry) {
       console.log("disposeCascaderRequest", request, cacheEntry);
+      if (this.previewMode) return;
       if (cacheEntry.status === "pending") {
         cacheEntry.status = "loading";
         const { url, type, params = "" } = request;
@@ -442,6 +444,7 @@ export default {
     },
 
     autoFillOptions(request, fieldCode, cacheEntry) {
+      if (this.previewMode) return;
       this.generalRequest("/dyn-common/page-list/queryDictColumnDataList", "post", {
         listPageId: this.listPageId,
         idFieldName: fieldCode || "",
@@ -460,6 +463,7 @@ export default {
     },
 
     disposeDictRequest(request, cacheEntry) {
+      if (this.previewMode) return;
       if (request?.require && request?.url && cacheEntry.status === "pending") {
         cacheEntry.status = "loading";
         cacheEntry.options = [];

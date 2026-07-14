@@ -566,7 +566,8 @@ export function BtnConfigFormOptions() {
           tagName: "el-cascader",
           style: "width: 180px",
           tagAttrs: {
-            placeholder: "请选择流程"
+            placeholder: "请选择流程",
+            props: {}
           },
           ref: "chooseFlow",
           // 对应formData中的属性值
