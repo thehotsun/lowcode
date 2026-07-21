@@ -142,6 +142,13 @@
       <!-- 枚举展示（最后） -->
       <el-row :gutter="20">
         <el-col :span="12">
+          <el-form-item label="渲染类型">
+            <el-select v-model="formData.cellRenderType" style="width: 100%;" clearable>
+              <el-option v-for="item in cellRenderTypeOptions" :key="item.id" :value="item.id" :label="item.cnName" />
+            </el-select>
+          </el-form-item>
+        </el-col>
+        <el-col v-if="formData.cellRenderType === CELL_REBDER_TYPE.DICT" :span="12">
           <el-form-item label="枚举展示">
             <div class="form-item-row" style="width: 100%;">
               <div class="form-item-ellipsis">{{ selectedEnumDisplayLabel }}</div>
@@ -256,7 +263,7 @@ import enumDicTreeDlg from "./enumDicTreeDlg.vue";
 import onlineCode from "/packages/completeTable/component/onlineCode.vue";
 import { tableOptionsCodeExampleList } from "/utils/codeExampleList";
 import { getSingleTableData, addTipsProps } from "../../../../baseConfig/tableBaseConfig";
-import { searchWidget, align, fixed } from "../../../../baseConfig/tableSelectConfigs";
+import { searchWidget, align, fixed, cellRenderType, CELL_REBDER_TYPE } from "../../../../baseConfig/tableSelectConfigs";
 export default {
   components: { setSearchWidgetAttrDlg, setClickActionAndShowContentDlg, setFilterConfigDlg, enumDicTreeDlg, onlineCode },
   props: {
@@ -294,7 +301,9 @@ export default {
       formData: getSingleTableData(),
       tipsMap: addTipsProps,
       alignOptions: align,
-      fixedOptions: fixed
+      fixedOptions: fixed,
+      cellRenderTypeOptions: cellRenderType,
+      CELL_REBDER_TYPE
     };
   },
 

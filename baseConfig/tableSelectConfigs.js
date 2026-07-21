@@ -73,3 +73,21 @@ export const searchWidget = [
     sqlType: "jy-dict-list"
   }
 ];
+
+export const CELL_REBDER_TYPE = {
+  DICT: "dict",
+  PERSON: "person"
+};
+
+export const cellRenderType = [
+  {
+    id: CELL_REBDER_TYPE.DICT,
+    cnName: "字典",
+    value: CELL_REBDER_TYPE.DICT
+  },
+  {
+    id: CELL_REBDER_TYPE.PERSON,
+    cnName: "人员",
+    value: CELL_REBDER_TYPE.PERSON
+  }
+];

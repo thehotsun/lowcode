@@ -3,7 +3,7 @@ import { decorator, mergeStyle, str2Fn, str2obj } from "../../utils";
 import { omit } from "lodash";
 import { tableOptionsCodeExampleList } from "/utils/codeExampleList";
 import onlineCode from "/packages/completeTable/component/onlineCode.vue";
-
+import { CELL_REBDER_TYPE } from "/baseConfig/tableSelectConfigs";
 import { h } from "vue";
 export default {
   name: "BaseRenderTable",
@@ -190,6 +190,7 @@ export default {
 
     getCellRender(row, options) {
       const that = this;
+      const cellValue = row[options.prop];
       if (options.tagName) {
         // 正常设置的tableJson没有，只有自定义的时候有tagName
         return this.cellRender(row, options);
@@ -218,7 +219,7 @@ export default {
               }
             };
             const style = mergeStyle(null, contentTextAttr);
-            cellOptions.contentText = contentTextAttr.textVal || row[options.prop];
+            cellOptions.contentText = contentTextAttr.textVal || cellValue;
             if (contentTextAttr.iconName) {
               cellOptions[`${contentTextAttr.iconPosition}TextClass`] = contentTextAttr.iconName;
               cellOptions[`${contentTextAttr.iconPosition}TextStyle`] = `${style};${contentTextAttr.iconStyle}`;
@@ -226,10 +227,23 @@ export default {
             cellOptions.style = `${style};flex: 1; overflow: hidden;white-space: nowrap; text-overflow: ellipsis;${contentTextAttr.textStyle}`;
             return this.cellRender(row, cellOptions);
           });
-      } else if (options.enumDisplayConfig?.dicList?.length && row[options.prop] !== undefined && row[options.prop] !== null && row[options.prop] !== "") {
+      } else if (options.cellRenderType === CELL_REBDER_TYPE.PERSON && typeof cellValue === "string") {
+        return (
+          <div class="personWrap">
+            <span class="tag">{cellValue.at(0)}</span>
+            <span>{cellValue}</span>
+          </div>
+        );
+      } else if (
+        options.cellRenderType === CELL_REBDER_TYPE.DICT &&
+        options.enumDisplayConfig?.dicList?.length &&
+        cellValue !== undefined &&
+        cellValue !== null &&
+        cellValue !== ""
+      ) {
         // 检查是否有枚举的设置（实际上就是关联一个字典）,字典现在value只有字符串
-        const target = options.enumDisplayConfig.dicList.find(item => item.dicId === `${row[options.prop]}`);
-        const label = target?.cnName || row[options.prop];
+        const target = options.enumDisplayConfig.dicList.find(item => item.dicId === `${cellValue}`);
+        const label = target?.cnName || cellValue;
         let bcgColor;
         try {
           if (target.contentStyle) {
@@ -242,7 +256,7 @@ export default {
         const baseStyle = `display: inline-block; padding: 2px 4px; border-radius: 6px; color: #fff; ${bcgColor ? "backgroundColor:" + bcgColor : ""}`;
         return bcgColor ? <div style={baseStyle}> {label}</div> : <span>{label}</span>;
       } else {
-        return row[options.prop];
+        return cellValue;
       }
     },
 

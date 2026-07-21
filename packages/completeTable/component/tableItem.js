@@ -132,11 +132,11 @@ export default {
     },
     // 当前是否作为Vform的一个组件
     isVformWidget() {
-      return this.renderMode === "vformWidget";
+      return this.renderStrategy.source === "vformWidget";
     },
     // 当前是否作为FreeLayout的一个组件
     isFreeLayoutWidget() {
-      return this.renderMode === "freeLayoutWidget";
+      return this.renderStrategy.source === "freeLayoutWidget";
     },
     // 使用动态表单是否要使用网络请求处理提交数据
     localProcessData() {
@@ -462,9 +462,11 @@ export default {
         };
       }
     },
-    renderMode: {
+    renderStrategy: {
       default: () => {
-        return "";
+        return {
+          source: ""
+        };
       }
     },
     downloadFile: {
@@ -891,6 +893,7 @@ export default {
           obj.enumDisplayConfig.dicList = list;
         });
       }
+      obj.cellRenderType = item.cellRenderType;
 
       // 某些函数转换
       const fnProps = ["formatter", "renderHeader"];
@@ -1379,6 +1382,7 @@ export default {
       } else if (this.isFreeLayoutWidget) {
         // 自由布局暂时不做筛选
         // config = this.filterBtnsByFreeLayuotPermission(config);
+        config = this.filterBtnsByPermission(config);
       } else {
         config = this.filterBtnsByPermission(config);
       }
@@ -1573,7 +1577,7 @@ export default {
       this.btnConfigs.closeOnPressEscape = closeOnPressEscape;
       await this.$nextTick();
       // 执行任何操作之前都先进行校验
-      if (!validateFn || (validateFn && (await Promise.resolve(str2Fn(validateFn).call(this, this.selectList))))) {
+      if (!validateFn || (validateFn && (await Promise.resolve(str2Fn(validateFn).call(this, this.getSelectedData()))))) {
         // 如果有自定义事件，则执行自定义事件
         if (fn) {
           str2Fn(fn).call(this, rowData);

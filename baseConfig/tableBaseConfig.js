@@ -362,7 +362,10 @@ export function getSingleTableData(params = {}) {
     listeners: {},
     contentTextAttrArr: [],
     isCustom: false,
+    // 这个数据类型好像加了没什么用
     dataType: "",
+    // 展示类型，现在只有字典和人员
+    cellRenderType: "",
     // 枚举值的展示设置
     enumDisplayConfig: new EnumDisplayConfig(),
     ...params
