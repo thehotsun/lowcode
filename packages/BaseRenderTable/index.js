@@ -229,9 +229,9 @@ export default {
           });
       } else if (options.cellRenderType === CELL_REBDER_TYPE.PERSON && typeof cellValue === "string") {
         return (
-          <div class="personWrap">
-            <span class="tag">{cellValue.at(0)}</span>
-            <span>{cellValue}</span>
+          <div class="user-tag">
+            <span class="user-tag-av">{cellValue.at(0)}</span>
+            {cellValue}
           </div>
         );
       } else if (
@@ -244,16 +244,19 @@ export default {
         // 检查是否有枚举的设置（实际上就是关联一个字典）,字典现在value只有字符串
         const target = options.enumDisplayConfig.dicList.find(item => item.dicId === `${cellValue}`);
         const label = target?.cnName || cellValue;
-        let bcgColor;
+        let bcgColor, color;
         try {
           if (target.contentStyle) {
             const contentStyle = JSON.parse(target.contentStyle);
             bcgColor = contentStyle?.backgroundColor;
+            color = contentStyle?.color;
           }
         } catch (e) {
           console.warn("解析contentStyle失败", e);
         }
-        const baseStyle = `display: inline-block; padding: 2px 4px; border-radius: 6px; color: #fff; ${bcgColor ? "backgroundColor:" + bcgColor : ""}`;
+        const baseStyle = `display: inline-block; padding: 2px 6px; border-radius: 6px; color: #fff; font-size: 12px; font-weight: 600; ${
+          bcgColor ? "backgroundColor:" + bcgColor : ""
+        };${color ? "color:" + color : ""}`;
         return bcgColor ? <div style={baseStyle}> {label}</div> : <span>{label}</span>;
       } else {
         return cellValue;

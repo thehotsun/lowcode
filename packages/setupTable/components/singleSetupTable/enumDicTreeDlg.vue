@@ -31,7 +31,39 @@
             <el-table-column prop="tag" label="标签" width="80" align="center" />
             <el-table-column label="操作" width="130" align="center">
               <template slot-scope="{ row }">
-                <color-picker :value="(row.contentStyle && row.contentStyle.backgroundColor) || ''" @change="handleColorSelect(row, $event)" />
+                <el-popover
+                  placement="left"
+                  width="260"
+                  trigger="manual"
+                  popper-class="preset-color-popover"
+                  :value="activePopoverDicId === row.dicId"
+                >
+                  <div class="preset-grid">
+                    <div
+                      v-for="(preset, idx) in cellDictRenderConfig"
+                      :key="idx"
+                      class="preset-item"
+                      :style="{ backgroundColor: preset.backgroundColor, color: preset.color }"
+                      :title="preset.desc"
+                      @click="handlePresetSelect(row, preset)"
+                    >
+                      示例
+                    </div>
+                  </div>
+                  <div slot="reference" style="display:inline-block;cursor:pointer" @click="togglePopover(row.dicId)">
+                    <span
+                      v-if="row.contentStyle && row.contentStyle.backgroundColor"
+                      class="selected-badge"
+                      :style="{
+                        backgroundColor: row.contentStyle.backgroundColor,
+                        color: row.contentStyle.color
+                      }"
+                    >
+                      示例
+                    </span>
+                    <el-button v-else size="mini" type="text">选择样式</el-button>
+                  </div>
+                </el-popover>
               </template>
             </el-table-column>
           </el-table>
@@ -49,10 +81,9 @@
 </template>
 
 <script>
-import ColorPicker from "../setupBtnConfig/components/colorPicker.vue";
+import { cellDictRenderConfig } from "../../../../baseConfig/tableSelectConfigs";
 
 export default {
-  components: { ColorPicker },
   inject: {
     onUpdateItemColor: {
       default: () => (dicId, color) => {
@@ -73,10 +104,15 @@ export default {
       treeList: [],
       filterText: "",
       selectedNode: null,
-      enumItems: []
+      enumItems: [],
+      activePopoverDicId: null
     };
   },
-  computed: {},
+  computed: {
+    cellDictRenderConfig() {
+      return cellDictRenderConfig;
+    }
+  },
   watch: {
     filterText(val) {
       this.$refs.dicTree && this.$refs.dicTree.filter(val);
@@ -178,11 +214,20 @@ export default {
       this.dialogVisible = false;
     },
 
-    handleColorSelect(row, color) {
-      this.$set(row, "contentStyle", { ...row.contentStyle, backgroundColor: color });
+    togglePopover(dicId) {
+      this.activePopoverDicId = this.activePopoverDicId === dicId ? null : dicId;
+    },
+
+    handlePresetSelect(row, preset) {
+      this.$set(row, "contentStyle", {
+        ...row.contentStyle,
+        backgroundColor: preset.backgroundColor,
+        color: preset.color
+      });
       if (typeof this.onUpdateItemColor === "function") {
         this.onUpdateItemColor({ ...row, newDicId: row.dicId, contentStyle: JSON.stringify(row.contentStyle) });
       }
+      this.activePopoverDicId = null;
     },
 
     handleCancel() {
@@ -210,6 +255,38 @@ export default {
   display: flex;
   flex-direction: column;
   overflow: hidden;
+}
+.preset-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.preset-item {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 50px;
+  height: 28px;
+  border-radius: 4px;
+  font-size: 12px;
+  cursor: pointer;
+  user-select: none;
+  transition: transform 0.15s;
+  border: 1px solid transparent;
+}
+.preset-item:hover {
+  transform: scale(1.1);
+  border-color: #409eff;
+}
+.selected-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2px 10px;
+  height: 24px;
+  border-radius: 4px;
+  font-size: 12px;
+  user-select: none;
 }
 .enumDicTreeDlg-placeholder {
   flex: 1;
