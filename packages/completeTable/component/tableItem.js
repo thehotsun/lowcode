@@ -1126,9 +1126,10 @@ export default {
       // 取第一个字段判断是否有 dataType 属性，没有则调接口补全所有字段
       const needFetch = formFields.length > 0 && !Object.prototype.hasOwnProperty.call(formFields[0], "dataType");
       if (needFetch) {
-        const { data: columns } = await this.requestFieldList(this.listPageId);
+        const res = await this.requestFieldList?.(this.listPageId);
+        const columns = res?.data || [];
         formFields.forEach(field => {
-          const matched = (columns || []).find(col => col.fieldName === field.fieldCode);
+          const matched = columns.find(col => col.fieldName === field.fieldCode);
           if (matched) {
             field.dataType = matched.dataType;
             field.columnName = field.fieldCode;
