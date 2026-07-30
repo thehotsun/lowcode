@@ -138,6 +138,14 @@ export default {
     isFreeLayoutWidget() {
       return this.renderStrategy.source === "freeLayoutWidget";
     },
+    // 当前是否作为本地组件使用
+    isLocalCode() {
+      return this.renderStrategy.source === "localCode";
+    },
+    // 当前列表是否只能单选
+    singleSelect() {
+      return !!this.renderStrategy.singleSelect;
+    },
     // 使用动态表单是否要使用网络请求处理提交数据
     localProcessData() {
       return this.getWidget()?.options?.renderMode === 0 || (this.getWidget()?.options?.renderMode === 1 && this.getDlgConfig()?.btnType === "add");
@@ -487,6 +495,27 @@ export default {
     filePreviewV1: {
       default: () => () => {
         console.warn("inject缺失filePreviewV1!");
+      }
+    },
+    // 这个是外部传入的应用到el-table上的，主要是应付在代码里使用
+    externalTableAttrs: {
+      default: () => {
+        return {};
+      }
+    },
+    // 回显
+    enableEchoConfig: {
+      default: () => {
+        return () => ({
+          enableEcho: false,
+          echoVal: []
+        });
+      }
+    },
+    // 跨页多选
+    crossPageSelect: {
+      default: () => {
+        return false;
       }
     },
     // 这个是自由布局
@@ -964,7 +993,8 @@ export default {
         this.tableOptions.unshift({
           type: "selection",
           width: "46",
-          align: "center"
+          align: "center",
+          "reserve-selection": this.crossPageSelect
         });
       }
     },
@@ -1188,10 +1218,23 @@ export default {
     },
 
     selectListHandler(val) {
+      if (this._singleSelecting) return;
       this.$emit("selectListHandler", val);
       this.eventBus?.$emit?.(`${this.getWidgetByFreeLayout()?.id}.selectionChange`, val);
       console.log(val);
-      this.selectList = val;
+      if (this.singleSelect) {
+        this._singleSelecting = true;
+        this.$refs.table.$refs.elTable.clearSelection();
+        if (val && val.length) {
+          this.$refs.table.$refs.elTable.toggleRowSelection(val[val.length - 1], true);
+          this.selectList = [val[val.length - 1]];
+        } else {
+          this.selectList = [];
+        }
+        this._singleSelecting = false;
+      } else {
+        this.selectList = val;
+      }
     },
 
     handleCurrentChange(val) {
@@ -1382,7 +1425,9 @@ export default {
       } else if (this.isFreeLayoutWidget) {
         // 自由布局暂时不做筛选
         // config = this.filterBtnsByFreeLayuotPermission(config);
-        config = this.filterBtnsByPermission(config);
+        if (this.renderStrategy.btnVerifyType === "checkPermission") {
+          config = this.filterBtnsByPermission(config);
+        }
       } else {
         config = this.filterBtnsByPermission(config);
       }
@@ -2385,7 +2430,7 @@ export default {
             close-on-click-modal={false}
             close-on-press-escape={closeOnPressEscape}
             append-to-body
-            v-draggable
+            v-draggable_maximize
             width={width}
           >
             <div
@@ -3004,7 +3049,8 @@ export default {
       renderHeader,
       headerBelowSearchList,
       _debouncedHandleFilter,
-      previewMode
+      previewMode,
+      externalTableAttrs
     } = this;
 
     const curPageListeners = localProcessData
@@ -3092,7 +3138,8 @@ export default {
                 }}
                 {...{
                   attrs: {
-                    ...attrs
+                    ...attrs,
+                    ...externalTableAttrs
                   }
                 }}
                 headerBelowSearchList={headerBelowSearchList}
