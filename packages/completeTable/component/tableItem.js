@@ -78,6 +78,7 @@ function InstanceData() {
     externalParams: {},
     dynamicExternalParams: {},
     keyField: "",
+    keyFieldResolved: false,
     onlyRead: false,
     // 针对某些情况，不允许查看外的任何操作
     tableDisbaled: false,
@@ -690,6 +691,7 @@ export default {
     },
 
     expose_setTableData(data) {
+      this.resolveKeyFieldCase(data);
       // 如果当前作为vform组件且处于本地模式，则要重新计算deletelogid
       if (this.isVformWidget && this.localProcessData) {
         const oldDataIdList = this.tableData.map(item => item[this.keyField]).filter(v => v);
@@ -1359,6 +1361,7 @@ export default {
                 this.page.totalCount = res.totalCount;
               }
             }
+            this.resolveKeyFieldCase(res.data);
             // 低代码列表页面，相互切换时，最下面的合计有时展示不出来，需要重新调用此方法
             if (this.attrs.showSummary) {
               setTimeout(() => {
@@ -1387,6 +1390,23 @@ export default {
       this.tableConfigJSON = tableOptions;
       this.keyField = keyField;
       this.fuzzyFieldSearchConfig = fuzzyFieldSearchConfig;
+    },
+
+    resolveKeyFieldCase(data) {
+      if (!this.keyField || !data?.length) return;
+      if (this.keyFieldResolved) return;
+      const firstRow = data[0];
+      if (Object.prototype.hasOwnProperty.call(firstRow, this.keyField)) {
+        this.keyFieldResolved = true;
+        return;
+      }
+      const escaped = this.keyField.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const regex = new RegExp(`^${escaped}$`, 'i');
+      const matchedKey = Object.keys(firstRow).find(k => regex.test(k));
+      if (matchedKey) {
+        this.keyField = matchedKey;
+      }
+      this.keyFieldResolved = true;
     },
 
     queryTableConfig() {

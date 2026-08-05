@@ -842,6 +842,31 @@ export function BtnConfigs() {
   };
 }
 
+/**
+ * 转换参数值，支持 `{变量名}` 占位符语法，从调用上下文的 this 中取对应的属性值进行替换。
+ *
+ * 使用示例：
+ * ```js
+ * // 1. 普通字符串直接返回
+ * transformParamsValue("hello")           // "hello"
+ *
+ * // 2. {变量名} 从 this 上取值替换
+ * const ctx = { name: "张三", age: 18 }
+ * transformParamsValue.call(ctx, "{name}") // "张三"
+ * transformParamsValue.call(ctx, "用户：{name}") // "用户：张三"
+ * transformParamsValue.call(ctx, "{age}") // 18
+ *
+ * // 3. 空/非字符串值返回 ""
+ * transformParamsValue(null)              // ""
+ * transformParamsValue(undefined)         // ""
+ * transformParamsValue("")                // ""
+ * transformParamsValue(123)               // ""  (控制台警告)
+ * ```
+ *
+ * @param {string} value - 待转换的参数值，可包含 `{变量名}` 占位符
+ * @returns {string} 转换后的字符串。非字符串入参返回空串并打印警告。
+ * @this {Object} 需要传入绑定上下文，通过 `fn.call(context, value)` 调用
+ */
 export function transformParamsValue(value) {
   if ([null, undefined, ""].includes(value)) return "";
   if (typeof value === "string") {

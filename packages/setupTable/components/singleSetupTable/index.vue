@@ -6,6 +6,7 @@
       <el-button size="small" type="default" :disabled="!selected.length" @click="handleDelParent">删除父级</el-button>
       <el-button size="small" type="default" @click="handleFuzzySearch">设置搜索字段</el-button>
       <el-button size="small" type="default" @click="handleSummaryRow">设置统计行</el-button>
+      <el-button size="small" type="default" @click="handleRefreshPrimaryKey">刷新主键</el-button>
       <el-button size="small" type="default" @click="handleHideAll">隐藏所有</el-button>
       <el-button size="small" type="default" @click="handleShowAll">显示所有</el-button>
       <el-button size="small" type="danger" :disabled="!selected.length" @click="handleDelete">删除</el-button>
@@ -537,6 +538,10 @@ export default {
     handleSetupMore(row) {
       this.curRowData = row;
       this.$refs.singRowSetupDlg.openDlg(row);
+    },
+
+    handleRefreshPrimaryKey() {
+      this.$emit("refreshPrimaryKey");
     }
   }
 };

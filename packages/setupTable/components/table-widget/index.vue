@@ -51,6 +51,7 @@
         :header-below-search-list="headerBelowSearchList"
         edit-mode
         @searchOptionsChange="searchOptionsChange"
+        @refreshPrimaryKey="getPrimekey(true)"
       >
       </single-setup-table>
     </div>
@@ -369,7 +370,7 @@ export default {
         if (res.result === "0") {
           this.keyField = res.data.columnName;
           if (tip) {
-            this.$success("重新获取主键成功！");
+            this.$success("获取主键成功！请重新保存");
           }
         }
       });

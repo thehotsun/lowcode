@@ -94,13 +94,35 @@ export function getUrlQuery(_url) {
   return result;
 }
 
+/**
+ * 递归处理值中的动态变量占位符 `${xxx}`，从上下文对象中取值替换。
+ *
+ * 内部函数，由 {@link convertDynaticData} 调用。支持递归处理对象、数组及嵌套结构。
+ *
+ * 占位符语法：
+ * - `${keyPath}`      → 从 `context` 中按路径取值，如 `${formData.name}`
+ * - `${this.keyPath}` → 从 `that`（调用方组件实例）中按路径取值，如 `${this.widget_0.value}`
+ *
+ * 使用示例：
+ * ```js
+ * // 在 convertDynaticData 内部被调用，不直接使用
+ * const input = { title: "${formData.name}", count: "${this.count}" };
+ * convertDynaticData(input, { formData: { name: "张三" } }, this);
+ * // => { title: "张三", count: undefined }  // count 从组件实例取值
+ * ```
+ *
+ * @param {*} value - 待处理的值，可以是基本类型、数组或对象
+ * @param {Object} [context={}] - 数据上下文，用于解析不含 `this.` 前缀的占位符
+ * @param {Object} [that] - 调用方组件实例（Vue 组件 this），用于解析 `${this.xxx}` 占位符
+ * @returns {*} 替换后的值，结构保持与输入一致
+ */
 function processValue(value, context = {}, that) {
   // 判断是否是基本数据类型
   if (value === null || (typeof value !== "object" && typeof value !== "function")) {
-    // 如果是字符串并且符合{xxx}格式
+    // 如果是字符串并且符合 ${xxx} 格式
     if (typeof value === "string" && value.startsWith("${") && value.endsWith("}")) {
       const keyPath = value.slice(2, -1); // 提取 xxx 部分
-      return resolveKeyPath(keyPath, context, that); // 递归查找
+      return resolveKeyPath(keyPath, context, that); // 按路径查找
     }
     return value;
   }
