@@ -168,6 +168,21 @@ export default {
       return this.filterTableOptions?.length ? this.tableAttrs?.hiddenDefaultArea : true;
     },
 
+    // 隐藏默认搜索刷新等功能区
+    hiddenFilter() {
+      return this.tableAttrs?.hiddenFilter;
+    },
+
+    // 隐藏默认搜索刷新等功能区
+    hiddenReset() {
+      return this.tableAttrs?.hiddenReset;
+    },
+
+    // 隐藏默认搜索刷新等功能区
+    hiddenDownload() {
+      return this.tableAttrs?.hiddenDownload;
+    },
+
     // 处理分页且属于本地请求数据的情况
     attrs() {
       const props = [
@@ -187,7 +202,10 @@ export default {
         "dataTransitionParentField",
         "dataTransitionFn",
         "clickRowShowDetialDialog",
-        "hiddenDefaultArea"
+        "hiddenDefaultArea",
+        "hiddenFilter",
+        "hiddenReset",
+        "hiddenDownload"
       ];
       if (!this.tableAttrs.isShowIndex) {
         props.push("index");
@@ -1400,8 +1418,8 @@ export default {
         this.keyFieldResolved = true;
         return;
       }
-      const escaped = this.keyField.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-      const regex = new RegExp(`^${escaped}$`, 'i');
+      const escaped = this.keyField.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+      const regex = new RegExp(`^${escaped}$`, "i");
       const matchedKey = Object.keys(firstRow).find(k => regex.test(k));
       if (matchedKey) {
         this.keyField = matchedKey;
@@ -2953,6 +2971,9 @@ export default {
     renderOperateArea() {
       let {
         hiddenDefaultArea,
+        hiddenFilter,
+        hiddenReset,
+        hiddenDownload,
         handleAdvancedFilter,
         handleNativeFilter,
         handleFilter,
@@ -2984,18 +3005,20 @@ export default {
             <div class="flex">
               {/* tableDisbaled 时禁用点击 */}
               <img src={refreshSvg} class="i pointer" {...this.getIconProps("refresh")} onClick={iconRefresh} />
-              <img src={advSearch} class="i pointer" {...this.getIconProps("advSearch")} onClick={handleAdvancedFilter} />
-              <img src={resetSvg} class="i pointer" {...this.getIconProps("reset")} onClick={handleFilterReset} />
-              <el-dropdown onCommand={iconDisposeDown}>
-                <span class="el-dropdown-link">
-                  <img src={downloadSvg} class="i pointer" {...this.getIconProps("download", "hover", { marginTop: "5px" })} />
-                </span>
-                <el-dropdown-menu slot="dropdown">
-                  <el-dropdown-item command="curSelect">当前选中</el-dropdown-item>
-                  <el-dropdown-item command="curPage">当前页</el-dropdown-item>
-                  <el-dropdown-item command="all">全部</el-dropdown-item>
-                </el-dropdown-menu>
-              </el-dropdown>
+              {!hiddenFilter && <img src={advSearch} class="i pointer" {...this.getIconProps("advSearch")} onClick={handleAdvancedFilter} />}
+              {!hiddenReset && <img src={resetSvg} class="i pointer" {...this.getIconProps("reset")} onClick={handleFilterReset} />}
+              {!hiddenDownload && (
+                <el-dropdown onCommand={iconDisposeDown}>
+                  <span class="el-dropdown-link">
+                    <img src={downloadSvg} class="i pointer" {...this.getIconProps("download", "hover", { marginTop: "5px" })} />
+                  </span>
+                  <el-dropdown-menu slot="dropdown">
+                    <el-dropdown-item command="curSelect">当前选中</el-dropdown-item>
+                    <el-dropdown-item command="curPage">当前页</el-dropdown-item>
+                    <el-dropdown-item command="all">全部</el-dropdown-item>
+                  </el-dropdown-menu>
+                </el-dropdown>
+              )}
               <img src={settingSvg} class="i pointer" {...this.getIconProps("setting")} onClick={handleSetting} />
             </div>
           )}

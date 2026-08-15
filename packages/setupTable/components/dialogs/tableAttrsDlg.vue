@@ -49,6 +49,21 @@
               <span style="cursor: pointer;font-size: 14px">隐藏右侧默认搜索、刷新等功能区域</span><i style="width: 20px" class="el-icon-question"></i>
             </el-checkbox>
           </el-tooltip>
+          <el-tooltip class="item" effect="dark" content="隐藏列表上方右侧的高级筛选功能。" placement="top-start">
+            <el-checkbox v-model="tableAttrs.hiddenFilter" :disabled="tableAttrs.hiddenDefaultArea">
+              <span style="cursor: pointer;font-size: 14px">隐藏筛选</span><i style="width: 20px" class="el-icon-question"></i>
+            </el-checkbox>
+          </el-tooltip>
+          <el-tooltip class="item" effect="dark" content="隐藏列表上方右侧的重置功能。" placement="top-start">
+            <el-checkbox v-model="tableAttrs.hiddenReset" :disabled="tableAttrs.hiddenDefaultArea">
+              <span style="cursor: pointer;font-size: 14px">隐藏重置</span><i style="width: 20px" class="el-icon-question"></i>
+            </el-checkbox>
+          </el-tooltip>
+          <el-tooltip class="item" effect="dark" content="隐藏列表上方右侧的下载功能。" placement="top-start">
+            <el-checkbox v-model="tableAttrs.hiddenDownload" :disabled="tableAttrs.hiddenDefaultArea">
+              <span style="cursor: pointer;font-size: 14px">隐藏下载</span><i style="width: 20px" class="el-icon-question"></i>
+            </el-checkbox>
+          </el-tooltip>
         </el-form-item>
 
         <el-row>
