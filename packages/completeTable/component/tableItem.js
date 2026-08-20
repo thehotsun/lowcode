@@ -1620,6 +1620,7 @@ export default {
         useDialog = true,
         showFooter = false,
         validateFn = "",
+        btnValidationOptions = {},
         command = "",
         btnId,
         authorize
@@ -1661,7 +1662,7 @@ export default {
       this.btnConfigs.closeOnPressEscape = closeOnPressEscape;
       await this.$nextTick();
       // 执行任何操作之前都先进行校验
-      if (!validateFn || (validateFn && (await Promise.resolve(str2Fn(validateFn).call(this, this.getSelectedData()))))) {
+      if (await this.autoValidate(validateFn, btnValidationOptions, this.getSelectedData())) {
         // 如果有自定义事件，则执行自定义事件
         if (fn) {
           str2Fn(fn).call(this, rowData);
@@ -1880,6 +1881,23 @@ export default {
           }
         }
       }
+    },
+
+    async autoValidate(validateFn, btnValidationOptions, rowDataList) {
+      let result = true;
+      if (validateFn) {
+        result = await Promise.resolve(str2Fn(validateFn).call(this, rowDataList));
+      }
+      if (result && rowDataList.length && Object.prototype.hasOwnProperty.call(rowDataList[0], btnValidationOptions?.field)) {
+        const { fieldAllowedValue, field } = btnValidationOptions;
+        result = rowDataList.every(item => {
+          return fieldAllowedValue?.includes(item[field]) || fieldAllowedValue?.includes(item[field]?.toString());
+        });
+        if (!result) {
+          this.$warn(btnValidationOptions?.failMessage || "当前数据状态不允许执行此操作");
+        }
+      }
+      return result;
     },
 
     disposeRelateCompEvent({ relateComponent, useDialog, showFooter, dialogTitle }, row) {
@@ -2982,6 +3000,7 @@ export default {
         isVformWidget,
         handleSetting,
         iconRefresh,
+        refresh,
         iconDisposeDown,
         fuzzyFieldSearchConfig: { searchFieldList, placeholder }
       } = this;
@@ -2992,7 +3011,15 @@ export default {
         <div class="flex">
           {searchFieldList.length ? (
             <div class="inlineBlock">
-              <el-input style={{ width: "200px" }} size="mini" v-model={this.multiFieldSearch} placeholder={placeholder} nativeOnkeydown={handleNativeFilter} clearable>
+              <el-input
+                style={{ width: "200px" }}
+                size="mini"
+                v-model={this.multiFieldSearch}
+                placeholder={placeholder}
+                nativeOnkeydown={handleNativeFilter}
+                clearable
+                onClear={refresh}
+              >
                 <i slot="prefix" class="el-input__icon el-icon-search"></i>
               </el-input>
               <el-button type="primary" size="mini" disabled={tableDisbaled} style="margin-left: 5px" onClick={handleFilter}>

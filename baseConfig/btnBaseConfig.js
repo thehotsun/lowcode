@@ -1547,6 +1547,87 @@ export function BtnConfigFormOptions() {
       },
       formItem: {
         formItemAttrs: {
+          prop: "extraOption.btnValidationOptions.field",
+          label: "按钮校验字段："
+        },
+        tagName: "el-select",
+        tagAttrs: {
+          placeholder: "请选择字段",
+          clearable: true
+        },
+        // 对应formData中的属性值
+        formField: "extraOption.btnValidationOptions.field",
+        extraOption: {
+          options: [
+            {
+              id: "flowStatus",
+              cnName: "流程状态"
+            }
+          ],
+          props: {
+            key: "id",
+            label: "cnName"
+          }
+        }
+      }
+    },
+    {
+      elRowAttrs: {
+        gutter: 10
+      },
+      formItem: {
+        formItemAttrs: {
+          prop: "extraOption.btnValidationOptions.fieldAllowedValue",
+          label: "字段允许的值："
+        },
+        tagName: "el-select",
+        tagAttrs: {
+          placeholder: "请选择字段值",
+          multiple: true,
+          clearable: true
+        },
+        // 对应formData中的属性值
+        formField: "extraOption.btnValidationOptions.fieldAllowedValue",
+        extraOption: {
+          options: [
+            { id: 9, cnName: "草稿" },
+            { id: 2, cnName: "审批中" },
+            { id: 1, cnName: "已通过" },
+            { id: 0, cnName: "已驳回" },
+            { id: 3, cnName: "已撤回" },
+            { id: 8, cnName: "已终止" }
+          ],
+          props: {
+            key: "id",
+            label: "cnName"
+          }
+        }
+      }
+    },
+    {
+      elRowAttrs: {
+        gutter: 10
+      },
+      formItem: {
+        formItemAttrs: {
+          prop: "extraOption.btnValidationOptions.failMessage",
+          label: "按钮校验失败提示："
+        },
+        tagName: "el-input",
+        style: "max-width: 180px;width: 100%;",
+        tagAttrs: {
+          placeholder: "请输入按钮校验失败提示"
+        },
+        // 对应formData中的属性值
+        formField: "extraOption.btnValidationOptions.failMessage"
+      }
+    },
+    {
+      elRowAttrs: {
+        gutter: 10
+      },
+      formItem: {
+        formItemAttrs: {
           label: "执行函数：",
           rules: {
             message: "请输入执行函数",
@@ -1635,6 +1716,11 @@ export function BtnConfigFrom(custom = {}) {
         data: []
       },
       ...new QRBtnOptions(),
+      btnValidationOptions: {
+        field: "",
+        fieldAllowedValue: [],
+        failMessage: ""
+      },
       iconPosition: "front",
       iconName: "",
       useDialog: true,

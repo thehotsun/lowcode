@@ -173,7 +173,7 @@ export function exec(fn) {
   try {
     eval(fn);
   } catch (error) {
-    console.error(error);
+    console.error(error, "exec执行报错的fn:", fn);
   }
 }
 
