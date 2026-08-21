@@ -1548,11 +1548,11 @@ export function BtnConfigFormOptions() {
       formItem: {
         formItemAttrs: {
           prop: "extraOption.btnValidationOptions.field",
-          label: "按钮校验字段："
+          label: "校验规则："
         },
         tagName: "el-select",
         tagAttrs: {
-          placeholder: "请选择字段",
+          placeholder: "请选择规则",
           clearable: true
         },
         // 对应formData中的属性值
@@ -1578,11 +1578,11 @@ export function BtnConfigFormOptions() {
       formItem: {
         formItemAttrs: {
           prop: "extraOption.btnValidationOptions.fieldAllowedValue",
-          label: "字段允许的值："
+          label: "目标值："
         },
         tagName: "el-select",
         tagAttrs: {
-          placeholder: "请选择字段值",
+          placeholder: "请选择目标值",
           multiple: true,
           clearable: true
         },
@@ -1611,12 +1611,12 @@ export function BtnConfigFormOptions() {
       formItem: {
         formItemAttrs: {
           prop: "extraOption.btnValidationOptions.failMessage",
-          label: "按钮校验失败提示："
+          label: "不通过时提示消息："
         },
         tagName: "el-input",
         style: "max-width: 180px;width: 100%;",
         tagAttrs: {
-          placeholder: "请输入按钮校验失败提示"
+          placeholder: "请输入提示消息"
         },
         // 对应formData中的属性值
         formField: "extraOption.btnValidationOptions.failMessage"

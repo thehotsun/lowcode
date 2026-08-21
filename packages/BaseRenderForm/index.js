@@ -17,6 +17,9 @@ export default {
     generalRequest: {
       type: Function
     },
+    validateCustom: {
+      type: Function
+    },
     rules: {
       type: Object
     },
@@ -240,7 +243,7 @@ export default {
 
     async handleSubmit() {
       this.expose_getElFormInstance().validate(valid => {
-        if (valid) {
+        if (valid && this.validateCustom(this.formData)) {
           this.$emit("onSubmit", this.formData);
           this.handleClose();
         } else {

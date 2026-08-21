@@ -1886,15 +1886,19 @@ export default {
     async autoValidate(validateFn, btnValidationOptions, rowDataList) {
       let result = true;
       if (validateFn) {
-        result = await Promise.resolve(str2Fn(validateFn).call(this, rowDataList));
+        // 明确返回false才会中断
+        let result1 = await Promise.resolve(str2Fn(validateFn).call(this, rowDataList));
+        result = result1 === false ? false : true;
       }
       if (result && rowDataList.length && Object.prototype.hasOwnProperty.call(rowDataList[0], btnValidationOptions?.field)) {
-        const { fieldAllowedValue, field } = btnValidationOptions;
+        const { fieldAllowedValue, field, failMessage } = btnValidationOptions;
         result = rowDataList.every(item => {
-          return fieldAllowedValue?.includes(item[field]) || fieldAllowedValue?.includes(item[field]?.toString());
+          return fieldAllowedValue.some(value => {
+            return value == item[field];
+          });
         });
         if (!result) {
-          this.$warn(btnValidationOptions?.failMessage || "当前数据状态不允许执行此操作");
+          this.$warn(failMessage || "当前数据状态不允许执行此操作");
         }
       }
       return result;

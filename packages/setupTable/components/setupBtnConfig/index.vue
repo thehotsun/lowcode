@@ -6,6 +6,7 @@
       :form-options="btnConfigFormOptions"
       :use-dialog="useDialog"
       style="background: #fff;padding:5px 20px 30px"
+      :validate-custom="validateBtnCustom"
       @onSubmit="onSubmit"
       @onClose="onClose"
     >
@@ -848,6 +849,14 @@ export default {
         });
         return fields;
       });
+    },
+    validateBtnCustom(formData) {
+      console.log("validateBtnCustom", formData);
+      if (formData.extraOption?.btnValidationOptions?.field && formData.extraOption?.btnValidationOptions?.fieldAllowedValue?.length === 0) {
+        this.$warn("请至少选择一个目标值");
+        return false;
+      }
+      return true;
     }
 
     // handleAuthorizeChange (authorize) {
