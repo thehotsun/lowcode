@@ -1954,7 +1954,11 @@ export default {
         flowInfo.dialogWidth = dialogWidth;
         flowInfo.approveType = "add";
         flowInfo.enterpriseId = this.enterpriseId;
-        flowInfo.dlgFormConfig = this.btnConfigs;
+        const btnConfig = this.btnRegularOptions[0].formItem.find(item => item.btnId === this?.btnConfigs?.btnId) || {};
+        flowInfo.dlgFormConfig = {
+          originInfo: btnConfig,
+          ...this.btnConfigs
+        };
         if (deliverySelectList) {
           flowInfo.sourceData = { mainFieldValue };
           flowInfo.dataFromList = {
@@ -2627,6 +2631,7 @@ export default {
         dynamicExternalParams
       } = this;
       const { finalUrl, finalType, finalData, headers } = getRequestConfig();
+      const btnConfig = this.btnRegularOptions[0].formItem.find(item => item.btnId === this?.btnConfigs?.btnId) || {};
       let config = {
         dynamicExternalParams,
         requestConfig: {
@@ -2640,7 +2645,10 @@ export default {
         tableData: this.tableData,
         externalParams: this.externalParams,
         callingFrom: "dynatic-table",
-        dlgFormConfig: this.btnConfigs,
+        dlgFormConfig: {
+          originInfo: btnConfig,
+          ...this.btnConfigs
+        },
         // 作为vform组件时需要传递以下信息
         isVformWidget: this.isVformWidget,
         localProcessData: this.localProcessData,
