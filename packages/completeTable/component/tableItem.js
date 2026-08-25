@@ -1954,6 +1954,7 @@ export default {
         flowInfo.dialogWidth = dialogWidth;
         flowInfo.approveType = "add";
         flowInfo.enterpriseId = this.enterpriseId;
+        flowInfo.dlgFormConfig = this.btnConfigs;
         if (deliverySelectList) {
           flowInfo.sourceData = { mainFieldValue };
           flowInfo.dataFromList = {
