@@ -1908,7 +1908,7 @@ export default {
       if (!useDialog) {
         setTimeout(() => {
           try {
-            this.$refs.relateComponent.expose_showDialog(row);
+            this.$refs.relateComponent.expose_showDialog(row, this.getSelectedData());
           } catch (error) {
             console.warn("调用本地组件的expose_showDialog方法错误", error);
           }
