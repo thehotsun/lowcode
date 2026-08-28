@@ -1944,7 +1944,8 @@ export default {
         if (deliverySelectList) {
           params.sourceData = { mainFieldValue };
         }
-        this.openFlow(params);
+        await this.openFlow(params);
+        isRefresh && this.queryTableData();
       } else {
         const res = await this.queryFlowDef("", "", flowKey);
         const flowInfo = res.data;
