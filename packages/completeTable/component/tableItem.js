@@ -1953,7 +1953,15 @@ export default {
         flowInfo.id = flowInfo.flowDefinitionId;
         flowInfo.dialogHeight = dialogHeight;
         flowInfo.dialogWidth = dialogWidth;
-        flowInfo.approveType = "add";
+        const selected = this.getSelectedData();
+        // 如果按钮是新增，且选中了一条数据，且当前数据有businessId，则当前是草稿
+        if (btnType === "add" && selected[0]?.businessId) {
+          flowInfo.businessId = selected[0].businessId;
+          flowInfo.approveType = "draft";
+        } else {
+          flowInfo.approveType = "add";
+        }
+        console.log(flowInfo.approveType, flowInfo.businessId, selected);
         flowInfo.enterpriseId = this.enterpriseId;
         const btnConfig = this.btnRegularOptions[0].formItem.find(item => item.btnId === this?.btnConfigs?.btnId) || {};
         flowInfo.dlgFormConfig = {
