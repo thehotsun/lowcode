@@ -954,12 +954,27 @@ export default {
           obj[prop] = str2Fn(item[prop]);
         }
       });
-      obj["sort-method"] = item["sort-method"] ? str2Fn(item["sort-method"]) : defaultSortMethod(item.fieldCode);
+      if (item.fieldCode == "flowStatus") {
+        obj.sortable = "custom";
+      } else {
+        obj["sort-method"] = item["sort-method"] ? str2Fn(item["sort-method"]) : defaultSortMethod(item.fieldCode);
+      }
 
       if (item.children) {
         obj.children = item.children.map(item => this.setSingleTableOptions(item, emptyData));
       }
       return obj;
+    },
+    flowStatusSortMethod({ prop, order }) {
+      if (prop !== "flowStatus") return;
+      if (order) {
+        const sqlConfig = {
+          sort: [{ field: "flowStatus", order: order === "ascending" ? "asc" : "desc" }]
+        };
+        this.queryTableData(sqlConfig);
+      } else {
+        this.queryTableData();
+      }
     },
     // 获取字典
     async getDicList(dicCode) {
@@ -1934,6 +1949,9 @@ export default {
           return this.$warn("请至少勾选一条要处理的数据！");
         }
         const res = await this.generalRequest(`/flow/business/${mainFieldValue}`, "get");
+        if (!res?.data?.flowInstanceId) {
+          return this.$warn("草稿状态的流程不能查看！");
+        }
         const params = {
           ...res.data,
           dialogHeight,
@@ -1954,13 +1972,7 @@ export default {
         flowInfo.dialogHeight = dialogHeight;
         flowInfo.dialogWidth = dialogWidth;
         const selected = this.getSelectedData();
-        // 如果按钮是新增，且选中了一条数据，且当前数据有businessId，则当前是草稿
-        if (btnType === "add" && selected[0]?.businessId) {
-          flowInfo.businessId = selected[0].businessId;
-          flowInfo.approveType = "draft";
-        } else {
-          flowInfo.approveType = "add";
-        }
+        flowInfo.approveType = "add";
         console.log(flowInfo.approveType, flowInfo.businessId, selected);
         flowInfo.enterpriseId = this.enterpriseId;
         const btnConfig = this.btnRegularOptions[0].formItem.find(item => item.btnId === this?.btnConfigs?.btnId) || {};
@@ -3036,7 +3048,10 @@ export default {
               <el-input
                 style={{ width: "200px" }}
                 size="mini"
-                v-model={this.multiFieldSearch}
+                value={this.multiFieldSearch}
+                onInput={val => {
+                  this.multiFieldSearch = val.trim();
+                }}
                 placeholder={placeholder}
                 nativeOnkeydown={handleNativeFilter}
                 clearable
@@ -3143,7 +3158,8 @@ export default {
       headerBelowSearchList,
       _debouncedHandleFilter,
       previewMode,
-      externalTableAttrs
+      externalTableAttrs,
+      flowStatusSortMethod
     } = this;
 
     const curPageListeners = localProcessData
@@ -3170,7 +3186,8 @@ export default {
       clickBtn: tableCellClick,
       "row-click": handleRowClickWrap(),
       "current-change": updateSelectedRowWrap(updateSelectedRow),
-      "row-dblclick": handleRowDbClickWrap(showEditOrCheckDialog)
+      "row-dblclick": handleRowDbClickWrap(showEditOrCheckDialog),
+      "sort-change": flowStatusSortMethod
     };
 
     if (tableAttrs.dbClickRelateBtnId) {
