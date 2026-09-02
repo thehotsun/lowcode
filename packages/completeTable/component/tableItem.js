@@ -967,14 +967,13 @@ export default {
     },
     flowStatusSortMethod({ prop, order }) {
       if (prop !== "flowStatus") return;
+      let sqlConfig = {
+        sort: []
+      };
       if (order) {
-        const sqlConfig = {
-          sort: [{ field: "flowStatus", order: order === "ascending" ? "asc" : "desc" }]
-        };
-        this.queryTableData(sqlConfig);
-      } else {
-        this.queryTableData();
+        sqlConfig.sort = [{ field: "flowStatus", order: order === "ascending" ? "asc" : "desc" }];
       }
+      this.refreshData(sqlConfig);
     },
     // 获取字典
     async getDicList(dicCode) {
