@@ -895,6 +895,9 @@ export default {
       obj["header-align"] = "center";
       obj["min-width"] = item.columnWidth;
       obj.sortable = !!item.sort;
+      if (obj.sortable) {
+        obj.sortable = "custom";
+      }
       obj["show-overflow-tooltip"] = item["show-overflow-tooltip"];
       if (item.fixed) obj.fixed = item.fixed;
       if (item.filters) {
@@ -954,11 +957,10 @@ export default {
           obj[prop] = str2Fn(item[prop]);
         }
       });
-      if (item.fieldCode == "flowStatus") {
-        obj.sortable = "custom";
-      } else {
-        obj["sort-method"] = item["sort-method"] ? str2Fn(item["sort-method"]) : defaultSortMethod(item.fieldCode);
-      }
+      // if (item.fieldCode == "flowStatus") {
+      // } else {
+      //   obj["sort-method"] = item["sort-method"] ? str2Fn(item["sort-method"]) : defaultSortMethod(item.fieldCode);
+      // }
 
       if (item.children) {
         obj.children = item.children.map(item => this.setSingleTableOptions(item, emptyData));
@@ -966,12 +968,11 @@ export default {
       return obj;
     },
     flowStatusSortMethod({ prop, order }) {
-      if (prop !== "flowStatus") return;
       let sqlConfig = {
         sort: []
       };
       if (order) {
-        sqlConfig.sort = [{ field: "flowStatus", order: order === "ascending" ? "asc" : "desc" }];
+        sqlConfig.sort = [{ field: prop, order: order === "ascending" ? "asc" : "desc" }];
       }
       this.refreshData(sqlConfig);
     },

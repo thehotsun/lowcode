@@ -282,7 +282,7 @@ export const addTipsProps = {
   "filter-method": "表头过滤配置，需配合筛选数组（filters）一起使用",
   filters: "表头过滤配置，需配合筛选函数（filter-method）一起使用",
   sort: "对应列是否可以排序，可以通过设置排序函数（sort-method）实现高级筛选",
-  "sort-method": "对数据进行排序的时候使用的方法，仅当 排序（sortable） 设置为 true 的时候有效，需返回一个数字，和 Array.sort 表现一致",
+  // "sort-method": "对数据进行排序的时候使用的方法，仅当 排序（sortable） 设置为 true 的时候有效，需返回一个数字，和 Array.sort 表现一致",
   searchWidget: "设置列表上方的搜索区域",
   fixed: "列是否固定在左侧或者右侧，",
   enumDisplayConfig: "设置枚举值展示（如流程状态等）"
@@ -357,7 +357,8 @@ export function getSingleTableData(params = {}) {
     isSearchWidget: false,
     searchWidgetConfig: {},
     sort: true,
-    "sort-method": "",
+    // 已废弃，现在改用后端排序
+    // "sort-method": "",
     // filters 和 filtersConfig 配合使用
     filters: "",
     filtersConfig: new FiltersConfig(),

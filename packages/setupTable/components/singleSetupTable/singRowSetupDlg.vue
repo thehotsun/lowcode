@@ -165,7 +165,7 @@
       </el-row>
 
       <!-- 10 排序函数（独占一行） -->
-      <el-row>
+      <!-- <el-row>
         <el-col :span="24">
           <el-form-item label="排序函数">
             <div class="form-item-block">
@@ -176,7 +176,7 @@
             </div>
           </el-form-item>
         </el-col>
-      </el-row>
+      </el-row> -->
 
       <!-- 12 筛选函数（独占一行） -->
       <el-row>
