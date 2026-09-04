@@ -309,8 +309,9 @@ export function getSetupFormOptions(searchWidgetName) {
         style: "width: 350px",
         extraOption: {
           options: [
-            { id: "above", cnName: "列表上方" },
-            { id: "below-header", cnName: "表头下面" }
+            { id: "above", cnName: "默认" },
+            { id: "below-header", cnName: "表头下面" },
+            { id: "final-above", cnName: "列表上方" }
           ]
         }
       },
@@ -434,8 +435,9 @@ export function getSetupFormOptions(searchWidgetName) {
             style: "width: 350px",
             extraOption: {
               options: [
-                { id: "above", cnName: "列表上方" },
-                { id: "below-header", cnName: "表头下面" }
+                { id: "above", cnName: "默认" },
+                { id: "below-header", cnName: "表头下面" },
+                { id: "final-above", cnName: "列表上方" }
               ]
             }
           },
@@ -461,8 +463,9 @@ export function getSetupFormOptions(searchWidgetName) {
             style: "width: 350px",
             extraOption: {
               options: [
-                { id: "above", cnName: "列表上方" },
-                { id: "below-header", cnName: "表头下面" }
+                { id: "above", cnName: "默认" },
+                { id: "below-header", cnName: "表头下面" },
+                { id: "final-above", cnName: "列表上方" }
               ]
             }
           },
@@ -525,8 +528,9 @@ export function getSetupFormOptions(searchWidgetName) {
             style: "width: 350px",
             extraOption: {
               options: [
-                { id: "above", cnName: "列表上方" },
-                { id: "below-header", cnName: "表头下面" }
+                { id: "above", cnName: "默认" },
+                { id: "below-header", cnName: "表头下面" },
+                { id: "final-above", cnName: "列表上方" }
               ]
             }
           },

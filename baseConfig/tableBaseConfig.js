@@ -38,6 +38,8 @@ export function getTableAttrs() {
     hiddenReset: false,
     // 隐藏下载
     hiddenDownload: false,
+    // 搜索控件默认位置（above: 列表上方, below-header: 表头下面），搜索控件自身position为above(默认)时取此值
+    searchWidgetPosition: "final-above",
     // 双击关联的按钮ID
     dbClickRelateBtnId: "",
     // 重置按钮的事件

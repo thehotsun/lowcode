@@ -1068,7 +1068,14 @@ export default {
           setFormField(this.searchForm, item.fieldCode, item.searchWidgetConfig, searchWidgetName);
           // 搜索控件可能是放在列表上面也可能是放在表头下面
           // TODO 表头下的怎么触发事件？
-          if (item.searchWidgetConfig.position !== "below-header") {
+          // above表示默认，取tableAttrs.searchWidgetPosition；final-above表示强制列表上方
+          const position =
+            item.searchWidgetConfig.position === "final-above"
+              ? "final-above"
+              : item.searchWidgetConfig.position === "below-header"
+              ? "below-header"
+              : this.tableAttrs.searchWidgetPosition;
+          if (position !== "below-header") {
             const options = getWidgetOptions(searchWidgetName, item);
             const finalOptions = merge(options, depthFirstSearchWithRecursive(item.searchWidgetConfig));
             if (searchWidgetName === "el-input-range") {

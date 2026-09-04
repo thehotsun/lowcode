@@ -97,6 +97,19 @@
           </el-col>
         </el-row>
 
+        <el-row>
+          <el-col :span="7">
+            <el-form-item label="搜索控件默认位置" prop="searchWidgetPosition">
+              <el-tooltip slot="label" class="fontSize14" effect="dark" content="搜索控件位置为默认时使用此配置" placement="top-start">
+                <span>搜索控件默认位置</span>
+              </el-tooltip>
+              <el-select v-model="tableAttrs.searchWidgetPosition" placeholder="请选择搜索控件默认位置">
+                <el-option v-for="item in searchWidgetPositionOptions" :key="item.id" :label="item.cnName" :value="item.id"> </el-option>
+              </el-select>
+            </el-form-item>
+          </el-col>
+        </el-row>
+
         <el-form-item v-if="tableAttrs.isShowIndex" label="自定义索引函数">
           <el-input v-model="tableAttrs.index" placeholder="请输入function(index){ return index}格式" @focus="handleShow('index', '自定义索引函数', $event)"></el-input>
         </el-form-item>
@@ -307,6 +320,10 @@ export default {
           label: "100条/页",
           value: 100
         }
+      ],
+      searchWidgetPositionOptions: [
+        { id: "final-above", cnName: "列表上方" },
+        { id: "below-header", cnName: "表头下面" }
       ],
       tableAttrsCodeExampleList
     };

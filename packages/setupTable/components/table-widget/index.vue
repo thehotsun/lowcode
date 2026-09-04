@@ -322,7 +322,14 @@ export default {
         // 只有搜索控件有值且开启了搜索项，才会添加到options中
         if (searchWidgetName && item.isSearchWidget) {
           this.setFormField(this.searchFrom, item.fieldCode, item.searchWidgetConfig, searchWidgetName);
-          if (item.searchWidgetConfig.position !== "below-header") {
+          // above表示默认，取tableAttrs.searchWidgetPosition；final-above表示强制列表上方
+          const position =
+            item.searchWidgetConfig.position === "final-above"
+              ? "final-above"
+              : item.searchWidgetConfig.position === "below-header"
+              ? "below-header"
+              : this.tableAttrs.searchWidgetPosition;
+          if (position !== "below-header") {
             const options = getWidgetOptions(searchWidgetName, item);
             // 给formitem加个key，因为只有设计区可以拖拽排序，防止渲染错乱
             options.formItemAttrs.key = Math.random();
