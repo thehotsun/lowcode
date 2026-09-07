@@ -1956,6 +1956,9 @@ export default {
           return this.$warn("请至少勾选一条要处理的数据！");
         }
         const res = await this.generalRequest(`/flow/business/${mainFieldValue}`, "get");
+        if (!res?.data) {
+          return this.$warn("未能获取流程详情！");
+        }
         if (!res?.data?.flowInstanceId) {
           return this.$warn("草稿状态的流程不能查看！");
         }

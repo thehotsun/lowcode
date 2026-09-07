@@ -14,6 +14,14 @@
     margin-right: 5px;
   }
   .el-table {
+    .el-table-column--selection .cell {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      // 移除默认内边距，防止干扰
+      padding-left: 0 !important;
+      padding-right: 0 !important;
+    }
     td > .cell {
       .user-tag {
         display: inline-flex;
