@@ -1138,6 +1138,7 @@ export function setDefaultIconName(config, fieldNames = []) {
     case "flowDocDownload":
       iconName = config.extraOption.iconName || "el-icon-download";
       break;
+    case "flowResultDownload":
     case "formDownload":
       iconName = config.extraOption.iconName || "el-icon-printer";
       break;

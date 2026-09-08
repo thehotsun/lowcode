@@ -3,6 +3,7 @@ import BaseRenderForm from "../../BaseRenderForm/index";
 import BaseRenderRegular from "../../BaseRenderRegular/index";
 import panel from "./panel.vue";
 import printTemplateDlg from "./printTemplateDlg.vue";
+import flowResultListDlg from "./flowResultListDlg.vue";
 import { align, searchWidget } from "../../../baseConfig/tableSelectConfigs";
 import { getTableAttrs, getSingleTableData } from "../../../baseConfig/tableBaseConfig";
 import advSearch from "../../../src/assets/advSearch.svg";
@@ -112,7 +113,8 @@ export default {
     BaseRenderForm,
     BaseRenderRegular,
     panel,
-    printTemplateDlg
+    printTemplateDlg,
+    flowResultListDlg
   },
   props: {
     listPageIdProp: String,
@@ -214,7 +216,7 @@ export default {
         props.push("summaryMethod");
       }
       if (!this.tableAttrs.isTree) {
-        props.push("treeProps", "rowKey", "lazy");
+        props.push("treeProps", "lazy");
       }
       if (!this.tableAttrs.isMerge) {
         props.push("spanMethod");
@@ -1421,6 +1423,9 @@ export default {
     parseTableConfig(data) {
       const { tableOptions, formOptions, keyField, tableAttrs, fuzzyFieldSearchConfig } = data;
       this.tableAttrs = setTableAttrs(merge({}, this.tableAttrs, tableAttrs), this);
+      if (!this.tableAttrs.rowKey && keyField) {
+        this.tableAttrs.rowKey = keyField;
+      }
       this.page.pageSize = this.tableAttrs.paginationSize;
       if (formOptions?.length) {
         this.btnRegularOptions = this.composeBtnRegularOptions(cloneDeep(formOptions));
@@ -1642,6 +1647,7 @@ export default {
         useDialog = true,
         showFooter = false,
         validateFn = "",
+        briefPageFields = [],
         btnValidationOptions = {},
         command = "",
         btnId,
@@ -1659,6 +1665,7 @@ export default {
         disposeThisPageJump,
         disposeDown,
         disposeFlowDocDown,
+        disposeFlowResultDown,
         disposeFormDown,
         disposeDel,
         previewMode,
@@ -1678,6 +1685,7 @@ export default {
       this.btnConfigs.btnType = btnType;
       this.btnConfigs.btnId = btnId;
       this.btnConfigs.authorize = authorize;
+      this.btnConfigs.briefPageFields = briefPageFields;
       this.btnConfigs.openType = openType;
       this.btnConfigs.dialogHeight = dialogHeight;
       this.btnConfigs.dialogWidth = dialogWidth;
@@ -1707,6 +1715,9 @@ export default {
                   },
                   rowData
                 );
+                break;
+              case "flowResultDownload":
+                disposeFlowResultDown(rowData);
                 break;
               case "formDownload":
                 disposeFormDown(
@@ -2271,6 +2282,36 @@ export default {
           selectList.map(item => item[this.keyField])
         );
       }
+    },
+
+    // 打印流程成果：仅处理已通过的流程，展示成果文件清单
+    async disposeFlowResultDown(rowData) {
+      const selectList = rowData ? [rowData] : this.getSelectedData();
+      if (selectList.length === 0) {
+        return this.$warn("请至少勾选一条要处理的数据");
+      }
+      // flowStatus为已通过
+      const passedList = selectList.filter(item => [1].includes(Number(item.flowStatus)));
+      if (passedList.length < selectList.length) {
+        try {
+          await this.$confirm("只能打印已完成的流程的成果", "提示", {
+            confirmButtonText: "继续",
+            cancelButtonText: "取消",
+            type: "warning"
+          });
+        } catch (error) {
+          return;
+        }
+      }
+      if (passedList.length === 0) return;
+      this.$refs.flowResultListDlg.open({
+        ids: passedList.map(item => item[this.keyField]),
+        rows: passedList,
+        keyField: this.keyField,
+        pageFields: (this.btnConfigs.briefPageFields || []).filter(field => field.show),
+        listPageId: this.listPageId,
+        btnId: this.btnConfigs.btnId
+      });
     },
 
     async disposeFormDown({ command }, row) {
@@ -3287,6 +3328,7 @@ export default {
           </el-container>
         </el-main>
         <printTemplateDlg ref="printTemplateDlg" listPageId={listPageId} btnId={btnConfigs.btnId + ""} keyField={keyField} selectList={getSelectedData()}></printTemplateDlg>
+        <flowResultListDlg ref="flowResultListDlg"></flowResultListDlg>
         {btnRelateDialogVNode()}
         {importFileVNode()}
         {importRefreshVNode()}

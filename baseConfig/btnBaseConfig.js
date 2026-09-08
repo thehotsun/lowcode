@@ -61,6 +61,11 @@ export const btnTypeArr = [
     isStatic: true
   },
   {
+    name: "flowResultDownload",
+    displayName: "打印流程成果",
+    isStatic: true
+  },
+  {
     name: "formDownload",
     displayName: "表单打印",
     isStatic: true
@@ -190,7 +195,7 @@ export const QRBtnOptions = function() {
 };
 const staticBtn = btnTypeArr.filter(btn => btn.isStatic).map(btn => btn.name);
 
-const downBtn = ["download", "flowDocDownload", "formDownload"];
+const downBtn = ["download", "flowDocDownload", "flowResultDownload", "formDownload"];
 
 const customBtn = "custom";
 
@@ -1190,7 +1195,7 @@ export function BtnConfigFormOptions() {
         },
         slotName: "briefPageFields",
         renderDependFn: function(formData) {
-          return ["qrCode"].includes(formData.extraOption.btnType);
+          return ["qrCode", "flowResultDownload"].includes(formData.extraOption.btnType);
         }
       }
     },

@@ -611,6 +611,12 @@ export default {
             config.extraOption.openType = -1;
             config.authorize = "E";
             break;
+          case "flowResultDownload":
+            config.tagAttrs.value = "打印流程成果";
+            config.extraOption.btnType = "flowResultDownload";
+            config.extraOption.openType = -1;
+            config.authorize = "E";
+            break;
           case "formDownload":
             config.tagAttrs.value = "表单打印";
             config.extraOption.btnType = "formDownload";

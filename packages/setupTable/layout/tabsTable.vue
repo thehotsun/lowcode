@@ -186,14 +186,14 @@ export default {
               title,
               titlePosition,
               expireDays,
-              briefPageFields: briefPageFields.map((item, index) => {
+              briefPageFields: briefPageFields?.map((item, index) => {
                 return {
                   fieldName: item.fieldName,
                   fieldDisplayName: item.fieldDisplayName,
                   isShow: item.show ? 1 : 0,
                   seqNo: index
                 };
-              }),
+              }) || [],
               briefPageOperations,
               targetFormId,
               printCountPerRow,
