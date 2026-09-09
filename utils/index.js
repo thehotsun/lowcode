@@ -837,6 +837,8 @@ export function BtnConfigs() {
     isRefresh: false,
     requestBeforeConfirmHint: "",
     requestBeforeConfirmText: "",
+    requestBeforeConfirmTitle: "",
+    requestBeforeConfirmType: "",
     requestFixedParams: {},
     requestUrl: "",
     requestType: "",

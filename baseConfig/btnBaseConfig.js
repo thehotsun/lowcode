@@ -918,6 +918,59 @@ export function BtnConfigFormOptions() {
         renderDependFn: requestBeforeConfirmTextRenderDependFn
       }
     },
+
+    {
+      elRowAttrs: {
+        gutter: 10
+      },
+      formItem: {
+        formItemAttrs: {
+          prop: "extraOption.requestBeforeConfirmTitle",
+          label: "提示标题："
+        },
+        tagName: "el-input",
+        style: "max-width: 180px;width: 100%;",
+        tagAttrs: {
+          placeholder: "请输入提示标题，默认为“提示”"
+        },
+        // 对应formData中的属性值
+        formField: "extraOption.requestBeforeConfirmTitle",
+        renderDependFn: requestBeforeConfirmTextRenderDependFn
+      }
+    },
+
+    {
+      elRowAttrs: {
+        gutter: 10
+      },
+      formItem: {
+        formItemAttrs: {
+          prop: "extraOption.requestBeforeConfirmType",
+          label: "提示类型："
+        },
+        tagName: "el-select",
+        style: "max-width: 180px;width: 100%;",
+        tagAttrs: {
+          placeholder: "请选择提示类型"
+        },
+        // 对应formData中的属性值
+        formField: "extraOption.requestBeforeConfirmType",
+        extraOption: {
+          options: [
+            { id: "", cnName: "无" },
+            { id: "success", cnName: "成功" },
+            { id: "warning", cnName: "警告" },
+            { id: "info", cnName: "提示" },
+            { id: "error", cnName: "错误" }
+          ],
+          props: {
+            key: "id",
+            label: "cnName"
+          }
+        },
+        renderDependFn: requestBeforeConfirmTextRenderDependFn
+      }
+    },
     {
       elRowAttrs: {
         gutter: 10
@@ -1716,6 +1769,8 @@ export function BtnConfigFrom(custom = {}) {
       requestType: 0,
       requestBeforeConfirmHint: false,
       requestBeforeConfirmText: "",
+      requestBeforeConfirmTitle: "",
+      requestBeforeConfirmType: "",
       requestParamsConfig: {
         params: [],
         data: []

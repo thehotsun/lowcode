@@ -149,6 +149,9 @@ export default {
     singleSelect() {
       return !!this.renderStrategy.singleSelect;
     },
+    crossPageSelect() {
+      return !!this.renderStrategy.crossPageSelect;
+    },
     // 使用动态表单是否要使用网络请求处理提交数据
     localProcessData() {
       return this.getWidget()?.options?.renderMode === 0 || (this.getWidget()?.options?.renderMode === 1 && this.getDlgConfig()?.btnType === "add");
@@ -531,12 +534,6 @@ export default {
           enableEcho: false,
           echoVal: []
         });
-      }
-    },
-    // 跨页多选
-    crossPageSelect: {
-      default: () => {
-        return false;
       }
     },
     // 这个是自由布局
@@ -1643,6 +1640,8 @@ export default {
         requestType = "post",
         requestBeforeConfirmHint = false,
         requestBeforeConfirmText = "",
+        requestBeforeConfirmTitle = "",
+        requestBeforeConfirmType = "",
         requestParamsConfig = {},
         useDialog = true,
         showFooter = false,
@@ -1681,6 +1680,8 @@ export default {
       this.btnConfigs.requestFixedParams = requestParamsConfig;
       this.btnConfigs.requestBeforeConfirmHint = requestBeforeConfirmHint;
       this.btnConfigs.requestBeforeConfirmText = requestBeforeConfirmText;
+      this.btnConfigs.requestBeforeConfirmTitle = requestBeforeConfirmTitle;
+      this.btnConfigs.requestBeforeConfirmType = requestBeforeConfirmType;
       this.btnConfigs.isRefresh = isRefresh;
       this.btnConfigs.btnType = btnType;
       this.btnConfigs.btnId = btnId;
@@ -1736,7 +1737,7 @@ export default {
                 break;
               case "importRefresh":
                 // 处理导入
-                this.dealImportRefresh({ requestBeforeConfirmHint, requestBeforeConfirmText });
+                this.dealImportRefresh({ requestBeforeConfirmHint, requestBeforeConfirmText, requestBeforeConfirmTitle, requestBeforeConfirmType });
                 break;
               case "refresh":
                 // 处理刷新
@@ -1840,7 +1841,9 @@ export default {
               disposeRequestEvent(
                 {
                   requestBeforeConfirmHint,
-                  requestBeforeConfirmText
+                  requestBeforeConfirmText,
+                  requestBeforeConfirmTitle,
+                  requestBeforeConfirmType
                 },
                 rowData
               );
@@ -2217,9 +2220,11 @@ export default {
       };
     },
 
-    async disposeRequestEvent({ requestBeforeConfirmHint, requestBeforeConfirmText }, rowData) {
+    async disposeRequestEvent({ requestBeforeConfirmHint, requestBeforeConfirmText, requestBeforeConfirmTitle, requestBeforeConfirmType }, rowData) {
       if (requestBeforeConfirmHint) {
-        await this.$confirm(`${requestBeforeConfirmText}`);
+        await this.$confirm(`${requestBeforeConfirmText}`, requestBeforeConfirmTitle || "提示", {
+          type: requestBeforeConfirmType
+        });
       }
       const { finalUrl, finalType, finalData, headers: requestHeaders } = this.getRequestConfig(rowData);
 
@@ -2447,9 +2452,11 @@ export default {
     },
 
     // 处理导入更新的实现
-    async dealImportRefresh({ requestBeforeConfirmHint, requestBeforeConfirmText }) {
+    async dealImportRefresh({ requestBeforeConfirmHint, requestBeforeConfirmText, requestBeforeConfirmTitle, requestBeforeConfirmType }) {
       if (requestBeforeConfirmHint) {
-        await this.$confirm(`${requestBeforeConfirmText}`);
+        await this.$confirm(`${requestBeforeConfirmText}`, requestBeforeConfirmTitle || "提示", {
+          type: requestBeforeConfirmType
+        });
       }
       this.$refs.importRefreshComp.open({ refresh: this.queryTableData, listPageId: this.listPageId });
     },
@@ -2695,7 +2702,7 @@ export default {
       const {
         selectList,
         keyField,
-        btnConfigs: { btnDisposeParamsRule, requestBeforeConfirmHint, requestBeforeConfirmText, deliverySelectList },
+        btnConfigs: { btnDisposeParamsRule, requestBeforeConfirmHint, requestBeforeConfirmText, requestBeforeConfirmTitle, requestBeforeConfirmType, deliverySelectList },
         getRequestConfig,
         getPrimaryKeyValue,
         getDlgConfig,
@@ -2712,7 +2719,9 @@ export default {
           requestBodyData: finalData,
           requestHeader: headers,
           requestBeforeConfirmHint,
-          requestBeforeConfirmText
+          requestBeforeConfirmText,
+          requestBeforeConfirmTitle,
+          requestBeforeConfirmType
         },
         tableData: this.tableData,
         externalParams: this.externalParams,
