@@ -69,11 +69,13 @@
     </el-drawer>
 
     <tableAttrsDlg ref="tableAttrsDlg" :btn-config-arr="btnConfigArr" :delivery-fields-option="deliveryFieldsOption" @changeTableAttrs="changeTableAttrs"></tableAttrsDlg>
+
+    <mobileAttrsDlg ref="mobileAttrsDlg" :leaf-fields="tableData" @changeMobileAttrs="changeMobileAttrs"></mobileAttrsDlg>
   </div>
 </template>
 
 <script>
-import { getSingleTableData, getTableAttrs } from "/baseConfig/tableBaseConfig";
+import { getSingleTableData, getTableAttrs, getMobileAttrs } from "/baseConfig/tableBaseConfig";
 import setupBtnConfig from "../setupBtnConfig";
 import singleSetupTable from "../singleSetupTable";
 import { getWidgetOptions, getWidgetDefaultVal, depthFirstSearchWithRecursive, setDefaultIconName } from "../../../../utils";
@@ -81,12 +83,14 @@ import { searchWidget } from "/baseConfig/tableSelectConfigs";
 import { btnTypeArr } from "/baseConfig/btnBaseConfig.js";
 import { merge } from "lodash";
 import tableAttrsDlg from "../dialogs/tableAttrsDlg.vue";
+import mobileAttrsDlg from "../dialogs/mobileAttrsDlg.vue";
 export default {
   name: "TableWidget",
   components: {
     singleSetupTable,
     setupBtnConfig,
-    tableAttrsDlg
+    tableAttrsDlg,
+    mobileAttrsDlg
   },
   props: { listPageIdProp: String },
   data() {
@@ -113,6 +117,8 @@ export default {
       direction: "rtl",
       drawer: false,
       tableAttrs: getTableAttrs(),
+      // 与tableAttrs平级的顶层移动端配置
+      mobileAttrs: getMobileAttrs(),
       // 主键
       keyField: "",
       searchFromOptions: [],
@@ -191,8 +197,10 @@ export default {
       }
       // 编辑状态
       if (obj) {
-        const { tableOptions, formOptions, keyField, tableAttrs, fuzzyFieldSearchConfig } = obj;
+        const { tableOptions, formOptions, keyField, tableAttrs, mobileAttrs, fuzzyFieldSearchConfig } = obj;
         this.tableAttrs = merge({}, this.tableAttrs, tableAttrs);
+        // 旧JSON无mobileAttrs时取全部默认值；新增字段自动补默认值
+        this.mobileAttrs = merge({}, getMobileAttrs(), mobileAttrs || {});
         if (fuzzyFieldSearchConfig && Object.keys(fuzzyFieldSearchConfig).length) {
           this.fuzzyFieldSearchConfig = fuzzyFieldSearchConfig;
         } else {
@@ -269,6 +277,14 @@ export default {
 
     changeTableAttrs(tableOptions) {
       this.tableAttrs = tableOptions;
+    },
+
+    showMobileAttrsDlg() {
+      this.$refs.mobileAttrsDlg.showDlg(this.mobileAttrs);
+    },
+
+    changeMobileAttrs(mobileAttrs) {
+      this.mobileAttrs = mobileAttrs;
     },
 
     searchAreaDrop() {
@@ -535,6 +551,7 @@ export default {
       const json = {
         fuzzyFieldSearchConfig: this.$refs.singleSetupTable.expose_getFuzzyFieldSearchConfig(),
         tableAttrs: this.tableAttrs,
+        mobileAttrs: this.mobileAttrs,
         formOptions: this.btnConfigArr.map(option => {
           option.tagAttrs.disabled = false;
           return option;

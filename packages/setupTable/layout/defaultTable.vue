@@ -4,6 +4,7 @@
       :loading="loading"
       @handleSave="handleSave"
       @showTableAttrs="showTableAttrs"
+      @showMobileAttrs="showMobileAttrs"
       @showPreview="showPreview"
       @jumpResource="jumpResource"
       @handleExport="handleExport"

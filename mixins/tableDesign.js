@@ -72,7 +72,8 @@ export default {
           formOptions: [],
           keyField: "",
           pageLayout: "",
-          tableAttrs: {}
+          tableAttrs: {},
+          mobileAttrs: {}
         };
       } else {
         example = [
@@ -148,6 +149,10 @@ export default {
 
     showTableAttrs() {
       this.$refs.TableWidget.showTableAttrsDlg();
+    },
+
+    showMobileAttrs() {
+      this.$refs.TableWidget.showMobileAttrsDlg();
     },
     async handleSave() {
       this.loading = true;

@@ -3,10 +3,11 @@ import baseRenderTable from "../packages/BaseRenderTable/main.js";
 import BaseRenderRegular from "../packages/BaseRenderRegular/main.js";
 import completeTable from "../packages/completeTable/main.js";
 import setupTable from "../packages/setupTable/main.js";
+import mobileTable from "../packages/mobileTable/main.js";
 
 import "./iconfont/iconfont.css";
 
-const components = [baseRenderForm, baseRenderTable, BaseRenderRegular, completeTable, setupTable];
+const components = [baseRenderForm, baseRenderTable, BaseRenderRegular, completeTable, setupTable, mobileTable];
 
 const install = function(Vue) {
   components.forEach(component => {
@@ -25,5 +26,6 @@ export default {
   baseRenderTable,
   BaseRenderRegular,
   completeTable,
-  setupTable
+  setupTable,
+  mobileTable
 };

@@ -50,6 +50,22 @@ export function getTableAttrs() {
   };
 }
 
+// 与 tableAttrs 平级的顶层移动端配置（mobileAttrs）默认值。
+// 设计端加载与渲染端解析均按 merge({}, getMobileAttrs(), 保存值 || {}) 合并，
+// 未来新增配置字段旧页面自动补默认值，不失效、无需迁移。
+export function getMobileAttrs() {
+  return {
+    // 标题键（fieldCode），空则卡片标题行不展示
+    titleField: "",
+    // 移动端展示列（fieldCode 有序数组），空则回退前4个显示叶子列
+    mobileFields: [],
+    // 卡片字段布局：single 单列 | double 双列
+    fieldLayout: "double",
+    // label 布局：vertical 上下 | horizontal 左右
+    labelLayout: "vertical"
+  };
+}
+
 const getTextareaAttrs = placeholder => {
   return {
     autosize: true,

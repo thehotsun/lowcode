@@ -20,7 +20,9 @@ module.exports = {
     baseRenderTable: "./packages/baseRenderTable/main.js",
     "baseRenderTable.min": "./packages/baseRenderTable/main.js",
     baseRenderRegular: "./packages/baseRenderRegular/main.js",
-    "baseRenderRegular.min": "./packages/baseRenderRegular/main.js"
+    "baseRenderRegular.min": "./packages/baseRenderRegular/main.js",
+    mobileTable: "./packages/mobileTable/main.js",
+    "mobileTable.min": "./packages/mobileTable/main.js"
   },
   output: {
     path: path.join(__dirname, "/lib"),

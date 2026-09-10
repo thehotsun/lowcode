@@ -5,6 +5,7 @@
       <el-button size="mini" @click="handleTableSetting">列表页设置</el-button>
       <slot name="btn"></slot>
       <el-button size="mini" @click="showTableAttrs">表格属性设置</el-button>
+      <el-button size="mini" @click="showMobileAttrs">移动端设置</el-button>
       <el-button size="mini" @click="showPreview">预览</el-button>
       <el-button size="mini" @click="jumpResource">权限设置</el-button>
       <el-dropdown @command="handleImport">
@@ -51,6 +52,9 @@ export default {
     },
     showTableAttrs() {
       this.$emit("showTableAttrs");
+    },
+    showMobileAttrs() {
+      this.$emit("showMobileAttrs");
     },
     showPreview() {
       this.$emit("showPreview");
