@@ -1,9 +1,8 @@
 import "./index.less";
 import { merge, isEmpty } from "lodash";
 import { getTableAttrs, getMobileAttrs } from "../../baseConfig/tableBaseConfig";
-import { align as alignOptions } from "../../baseConfig/tableSelectConfigs";
-import { CELL_REBDER_TYPE } from "../../baseConfig/tableSelectConfigs";
-import { str2Fn, mergeStyle } from "../../utils";
+import { CELL_REBDER_TYPE, searchWidget } from "../../baseConfig/tableSelectConfigs";
+import { str2Fn, mergeStyle, getWidgetDefaultVal, parseValue } from "../../utils";
 import { h } from "vue";
 
 // 移动端列表第一期：单列卡片列表 + 详情页覆盖层。
@@ -12,6 +11,8 @@ import { h } from "vue";
 function InstanceData() {
   return {
     // 配置
+    // 布局识别：第一期仅支持"table"，其余布局（tree-table/tabs-table等）渲染"移动端暂不支持"占位且不发起请求
+    pageLayout: "table",
     tableConfigJSON: [],
     // 全部显示叶子字段的归一化配置（show为真值、无children）
     allDisplayFields: [],
@@ -37,6 +38,10 @@ function InstanceData() {
     pageSize: 20,
     totalCount: 0,
     requestVersion: 0,
+    // 搜索参数空默认值/日期拆分字段/数值转换器（与web端getParams同构；第一期无搜索UI，第三期接入UI后直接生效）
+    searchForm: {},
+    searchDateRangeFields: [],
+    searchFormValueParsers: [],
     // 字典缓存（按dicCode复用）
     dictCache: {},
     detailLoadingMore: false
@@ -66,7 +71,8 @@ export default {
       return this.$route?.matched?.some(matched => matched.path === "/project");
     },
     showPagination() {
-      return this.tableAttrs.showPagination !== false;
+      // 与文档语义一致：严格 === true 才分页，其余值一次性加载
+      return this.tableAttrs.showPagination === true;
     },
     // 是否还有更多数据
     hasMore() {
@@ -192,11 +198,17 @@ export default {
         json = await this.queryTableConfig();
       }
       this.parseTableConfig(json);
+      if (this.pageLayout !== "table") {
+        // 非支持的布局（tree-table/tabs-table等）：仅渲染占位，不组装参数、不执行生命周期、不发起请求
+        return;
+      }
+      // 第三参形状与桌面端tableItem.init一致：{ externalParams, dynamicExternalParams }
       const { externalParams = {}, dynamicExternalParams = {} } = options || {};
       this.externalParams = { ...externalParams };
       this.dynamicExternalParams = dynamicExternalParams || {};
 
       if (this.previewMode) {
+        // 预览态（契约§9）：不执行生命周期与查询，仅以本地样例数据渲染
         const sample = this.composeSampleRow();
         this.tableData = Array.from({ length: 10 }, () => ({ ...sample }));
         this.totalCount = this.tableData.length;
@@ -230,9 +242,12 @@ export default {
     },
 
     async expose_preview(data) {
+      // 与init路径一致先重置运行状态，避免残留的列表数据/页码/字典缓存混入预览态
+      this.resetAll();
       this.previewMode = true;
       if (data && !isEmpty(data)) {
         this.parseTableConfig(data);
+        if (this.pageLayout !== "table") return;
       } else {
         await this.queryTableConfig();
       }
@@ -288,14 +303,48 @@ export default {
     },
 
     parseTableConfig(json) {
+      this.pageLayout = json.pageLayout || "table";
       this.tableAttrs = merge({}, getTableAttrs(), json.tableAttrs || {});
       // 合并规则（契约§3）：旧JSON无mobileAttrs取默认值，未来新增字段自动补默认值
       this.mobileAttrs = merge({}, getMobileAttrs(), json.mobileAttrs || {});
       this.tableConfigJSON = json.tableOptions || [];
       this.keyField = json.keyField || "";
+      // keyField缺失时输出开发告警（为第三期跨页选择打底，缺失不纳入跨页保留集合）
+      if (!this.keyField) {
+        console.warn("[mobileTable] 列表JSON未配置keyField，跨页选择相关能力（第三期）将不可用");
+      }
       this.keyFieldResolved = false;
       this.pageSize = this.tableAttrs.paginationSize || 20;
       this.composeFields();
+      this.composeSearchParams();
+    },
+
+    // 组装搜索参数空默认值（与web端composeFromOptions/setFormField同构，数据源同为tableOptions遍历）。
+    // 移动端搜索字段不区分web端"列表上方/表头下方"两种摆放，统一一处处理，参数口径与web一致。
+    composeSearchParams() {
+      const searchForm = {};
+      const searchDateRangeFields = [];
+      const searchFormValueParsers = [];
+      (this.tableConfigJSON || []).forEach(item => {
+        const searchWidgetName = searchWidget.find(widgetItem => widgetItem.id === item.searchWidget)?.tagName;
+        if (!searchWidgetName || !item.isSearchWidget) return;
+        const config = item.searchWidgetConfig || {};
+        // searchWidgetType为1代表数值范围：拆为Start/End两个键（null），后端要求数字，提交时经parser转换
+        if (config.searchWidgetType === 1) {
+          searchForm[`${item.fieldCode}Start`] = null;
+          searchForm[`${item.fieldCode}End`] = null;
+          searchFormValueParsers.push({ searchFormField: `${item.fieldCode}Start`, targetType: "number" }, { searchFormField: `${item.fieldCode}End`, targetType: "number" });
+        } else {
+          searchForm[item.fieldCode] = getWidgetDefaultVal(config, searchWidgetName);
+          // searchWidgetType为4代表日期范围：数组形式后端不识别，请求时拆分为Start/End
+          if (config.searchWidgetType === 4) {
+            searchDateRangeFields.push({ field: item.fieldCode });
+          }
+        }
+      });
+      this.searchForm = searchForm;
+      this.searchDateRangeFields = searchDateRangeFields;
+      this.searchFormValueParsers = searchFormValueParsers;
     },
 
     // 组合字段：只处理show为真值的叶子字段，字段顺序与tableOptions一致
@@ -311,7 +360,6 @@ export default {
           flat.push({
             fieldCode: item.fieldCode,
             fieldName: item.fieldName || item.fieldCode,
-            align: alignOptions.find(alignItem => alignItem.id === item.align)?.value || "left",
             contentTextAttrArr: item.contentTextAttrArr || [],
             cellRenderType: item.cellRenderType,
             enumDisplayConfig: item.enumDisplayConfig || null,
@@ -392,13 +440,31 @@ export default {
 
     /** ============ 数据加载与并发 ============ */
 
-    // 查询参数合并顺序与桌面getParams一致；第一期searchForm、multiFieldSearch恒为空
+    // 查询参数与web端getParams同构（键与合并顺序一致）；第一期无搜索UI，searchForm为空默认值
     getParams(data = {}) {
+      const extraParams = {};
+      // 日期范围拆分：数组形式后端不识别，拆为fieldStart/fieldEnd（值为空数组时不触发，与web一致）
+      this.searchDateRangeFields.forEach(({ field }) => {
+        const value = this.searchForm[field];
+        if (value?.length === 2) {
+          extraParams[`${field}Start`] = value[0] || "";
+          extraParams[`${field}End`] = value[1] || "";
+        }
+      });
+      // 数值范围类型转换（后端要求数字类型）
+      this.searchFormValueParsers.forEach(item => {
+        extraParams[item.searchFormField] = parseValue(this.searchForm[item.searchFormField], item.targetType);
+      });
       return {
         prjId: this.getPrjInfo?.()?.prjId,
         ...data,
+        ...this.searchForm,
+        ...extraParams,
         multiFieldSearch: "",
         enterpriseId: this.enterpriseId,
+        // web端getParams恒携带高级筛选键（默认[]/"and"），保持请求体同构
+        advSearchExpr: [],
+        advSearchExprJoinOp: "and",
         ...this.externalParams,
         ...this.dynamicExternalParams
       };
@@ -419,7 +485,8 @@ export default {
           console.error("[mobileTable] onBeforeQueryDataEvent 执行失败：", error);
         }
       }
-      const page = { pageNo: this.pageNo, pageSize: this.pageSize };
+      // page形状与web端this.page一致（pageNo/pageSize/totalCount）
+      const page = { pageNo: this.pageNo, pageSize: this.pageSize, totalCount: this.totalCount };
       const request = this.showPagination ? this.requestTablePaginationData(params, page, this.listPageId) : this.requestTableData(params, this.listPageId);
       const res = await request;
       if (res?.result !== "0") {
@@ -466,13 +533,15 @@ export default {
       if (this._destroyed || this.loading || this.loadingMore || this.finished) return false;
       this.loadingMore = true;
       this.loadMoreError = false;
+      const prevPage = this.pageNo;
       const nextPage = this.pageNo + 1;
       const version = this.requestVersion;
       try {
         this.pageNo = nextPage;
         const result = await this.requestPageData();
         if (this._destroyed || version !== this.requestVersion || !result) {
-          // 被新的首查/刷新抢占，丢弃本页结果
+          // 被新的首查/刷新抢占或生命周期取消（onBeforeQueryDataEvent返回false）：回滚页码，丢弃本页结果
+          this.pageNo = prevPage;
           return false;
         }
         this.tableData = this.tableData.concat(result.data);
@@ -480,9 +549,11 @@ export default {
         this.resolveKeyFieldCase(this.tableData);
         return true;
       } catch (error) {
-        // 失败时恢复页码、保留已有卡片、允许重试
-        this.pageNo = nextPage - 1;
-        this.loadMoreError = true;
+        // 失败时恢复页码、保留已有卡片、允许重试；过期失败响应（已被新首查抢占）不回写任何状态
+        if (!this._destroyed && version === this.requestVersion) {
+          this.pageNo = prevPage;
+          this.loadMoreError = true;
+        }
         console.error(`[mobileTable] 加载更多失败：${error}`);
         return false;
       } finally {
@@ -737,7 +808,8 @@ export default {
       return (
         <div class={{ "mt-field": true, "mt-field-h": this.isHorizontalLabel }} key={field.fieldCode}>
           <div class="mt-field-label">{field.fieldName}</div>
-          <div class="mt-field-value" style={{ textAlign: field.align }}>
+          {/* 移动端不消费列align（web表格单元格语义），两种label布局值都固定居左 */}
+          <div class="mt-field-value">
             {this.renderMobileField(field, row, index, "card")}
           </div>
         </div>
@@ -810,7 +882,7 @@ export default {
               上一条
             </el-button>
             <span class="mt-detail-count">
-              {detailIndex + 1}/{tableData.length}
+              {detailIndex + 1}/{this.totalCount}
             </span>
             <el-button size="small" loading={this.detailLoadingMore} onClick={this.handleDetailNext}>
               下一条
@@ -848,6 +920,13 @@ export default {
   },
 
   render() {
+    if (this.pageLayout !== "table") {
+      return (
+        <div class="mobileTableWrap">
+          <div class="mt-state">移动端暂不支持</div>
+        </div>
+      );
+    }
     return (
       <div class="mobileTableWrap">
         <div class="mt-scroll" ref="scrollWrap">

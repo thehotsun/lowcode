@@ -1,6 +1,7 @@
 import "./index.less";
 import tableItem from "./component/tableItem";
 import treeItem from "./component/treeItem";
+import mobileTable from "../mobileTable/index.js";
 import { merge, isEmpty } from "lodash";
 import { TreeAttrs } from "/baseConfig/treeBaseConfig";
 import { formatterWidthOrHeightStyle } from "/utils";
@@ -11,7 +12,8 @@ export default {
   componentName: "CompleteTable",
   components: {
     tableItem,
-    treeItem
+    treeItem,
+    mobileTable
   },
   mixins: [tabs],
   props: {
@@ -40,6 +42,10 @@ export default {
   computed: {
     listPageId() {
       return this.listPageIdProp || this.getListPageId();
+    },
+    // 宿主tableRender通过provide提供isMobile（CommonDP utils的isMobile() UA判定）；是否渲染移动端列表由此组件内部控制，对外始终挂载complete-table
+    isMobileMode() {
+      return this.isMobile === true;
     }
   },
 
@@ -61,6 +67,9 @@ export default {
           height: 0
         };
       }
+    },
+    isMobile: {
+      default: false
     }
   },
 
@@ -105,6 +114,9 @@ export default {
     },
 
     expose_getTableData() {
+      if (this.isMobileMode) {
+        return this.$refs.mobileItem.expose_getTableData();
+      }
       switch (this.pageLayout) {
         case "table":
         case "tree-table":
@@ -122,6 +134,9 @@ export default {
     },
 
     expose_setTableData(data) {
+      if (this.isMobileMode) {
+        return this.$refs.mobileItem.expose_setTableData(data);
+      }
       switch (this.pageLayout) {
         case "table":
         case "tree-table":
@@ -142,6 +157,9 @@ export default {
     },
 
     async expose_preview(data) {
+      if (this.isMobileMode) {
+        return this.$refs.mobileItem.expose_preview(data);
+      }
       const { pageLayout = "table", ...otherData } = data;
       this.pageLayout = pageLayout;
       await this.$nextTick();
@@ -165,18 +183,32 @@ export default {
     },
 
     async expose_refreshData(data) {
+      if (this.isMobileMode) {
+        // 与桌面端一致：data作为dynamicExternalParams传入
+        return this.$refs.mobileItem.expose_refreshData({}, data);
+      }
       await this.$refs.tableItem.expose_refreshData(null, data);
     },
 
     async expose_setSearchForm(...params) {
+      if (this.isMobileMode) {
+        return console.warn("[completeTable] 移动端列表暂不支持expose_setSearchForm");
+      }
       console.log("expose_setSearchForm");
       await this.$refs.tableItem.expose_setSearchForm(...params);
     },
     async expose_enableAllBtn() {
-      await this.$refs.tableItem.expose_enableAllBtn(otherData);
+      if (this.isMobileMode) {
+        return console.warn("[completeTable] 移动端列表暂不支持expose_enableAllBtn");
+      }
+      await this.$refs.tableItem.expose_enableAllBtn();
     },
 
     async init(isPreview, json, externalParams = {}, externalTriggerQueryTableData = false, tableDisbaled = false) {
+      if (this.isMobileMode) {
+        // 移动端列表签名与桌面端一致，json为空时由mobileTable自行拉取配置
+        return this.$refs.mobileItem.init(isPreview, json, externalParams, externalTriggerQueryTableData, tableDisbaled);
+      }
       if (!json || isEmpty(json)) {
         json = await this.queryTableConfig();
       }
@@ -253,6 +285,9 @@ export default {
       this.$on("refreshTable", this.dispatcher);
     },
     dispatcher(allData, primaryKeyValue) {
+      if (this.isMobileMode) {
+        return this.$refs.mobileItem.expose_refreshData({}, allData);
+      }
       this.$refs.tableItem.expose_refreshData({}, allData);
     },
 
@@ -307,11 +342,17 @@ export default {
       onMouseDown,
       tabsOptions: { attrs = {}, showLableInfo = [] },
       listPageIdProp,
-      rawRelateIdProp
+      rawRelateIdProp,
+      isMobileMode
     } = this;
 
     // eslint-disable-next-line prefer-const
     let { activeName } = this;
+
+    if (isMobileMode) {
+      // 移动端卡片点击的rowClick需向宿主转发（对外始终只挂载complete-table）
+      return <mobileTable ref="mobileItem" rawRelateIdProp={rawRelateIdProp} listPageIdProp={listPageIdProp} on-rowClick={row => this.$emit("rowClick", row)}></mobileTable>;
+    }
 
     if (pageLayout === "tree-table") {
       return (
