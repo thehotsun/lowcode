@@ -1757,7 +1757,7 @@ export function BtnConfigFrom(custom = {}) {
       btnPosition: "left",
       closeOnPressEscape: false,
       dialogTitle: "",
-      dialogWidth: "900",
+      dialogWidth: "1200",
       dialogHeight: "600",
       deliverySelectList: false,
       deliverySelectListFields: [],
