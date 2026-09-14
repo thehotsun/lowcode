@@ -990,7 +990,24 @@ export default {
     composeData(emptyData) {
       this.formOptions = this.composeFromOptions(this.tableConfigJSON);
       this.filterField = [];
-      this.tableOptions = this.tableConfigJSON
+      // 外部渲染策略强制指定显示列：匹配到的列 show 强制为 true，其余强制为 false，列顺序按传入顺序排列
+      const forceShowFields = this.renderStrategy?.forceShowFields;
+      let tableConfig = this.tableConfigJSON;
+      if (forceShowFields?.length) {
+        const fieldNames = forceShowFields.map(field => field.fieldName);
+        tableConfig = tableConfig
+          .map(item => ({
+            ...item,
+            show: fieldNames.includes(item.fieldCode)
+          }))
+          .sort((a, b) => {
+            const indexA = fieldNames.indexOf(a.fieldCode);
+            const indexB = fieldNames.indexOf(b.fieldCode);
+            // 未匹配的列排在后面
+            return (indexA === -1 ? fieldNames.length : indexA) - (indexB === -1 ? fieldNames.length : indexB);
+          });
+      }
+      this.tableOptions = tableConfig
         .filter(item => item.show)
         .map(item => {
           const obj = this.setSingleTableOptions(item, emptyData);
@@ -3128,13 +3145,13 @@ export default {
           {!isVformWidget && (
             <div class="flex">
               {/* tableDisbaled 时禁用点击 */}
-              <img src={refreshSvg} class="i pointer" {...this.getIconProps("refresh")} onClick={iconRefresh} />
-              {!hiddenFilter && <img src={advSearch} class="i pointer" {...this.getIconProps("advSearch")} onClick={handleAdvancedFilter} />}
-              {!hiddenReset && <img src={resetSvg} class="i pointer" {...this.getIconProps("reset")} onClick={handleFilterReset} />}
+              <img src={refreshSvg} title="刷新" class="i pointer" {...this.getIconProps("refresh")} onClick={iconRefresh} />
+              {!hiddenFilter && <img src={advSearch} title="高级搜索" class="i pointer" {...this.getIconProps("advSearch")} onClick={handleAdvancedFilter} />}
+              {!hiddenReset && <img src={resetSvg} title="重置" class="i pointer" {...this.getIconProps("reset")} onClick={handleFilterReset} />}
               {!hiddenDownload && (
                 <el-dropdown onCommand={iconDisposeDown}>
                   <span class="el-dropdown-link">
-                    <img src={downloadSvg} class="i pointer" {...this.getIconProps("download", "hover", { marginTop: "5px" })} />
+                    <img src={downloadSvg} title="下载" class="i pointer" {...this.getIconProps("download", "hover", { marginTop: "5px" })} />
                   </span>
                   <el-dropdown-menu slot="dropdown">
                     <el-dropdown-item command="curSelect">当前选中</el-dropdown-item>
@@ -3143,7 +3160,7 @@ export default {
                   </el-dropdown-menu>
                 </el-dropdown>
               )}
-              <img src={settingSvg} class="i pointer" {...this.getIconProps("setting")} onClick={handleSetting} />
+              <img src={settingSvg} title="显示字段设置" class="i pointer" {...this.getIconProps("setting")} onClick={handleSetting} />
             </div>
           )}
 
