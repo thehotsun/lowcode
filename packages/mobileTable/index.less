@@ -101,12 +101,9 @@
   }
 
   .mt-ctn-wrap {
-    display: inline-flex;
-    align-items: center;
+    // 片段内部已带与桌面端一致的截断样式链（flex:1/nowrap/ellipsis），外层不再重复截断
+    display: block;
     min-width: 0;
-    overflow: hidden;
-    white-space: nowrap;
-    text-overflow: ellipsis;
   }
 
   .mt-footer {

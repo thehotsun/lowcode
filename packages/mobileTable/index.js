@@ -3,7 +3,14 @@ import { merge, isEmpty } from "lodash";
 import { getTableAttrs, getMobileAttrs } from "../../baseConfig/tableBaseConfig";
 import { CELL_REBDER_TYPE, searchWidget } from "../../baseConfig/tableSelectConfigs";
 import { str2Fn, mergeStyle, getWidgetDefaultVal, parseValue } from "../../utils";
-import { h } from "vue";
+import { h as vueH } from "vue";
+
+// JSX默认编译为对h(...)的调用。当宿主以其自身的Vue渲染本组件时，包内vue模块没有活动渲染实例，
+// 组件类vnode（formatter组件、el-button等）会因createComponent读null.$options而报错（纯标签不受影响）。
+// 桌面端BaseRenderTable的h是在el-table列formatter回调内执行的、自带渲染上下文；移动端没有el-table，
+// 因此渲染期统一改用宿主传入的createElement（render(createElement)注入，与桌面上下文等价），包内h仅作兜底。
+let hostCreateElement = null;
+const h = (...args) => (hostCreateElement || vueH)(...args);
 
 // 移动端列表第一期：单列卡片列表 + 详情页覆盖层。
 // 仅依赖 lowcode 现有配置协议（tableOptions/tableAttrs/mobileAttrs）与宿主 inject 能力面，
@@ -677,8 +684,8 @@ export default {
         return <div class="mt-ctn-wrap">{this.renderContentTextAttrArr(field, row, cellValue)}</div>;
       }
 
-      // 3. 人员：首字母头像 + 名称
-      if (field.cellRenderType === CELL_REBDER_TYPE.PERSON && typeof cellValue === "string" && cellValue) {
+      // 3. 人员：首字母头像 + 名称（与桌面端一致，字符串即命中，含空串）
+      if (field.cellRenderType === CELL_REBDER_TYPE.PERSON && typeof cellValue === "string") {
         return (
           <div class="mt-user-tag">
             <span class="mt-user-tag-av">{cellValue.at(0)}</span>
@@ -706,8 +713,9 @@ export default {
           } catch (error) {
             console.warn("[mobileTable] 解析contentStyle失败", error);
           }
-          const style = `display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 12px; font-weight: 600;${bcgColor ? "backgroundColor:" + bcgColor + ";" : ""}${color ? "color:" + color + ";" : ""}`;
-          return bcgColor || color ? <span style={style}>{label}</span> : <span>{label}</span>;
+          // 与桌面端BaseRenderTable一致的胶囊样式：仅backgroundColor时渲染胶囊，color单独存在时按桌面语义丢弃
+          const baseStyle = `display: inline-block; padding: 2px 6px; border-radius: 6px; color: #fff; font-size: 12px; font-weight: 600; ${bcgColor ? "backgroundColor:" + bcgColor : ""};${color ? "color:" + color : ""}`;
+          return bcgColor ? <div style={baseStyle}> {label}</div> : <span>{label}</span>;
         }
         return <span>{cellValue}</span>;
       }
@@ -761,43 +769,38 @@ export default {
         })
         .map((contentTextAttr, idx) => {
           const style = mergeStyle(null, contentTextAttr);
-          // textVal支持{}占位符：{}取当前单元格的值，{fieldName}取行数据中对应字段的值（与桌面端BaseRenderTable一致）
-          const text = contentTextAttr.textVal
+          // textVal占位符解析与桌面端BaseRenderTable（提交6475ec0）逐字一致：{}取当前单元格的值，{fieldName}取row[key]
+          const contentText = contentTextAttr.textVal
             ? contentTextAttr.textVal.replace(/\{([^{}]*)\}/g, (match, name) => {
                 const key = name.trim();
                 if (key === "") {
                   return cellValue ?? "";
                 }
-                return this.getRowValue(row, key) ?? "";
+                return row[key] ?? "";
               })
             : cellValue;
-          // clickEvent.relateBtnId第一期不触发（第五期接入）
+          // 与桌面端cellRender同构：flex包裹 + 前后span（图标经class渲染）+ 文本span（桌面同款截断样式链）
+          const cellStyle = `${style};flex: 1; overflow: hidden;white-space: nowrap; text-overflow: ellipsis;${contentTextAttr.textStyle}`;
+          let frontTextClass = "",
+            frontTextStyle = "",
+            behindTextClass = "",
+            behindTextStyle = "";
           if (contentTextAttr.iconName) {
-            const iconStyle = { [`${contentTextAttr.iconPosition}TextClass`]: contentTextAttr.iconName };
-            return (
-              <span key={idx} style={`${style};${contentTextAttr.iconStyle}`}>
-                {contentTextAttr.iconPosition === "behind" ? (
-                  [
-                    <span key="t" style={contentTextAttr.textStyle}>
-                      {text}
-                    </span>,
-                    <i key="i" class={iconStyle.behindTextClass} />
-                  ]
-                ) : (
-                  [
-                    <i key="i" class={iconStyle.frontTextClass} />,
-                    <span key="t" style={contentTextAttr.textStyle}>
-                      {text}
-                    </span>
-                  ]
-                )}
-              </span>
-            );
+            if (contentTextAttr.iconPosition === "behind") {
+              behindTextClass = contentTextAttr.iconName;
+              behindTextStyle = `${style};${contentTextAttr.iconStyle}`;
+            } else {
+              frontTextClass = contentTextAttr.iconName;
+              frontTextStyle = `${style};${contentTextAttr.iconStyle}`;
+            }
           }
+          // clickEvent.relateBtnId第一期不触发（第五期接入）
           return (
-            <span key={idx} style={`${style};${contentTextAttr.textStyle}`}>
-              {text}
-            </span>
+            <div key={idx} style="display: flex;align-items: center;">
+              <span class={frontTextClass} style={frontTextStyle}></span>
+              <span style={cellStyle}>{contentText}</span>
+              <span class={behindTextClass} style={behindTextStyle}></span>
+            </div>
           );
         });
     },
@@ -919,7 +922,9 @@ export default {
     }
   },
 
-  render() {
+  render(createElement) {
+    // 捕获宿主传入的createElement供模块级h包装使用（render为同步调用，时序安全）
+    hostCreateElement = createElement;
     if (this.pageLayout !== "table") {
       return (
         <div class="mobileTableWrap">
