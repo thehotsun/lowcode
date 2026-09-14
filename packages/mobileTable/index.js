@@ -18,7 +18,8 @@ const h = (...args) => (hostCreateElement || vueH)(...args);
 function InstanceData() {
   return {
     // 配置
-    // 布局识别：第一期仅支持"table"，其余布局（tree-table/tabs-table等）渲染"移动端暂不支持"占位且不发起请求
+    // 布局识别：第一期仅支持"table"，其余布局（tree-table/tabs-table等）渲染"移动端暂不支持"占位；
+    // 不执行生命周期、不发起列表数据请求（配置解析先于布局判断，字段含 dicCode 时仍会发起字典预取）
     pageLayout: "table",
     tableConfigJSON: [],
     // 全部显示叶子字段的归一化配置（show为真值、无children）
@@ -206,7 +207,8 @@ export default {
       }
       this.parseTableConfig(json);
       if (this.pageLayout !== "table") {
-        // 非支持的布局（tree-table/tabs-table等）：仅渲染占位，不组装参数、不执行生命周期、不发起请求
+        // 非支持的布局（tree-table/tabs-table等）：仅渲染占位，不组装参数、不执行生命周期、不发起列表数据请求
+        // （parseTableConfig 已先行执行，字段含 dicCode 时字典预取已发出）
         return;
       }
       // 第三参形状与桌面端tableItem.init一致：{ externalParams, dynamicExternalParams }
