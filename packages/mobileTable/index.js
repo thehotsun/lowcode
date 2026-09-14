@@ -867,7 +867,7 @@ export default {
             <span class="mt-detail-back" onClick={this.handleCloseDetail}>
               <i class="el-icon-arrow-left"></i> 返回
             </span>
-            <span class="mt-detail-nav-title">记录详情</span>
+            <span class="mt-detail-nav-title">详情</span>
           </div>
           <div class="mt-detail-body">
             {titleField ? <div class="mt-detail-title">{this.renderMobileField(titleField, row, detailIndex, "detail")}</div> : null}
