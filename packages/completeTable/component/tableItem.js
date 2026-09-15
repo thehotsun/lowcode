@@ -407,10 +407,18 @@ export default {
         console.warn("inject缺失queryFlowDef!");
       }
     },
+    isCurrentApprover: {
+      default: () => () => {
+        console.warn("inject缺失isCurrentApprover!");
+      }
+    },
     componentList: {
       default: () => []
     },
     enterpriseId: {
+      default: () => ""
+    },
+    stageId: {
       default: () => ""
     },
     getPrjInfo: {
@@ -1358,6 +1366,7 @@ export default {
         ...extraParams,
         multiFieldSearch: this.multiFieldSearch,
         enterpriseId: this.enterpriseId,
+        stageId: this.stageId,
         advSearchExpr: this.exprGroupList,
         advSearchExprJoinOp: this.exprJoinOp,
         ...this.externalParams,
@@ -1982,7 +1991,7 @@ export default {
       if (dialogHeight && !String(dialogHeight).endsWith("px")) dialogHeight += "px";
       if (dialogWidth && !String(dialogWidth).endsWith("px")) dialogWidth += "px";
       const mainFieldValue = (row || this.getFirstSelectedData())?.[this.keyField];
-      if (btnType === "check") {
+      if (btnType === "check" || btnType === "edit") {
         if (!mainFieldValue) {
           return this.$warn("请至少勾选一条要处理的数据！");
         }
@@ -1991,7 +2000,7 @@ export default {
           return this.$warn("未能获取流程详情！");
         }
         if (!res?.data?.flowInstanceId) {
-          return this.$warn("草稿状态的流程不能查看！");
+          return this.$warn(`草稿状态的流程不能${btnType === "edit" ? "编辑" : "查看"}！`);
         }
         const params = {
           ...res.data,
@@ -2002,6 +2011,14 @@ export default {
         };
         if (deliverySelectList) {
           params.sourceData = { mainFieldValue };
+        }
+        // 编辑按钮且流程处于审批中，调接口查询是否是当前节点审批人
+        if (btnType === "edit" && row.flowStatus == "2") {
+          // 当前人是流程当前节点审批人时，以审批（编辑）模式打开
+          const canEditRes = await this.isCurrentApprover(res.data.flowInstanceId);
+          if (canEditRes?.data) {
+            params.approveType = "edit";
+          }
         }
         await this.openFlow(params);
         isRefresh && this.queryTableData();
