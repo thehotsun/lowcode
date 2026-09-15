@@ -2013,7 +2013,7 @@ export default {
           params.sourceData = { mainFieldValue };
         }
         // 编辑按钮且流程处于审批中，调接口查询是否是当前节点审批人
-        if (btnType === "edit" && row.flowStatus == "2") {
+        if (btnType === "edit" && (row || this.getFirstSelectedData())["flowStatus"] == "2") {
           // 当前人是流程当前节点审批人时，以审批（编辑）模式打开
           const canEditRes = await this.isCurrentApprover(res.data.flowInstanceId);
           if (canEditRes?.data) {
