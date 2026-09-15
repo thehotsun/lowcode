@@ -1,8 +1,10 @@
 import "./index.less";
-import { merge, isEmpty } from "lodash";
+import { merge, isEmpty, cloneDeep } from "lodash";
 import { getTableAttrs, getMobileAttrs } from "../../baseConfig/tableBaseConfig";
-import { CELL_REBDER_TYPE, searchWidget } from "../../baseConfig/tableSelectConfigs";
-import { str2Fn, mergeStyle, getWidgetDefaultVal, parseValue } from "../../utils";
+import { CELL_REBDER_TYPE, searchWidget, MOBILE_FIELD_LAYOUT, MOBILE_LABEL_LAYOUT } from "../../baseConfig/tableSelectConfigs";
+import { str2Fn, mergeStyle, getWidgetDefaultVal, parseValue, BtnConfigs, addQueryString } from "../../utils";
+import { executeButton } from "../completeTable/component/executeButton";
+import { convertDynaticData, disposeParams } from "../../utils/interfaceParams";
 import { h as vueH } from "vue";
 
 // JSX默认编译为对h(...)的调用。当宿主以其自身的Vue渲染本组件时，包内vue模块没有活动渲染实例，
@@ -52,7 +54,15 @@ function InstanceData() {
     searchFormValueParsers: [],
     // 字典缓存（按dicCode复用）
     dictCache: {},
-    detailLoadingMore: false
+    detailLoadingMore: false,
+    // 按钮执行（第二期）：formOptions 按钮池、权限过滤后按钮列表与共享执行器上下文
+    formOptions: [],
+    btnList: [],
+    btnConfigs: new BtnConfigs(),
+    // 选择集合（UI第三期接入；按钮校验链依赖其空语义，行按钮传rowData时不受影响）
+    selectList: [],
+    editRow: null,
+    externalParamsFormRow: null
   };
 }
 
@@ -126,10 +136,11 @@ export default {
       return this.allDisplayFields;
     },
     isDoubleLayout() {
-      return this.mobileAttrs.fieldLayout !== "single";
+      // 非法值按默认 double 处理（契约§3 回退规则），枚举来源 tableSelectConfigs.js
+      return this.mobileAttrs.fieldLayout !== MOBILE_FIELD_LAYOUT.SINGLE;
     },
     isHorizontalLabel() {
-      return this.mobileAttrs.labelLayout === "horizontal";
+      return this.mobileAttrs.labelLayout === MOBILE_LABEL_LAYOUT.HORIZONTAL;
     }
   },
 
@@ -149,7 +160,9 @@ export default {
       }
     },
     checkPermission: {
-      default: () => () => true
+      default: () => () => {
+        console.warn("inject缺失checkPermission!");
+      }
     },
     getListPageId: {
       default: () => () => ""
@@ -159,6 +172,16 @@ export default {
     },
     getPrjInfo: {
       default: () => () => ({})
+    },
+    queryChangePrjId: {
+      default: () => () => {
+        console.warn("inject缺失queryChangePrjId!");
+      }
+    },
+    updatePrj: {
+      default: () => () => {
+        console.warn("inject缺失updatePrj!");
+      }
     },
     enterpriseId: {
       default: () => ""
@@ -280,13 +303,255 @@ export default {
 
     expose_setTableData(data) {
       this.tableData = Array.isArray(data) ? data : [];
-      this.resolveKeyFieldCase(this.tableData);
       this.totalCount = this.tableData.length;
+      // 直接替换本地数据，与替换式查询同语义走整体替换收尾（重锚选中、详情页越界关闭）
+      this.handleTableDataReplaced();
     },
 
-    // 第一期仅提供注入入口，完整执行依赖第二期executeButton抽取
-    emitBtnClick(row, btnId) {
-      console.warn(`[mobileTable] emitBtnClick 第一期暂未接入按钮体系（btnId: ${btnId}），将于第二期支持`);
+    // 与桌面 tableItem.emitBtnClick 同签名：btnId 优先，否则按 tagAttrs.value（按钮名）查找；预览/禁用态不执行
+    emitBtnClick(row, btnName, btnId) {
+      if (this.previewMode || this.tableDisbaled) return;
+      let target = null;
+      if (btnId) {
+        target = this.btnList.find(btn => btn.btnId === btnId);
+      } else if (btnName) {
+        target = this.btnList.find(btn => btn.tagAttrs?.value === btnName);
+      } else {
+        console.warn("[mobileTable] 调用emitBtnClick参数同时缺失按钮名称和按钮id");
+        return;
+      }
+      if (!target) {
+        this.showTip("未找到此操作关联的按钮！请检查权限！");
+        return;
+      }
+      this.executeButton({ ...target.extraOption, btnId: target.btnId, authorize: target.authorize }, row);
+    },
+
+    /** ============ 按钮执行（第二期：共享executeButton宿主能力） ============ */
+
+    // 权限过滤与桌面 filterBtnsByPermission 同语义（普通列表分支：rawRelateId 缺失/notVerify 或预览态不过滤）
+    composeBtnList() {
+      let config = cloneDeep(this.formOptions || []);
+      if (!this.previewMode && this.rawRelateId && this.rawRelateId !== "notVerify") {
+        config = config.filter(item => {
+          return this.checkPermission(`${this.rawRelateId}:${item.btnId}:${item.authorize}`) || item.authorize === "defaultShow";
+        });
+      }
+      this.btnList = config;
+    },
+
+    // 共享按钮执行器（逻辑来源 tableItem.js handleBtnClick，经 executeButton.js 第二期抽取）
+    executeButton(btnConfig, rowData) {
+      return executeButton(btnConfig, rowData, this);
+    },
+
+    // 以下为共享executeButton约定的宿主能力（语义与桌面 tableItem 对应方法一致）
+    getSelectedData() {
+      return this.selectList?.length ? this.selectList : this.currentSelectedRow ? [this.currentSelectedRow] : [];
+    },
+
+    checkNoSelection() {
+      return this.selectList.length === 0 && !this.currentSelectedRow;
+    },
+
+    checkOnlyOneSelected() {
+      return this.selectList.length === 1 || (this.selectList.length === 0 && this.currentSelectedRow);
+    },
+
+    refresh() {
+      this.loadFirst();
+    },
+
+    // 选择数据转参数（与桌面 formatSelectListParams 同语义，来源 tableItem.js）
+    formatSelectListParams({ deliverySelectList, deliverySelectListFields }, rowData, fieldFormatMode = "default") {
+      const params = {};
+      let selectList;
+      if (rowData) {
+        selectList = [rowData];
+      } else {
+        selectList = this.getSelectedData();
+      }
+      if (deliverySelectList) {
+        if (fieldFormatMode === "useArray") {
+          selectList.map(row => {
+            deliverySelectListFields.map(item => {
+              let key, value;
+              if (typeof item === "string") {
+                value = row[item];
+                key = `${item}Array`;
+              } else {
+                value = row[item.fieldCode];
+                key = item.renamed || `${item.fieldCode}Array`;
+              }
+              if (params[key]) {
+                params[key].push(value);
+              } else {
+                params[key] = [value];
+              }
+            });
+            // 主键必穿
+            if (!deliverySelectListFields.some(field => field === this.keyField || field.fieldCode === this.keyField)) {
+              const key = `${this.keyField}Array`;
+              params[key] = selectList?.map(row => row[this.keyField]) || "";
+            }
+          });
+        } else if (fieldFormatMode === "useJoin") {
+          deliverySelectListFields.map(item => {
+            let key;
+            if (typeof item === "string") {
+              key = `${item}`;
+            } else {
+              key = item.renamed || `${item.fieldCode}`;
+            }
+            params[key] = selectList.map(row => row[typeof item === "string" ? item : item.fieldCode]).join(",");
+          });
+        } else {
+          rowData = rowData || this.selectList[0] || {};
+          deliverySelectListFields.map(item => {
+            let key, value;
+            if (typeof item === "string") {
+              value = rowData[item];
+              key = `${item}`;
+            } else {
+              value = rowData[item.fieldCode];
+              key = item.renamed || `${item.fieldCode}`;
+            }
+            params[key] = value;
+          });
+          // 主键必穿
+          if (!deliverySelectListFields.some(field => field === this.keyField || field.fieldCode === this.keyField)) {
+            params[this.keyField] = rowData[this.keyField];
+          }
+        }
+      }
+      return params;
+    },
+
+    // 组装openType=5接口请求参数（与桌面 getRequestConfig 同语义，来源 tableItem.js）
+    getRequestConfig(row) {
+      const {
+        btnConfigs: {
+          requestUrl,
+          requestType,
+          requestFixedParams = {},
+          deliverySelectList,
+          btnDisposeParamsRule: { paramType, paramName, deliverySelectListFields = [] }
+        }
+      } = this;
+      let { finalUrl, finalType, finalData, requestHeaders: headers } = disposeParams(requestUrl, requestType, requestFixedParams);
+      const baseParams = this.getParams() || {};
+      finalData = convertDynaticData(finalData, baseParams, this);
+
+      if (deliverySelectList) {
+        let selectListId;
+        if (row) {
+          selectListId = [row[this.keyField]];
+        } else {
+          selectListId = this.getSelectedData().map(item => item[this.keyField]);
+        }
+        if (paramType === 1) {
+          // paramName字段的兼容性代码
+          if (paramName) {
+            finalUrl = addQueryString(
+              {
+                [paramName]: selectListId.join(",")
+              },
+              finalUrl
+            );
+          } else if (deliverySelectListFields.length) {
+            const params = this.formatSelectListParams({ deliverySelectList, deliverySelectListFields }, undefined, "useJoin");
+            finalUrl = addQueryString(params, finalUrl);
+          }
+        } else if (paramType === 0) {
+          // paramName字段的兼容性代码
+          if (paramName) {
+            finalData[paramName] = selectListId;
+          } else if (deliverySelectListFields.length) {
+            const params = this.formatSelectListParams({ deliverySelectList, deliverySelectListFields }, undefined, "useJoin");
+            finalData = {
+              ...finalData,
+              ...params
+            };
+          }
+        }
+      }
+      return {
+        finalUrl,
+        finalData,
+        finalType,
+        headers
+      };
+    },
+
+    // openType=1 当前页跳转：sessionStorage传参 + 项目切换 + 路由跳转（与桌面 disposeThisPageJump 同语义）
+    async disposeThisPageJump({ openUrl, deliverySelectList, deliverySelectListFields }, rowData) {
+      const params = this.formatSelectListParams({ deliverySelectList, deliverySelectListFields }, rowData, "useArray");
+      // 通过sessionStorage传递参数
+      sessionStorage.setItem("lowcodeTableThisPageJumpParams", JSON.stringify(params));
+      const res = await this.queryChangePrjId(this.listPageId, params[`${this.keyField}Array`][0]);
+      if (res && res !== this?.getPrjInfo?.()?.prjId) {
+        await this.updatePrj({ prjId: res });
+        // prjId从外部传入需要时间更改
+        setTimeout(() => {
+          this.$router.push(openUrl);
+        }, 100);
+      } else {
+        this.$router.push(openUrl);
+      }
+    },
+
+    // openType=5 直接调用接口（与桌面 disposeRequestEvent 同语义；isRefresh 后回到第一页重查）
+    async disposeRequestEvent({ requestBeforeConfirmHint, requestBeforeConfirmText, requestBeforeConfirmTitle, requestBeforeConfirmType }, rowData) {
+      if (requestBeforeConfirmHint) {
+        await this.$confirm(`${requestBeforeConfirmText}`, requestBeforeConfirmTitle || "提示", {
+          type: requestBeforeConfirmType
+        });
+      }
+      const { finalUrl, finalType, finalData, headers: requestHeaders } = this.getRequestConfig(rowData);
+
+      await this.generalRequest(finalUrl, finalType, finalData, requestHeaders);
+      this.btnConfigs.isRefresh && this.loadFirst();
+    },
+
+    // 以下分派器依赖桌面端下载/流程/表单弹窗体系（第五期按钮体系），移动端第二期仅保证执行链可达并告警
+    fifthPhaseWarn(action) {
+      console.warn(`[mobileTable] 按钮动作（${action}）依赖桌面端弹窗/下载/流程体系，属第五期范围，移动端暂不执行`);
+    },
+    disposeDown() {
+      this.fifthPhaseWarn("download");
+    },
+    disposeFlowDocDown() {
+      this.fifthPhaseWarn("flowDocDownload");
+    },
+    disposeFlowResultDown() {
+      this.fifthPhaseWarn("flowResultDownload");
+    },
+    disposeFormDown() {
+      this.fifthPhaseWarn("formDownload");
+    },
+    disposeDel() {
+      this.fifthPhaseWarn("batchDel");
+    },
+    dealImport() {
+      this.fifthPhaseWarn("import");
+    },
+    dealImportRefresh() {
+      this.fifthPhaseWarn("importRefresh");
+    },
+    dealQrDownload() {
+      this.fifthPhaseWarn("qrCode");
+    },
+    disposeRelateCompEvent() {
+      this.fifthPhaseWarn("openType=4 关联组件");
+    },
+    disposeFlowEvent() {
+      this.fifthPhaseWarn("openType=2 流程");
+    },
+    disposeDynamicFormEvent() {
+      this.fifthPhaseWarn("openType=0 动态表单");
+    },
+    disposeDynamicTableEvent() {
+      this.fifthPhaseWarn("openType=6 动态列表");
     },
 
     /** ============ 配置解析 ============ */
@@ -317,6 +582,7 @@ export default {
       // 合并规则（契约§3）：旧JSON无mobileAttrs取默认值，未来新增字段自动补默认值
       this.mobileAttrs = merge({}, getMobileAttrs(), json.mobileAttrs || {});
       this.tableConfigJSON = json.tableOptions || [];
+      this.formOptions = json.formOptions || [];
       this.keyField = json.keyField || "";
       // keyField缺失时输出开发告警（为第三期跨页选择打底，缺失不纳入跨页保留集合）
       if (!this.keyField) {
@@ -326,6 +592,7 @@ export default {
       this.pageSize = this.tableAttrs.paginationSize || 20;
       this.composeFields();
       this.composeSearchParams();
+      this.composeBtnList();
     },
 
     // 组装搜索参数空默认值（与web端composeFromOptions/setFormField同构，数据源同为tableOptions遍历）。
@@ -511,24 +778,53 @@ export default {
       return { data: res.data || [], totalCount: this.showPagination ? res.totalCount ?? 0 : (res.data || []).length };
     },
 
-    // 首查/刷新/外部参数变更：替换列表并回到第一页
+    // 整体替换 tableData 后的统一收尾（loadFirst 替换式查询与 expose_setTableData 共用）：
+    // keyField 大小写归一；按 keyField 重锚当前行/选择集合（移动端展示全部已加载数据，选择不因替换无条件清空：
+    // 记录仍在新数据中则保留选中并换为新对象、取值最新，已不存在则移除，keyField 缺失无法锚定身份时清空）；
+    // 详情页当前下标越界即关闭（否则覆盖层消失后，数据再增长时会凭空复活）
+    handleTableDataReplaced() {
+      this.resolveKeyFieldCase(this.tableData);
+      if (this.keyField) {
+        const reAnchorRow = row => {
+          if (!row) return null;
+          const id = row[this.keyField];
+          if (id === undefined || id === null || id === "") return null;
+          return this.tableData.find(item => item[this.keyField] === id) || null;
+        };
+        this.currentSelectedRow = reAnchorRow(this.currentSelectedRow);
+        this.selectList = this.selectList.map(reAnchorRow).filter(Boolean);
+      } else {
+        this.currentSelectedRow = null;
+        this.selectList = [];
+      }
+      if (this.detailVisible && this.detailIndex >= this.tableData.length) {
+        this.detailVisible = false;
+      }
+    },
+
+    // 首查/刷新/外部参数变更：成功替换列表、回到第一页并按 keyField 重锚选中；失败保留旧数据、页码按已加载数据反推
     async loadFirst() {
       this.requestVersion++;
       const version = this.requestVersion;
       this.pageNo = 1;
       this.loading = true;
       this.loadError = false;
+      // 替换式查询启动后，加载更多的页脚错误态归新查询所有
+      this.loadMoreError = false;
       try {
         const result = await this.requestPageData();
         // 旧响应不得回写列表、总数或状态；销毁后禁止异步回写
         if (this._destroyed || version !== this.requestVersion || !result) return;
         this.tableData = result.data;
         this.totalCount = result.totalCount;
-        this.resolveKeyFieldCase(this.tableData);
+        this.handleTableDataReplaced();
       } catch (error) {
         if (!this._destroyed && version === this.requestVersion) {
           console.error(`[mobileTable] 加载失败：${error}`);
           this.loadError = true;
+          // 页码按保留数据反推而非快照恢复：并发刷新下快照值可能是其他请求的临时页码
+          this.pageNo = Math.max(1, Math.ceil(this.tableData.length / this.pageSize));
+          if (this.tableData.length) this.showTip("刷新失败，请重试");
         }
       } finally {
         if (!this._destroyed && version === this.requestVersion) {
@@ -548,8 +844,11 @@ export default {
       try {
         this.pageNo = nextPage;
         const result = await this.requestPageData();
-        if (this._destroyed || version !== this.requestVersion || !result) {
-          // 被新的首查/刷新抢占或生命周期取消（onBeforeQueryDataEvent返回false）：回滚页码，丢弃本页结果
+        if (this._destroyed) return false;
+        // 被新的首查/刷新抢占：页码归新查询所有（loadFirst 成功置1、失败按数据反推），旧响应不回写任何状态
+        if (version !== this.requestVersion) return false;
+        // 生命周期取消（onBeforeQueryDataEvent返回false）：请求未发出、无抢占窗口，撤销本次乐观递增
+        if (!result) {
           this.pageNo = prevPage;
           return false;
         }
@@ -796,9 +1095,16 @@ export default {
               frontTextStyle = `${style};${contentTextAttr.iconStyle}`;
             }
           }
-          // clickEvent.relateBtnId第一期不触发（第五期接入）
+          // 字段片段点击（第二期接入）：配置了关联按钮才可点击，优先于卡片点击并阻止冒泡（与桌面 clickBtn 语义一致）
+          const relateBtnId = contentTextAttr.clickEvent?.relateBtnId;
+          const onSegmentClick = relateBtnId
+            ? e => {
+                e.stopPropagation();
+                this.emitBtnClick(row, null, relateBtnId);
+              }
+            : null;
           return (
-            <div key={idx} style="display: flex;align-items: center;">
+            <div key={idx} style="display: flex;align-items: center;" onClick={onSegmentClick}>
               <span class={frontTextClass} style={frontTextStyle}></span>
               <span style={cellStyle}>{contentText}</span>
               <span class={behindTextClass} style={behindTextStyle}></span>

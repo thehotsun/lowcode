@@ -1,6 +1,6 @@
 // tableOptions中的item，可以理解为传给el-table-column中的attrs，要注意区分书写格式，例如min-width不要写成驼峰格式
 
-import { align, searchWidget, fixed } from "./tableSelectConfigs";
+import { align, searchWidget, fixed, MOBILE_FIELD_LAYOUT, MOBILE_LABEL_LAYOUT } from "./tableSelectConfigs";
 
 export function getTableAttrs() {
   return {
@@ -59,10 +59,10 @@ export function getMobileAttrs() {
     titleField: "",
     // 移动端展示列（fieldCode 有序数组），空则回退前4个显示叶子列
     mobileFields: [],
-    // 卡片字段布局：single 单列 | double 双列
-    fieldLayout: "double",
-    // label 布局：vertical 上下 | horizontal 左右
-    labelLayout: "vertical"
+    // 卡片字段布局：single 单列 | double 双列（枚举见 tableSelectConfigs.js）
+    fieldLayout: MOBILE_FIELD_LAYOUT.DOUBLE,
+    // label 布局：vertical 上下 | horizontal 左右（枚举见 tableSelectConfigs.js）
+    labelLayout: MOBILE_LABEL_LAYOUT.VERTICAL
   };
 }
 

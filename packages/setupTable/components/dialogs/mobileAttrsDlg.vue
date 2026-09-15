@@ -30,15 +30,13 @@
 
         <el-form-item label="字段布局">
           <el-radio-group v-model="mobileAttrs.fieldLayout">
-            <el-radio label="single">单列</el-radio>
-            <el-radio label="double">双列</el-radio>
+            <el-radio v-for="item in fieldLayoutOptions" :key="item.value" :label="item.value">{{ item.cnName }}</el-radio>
           </el-radio-group>
         </el-form-item>
 
         <el-form-item label="label布局">
           <el-radio-group v-model="mobileAttrs.labelLayout">
-            <el-radio label="vertical">上下</el-radio>
-            <el-radio label="horizontal">左右</el-radio>
+            <el-radio v-for="item in labelLayoutOptions" :key="item.value" :label="item.value">{{ item.cnName }}</el-radio>
           </el-radio-group>
         </el-form-item>
       </el-form>
@@ -53,6 +51,7 @@
 <script>
 import { cloneDeep } from "lodash";
 import { getMobileAttrs } from "/baseConfig/tableBaseConfig";
+import { fieldLayout, labelLayout } from "/baseConfig/tableSelectConfigs";
 export default {
   name: "MobileAttrsDlg",
   props: {
@@ -70,6 +69,13 @@ export default {
     };
   },
   computed: {
+    // 布局枚举选项（来源 tableSelectConfigs.js，供模板 v-for 使用）
+    fieldLayoutOptions() {
+      return fieldLayout;
+    },
+    labelLayoutOptions() {
+      return labelLayout;
+    },
     // 只处理 show 为真值的叶子字段（不含children的父节点）
     visibleLeafFields() {
       const flat = [];

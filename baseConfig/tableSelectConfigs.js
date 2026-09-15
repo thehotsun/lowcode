@@ -92,6 +92,44 @@ export const cellRenderType = [
   }
 ];
 
+// 移动端卡片布局枚举（mobileAttrs.fieldLayout / labelLayout）：设计端弹窗单选、
+// getMobileAttrs() 默认值与渲染端布局判断共用同一取值来源，取值变更须三处同步语义。
+export const MOBILE_FIELD_LAYOUT = {
+  SINGLE: "single",
+  DOUBLE: "double"
+};
+
+export const fieldLayout = [
+  {
+    id: MOBILE_FIELD_LAYOUT.SINGLE,
+    cnName: "单列",
+    value: MOBILE_FIELD_LAYOUT.SINGLE
+  },
+  {
+    id: MOBILE_FIELD_LAYOUT.DOUBLE,
+    cnName: "双列",
+    value: MOBILE_FIELD_LAYOUT.DOUBLE
+  }
+];
+
+export const MOBILE_LABEL_LAYOUT = {
+  VERTICAL: "vertical",
+  HORIZONTAL: "horizontal"
+};
+
+export const labelLayout = [
+  {
+    id: MOBILE_LABEL_LAYOUT.VERTICAL,
+    cnName: "上下",
+    value: MOBILE_LABEL_LAYOUT.VERTICAL
+  },
+  {
+    id: MOBILE_LABEL_LAYOUT.HORIZONTAL,
+    cnName: "左右",
+    value: MOBILE_LABEL_LAYOUT.HORIZONTAL
+  }
+];
+
 export const cellDictRenderConfig = [
   {
     backgroundColor: "#FCE9DE",
