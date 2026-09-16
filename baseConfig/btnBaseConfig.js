@@ -971,6 +971,27 @@ export function BtnConfigFormOptions() {
         renderDependFn: requestBeforeConfirmTextRenderDependFn
       }
     },
+
+    {
+      elRowAttrs: {
+        gutter: 10
+      },
+      formItem: {
+        formItemAttrs: {
+          prop: "extraOption.requestSuccessMessage",
+          label: "成功后的提示语："
+        },
+        tagName: "el-input",
+        style: "max-width: 180px;width: 100%;",
+        tagAttrs: {
+          placeholder: "请输入成功后的提示语，为空则不提示"
+        },
+        // 对应formData中的属性值
+        formField: "extraOption.requestSuccessMessage",
+        renderDependFn: expectOpenTypeRenderDependFnGenerator(5)
+      }
+    },
+
     {
       elRowAttrs: {
         gutter: 10
@@ -1771,6 +1792,7 @@ export function BtnConfigFrom(custom = {}) {
       requestBeforeConfirmText: "",
       requestBeforeConfirmTitle: "",
       requestBeforeConfirmType: "",
+      requestSuccessMessage: "",
       requestParamsConfig: {
         params: [],
         data: []

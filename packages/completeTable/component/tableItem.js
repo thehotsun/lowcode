@@ -1668,6 +1668,7 @@ export default {
         requestBeforeConfirmText = "",
         requestBeforeConfirmTitle = "",
         requestBeforeConfirmType = "",
+        requestSuccessMessage = "",
         requestParamsConfig = {},
         useDialog = true,
         showFooter = false,
@@ -1708,6 +1709,7 @@ export default {
       this.btnConfigs.requestBeforeConfirmText = requestBeforeConfirmText;
       this.btnConfigs.requestBeforeConfirmTitle = requestBeforeConfirmTitle;
       this.btnConfigs.requestBeforeConfirmType = requestBeforeConfirmType;
+      this.btnConfigs.requestSuccessMessage = requestSuccessMessage;
       this.btnConfigs.isRefresh = isRefresh;
       this.btnConfigs.btnType = btnType;
       this.btnConfigs.btnId = btnId;
@@ -1869,7 +1871,8 @@ export default {
                   requestBeforeConfirmHint,
                   requestBeforeConfirmText,
                   requestBeforeConfirmTitle,
-                  requestBeforeConfirmType
+                  requestBeforeConfirmType,
+                  requestSuccessMessage
                 },
                 rowData
               );
@@ -2254,7 +2257,7 @@ export default {
       };
     },
 
-    async disposeRequestEvent({ requestBeforeConfirmHint, requestBeforeConfirmText, requestBeforeConfirmTitle, requestBeforeConfirmType }, rowData) {
+    async disposeRequestEvent({ requestBeforeConfirmHint, requestBeforeConfirmText, requestBeforeConfirmTitle, requestBeforeConfirmType, requestSuccessMessage }, rowData) {
       if (requestBeforeConfirmHint) {
         await this.$confirm(`${requestBeforeConfirmText}`, requestBeforeConfirmTitle || "提示", {
           type: requestBeforeConfirmType
@@ -2263,6 +2266,7 @@ export default {
       const { finalUrl, finalType, finalData, headers: requestHeaders } = this.getRequestConfig(rowData);
 
       await this.generalRequest(finalUrl, finalType, finalData, requestHeaders);
+      requestSuccessMessage && this.$success(requestSuccessMessage);
       this.btnConfigs.isRefresh && this.queryTableData();
     },
     iconDisposeDown(command) {
