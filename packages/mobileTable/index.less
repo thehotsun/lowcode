@@ -15,12 +15,26 @@
   }
 
   .mt-card {
+    display: flex;
+    align-items: flex-start;
     background: #fff;
     border-radius: 8px;
     padding: 12px;
     margin-bottom: 10px;
     box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
     cursor: pointer;
+
+    // 勾选框占位（isShowCheckbox 开启时渲染），阻止卡片点击语义受勾选区域影响
+    .mt-card-check {
+      flex-shrink: 0;
+      margin-right: 8px;
+      padding-top: 2px;
+    }
+
+    .mt-card-main {
+      flex: 1;
+      min-width: 0;
+    }
 
     .mt-card-title {
       font-size: 15px;

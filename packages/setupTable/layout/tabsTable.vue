@@ -6,6 +6,7 @@
       @handleSave="handleSave"
       @showTableAttrs="showTableAttrs"
       @showPreview="showPreview"
+      @showMobilePreview="showMobilePreview"
       @jumpResource="jumpResource"
     >
       <template slot="btn">

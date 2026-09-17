@@ -14,7 +14,8 @@ import { h as vueH } from "vue";
 let hostCreateElement = null;
 const h = (...args) => (hostCreateElement || vueH)(...args);
 
-// 移动端列表第一期：单列卡片列表 + 详情页覆盖层。
+// 移动端列表：单列卡片列表 + 详情页覆盖层（第一期）；字段点击与按钮执行链（第二期）；
+// 卡片选择/对外事件全集/expose_*全集（第三期）。
 // 仅依赖 lowcode 现有配置协议（tableOptions/tableAttrs/mobileAttrs）与宿主 inject 能力面，
 // 与桌面 complete-table 二选一挂载，传参一致。
 function InstanceData() {
@@ -36,6 +37,8 @@ function InstanceData() {
     dynamicExternalParams: {},
     previewMode: false,
     tableDisbaled: false,
+    // 禁用态开关：开启后dynamicExternalParams变化会按桌面语义联动tableDisbaled（第三期禁用态细化）
+    tableDisbaledStatus: false,
     // 运行状态（契约§4.1）
     currentSelectedRow: null,
     detailVisible: false,
@@ -48,8 +51,11 @@ function InstanceData() {
     pageSize: 20,
     totalCount: 0,
     requestVersion: 0,
-    // 搜索参数空默认值/日期拆分字段/数值转换器（与web端getParams同构；第一期无搜索UI，第三期接入UI后直接生效）
+    // 搜索参数空默认值/日期拆分字段/数值转换器（与web端composeFromOptions/setFormField同构，数据源同为tableOptions遍历）。
+    // 移动端搜索字段不区分web端"列表上方/表头下方"两种摆放，统一一处处理，参数口径与web一致。
     searchForm: {},
+    rawSearchForm: {},
+    multiFieldSearch: "",
     searchDateRangeFields: [],
     searchFormValueParsers: [],
     // 字典缓存（按dicCode复用）
@@ -59,7 +65,7 @@ function InstanceData() {
     formOptions: [],
     btnList: [],
     btnConfigs: new BtnConfigs(),
-    // 选择集合（UI第三期接入；按钮校验链依赖其空语义，行按钮传rowData时不受影响）
+    // 选择集合（第三期：isShowCheckbox开启时卡片渲染勾选框，经selectListHandler/selectionChange对外发布）
     selectList: [],
     editRow: null,
     externalParamsFormRow: null
@@ -141,6 +147,35 @@ export default {
     },
     isHorizontalLabel() {
       return this.mobileAttrs.labelLayout === MOBILE_LABEL_LAYOUT.HORIZONTAL;
+    },
+    // 当前列表是否只能单选（与桌面 tableItem 同来源：renderStrategy.singleSelect）
+    singleSelect() {
+      return !!this.renderStrategy.singleSelect;
+    },
+    // 是否启用跨页选择（与桌面 reserve-selection 同来源：renderStrategy.crossPageSelect）
+    crossPageSelect() {
+      return !!this.renderStrategy.crossPageSelect;
+    },
+    // 是否渲染卡片勾选框（与桌面 isShowCheckbox 渲染选择列同语义）
+    showCheckbox() {
+      return !!this.tableAttrs.isShowCheckbox;
+    }
+  },
+
+  watch: {
+    // 禁用态联动（与桌面 tableItem 对 dynamicExternalParams 的 watch 同语义）：
+    // tableDisbaledStatus 开启后，动态外部参数变为含多个key的有效对象则解除禁用，否则保持禁用
+    dynamicExternalParams: {
+      handler(val = {}) {
+        try {
+          if (this.tableDisbaledStatus) {
+            const isValidObject = val && typeof val === "object" && !Array.isArray(val) && Object.keys(val).length > 1;
+            this.tableDisbaled = !isValidObject;
+          }
+        } catch (error) {
+          console.error("[mobileTable] dynamicExternalParams watch 执行失败：", error);
+        }
+      }
     }
   },
 
@@ -200,7 +235,7 @@ export default {
   provide() {
     return {
       // 与桌面端一致的能力面，供复杂formatter注入使用
-      getTableRenderInstance: () => this.expose_MobileTableInstance(),
+      getTableRenderInstance: () => this.expose_CompleteTableInstance(),
       emitBtnClick: this.emitBtnClick
     };
   },
@@ -224,7 +259,7 @@ export default {
     async init(isPreview, json, options = {}, externalTriggerQueryTableData = false, tableDisbaled = false) {
       this.resetAll();
       this.previewMode = !!isPreview;
-      this.tableDisbaled = !!tableDisbaled;
+      this.tableDisbaledStatus = this.tableDisbaled = !!tableDisbaled;
       if (!json || isEmpty(json)) {
         json = await this.queryTableConfig();
       }
@@ -306,6 +341,57 @@ export default {
       this.totalCount = this.tableData.length;
       // 直接替换本地数据，与替换式查询同语义走整体替换收尾（重锚选中、详情页越界关闭）
       this.handleTableDataReplaced();
+    },
+
+    /** ============ 对外API（第三期补齐全集） ============ */
+
+    // 外部设置搜索表单（与桌面 tableItem.expose_setSearchForm 同语义）：
+    // 重置为空默认值后写入传入值，重置multiFieldSearch并回到第一页重查；搜索UI随第四期接入，参数链路本期生效
+    async expose_setSearchForm(data, multiFieldSearch) {
+      if (Object.prototype.toString.call(data) !== "[object Object]") {
+        return console.warn("expose_setForm方法传入的参数必须是一个对象！");
+      }
+      this.resetSearchForm();
+      this.multiFieldSearch = multiFieldSearch || "";
+      Object.keys(this.searchForm).forEach(key => {
+        // eslint-disable-next-line no-prototype-builtins
+        if (data.hasOwnProperty(key)) {
+          this.searchForm[key] = data[key];
+        }
+      });
+      await this.loadFirst();
+    },
+
+    // 与桌面 expose_setTableDisbaled 同语义：直接设置禁用态，不动tableDisbaledStatus联动开关
+    expose_setTableDisbaled(bool) {
+      this.tableDisbaled = bool;
+    },
+
+    // 改变按钮状态（与桌面 expose_enableAllBtn 同语义）：启用按钮池内全部按钮
+    expose_enableAllBtn() {
+      this.btnList.forEach(item => {
+        if (item.tagAttrs) item.tagAttrs.disabled = false;
+      });
+    },
+
+    // API全集对齐（桌面同名方法返回列表实例）；expose_MobileTableInstance 为移动端既有别名
+    expose_CompleteTableInstance() {
+      return this;
+    },
+
+    // 按钮关联弹窗体系属第五期（移动端弹层承载），第三期先提供API占位并告警
+    expose_showDialog() {
+      this.fifthPhaseWarn("expose_showDialog 按钮关联弹窗");
+    },
+
+    expose_hideDialog() {
+      this.fifthPhaseWarn("expose_hideDialog 按钮关联弹窗");
+    },
+
+    resetSearchForm() {
+      Object.keys(this.rawSearchForm).forEach(key => {
+        this.searchForm[key] = this.rawSearchForm[key];
+      });
     },
 
     // 与桌面 tableItem.emitBtnClick 同签名：btnId 优先，否则按 tagAttrs.value（按钮名）查找；预览/禁用态不执行
@@ -619,6 +705,8 @@ export default {
         }
       });
       this.searchForm = searchForm;
+      // 空默认值快照（expose_setSearchForm 重置基准，与桌面 rawSearchForm 同语义）
+      this.rawSearchForm = cloneDeep(searchForm);
       this.searchDateRangeFields = searchDateRangeFields;
       this.searchFormValueParsers = searchFormValueParsers;
     },
@@ -716,7 +804,7 @@ export default {
 
     /** ============ 数据加载与并发 ============ */
 
-    // 查询参数与web端getParams同构（键与合并顺序一致）；第一期无搜索UI，searchForm为空默认值
+    // 查询参数与web端getParams同构（键与合并顺序一致）；searchForm经expose_setSearchForm写入，搜索UI随第四期接入
     getParams(data = {}) {
       const extraParams = {};
       // 日期范围拆分：数组形式后端不识别，拆为fieldStart/fieldEnd（值为空数组时不触发，与web一致）
@@ -736,7 +824,7 @@ export default {
         ...data,
         ...this.searchForm,
         ...extraParams,
-        multiFieldSearch: "",
+        multiFieldSearch: this.multiFieldSearch,
         enterpriseId: this.enterpriseId,
         // web端getParams恒携带高级筛选键（默认[]/"and"），保持请求体同构
         advSearchExpr: [],
@@ -779,8 +867,9 @@ export default {
     },
 
     // 整体替换 tableData 后的统一收尾（loadFirst 替换式查询与 expose_setTableData 共用）：
-    // keyField 大小写归一；按 keyField 重锚当前行/选择集合（移动端展示全部已加载数据，选择不因替换无条件清空：
-    // 记录仍在新数据中则保留选中并换为新对象、取值最新，已不存在则移除，keyField 缺失无法锚定身份时清空）；
+    // keyField 大小写归一；当前行按 keyField 重锚（记录仍在新数据中则保留选中并换为新对象，否则置 null）；
+    // 选择集合在跨页选择开启时按 keyField 重锚（保留仍存在的记录并换为新对象，无主键的记录不纳入跨页保留集合并告警），
+    // 未开启跨页选择时清空（对齐桌面 reserve-selection=false 数据替换即清空的行为）；
     // 详情页当前下标越界即关闭（否则覆盖层消失后，数据再增长时会凭空复活）
     handleTableDataReplaced() {
       this.resolveKeyFieldCase(this.tableData);
@@ -792,8 +881,24 @@ export default {
           return this.tableData.find(item => item[this.keyField] === id) || null;
         };
         this.currentSelectedRow = reAnchorRow(this.currentSelectedRow);
-        this.selectList = this.selectList.map(reAnchorRow).filter(Boolean);
+        if (this.crossPageSelect) {
+          const kept = [];
+          this.selectList.forEach(row => {
+            const anchored = reAnchorRow(row);
+            if (anchored) {
+              kept.push(anchored);
+            } else if ([undefined, null, ""].includes(row?.[this.keyField])) {
+              console.warn("[mobileTable] 跨页选择：所选记录缺少主键值，不纳入跨页保留集合");
+            }
+          });
+          this.selectList = kept;
+        } else {
+          this.selectList = [];
+        }
       } else {
+        if (this.crossPageSelect) {
+          console.warn("[mobileTable] 已开启跨页选择但列表JSON未配置keyField，选择集合不保留");
+        }
         this.currentSelectedRow = null;
         this.selectList = [];
       }
@@ -904,13 +1009,57 @@ export default {
     /** ============ 卡片点击与详情页 ============ */
 
     handleCardClick(row, index) {
+      const prevRow = this.currentSelectedRow;
       this.currentSelectedRow = row;
       this.detailIndex = index;
       this.detailVisible = true;
-      // 预览态和禁用态不发布业务事件
+      // 预览态和禁用态不发布业务事件（含FreeLayout事件，与桌面 handleRowClickWrap/updateSelectedRowWrap 的拦截一致）
       if (!this.previewMode && !this.tableDisbaled) {
         this.$emit("rowClick", row);
+        this.eventBus?.$emit?.(`${this.getWidgetByFreeLayout()?.id}.rowClick`, row);
+        // 桌面 current-change 由高亮行变化触发；移动端卡片点击即当前行变化，仅在实际变化时发布
+        if (prevRow !== row) {
+          this.eventBus?.$emit?.(`${this.getWidgetByFreeLayout()?.id}.currentChange`, row);
+        }
       }
+    },
+
+    /** ============ 选择（第三期） ============ */
+
+    // 记录同一性：优先 keyField（兼容已归一的大小写），缺失时退化为对象身份
+    sameRecord(a, b) {
+      if (a === b) return true;
+      if (!a || !b) return false;
+      if (this.keyField) {
+        const idA = a[this.keyField];
+        const idB = b[this.keyField];
+        if (idA !== undefined && idA !== null && idA !== "" && idA === idB) return true;
+      }
+      return false;
+    },
+
+    // 卡片勾选态：按 keyField 匹配（追加数据中的同主键记录同样显示已选）
+    isRowSelected(row) {
+      return this.selectList.some(item => this.sameRecord(item, row));
+    },
+
+    // 卡片勾选框点击：单选只保留最后选择项；多选按主键去重增删；阻止冒泡不打开详情页
+    handleCardCheck(row, checked) {
+      if (this.previewMode || this.tableDisbaled) return;
+      if (this.singleSelect) {
+        this.selectList = checked ? [row] : [];
+      } else if (checked) {
+        if (!this.isRowSelected(row)) this.selectList.push(row);
+      } else {
+        this.selectList = this.selectList.filter(item => !this.sameRecord(item, row));
+      }
+      this.emitSelectionChange([...this.selectList]);
+    },
+
+    // 选择变化对外发布：父组件 selectListHandler + FreeLayout selectionChange（与桌面 selectListHandler 同链路）
+    emitSelectionChange(val) {
+      this.$emit("selectListHandler", val);
+      this.eventBus?.$emit?.(`${this.getWidgetByFreeLayout()?.id}.selectionChange`, val);
     },
 
     handleCloseDetail() {
@@ -1131,8 +1280,20 @@ export default {
       const titleField = this.titleField;
       return (
         <div class="mt-card" key={index} onClick={() => this.handleCardClick(row, index)}>
-          {titleField ? <div class="mt-card-title">{this.renderMobileField(titleField, row, index, "card")}</div> : null}
-          <div class={{ "mt-card-grid": true, "mt-grid-double": this.isDoubleLayout }}>{this.cardFields.map(field => this.renderCardField(field, row, index))}</div>
+          {this.showCheckbox ? (
+            // 勾选框阻止冒泡：勾选不触发卡片点击打开详情页；预览态/禁用态置灰不可交互
+            <div class="mt-card-check" onClick={e => e.stopPropagation()}>
+              <el-checkbox
+                value={this.isRowSelected(row)}
+                disabled={this.previewMode || this.tableDisbaled}
+                on-input={checked => this.handleCardCheck(row, checked)}
+              />
+            </div>
+          ) : null}
+          <div class="mt-card-main">
+            {titleField ? <div class="mt-card-title">{this.renderMobileField(titleField, row, index, "card")}</div> : null}
+            <div class={{ "mt-card-grid": true, "mt-grid-double": this.isDoubleLayout }}>{this.cardFields.map(field => this.renderCardField(field, row, index))}</div>
+          </div>
         </div>
       );
     },

@@ -192,16 +192,24 @@ export default {
 
     async expose_setSearchForm(...params) {
       if (this.isMobileMode) {
-        return console.warn("[completeTable] 移动端列表暂不支持expose_setSearchForm");
+        // 移动端搜索表单写入与重查已对齐（第三期），搜索UI随第四期接入
+        return this.$refs.mobileItem.expose_setSearchForm(...params);
       }
       console.log("expose_setSearchForm");
       await this.$refs.tableItem.expose_setSearchForm(...params);
     },
     async expose_enableAllBtn() {
       if (this.isMobileMode) {
-        return console.warn("[completeTable] 移动端列表暂不支持expose_enableAllBtn");
+        return this.$refs.mobileItem.expose_enableAllBtn();
       }
       await this.$refs.tableItem.expose_enableAllBtn();
+    },
+
+    expose_setTableDisbaled(bool) {
+      if (this.isMobileMode) {
+        return this.$refs.mobileItem.expose_setTableDisbaled(bool);
+      }
+      this.$refs.tableItem.expose_setTableDisbaled(bool);
     },
 
     async init(isPreview, json, externalParams = {}, externalTriggerQueryTableData = false, tableDisbaled = false) {
@@ -350,8 +358,16 @@ export default {
     let { activeName } = this;
 
     if (isMobileMode) {
-      // 移动端卡片点击的rowClick需向宿主转发（对外始终只挂载complete-table）
-      return <mobileTable ref="mobileItem" rawRelateIdProp={rawRelateIdProp} listPageIdProp={listPageIdProp} on-rowClick={row => this.$emit("rowClick", row)}></mobileTable>;
+      // 移动端卡片点击的rowClick、勾选变化的selectListHandler需向宿主转发（对外始终只挂载complete-table）
+      return (
+        <mobileTable
+          ref="mobileItem"
+          rawRelateIdProp={rawRelateIdProp}
+          listPageIdProp={listPageIdProp}
+          on-rowClick={row => this.$emit("rowClick", row)}
+          on-selectListHandler={list => this.$emit("selectListHandler", list)}
+        ></mobileTable>
+      );
     }
 
     if (pageLayout === "tree-table") {

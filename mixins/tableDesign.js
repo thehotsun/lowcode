@@ -176,6 +176,11 @@ export default {
       const renderParams = this.getRenderParams();
       this.$refs.previewDlg.showDlg(renderParams);
     },
+    // 第三期：设计器内移动端预览（同一份renderParams，预览弹窗内以手机壳渲染）
+    showMobilePreview() {
+      const renderParams = this.getRenderParams();
+      this.$refs.previewDlg.showDlg(renderParams, "mobile");
+    },
     jumpResource() {
       const routeUrl = this.$router.resolve({ name: "adminResources", query: { searchKeyword: this.formCode } });
       window.open(routeUrl.href, "_blank");

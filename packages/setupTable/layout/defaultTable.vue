@@ -6,6 +6,7 @@
       @showTableAttrs="showTableAttrs"
       @showMobileAttrs="showMobileAttrs"
       @showPreview="showPreview"
+      @showMobilePreview="showMobilePreview"
       @jumpResource="jumpResource"
       @handleExport="handleExport"
       @handleImport="handleImport"
