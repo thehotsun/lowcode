@@ -1,10 +1,11 @@
 <template>
   <el-dialog v-draggable :title="dialogTitle" :visible.sync="dialogVisiblePreview" :close-on-click-modal="false" :close-on-press-escape="false" width="90%" :before-close="handleClosePreview">
     <div class="preview-mode-switch">
-      <el-radio-group :value="mode" size="mini" @change="handleModeChange">
+      <el-radio-group v-model="mode" size="mini" @change="handleModeChange">
         <el-radio-button label="desktop">桌面端</el-radio-button>
-        <el-radio-button label="mobile">移动端</el-radio-button>
+        <el-radio-button label="mobile" :disabled="!mobilePreviewSupported">移动端</el-radio-button>
       </el-radio-group>
+      <span v-if="!mobilePreviewSupported" class="preview-mode-tip">当前布局暂不支持移动端预览</span>
     </div>
 
     <!-- 移动端预览（第三期）：手机壳定宽定高容器，内层provider固定提供isMobile，complete-table据此切换移动端渲染 -->
@@ -49,6 +50,9 @@ export default {
   computed: {
     dialogTitle() {
       return this.mode === "mobile" ? "预览（移动端）" : "预览";
+    },
+    mobilePreviewSupported() {
+      return (this.renderParams?.pageLayout || "table") === "table";
     }
   },
   methods: {
@@ -66,6 +70,10 @@ export default {
     },
 
     handleModeChange(mode) {
+      if (mode === "mobile" && !this.mobilePreviewSupported) {
+        this.mode = "desktop";
+        return;
+      }
       this.mode = mode;
       this.$nextTick(() => this.previewCurrent());
     },
@@ -82,6 +90,12 @@ export default {
 .preview-mode-switch {
   margin-bottom: 10px;
   text-align: center;
+
+  .preview-mode-tip {
+    margin-left: 8px;
+    color: #909399;
+    font-size: 12px;
+  }
 }
 
 .phone-shell {

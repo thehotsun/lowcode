@@ -7,7 +7,6 @@
       <el-button size="mini" @click="showTableAttrs">表格属性设置</el-button>
       <el-button size="mini" @click="showMobileAttrs">移动端设置</el-button>
       <el-button size="mini" @click="showPreview">预览</el-button>
-      <el-button size="mini" @click="showMobilePreview">移动端预览</el-button>
       <el-button size="mini" @click="jumpResource">权限设置</el-button>
       <el-dropdown @command="handleImport">
         <el-button size="mini">导入</el-button>
@@ -59,9 +58,6 @@ export default {
     },
     showPreview() {
       this.$emit("showPreview");
-    },
-    showMobilePreview() {
-      this.$emit("showMobilePreview");
     },
     jumpResource() {
       this.$emit("jumpResource");

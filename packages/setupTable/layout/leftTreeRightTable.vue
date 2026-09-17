@@ -5,7 +5,6 @@
       @handleSave="handleSave"
       @showTableAttrs="showTableAttrs"
       @showPreview="showPreview"
-      @showMobilePreview="showMobilePreview"
       @jumpResource="jumpResource"
       @handleExport="handleExport"
       @handleImport="handleImport"
