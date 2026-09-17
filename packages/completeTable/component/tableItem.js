@@ -3200,7 +3200,7 @@ export default {
     },
     renderSqlConditionDlg() {
       const { showSqlConditionDlg, handleAdvancedFilterCb, SqlConditionDlg } = this;
-      return showSqlConditionDlg ? <SqlConditionDlg ref="SqlConditionDlg" on={{ resolve: handleAdvancedFilterCb }}></SqlConditionDlg> : "";
+      return showSqlConditionDlg ? <SqlConditionDlg ref="SqlConditionDlg" props={{ onlyShowLabel: true }} on={{ resolve: handleAdvancedFilterCb }}></SqlConditionDlg> : "";
     },
 
     renderHeader() {
