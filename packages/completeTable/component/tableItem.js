@@ -998,16 +998,20 @@ export default {
     composeData(emptyData) {
       this.formOptions = this.composeFromOptions(this.tableConfigJSON);
       this.filterField = [];
-      // 外部渲染策略强制指定显示列：匹配到的列 show 强制为 true，其余强制为 false，列顺序按传入顺序排列
+      // 外部渲染策略强制指定显示列：匹配到的列 show 强制为 true 且 fieldName 同步为传入的 fieldDisplayName，其余强制为 false，列顺序按传入顺序排列
       const forceShowFields = this.renderStrategy?.forceShowFields;
       let tableConfig = this.tableConfigJSON;
       if (forceShowFields?.length) {
         const fieldNames = forceShowFields.map(field => field.fieldName);
         tableConfig = tableConfig
-          .map(item => ({
-            ...item,
-            show: fieldNames.includes(item.fieldCode)
-          }))
+          .map(item => {
+            const matched = forceShowFields.find(field => field.fieldName === item.fieldCode);
+            return {
+              ...item,
+              fieldName: matched ? matched.fieldDisplayName : item.label,
+              show: !!matched
+            };
+          })
           .sort((a, b) => {
             const indexA = fieldNames.indexOf(a.fieldCode);
             const indexB = fieldNames.indexOf(b.fieldCode);
