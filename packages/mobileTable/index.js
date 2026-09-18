@@ -2,7 +2,7 @@ import "./index.less";
 import { merge, isEmpty, cloneDeep } from "lodash";
 import { getTableAttrs, getMobileAttrs } from "../../baseConfig/tableBaseConfig";
 import { CELL_REBDER_TYPE, searchWidget, MOBILE_FIELD_LAYOUT, MOBILE_LABEL_LAYOUT } from "../../baseConfig/tableSelectConfigs";
-import { str2Fn, mergeStyle, getWidgetDefaultVal, parseValue, BtnConfigs, addQueryString } from "../../utils";
+import { str2Fn, str2obj, isValid, limitShowWord, getWidgetOptions, depthFirstSearchWithRecursive, mergeStyle, getWidgetDefaultVal, parseValue, BtnConfigs, addQueryString } from "../../utils";
 import { executeButton } from "../completeTable/component/executeButton";
 import { convertDynaticData, disposeParams } from "../../utils/interfaceParams";
 import { h as vueH } from "vue";
@@ -14,8 +14,14 @@ import { h as vueH } from "vue";
 let hostCreateElement = null;
 const h = (...args) => (hostCreateElement || vueH)(...args);
 
+// 排序/全部筛选下拉弹层状态key（activeFilterKey 取值）
+const FILTER_SORT_KEY = "__sort__";
+const FILTER_SHEET_KEY = "__filter__";
+// 筛选弹层选项分组超过该数量折叠，由组标题"展开/收起"控制
+const FILTER_OPTION_COLLAPSE_COUNT = 8;
+
 // 移动端列表：单列卡片列表 + 详情页覆盖层（第一期）；字段点击与按钮执行链（第二期）；
-// 卡片选择/对外事件全集/expose_*全集（第三期）。
+// 卡片选择/对外事件全集/expose_*全集（第三期）；顶部筛选与排序工具条（第四期）。
 // 仅依赖 lowcode 现有配置协议（tableOptions/tableAttrs/mobileAttrs）与宿主 inject 能力面，
 // 与桌面 complete-table 二选一挂载，传参一致。
 function InstanceData() {
@@ -58,6 +64,14 @@ function InstanceData() {
     multiFieldSearch: "",
     searchDateRangeFields: [],
     searchFormValueParsers: [],
+    // 顶部筛选与排序（第四期）：模糊搜索配置、下拉弹层状态（""=关闭，排序/全部筛选同屏互斥）、排序选中镜像、
+    // 远程选项缓存（fieldCode -> {status, raw}）、选项分组"展开/收起"状态、筛选弹层草稿表单（确认制）
+    fuzzyFieldSearchConfig: { placeholder: "", searchFieldList: [] },
+    activeFilterKey: "",
+    sortState: { field: "", order: "" },
+    filterOptionCache: {},
+    panelExpandedMap: {},
+    filterDraft: {},
     // 字典缓存（按dicCode复用）
     dictCache: {},
     detailLoadingMore: false,
@@ -159,6 +173,61 @@ export default {
     // 是否渲染卡片勾选框（与桌面 isShowCheckbox 渲染选择列同语义）
     showCheckbox() {
       return !!this.tableAttrs.isShowCheckbox;
+    },
+    // 模糊搜索框渲染条件（与桌面 renderOperateArea 的 searchFieldList.length 判断一致）
+    fuzzySearchEnabled() {
+      return Array.isArray(this.fuzzyFieldSearchConfig.searchFieldList) && this.fuzzyFieldSearchConfig.searchFieldList.length > 0;
+    },
+    // 顶部筛选入口（第四期）：搜索控件（含 below-header，移动端不区分摆放）∪ 列 filters/filtersConfig 表头筛选，
+    // 同一字段两种来源合并为一个入口；按 searchWidgetConfig.sortNumb 升序稳定排序（与桌面 formOptions 排序一致）。
+    // 与桌面搜索区一致，不按列显隐（show）过滤
+    filterEntries() {
+      const entries = [];
+      const entryMap = {};
+      const traverse = items => {
+        (items || []).forEach(item => {
+          if (item.children && item.children.length) {
+            traverse(item.children);
+            return;
+          }
+          const widgetName = searchWidget.find(widgetItem => widgetItem.id === item.searchWidget)?.tagName;
+          const hasWidget = Boolean(widgetName && item.isSearchWidget);
+          const filtersConfig = item.filtersConfig || {};
+          const hasColumnFilters = Boolean(item.filters || filtersConfig.customHandler || filtersConfig.isFilter);
+          if (!hasWidget && !hasColumnFilters) return;
+          let entry = entryMap[item.fieldCode];
+          if (!entry) {
+            entry = entryMap[item.fieldCode] = {
+              key: item.fieldCode,
+              fieldCode: item.fieldCode,
+              fieldName: item.fieldName || item.fieldCode,
+              columnItem: item,
+              widgetType: null,
+              config: null,
+              sortNumb: 0
+            };
+            entries.push(entry);
+          }
+          if (hasWidget) {
+            entry.config = this.normalizeSearchWidgetConfig(item, widgetName);
+            entry.widgetType = entry.config.searchWidgetType;
+            entry.sortNumb = entry.config.sortNumb || 0;
+            // 入口标签优先取搜索控件配置的标签名（桌面搜索区同来源），未配置回退列名
+            const label = entry.config.formItemAttrs?.label;
+            if (label) entry.fieldName = label;
+          }
+        });
+      };
+      traverse(this.tableConfigJSON);
+      return entries.sort((a, b) => a.sortNumb - b.sortNumb);
+    },
+    // 排序面板字段：show 叶子列中 sort 为真值（桌面 939194c 后全列走后端 sqlConfig 排序）
+    sortableFields() {
+      return this.allDisplayFields.filter(field => field.sort);
+    },
+    // 工具条渲染条件：模糊框、任一筛选入口、任一可排序字段均无则不渲染
+    showFilterBar() {
+      return this.fuzzySearchEnabled || this.filterEntries.length > 0 || this.sortableFields.length > 0;
     }
   },
 
@@ -670,6 +739,8 @@ export default {
       this.tableConfigJSON = json.tableOptions || [];
       this.formOptions = json.formOptions || [];
       this.keyField = json.keyField || "";
+      // 顶层模糊搜索配置（第四期）：与桌面 renderOperateArea 消费同源
+      this.fuzzyFieldSearchConfig = merge({}, { placeholder: "", searchFieldList: [] }, json.fuzzyFieldSearchConfig || {});
       // keyField缺失时输出开发告警（为第三期跨页选择打底，缺失不纳入跨页保留集合）
       if (!this.keyField) {
         console.warn("[mobileTable] 列表JSON未配置keyField，跨页选择相关能力（第三期）将不可用");
@@ -727,7 +798,9 @@ export default {
             contentTextAttrArr: item.contentTextAttrArr || [],
             cellRenderType: item.cellRenderType,
             enumDisplayConfig: item.enumDisplayConfig || null,
-            formatter: item.formatter ? str2Fn(item.formatter) : null
+            formatter: item.formatter ? str2Fn(item.formatter) : null,
+            // 第四期排序面板数据源：sort 为真值的列可排序
+            sort: Boolean(item.sort)
           });
         });
       };
@@ -1102,6 +1175,312 @@ export default {
       this.detailIndex++;
     },
 
+    /** ============ 顶部筛选与排序（第四期） ============ */
+
+    // 归一化搜索控件配置：与桌面 composeFromOptions 的
+    // merge(getWidgetOptions(tagName, item), depthFirstSearchWithRecursive(searchWidgetConfig)) 同构，
+    // 空值键被清除后由控件基线默认值兜底（placeholder/value-format 等）
+    normalizeSearchWidgetConfig(item, widgetName) {
+      const base = getWidgetOptions(widgetName, item) || {};
+      // depthFirstSearchWithRecursive 原地删除空值键，先深拷贝避免污染 tableConfigJSON
+      const cleaned = depthFirstSearchWithRecursive(cloneDeep(item.searchWidgetConfig || {}));
+      const config = merge({}, base, cleaned);
+      // extraOption 兜底：设计端保存时已 str2obj 为对象，历史数据可能仍为字符串
+      if (typeof config.extraOption === "string") config.extraOption = str2obj(config.extraOption);
+      if (!config.extraOption || typeof config.extraOption !== "object") config.extraOption = {};
+      if (!Array.isArray(config.extraOption.options)) config.extraOption.options = [];
+      if (!config.extraOption.props) config.extraOption.props = { key: "id", label: "cnName" };
+      return config;
+    },
+
+    // 选项取值映射：字典（labelTranslateType 为数值）仅在 request.require+url 远程分支强制
+    // {key:"dicId",label:"cnName"}（与桌面 disposeRequest 同分支限定；autoFill 分支结果恒为 id/cnName 形状，不强制）
+    getEntryOptionProps(entry) {
+      if (!entry.config) return { key: "id", label: "cnName" };
+      const { extraOption, request } = entry.config;
+      const isDictionaryRequest = !request?.autoFillOptions && request?.require && request?.url && typeof extraOption?.labelTranslateType === "number";
+      if (isDictionaryRequest) return { key: "dicId", label: "cnName" };
+      return { key: extraOption?.props?.key || "id", label: extraOption?.props?.label || "cnName" };
+    },
+
+    // 列筛选选项：filters > filtersConfig.customHandler > filtersConfig.isFilter（优先级与桌面 setSingleTableOptions 一致）；
+    // customHandler/isFilter 依赖当前数据，面板打开时现算（等价桌面 tableDataChangeQueue 的数据变化重算语义）
+    getColumnFilterOptions(entry) {
+      const item = entry.columnItem;
+      if (!item) return [];
+      const filtersConfig = item.filtersConfig || {};
+      try {
+        if (item.filters) {
+          const arr = str2obj(item.filters);
+          if (!Array.isArray(arr)) return [];
+          return arr.filter(opt => opt && isValid(opt.value)).map(opt => ({ value: opt.value, label: `${opt.text ?? opt.value}` }));
+        }
+        if (filtersConfig.customHandler) {
+          const arr = str2Fn(filtersConfig.customHandler)(this.tableData);
+          if (!Array.isArray(arr)) return [];
+          return arr.filter(opt => opt && isValid(opt.value)).map(opt => ({ value: opt.value, label: `${opt.text ?? opt.value}` }));
+        }
+        if (filtersConfig.isFilter) {
+          const filters = [];
+          (this.tableData || []).forEach(row => {
+            const cell = row[item.fieldCode];
+            const values = filtersConfig.isSplit ? String(cell ?? "").split(filtersConfig.splitChar || ",").filter(v => isValid(v)) : [cell];
+            values.forEach(value => {
+              if (!isValid(value)) return;
+              if (filters.some(filterItem => String(filterItem.value) === String(value))) return;
+              // limitShowWord/maxlength 只截断显示文本，提交值保持原始值
+              const label = filtersConfig.limitShowWord ? limitShowWord(`${value}`, filtersConfig.maxlength) : `${value}`;
+              filters.push({ value, label });
+            });
+          });
+          return filters;
+        }
+      } catch (error) {
+        console.warn(`[mobileTable] 列筛选选项生成失败: ${item.fieldCode}`, error);
+      }
+      return [];
+    },
+
+    // 远程选项加载（与桌面 BaseRenderForm disposeRequest 同语义）：autoFillOptions / request.require+url，
+    // 按 fieldCode 缓存一次（桌面 request.status 置 finish 的等价物，不改动 tableConfigJSON）；预览态不请求
+    async ensureEntryOptions(entry) {
+      if (!entry?.config || this.previewMode) return;
+      const request = entry.config.request || {};
+      const needsRemote = request.autoFillOptions || (request.require && request.url);
+      if (!needsRemote || this.filterOptionCache[entry.fieldCode]) return;
+      this.filterOptionCache = { ...this.filterOptionCache, [entry.fieldCode]: { status: "loading", raw: [] } };
+      try {
+        let rawList = [];
+        if (request.autoFillOptions) {
+          // 自动填充：按当前列取已有数据做选项，body 含查询参数（与桌面 autoFillOptions 逐字一致）
+          const res = await this.generalRequest("/dyn-common/page-list/queryDictColumnDataList", "post", {
+            listPageId: this.listPageId,
+            idFieldName: entry.fieldCode,
+            titleFieldName: request.labelFieldName || "",
+            ...this.getParams()
+          });
+          const data = res?.data || [];
+          rawList = request.labelFieldName ? data : data.map(item => ({ id: item.id, cnName: item.id }));
+        } else {
+          const finalType = typeof request.type === "string" ? request.type : request.type === 0 ? "post" : "get";
+          const params = convertDynaticData(str2obj(request.params), this.getParams() || {}, this);
+          const res = await this.generalRequest(request.url, finalType, params);
+          let data = (res?.data || []).slice();
+          // 与桌面 requestData 一致：按 sortNum 排序；labelTranslateType===1 时 label 前缀拼 key
+          data.sort((a, b) => (a.sortNum || 0) - (b.sortNum || 0));
+          if (entry.config.extraOption.labelTranslateType === 1) {
+            const { key, label } = this.getEntryOptionProps(entry);
+            data = data.map(item => ({ ...item, [label]: `${item[key]}-${item[label]}` }));
+          }
+          rawList = data;
+        }
+        if (this._destroyed) return;
+        this.filterOptionCache = { ...this.filterOptionCache, [entry.fieldCode]: { status: "done", raw: rawList } };
+      } catch (error) {
+        console.error(`[mobileTable] 筛选选项加载失败: ${entry.fieldCode}`, error);
+        if (!this._destroyed) {
+          this.filterOptionCache = { ...this.filterOptionCache, [entry.fieldCode]: { status: "error", raw: [] } };
+        }
+      }
+    },
+
+    // 面板原始选项（保留级联树形结构）：与桌面 disposeRequest 同语义——需要远程选项的字段
+    // （autoFillOptions / request.require+url）远程结果整体替换静态配置（桌面先清空 extraOption.options
+    // 再由请求填充，加载中/失败时为空）；无远程配置的字段仅静态选项
+    getEntryRawOptions(entry) {
+      const request = entry.config?.request || {};
+      const needsRemote = request.autoFillOptions || (request.require && request.url);
+      if (needsRemote) {
+        const cache = this.filterOptionCache[entry.fieldCode];
+        return cache?.status === "done" ? [...cache.raw] : [];
+      }
+      return [...(entry.config?.extraOption?.options || [])];
+    },
+
+    // 选项列表面板选项：归一为 {value,label}，并入列筛选来源，按值去重
+    getEntryOptions(entry) {
+      const { key, label } = this.getEntryOptionProps(entry);
+      const list = [];
+      const push = (value, text) => {
+        if (!isValid(value)) return;
+        if (list.some(item => String(item.value) === String(value))) return;
+        list.push({ value, label: isValid(text) ? `${text}` : `${value}` });
+      };
+      this.getEntryRawOptions(entry).forEach(item => item && push(item[key], item[label]));
+      this.getColumnFilterOptions(entry).forEach(item => push(item.value, item.label));
+      return list;
+    },
+
+    // 入口选中态与摘要：数值范围取Start/End拼接，其余取当前值（multiple 控件取数组首项展示）
+    getEntryValueState(entry) {
+      const { fieldCode, widgetType } = entry;
+      if (widgetType === 1) {
+        const start = this.searchForm[`${fieldCode}Start`];
+        const end = this.searchForm[`${fieldCode}End`];
+        const active = isValid(start) && isValid(end);
+        return { active, summary: active ? `${start} - ${end}` : "" };
+      }
+      const value = this.searchForm[fieldCode];
+      const empty = !isValid(value) || (Array.isArray(value) && !value.length);
+      if (empty) return { active: false, summary: "" };
+      const values = Array.isArray(value) ? value : [value];
+      const options = this.getEntryOptions(entry);
+      const summary = values.map(v => {
+        const target = options.find(opt => String(opt.value) === String(v));
+        return target ? target.label : `${v}`;
+      });
+      return { active: true, summary: summary.join("、") };
+    },
+
+    // 是否多选提交形状（select/dictionary 的 tagAttrs.multiple、cascader 的 props.multiple）：
+    // 移动端面板单选，但提交保持桌面请求形状（单元素数组），后端契约不变
+    isMultipleWidget(entry) {
+      if (!entry.config) return false;
+      const tagAttrs = entry.config.tagAttrs || {};
+      if (entry.widgetType === 5) return !!tagAttrs.props?.multiple;
+      if (entry.widgetType === 2 || entry.widgetType === 6) return !!tagAttrs.multiple;
+      return false;
+    },
+
+    // 打开/关闭下拉弹层（排序/全部筛选，同屏互斥）；筛选弹层打开时从当前查询条件构建草稿并按需加载远程选项
+    toggleSheet(key) {
+      if (this.tableDisbaled) return;
+      if (this.activeFilterKey === key) {
+        this.activeFilterKey = "";
+        return;
+      }
+      this.activeFilterKey = key;
+      if (key === FILTER_SHEET_KEY) {
+        this.buildFilterDraft();
+        this.filterEntries.forEach(entry => this.ensureEntryOptions(entry));
+      }
+    },
+
+    closeSheet() {
+      this.activeFilterKey = "";
+    },
+
+    togglePanelExpanded(key) {
+      this.panelExpandedMap = { ...this.panelExpandedMap, [key]: !this.panelExpandedMap[key] };
+    },
+
+    // listeners.change 保留：以列表实例为 this，查询先触发、原回调后执行（与桌面 addEventListener 包装顺序一致）
+    invokeEntryChange(entry, changeArgs = []) {
+      const fn = entry?.config?.listeners?.change;
+      if (!fn) return;
+      const handler = typeof fn === "function" ? fn : str2Fn(`${fn}`);
+      try {
+        handler.call(this, ...changeArgs);
+      } catch (error) {
+        console.error("[mobileTable] 搜索控件 listeners.change 执行失败：", error);
+      }
+    },
+
+    // 筛选字段空值形状（multiple 控件为 []，其余为 ""）
+    getEntryEmptyValue(entry) {
+      return this.isMultipleWidget(entry) ? [] : "";
+    },
+
+    // 筛选弹层草稿：打开时从当前 searchForm 构建（含仅列筛选来源的字段键），确认前不写回 searchForm（确认制）
+    buildFilterDraft() {
+      const draft = {};
+      this.filterEntries.forEach(entry => {
+        if (entry.widgetType === 1) {
+          draft[`${entry.fieldCode}Start`] = this.searchForm[`${entry.fieldCode}Start`] ?? null;
+          draft[`${entry.fieldCode}End`] = this.searchForm[`${entry.fieldCode}End`] ?? null;
+        } else {
+          draft[entry.fieldCode] = this.searchForm[entry.fieldCode] ?? this.getEntryEmptyValue(entry);
+        }
+      });
+      this.filterDraft = draft;
+    },
+
+    setFilterDraftKey(key, value) {
+      this.filterDraft = { ...this.filterDraft, [key]: value };
+    },
+
+    // 选项pill点选（单选 + "全部"清空草稿；multiple 控件提交形状为单元素数组）
+    setFilterDraft(entry, value) {
+      const next = isValid(value) ? (this.isMultipleWidget(entry) ? [value] : value) : this.getEntryEmptyValue(entry);
+      this.setFilterDraftKey(entry.fieldCode, next);
+    },
+
+    // 确认：草稿整体写回 searchForm 并回第一页替换式查询（requestVersion 并发治理、
+    // 选择集合重锚/清空经 loadFirst -> handleTableDataReplaced 自动生效）；
+    // 数值范围不完整按未填写处理（不提交不完整范围）；listeners.change 对实际变化的字段逐个保留
+    confirmFilterSheet() {
+      if (this.previewMode || this.tableDisbaled) return;
+      const changes = [];
+      const isEmptyValue = v => !isValid(v) || (Array.isArray(v) && !v.length);
+      const isSameValue = (a, b) => (isEmptyValue(a) && isEmptyValue(b)) || JSON.stringify(a) === JSON.stringify(b);
+      this.filterEntries.forEach(entry => {
+        if (entry.widgetType === 1) {
+          const start = this.filterDraft[`${entry.fieldCode}Start`];
+          const end = this.filterDraft[`${entry.fieldCode}End`];
+          const complete = isValid(start) && isValid(end);
+          const nextStart = complete ? start : null;
+          const nextEnd = complete ? end : null;
+          if (!isSameValue(this.searchForm[`${entry.fieldCode}Start`], nextStart) || !isSameValue(this.searchForm[`${entry.fieldCode}End`], nextEnd)) {
+            changes.push({ entry, args: complete ? [start, end] : [] });
+          }
+          this.$set(this.searchForm, `${entry.fieldCode}Start`, nextStart);
+          this.$set(this.searchForm, `${entry.fieldCode}End`, nextEnd);
+        } else {
+          const next = this.filterDraft[entry.fieldCode] ?? this.getEntryEmptyValue(entry);
+          if (!isSameValue(this.searchForm[entry.fieldCode], next)) {
+            changes.push({ entry, args: [next] });
+          }
+          this.$set(this.searchForm, entry.fieldCode, next);
+        }
+      });
+      this.activeFilterKey = "";
+      this.loadFirst();
+      changes.forEach(({ entry, args }) => this.invokeEntryChange(entry, args));
+    },
+
+    // 重置（筛选弹层内）：onResetBtnEvent 有配置时完全接管（关闭弹层交由自定义逻辑，桌面 handleFilterReset 同语义）；
+    // 否则仅清空草稿回空默认形状，确认时才生效（不直接重查，弹层保持打开供继续调整）
+    resetFilterSheet() {
+      if (this.previewMode || this.tableDisbaled) return;
+      if (this.tableAttrs.onResetBtnEvent) {
+        this.activeFilterKey = "";
+        str2Fn(this.tableAttrs.onResetBtnEvent).call(this, cloneDeep);
+        return;
+      }
+      const draft = {};
+      this.filterEntries.forEach(entry => {
+        if (entry.widgetType === 1) {
+          draft[`${entry.fieldCode}Start`] = null;
+          draft[`${entry.fieldCode}End`] = null;
+        } else {
+          draft[entry.fieldCode] = this.getEntryEmptyValue(entry);
+        }
+      });
+      this.filterDraft = draft;
+    },
+
+    // 排序（与桌面 flowStatusSortMethod + refreshData 同语义）：sqlConfig 合入 externalParams 持久化，
+    // 翻页与后续查询自动携带；取消排序传空数组（order: "asc" | "desc"，空为取消）
+    applySortChange(fieldCode, order) {
+      if (this.previewMode || this.tableDisbaled) return;
+      this.sortState = { field: fieldCode || "", order: order || "" };
+      this.externalParams = { ...this.externalParams, sqlConfig: { sort: order ? [{ field: fieldCode, order }] : [] } };
+      this.activeFilterKey = "";
+      this.loadFirst();
+    },
+
+    // 模糊搜索：回车/搜索/清空触发（pageNo=1 重查，与桌面 handleFilter/handleNativeFilter 语义一致）
+    handleFuzzySearch() {
+      if (this.previewMode || this.tableDisbaled) return;
+      this.loadFirst();
+    },
+
+    handleFuzzyNativeKeydown(e) {
+      if (this.previewMode || this.tableDisbaled) return;
+      const keyCode = window.event ? e.keyCode : e.which;
+      if (keyCode === 13) this.loadFirst();
+    },
+
     /** ============ 字段渲染 ============ */
 
     /*
@@ -1264,6 +1643,238 @@ export default {
 
     /** ============ 渲染 ============ */
 
+    // 顶部筛选与排序工具条（第四期）：模糊搜索框（有配置才渲染，右侧「搜索」按钮）+「排序/全部筛选」左右两按钮；
+    // 常驻组件顶部不随卡片滚动；两按钮分别打开排序/筛选下拉弹层（自工具条下方顶部下探，蒙层压暗列表区、同屏互斥）
+    renderFilterBar() {
+      if (!this.showFilterBar) return null;
+      return (
+        <div class={{ "mt-filterbar": true, "is-disabled": this.tableDisbaled }}>
+          {this.fuzzySearchEnabled ? this.renderFuzzySearch() : null}
+          {this.filterEntries.length || this.sortableFields.length ? this.renderFilterActions() : null}
+        </div>
+      );
+    },
+
+    // 模糊搜索框固定在工具条上方：输入即 trim 绑定 multiFieldSearch，点击搜索/回车/清空后才调接口
+    renderFuzzySearch() {
+      return (
+        <div class="mt-fb-search">
+          <el-input
+            value={this.multiFieldSearch}
+            onInput={val => {
+              this.multiFieldSearch = (val || "").trim();
+            }}
+            placeholder={this.fuzzyFieldSearchConfig.placeholder || "请输入关键词搜索"}
+            clearable
+            onClear={() => this.handleFuzzySearch()}
+            nativeOnkeydown={this.handleFuzzyNativeKeydown}
+          >
+            <i slot="prefix" class="el-input__icon el-icon-search"></i>
+          </el-input>
+          <el-button type="primary" size="small" disabled={this.tableDisbaled} onClick={() => this.handleFuzzySearch()}>
+            搜索
+          </el-button>
+        </div>
+      );
+    },
+
+    // 工具条按钮行：靠左「排序」、靠右「全部筛选」；有选中条件时高亮，排序按钮显示"字段名 ↑/↓"摘要
+    renderFilterActions() {
+      const { field, order } = this.sortState;
+      const sortLabel = field ? `${this.getSortFieldLabel(field)} ${order === "asc" ? "↑" : "↓"}` : "排序";
+      const filterActive = this.filterEntries.some(entry => this.getEntryValueState(entry).active);
+      return (
+        <div class="mt-fb-actions">
+        {this.sortableFields.length ? (
+          <span class={{ "mt-fb-action": true, "is-active": !!field, "is-open": this.activeFilterKey === FILTER_SORT_KEY }} onClick={() => this.toggleSheet(FILTER_SORT_KEY)}>
+            <span class="mt-fb-action-label">{sortLabel}</span>
+            <i class="el-icon-arrow-down"></i>
+          </span>
+        ) : null}
+        {this.filterEntries.length ? (
+          <span class={{ "mt-fb-action": true, "is-active": filterActive, "is-open": this.activeFilterKey === FILTER_SHEET_KEY }} onClick={() => this.toggleSheet(FILTER_SHEET_KEY)}>
+            <span class="mt-fb-action-label">全部筛选</span>
+            <i class="el-icon-arrow-down"></i>
+          </span>
+        ) : null}
+        </div>
+      );
+    },
+
+    getSortFieldLabel(fieldCode) {
+      const target = this.sortableFields.find(field => field.fieldCode === fieldCode);
+      return target ? target.fieldName : fieldCode;
+    },
+
+    // 下拉弹层（蒙层 + 弹层）：排序与全部筛选共用容器形态，同屏互斥；
+    // 弹层锚定工具条下方（列表区顶部）向下展开，蒙层压暗列表区（工具条保持可点，可切换另一弹层）
+    renderActiveSheet() {
+      if (!this.activeFilterKey) return null;
+      return [
+        <div class="mt-sheet-mask" key="mask" onClick={() => this.closeSheet()} />,
+        <div class="mt-sheet" key="sheet">
+          {this.activeFilterKey === FILTER_SORT_KEY ? this.renderSortSheet() : this.renderFilterSheet()}
+        </div>
+      ];
+    },
+
+    // 排序弹层：选项列表点选即生效并关闭；「默认排序」清除排序条件；
+    // 字段行点选在升/降间切换（清空排序统一走「默认排序」行，与桌面 el-table sort-change 的字段循环一致）
+    renderSortSheet() {
+      const rows = [
+        <div key="__default__" class={{ "mt-sheet-opt": true, "is-selected": !this.sortState.field }} onClick={() => this.applySortChange("", "")}>
+          <span class="mt-sheet-opt-label">默认排序</span>
+          <i class="el-icon-check"></i>
+        </div>
+      ];
+      this.sortableFields.forEach(field => {
+        const isActive = this.sortState.field === field.fieldCode;
+        const nextOrder = !isActive || this.sortState.order !== "asc" ? "asc" : "desc";
+        rows.push(
+          <div
+            key={field.fieldCode}
+            class={{ "mt-sheet-opt": true, "is-selected": isActive }}
+            onClick={() => this.applySortChange(field.fieldCode, nextOrder)}
+          >
+            <span class="mt-sheet-opt-label">{field.fieldName}</span>
+            {isActive ? <span class="mt-sheet-opt-order">{this.sortState.order === "asc" ? "升序" : "降序"}</span> : null}
+            <i class="el-icon-check"></i>
+          </div>
+        );
+      });
+      return <div class="mt-sheet-body">{rows}</div>;
+    },
+
+    // 全部筛选弹层：筛选字段分组平铺（组标题=字段名），底部「重置/确认」（等宽），确认制草稿
+    renderFilterSheet() {
+      return (
+        <div class="mt-sheet-form">
+          <div class="mt-sheet-body">{this.filterEntries.map(entry => this.renderFilterGroup(entry))}</div>
+          <div class="mt-sheet-footer">
+            <el-button class="mt-sheet-btn-reset" onClick={() => this.resetFilterSheet()}>
+              重置
+            </el-button>
+            <el-button class="mt-sheet-btn-confirm" type="primary" onClick={() => this.confirmFilterSheet()}>
+              确认
+            </el-button>
+          </div>
+        </div>
+      );
+    },
+
+    renderFilterGroup(entry) {
+      let control = null;
+      if (entry.widgetType === 0) control = this.renderGroupInput(entry);
+      else if (entry.widgetType === 1) control = this.renderGroupRange(entry);
+      else if (entry.widgetType === 3 || entry.widgetType === 4) control = this.renderGroupDate(entry);
+      else if (entry.widgetType === 5) control = this.renderGroupCascader(entry);
+      else control = this.renderGroupOptions(entry);
+      return (
+        <div class="mt-sheet-group" key={entry.key}>
+          <div class="mt-sheet-group-title">
+            <span>{entry.fieldName}</span>
+            {this.isCollapseGroup(entry) ? (
+              <span class="mt-sheet-group-toggle" onClick={() => this.togglePanelExpanded(entry.key)}>
+                {this.panelExpandedMap[entry.key] ? "收起" : "展开"}
+              </span>
+            ) : null}
+          </div>
+          {control}
+        </div>
+      );
+    },
+
+    // 选项分组是否折叠（仅选项列表类分组；超阈值时组标题提供"展开/收起"）
+    isCollapseGroup(entry) {
+      return ![0, 1, 3, 4, 5].includes(entry.widgetType) && this.getEntryOptions(entry).length > FILTER_OPTION_COLLAPSE_COUNT;
+    },
+
+    // 选项分组：pill 按钮组（单选 + "全部"清空草稿），全部绑定草稿、确认时统一生效
+    renderGroupOptions(entry) {
+      const options = this.getEntryOptions(entry);
+      const cache = this.filterOptionCache[entry.fieldCode];
+      const expanded = !!this.panelExpandedMap[entry.key];
+      const collapsed = !expanded && options.length > FILTER_OPTION_COLLAPSE_COUNT;
+      const visibleOptions = collapsed ? options.slice(0, FILTER_OPTION_COLLAPSE_COUNT) : options;
+      const draftValue = this.filterDraft[entry.fieldCode];
+      const selected = Array.isArray(draftValue) ? draftValue[0] : draftValue;
+      return (
+        <div class="mt-sheet-pills">
+          <span class={{ "mt-pill": true, "is-selected": !isValid(selected) }} onClick={() => this.setFilterDraft(entry, null)}>
+            全部
+          </span>
+          {visibleOptions.map(opt => (
+            <span key={`${opt.value}`} class={{ "mt-pill": true, "is-selected": isValid(selected) && String(selected) === String(opt.value) }} onClick={() => this.setFilterDraft(entry, opt.value)}>
+              {opt.label}
+            </span>
+          ))}
+          {cache?.status === "loading" && !options.length ? <span class="mt-sheet-hint">选项加载中...</span> : null}
+          {cache?.status === "error" ? <span class="mt-sheet-hint">选项加载失败</span> : null}
+        </div>
+      );
+    },
+
+    renderGroupInput(entry) {
+      return (
+        <el-input
+          class="mt-sheet-control"
+          value={this.filterDraft[entry.fieldCode] ?? ""}
+          placeholder={entry.config?.tagAttrs?.placeholder || `请输入${entry.fieldName}`}
+          clearable
+          onInput={val => this.setFilterDraftKey(entry.fieldCode, isValid(val) ? val : "")}
+        />
+      );
+    },
+
+    renderGroupRange(entry) {
+      return (
+        <div class="mt-sheet-range">
+          <el-input class="mt-sheet-control" type="number" value={this.filterDraft[`${entry.fieldCode}Start`] ?? ""} placeholder="下限" onInput={val => this.setFilterDraftKey(`${entry.fieldCode}Start`, val)} />
+          <span class="mt-sheet-range-sep">-</span>
+          <el-input class="mt-sheet-control" type="number" value={this.filterDraft[`${entry.fieldCode}End`] ?? ""} placeholder="上限" onInput={val => this.setFilterDraftKey(`${entry.fieldCode}End`, val)} />
+        </div>
+      );
+    },
+
+    // 日期/日期范围：tagAttrs 透传（placeholder、value-format、type 等），绑定草稿；
+    // 日期范围值为数组单键，getParams 提交时拆 fieldStart/fieldEnd
+    renderGroupDate(entry) {
+      const tagAttrs = { clearable: true, ...(entry.config?.tagAttrs || {}) };
+      const isRange = entry.widgetType === 4;
+      return (
+        <el-date-picker
+          class="mt-sheet-control"
+          value={this.filterDraft[entry.fieldCode] ?? (isRange ? [] : "")}
+          {...{ attrs: tagAttrs }}
+          onInput={val => this.setFilterDraftKey(entry.fieldCode, val)}
+        />
+      );
+    },
+
+    // 级联：extraOption.options 树形透传，props 映射与桌面一致（emitPath:false、value=key）；
+    // 桌面默认 expandTrigger:hover，移动端无 hover 固定为 click。固定键后置展开（与桌面 BaseRenderForm
+    // 无条件覆写 emitPath/value 同语义）：级联基础配置自带 props.expandTrigger="hover"（getElCascaderConfig），
+    // 经 normalizeSearchWidgetConfig merge 进入 tagAttrs.props，若放在固定键之后会把 click 覆盖回 hover。
+    // 注意：props 是 JSX 数据对象保留键，需经 attrs 透传才能命中 el-cascader 的 props 属性（桌面同经 tagAttrs.attrs 透传）
+    renderGroupCascader(entry) {
+      const { key, label } = this.getEntryOptionProps(entry);
+      const tagAttrs = entry.config?.tagAttrs || {};
+      const cascaderProps = { ...(tagAttrs.props || {}), expandTrigger: "click", emitPath: false, value: key, label };
+      return (
+        <el-cascader
+          class="mt-sheet-control"
+          value={this.filterDraft[entry.fieldCode] ?? (tagAttrs.props?.multiple ? [] : "")}
+          options={this.getEntryRawOptions(entry)}
+          attrs={{ props: cascaderProps }}
+          show-all-levels={false}
+          placeholder={tagAttrs.placeholder || `请选择${entry.fieldName}`}
+          clearable={tagAttrs.clearable !== false}
+          filterable={!!tagAttrs.filterable}
+          onInput={val => this.setFilterDraftKey(entry.fieldCode, val)}
+        />
+      );
+    },
+
     renderCardField(field, row, index) {
       return (
         <div class={{ "mt-field": true, "mt-field-h": this.isHorizontalLabel }} key={field.fieldCode}>
@@ -1403,10 +2014,15 @@ export default {
     }
     return (
       <div class="mobileTableWrap">
-        <div class="mt-scroll" ref="scrollWrap">
-          {this.renderState()}
-          {this.tableData.map((row, index) => this.renderCard(row, index))}
-          {this.renderListFooter()}
+        {this.renderFilterBar()}
+        {/* 列表区容器：弹层锚定其顶部（紧贴工具条下方）向下展开，蒙层压暗列表区、工具条保持可点 */}
+        <div class="mt-body">
+          <div class="mt-scroll" ref="scrollWrap">
+            {this.renderState()}
+            {this.tableData.map((row, index) => this.renderCard(row, index))}
+            {this.renderListFooter()}
+          </div>
+          {this.renderActiveSheet()}
         </div>
         {this.renderDetail()}
       </div>

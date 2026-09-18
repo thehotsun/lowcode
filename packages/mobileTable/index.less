@@ -5,13 +5,276 @@
   overflow: hidden;
   background: #f5f6fa;
   box-sizing: border-box;
+  // 第四期：顶部筛选/排序工具条固定在卡片列表上方，列表区占据剩余高度内部滚动；
+  // mt-body 为列表区容器，排序/筛选弹层锚定其顶部（紧贴工具条下方）向下展开
+  display: flex;
+  flex-direction: column;
+
+  .mt-body {
+    position: relative;
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+  }
 
   .mt-scroll {
-    height: 100%;
+    flex: 1;
+    min-height: 0;
     overflow-y: auto;
     padding: 10px;
     box-sizing: border-box;
     -webkit-overflow-scrolling: touch;
+  }
+
+  // 顶部筛选与排序工具条（第四期）：模糊搜索框（右侧「搜索」按钮）+ 「排序/全部筛选」左右两按钮；
+  // 位于弹层蒙层覆盖范围之外，弹层展开时仍可点击切换/收起
+  .mt-filterbar {
+    position: relative;
+    z-index: 7;
+    flex-shrink: 0;
+    background: #fff;
+    border-bottom: 1px solid #ebeef5;
+
+    &.is-disabled {
+      opacity: 0.6;
+      pointer-events: none;
+    }
+
+    // 模糊搜索框固定在工具条上方
+    .mt-fb-search {
+      display: flex;
+      align-items: center;
+      padding: 10px 12px 0;
+
+      .el-input {
+        flex: 1;
+      }
+
+      .el-button {
+        flex-shrink: 0;
+        margin-left: 8px;
+      }
+    }
+
+    // 按钮行：靠左「排序」、靠右「全部筛选」
+    .mt-fb-actions {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 12px;
+    }
+
+    .mt-fb-action {
+      display: inline-flex;
+      align-items: center;
+      max-width: 60%;
+      font-size: 13px;
+      color: #606266;
+      cursor: pointer;
+
+      .mt-fb-action-label {
+        min-width: 0;
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+      }
+
+      i {
+        margin-left: 2px;
+        font-size: 12px;
+        transition: transform 0.2s;
+      }
+
+      &.is-active {
+        color: #409eff;
+        font-weight: 600;
+      }
+
+      &.is-open {
+        color: #409eff;
+
+        i {
+          transform: rotate(180deg);
+        }
+      }
+    }
+  }
+
+  // 排序/筛选下拉弹层（第四期）：锚定 mt-body 顶部（紧贴工具条下方）向下展开，
+  // 蒙层压暗列表区（工具条保持可点），点蒙层收起；低于详情页
+  .mt-sheet-mask {
+    position: absolute;
+    inset: 0;
+    z-index: 5;
+    background: rgba(0, 0, 0, 0.5);
+    animation: mt-mask-fade 0.2s ease;
+  }
+
+  .mt-sheet {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 6;
+    display: flex;
+    flex-direction: column;
+    max-height: 65%;
+    background: #fff;
+    border-radius: 0 0 12px 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+    overflow: hidden;
+    animation: mt-sheet-down 0.25s ease;
+
+    .mt-sheet-body {
+      flex: 1;
+      min-height: 0;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+  }
+
+  // 排序弹层选项列表：点选即生效并关闭
+  .mt-sheet-opt {
+    display: flex;
+    align-items: center;
+    padding: 14px 16px;
+    font-size: 14px;
+    color: #303133;
+    cursor: pointer;
+
+    .mt-sheet-opt-label {
+      flex: 1;
+      min-width: 0;
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+    }
+
+    .mt-sheet-opt-order {
+      flex-shrink: 0;
+      margin-left: 8px;
+      color: #909399;
+      font-size: 12px;
+    }
+
+    i {
+      flex-shrink: 0;
+      margin-left: 8px;
+      color: #409eff;
+      visibility: hidden;
+    }
+
+    &.is-selected {
+      color: #409eff;
+      font-weight: 600;
+
+      i {
+        visibility: visible;
+      }
+    }
+  }
+
+  // 全部筛选弹层：字段分组表单 + 底部「重置/确认」；
+  // 表单区（mt-sheet-body）超出弹层高度时内部滚动，底部按钮栏固定不随滚动
+  .mt-sheet-form {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+
+    .mt-sheet-group {
+      padding: 14px 16px 4px;
+
+      .mt-sheet-group-title {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 10px;
+        font-size: 15px;
+        font-weight: 600;
+        color: #2e384d;
+
+        .mt-sheet-group-toggle {
+          font-size: 13px;
+          font-weight: 400;
+          color: #409eff;
+          cursor: pointer;
+        }
+      }
+    }
+
+    // 选项分组：pill 按钮组（单选 + "全部"），换行平铺
+    .mt-sheet-pills {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+
+      .mt-pill {
+        max-width: 100%;
+        padding: 6px 14px;
+        border-radius: 8px;
+        background: #f5f6fa;
+        color: #606266;
+        font-size: 13px;
+        line-height: 18px;
+        cursor: pointer;
+        box-sizing: border-box;
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+
+        &.is-selected {
+          color: #409eff;
+          background: rgba(64, 158, 255, 0.1);
+          font-weight: 600;
+        }
+      }
+
+      .mt-sheet-hint {
+        align-self: center;
+        color: #909399;
+        font-size: 13px;
+      }
+    }
+
+    // 文本/日期/级联控件宽度占满分组
+    .mt-sheet-control {
+      width: 100%;
+      margin-bottom: 10px;
+    }
+
+    .mt-sheet-range {
+      display: flex;
+      align-items: center;
+      margin-bottom: 10px;
+
+      .mt-sheet-range-sep {
+        flex-shrink: 0;
+        padding: 0 8px;
+        color: #ccc;
+      }
+    }
+
+    // 底部按钮栏：重置与确认等宽（各占一半）；弹层悬于列表区顶部，无需适配底部安全区
+    .mt-sheet-footer {
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 16px;
+      border-top: 1px solid #ebeef5;
+
+      .mt-sheet-btn-reset {
+        flex: 1;
+        margin: 0;
+      }
+
+      .mt-sheet-btn-confirm {
+        flex: 1;
+        margin: 0;
+      }
+    }
   }
 
   .mt-card {
@@ -234,5 +497,24 @@
         font-size: 14px;
       }
     }
+  }
+}
+
+// 下拉弹层入场动画（蒙层淡入、弹层自顶部下滑展开）
+@keyframes mt-mask-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes mt-sheet-down {
+  from {
+    transform: translateY(-100%);
+  }
+  to {
+    transform: translateY(0);
   }
 }
