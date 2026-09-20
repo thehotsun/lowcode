@@ -83,6 +83,7 @@ export async function executeButton(
     requestBeforeConfirmText = "",
     requestBeforeConfirmTitle = "",
     requestBeforeConfirmType = "",
+    requestSuccessMessage = "",
     requestParamsConfig = {},
     useDialog = true,
     showFooter = false,
@@ -108,6 +109,7 @@ export async function executeButton(
   host.btnConfigs.requestBeforeConfirmText = requestBeforeConfirmText;
   host.btnConfigs.requestBeforeConfirmTitle = requestBeforeConfirmTitle;
   host.btnConfigs.requestBeforeConfirmType = requestBeforeConfirmType;
+  host.btnConfigs.requestSuccessMessage = requestSuccessMessage;
   host.btnConfigs.isRefresh = isRefresh;
   host.btnConfigs.btnType = btnType;
   host.btnConfigs.btnId = btnId;
@@ -257,7 +259,8 @@ export async function executeButton(
               requestBeforeConfirmHint,
               requestBeforeConfirmText,
               requestBeforeConfirmTitle,
-              requestBeforeConfirmType
+              requestBeforeConfirmType,
+              requestSuccessMessage
             },
             rowData
           );

@@ -97,7 +97,7 @@ function mount(provides = {}) {
 }
 
 // 挂载后准备运行态(绕过init):记录提示与重查、装跳转路由桩
-function prepare(vm, { generalRequest, queryFlowDef, requestBatchDel, resolveRoute = true } = {}) {
+function prepare(vm, { generalRequest, queryFlowDef, requestBatchDel, isCurrentApprover, resolveRoute = true } = {}) {
   const mt = vm.$refs.mt;
   mt.previewMode = false;
   mt.tableDisbaled = false;
@@ -122,6 +122,12 @@ function prepare(vm, { generalRequest, queryFlowDef, requestBatchDel, resolveRou
     mt.requestBatchDel = (...args) => {
       state.requests.push(["requestBatchDel", ...args]);
       return requestBatchDel(...args);
+    };
+  }
+  if (isCurrentApprover) {
+    mt.isCurrentApprover = (...args) => {
+      state.requests.push(["isCurrentApprover", ...args]);
+      return isCurrentApprover(...args);
     };
   }
   const router = { push: loc => state.pushes.push(loc) };
@@ -344,6 +350,101 @@ const flowInstance = ok => (ok ? { result: "0", data: { flowInstanceId: "fi1", c
     await mt.handleEntryBtnClick(mt.btnPlacement.batch[0]);
     await new Promise(r => setTimeout(r, 50));
     assert("批量栏batchDel按钮经executeButton闭环删除+重查", state.requests.some(r => r[0] === "requestBatchDel" && JSON.stringify(r[1]) === "[8]") && state.refreshes === 1 && state.successes[0] === "删除成功", JSON.stringify({ req: state.requests, refreshes: state.refreshes }));
+    vm.$destroy();
+  }
+
+  console.log("== 6. 编辑流程(edit)分支对齐(main合并a8311cb) ==");
+  {
+    // edit + 审批中(flowStatus==2) + 当前人是审批人 -> approveType=edit
+    const vm = mount();
+    const { mt, state } = prepare(vm, {
+      generalRequest: () => Promise.resolve(flowInstance(true)),
+      isCurrentApprover: () => Promise.resolve({ result: "0", data: true })
+    });
+    await mt.disposeFlowEvent({ flowKey: "k", btnType: "edit", isRefresh: false }, { id: 4, flowStatus: "2" });
+    assert("edit走实例分支(查/flow/business/{主键值})", state.requests.some(r => r[0] === "generalRequest" && r[1] === "/flow/business/4"), JSON.stringify(state.requests));
+    assert("审批中调isCurrentApprover(传flowInstanceId)", state.requests.some(r => r[0] === "isCurrentApprover" && r[1] === "fi1"), JSON.stringify(state.requests));
+    assert("当前人为审批人以审批模式跳转(approveType=edit)", state.pushes[0]?.path === "/flowH5Summary" && state.pushes[0]?.query.approveType === "edit", JSON.stringify(state.pushes[0]));
+    vm.$destroy();
+  }
+  {
+    // edit + 审批中 + 非当前审批人 -> 维持 view
+    const vm = mount();
+    const { mt, state } = prepare(vm, {
+      generalRequest: () => Promise.resolve(flowInstance(true)),
+      isCurrentApprover: () => Promise.resolve({ result: "0", data: false })
+    });
+    await mt.disposeFlowEvent({ flowKey: "k", btnType: "edit" }, { id: 4, flowStatus: 2 });
+    assert("非当前审批人维持view", state.pushes[0]?.query.approveType === "view" && state.requests.some(r => r[0] === "isCurrentApprover"), JSON.stringify(state.pushes[0]));
+    vm.$destroy();
+  }
+  {
+    // edit + 流程非审批中 -> 不查审批人、维持 view
+    const vm = mount();
+    const { mt, state } = prepare(vm, {
+      generalRequest: () => Promise.resolve(flowInstance(true)),
+      isCurrentApprover: () => Promise.resolve({ result: "0", data: true })
+    });
+    await mt.disposeFlowEvent({ flowKey: "k", btnType: "edit" }, { id: 4, flowStatus: "1" });
+    assert("非审批中不调isCurrentApprover且维持view", !state.requests.some(r => r[0] === "isCurrentApprover") && state.pushes[0]?.query.approveType === "view", JSON.stringify(state.requests));
+    vm.$destroy();
+  }
+  {
+    // edit 草稿态提示语区分"编辑"
+    const vm = mount();
+    const { mt, state } = prepare(vm, { generalRequest: () => Promise.resolve({ result: "0", data: { currentVersionId: "cv" } }) });
+    await mt.disposeFlowEvent({ flowKey: "k", btnType: "edit" }, { id: 4, flowStatus: "2" });
+    assert("edit草稿态提示'不能编辑'不跳转", state.tips[0] === "草稿状态的流程不能编辑！" && state.pushes.length === 0, JSON.stringify(state.tips));
+    vm.$destroy();
+  }
+  {
+    // edit 无主键提示(与check同口径)
+    const vm = mount();
+    const { mt, state } = prepare(vm, { generalRequest: () => Promise.resolve(flowInstance(true)) });
+    await mt.disposeFlowEvent({ flowKey: "k", btnType: "edit" }, undefined);
+    assert("edit无行数据无勾选提示且不跳转", state.tips[0] === "请至少勾选一条要处理的数据！" && state.pushes.length === 0, JSON.stringify(state.tips));
+    vm.$destroy();
+  }
+
+  console.log("== 7. stageId 固定参数与 requestSuccessMessage 提示语 ==");
+  {
+    const vm = mount({ stageId: "s9" });
+    const mt = vm.$refs.mt;
+    assert("getParams携带宿主stageId(与桌面同位置)", mt.getParams().stageId === "s9", JSON.stringify(mt.getParams().stageId));
+    vm.$destroy();
+  }
+  {
+    const vm = mount();
+    const mt = vm.$refs.mt;
+    assert("未提供stageId时为空串(不产生新键值差异)", mt.getParams().stageId === "", JSON.stringify(mt.getParams().stageId));
+    vm.$destroy();
+  }
+  {
+    // openType=5 经共享executeButton透传requestSuccessMessage(main合并新增配置)
+    const vm = mount();
+    const { mt, state } = prepare(vm, { generalRequest: () => Promise.resolve({ result: "0" }) });
+    mt.formOptions = [
+      { btnId: 5, authorize: "", tagAttrs: { value: "调接口" }, extraOption: { openType: 5, requestUrl: "/api/x", requestSuccessMessage: "操作成功" } }
+    ];
+    mt.tableConfigJSON = [{ fieldCode: "id", fieldName: "ID", show: true }];
+    mt.composeBtnList();
+    await mt.handleEntryBtnClick(mt.btnPlacement.top[0]);
+    await new Promise(r => setTimeout(r, 50));
+    assert("openType=5成功后按配置提示(requestSuccessMessage经executeButton透传)", state.successes[0] === "操作成功", JSON.stringify(state.successes));
+    vm.$destroy();
+  }
+  {
+    // 未配置提示语时不提示(桌面 requestSuccessMessage && $success 同语义)
+    const vm = mount();
+    const { mt, state } = prepare(vm, { generalRequest: () => Promise.resolve({ result: "0" }) });
+    mt.formOptions = [
+      { btnId: 6, authorize: "", tagAttrs: { value: "调接口2" }, extraOption: { openType: 5, requestUrl: "/api/y" } }
+    ];
+    mt.tableConfigJSON = [{ fieldCode: "id", fieldName: "ID", show: true }];
+    mt.composeBtnList();
+    await mt.handleEntryBtnClick(mt.btnPlacement.top[0]);
+    await new Promise(r => setTimeout(r, 50));
+    assert("未配置requestSuccessMessage不提示", state.successes.length === 0, JSON.stringify(state.successes));
     vm.$destroy();
   }
 

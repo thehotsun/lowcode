@@ -371,6 +371,16 @@ export default {
         console.warn("inject缺失requestBatchDel!");
       }
     },
+    // 审批流程对齐（main 合并 a8311cb 后补，与桌面 tableItem inject 同源）：编辑流程按钮在流程审批中时
+    // 经 isCurrentApprover 判定是否以审批（edit）模式打开；stageId 为随审批流程功能新增的固定查询参数
+    isCurrentApprover: {
+      default: () => () => {
+        console.warn("inject缺失isCurrentApprover!");
+      }
+    },
+    stageId: {
+      default: () => ""
+    },
     renderStrategy: {
       default: () => ({ source: "" })
     },
@@ -751,8 +761,9 @@ export default {
       }
     },
 
-    // openType=5 直接调用接口（与桌面 disposeRequestEvent 同语义；isRefresh 后回到第一页重查）
-    async disposeRequestEvent({ requestBeforeConfirmHint, requestBeforeConfirmText, requestBeforeConfirmTitle, requestBeforeConfirmType }, rowData) {
+    // openType=5 直接调用接口（与桌面 disposeRequestEvent 同语义；requestSuccessMessage 为接口通过后
+    // 提示语（main 合并新增，空则不提示）；isRefresh 后回到第一页重查）
+    async disposeRequestEvent({ requestBeforeConfirmHint, requestBeforeConfirmText, requestBeforeConfirmTitle, requestBeforeConfirmType, requestSuccessMessage }, rowData) {
       if (requestBeforeConfirmHint) {
         await this.$confirm(`${requestBeforeConfirmText}`, requestBeforeConfirmTitle || "提示", {
           type: requestBeforeConfirmType
@@ -761,6 +772,7 @@ export default {
       const { finalUrl, finalType, finalData, headers: requestHeaders } = this.getRequestConfig(rowData);
 
       await this.generalRequest(finalUrl, finalType, finalData, requestHeaders);
+      requestSuccessMessage && this.showSuccess(requestSuccessMessage);
       this.btnConfigs.isRefresh && this.loadFirst();
     },
 
@@ -813,12 +825,14 @@ export default {
     /** ============ 流程跳转（第七期，4.6：与桌面 disposeFlowEvent 同数据来源） ============ */
 
     // openType=2 流程（与桌面 disposeFlowEvent 同数据来源，跳转目标为流程 H5 摘要页）：
-    // check 先查流程实例（/flow/business/{主键值}，草稿态无 flowInstanceId 提示不跳转，对齐 tableItem.js:1636）；
-    // 发起/审批经 queryFlowDef 查流程定义。桌面 openFlow 弹窗在移动端为路由跳转，跳转前按 isRefresh 记回刷标记
+    // check/edit 均先查流程实例（/flow/business/{主键值}，草稿态无 flowInstanceId 提示不跳转）；
+    // edit 在流程审批中（flowStatus==2）且当前人为当前节点审批人时以审批（edit）模式跳转，否则维持 view
+    // （对齐桌面合并 a8311cb 后的 disposeFlowEvent）；发起/审批经 queryFlowDef 查流程定义。
+    // 桌面 openFlow 弹窗在移动端为路由跳转，跳转前按 isRefresh 记回刷标记
     // （桌面 isRefresh && queryTableData() 的弹窗关闭时机等价为返回列表路由时）
     async disposeFlowEvent({ flowKey, btnType, isRefresh, deliverySelectList }, row) {
       const mainFieldValue = (row || this.getFirstSelectedData())?.[this.keyField];
-      if (btnType === "check") {
+      if (btnType === "check" || btnType === "edit") {
         if (!mainFieldValue) {
           return this.showTip("请至少勾选一条要处理的数据！");
         }
@@ -827,18 +841,24 @@ export default {
           return this.showTip("未能获取流程详情！");
         }
         if (!res?.data?.flowInstanceId) {
-          return this.showTip("草稿状态的流程不能查看！");
+          return this.showTip(`草稿状态的流程不能${btnType === "edit" ? "编辑" : "查看"}！`);
         }
-        // 跳转参数白名单取自 4.6 样例 URL；approveType 按桌面 check 分支取 view
-        this.jumpToFlowH5(
-          {
-            currentVersionId: res.data.currentVersionId,
-            flowInstanceId: res.data.flowInstanceId,
-            businessId: res.data.businessId,
-            approveType: "view"
-          },
-          isRefresh
-        );
+        // 跳转参数白名单取自 4.6 样例 URL；approveType 按桌面映射：check 恒 view，edit 条件升级（见下）
+        const params = {
+          currentVersionId: res.data.currentVersionId,
+          flowInstanceId: res.data.flowInstanceId,
+          businessId: res.data.businessId,
+          approveType: "view"
+        };
+        // 编辑按钮且流程处于审批中，调接口查询是否是当前节点审批人：
+        // 当前人是流程当前节点审批人时以审批（edit）模式跳转，否则维持 view（与桌面逐字同语义）
+        if (btnType === "edit" && (row || this.getFirstSelectedData())["flowStatus"] == "2") {
+          const canEditRes = await this.isCurrentApprover(res.data.flowInstanceId);
+          if (canEditRes?.data) {
+            params.approveType = "edit";
+          }
+        }
+        this.jumpToFlowH5(params, isRefresh);
       } else {
         const res = await this.queryFlowDef("", "", flowKey);
         const flowInfo = res?.data;
@@ -846,7 +866,7 @@ export default {
           return this.showTip("未能获取流程定义！");
         }
         // 发起/审批：approveType 按桌面发起分支取 add；flowKey 定义返回值优先、按钮配置兜底；
-        // stdNew 桌面走新窗口 /examine-new（tableItem.js:1675-1680），H5 为同宿主路由内跳转的等价入口
+        // stdNew 桌面走新窗口 /examine-new，H5 为同宿主路由内跳转的等价入口
         const targetPath = flowInfo.startMode === "stdNew" ? FLOW_EXAMINE_NEW_PATH : FLOW_H5_SUMMARY_PATH;
         this.jumpToFlowH5(
           {
@@ -1190,6 +1210,8 @@ export default {
         ...extraParams,
         multiFieldSearch: this.multiFieldSearch,
         enterpriseId: this.enterpriseId,
+        // 随审批流程功能新增的固定参数（与桌面 getParams 同位置合入）
+        stageId: this.stageId,
         // web端getParams恒携带高级筛选键（默认[]/"and"），保持请求体同构
         advSearchExpr: [],
         advSearchExprJoinOp: "and",
