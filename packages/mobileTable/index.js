@@ -27,9 +27,10 @@ const CARD_ACTION_INLINE_COUNT = 3;
 // isRefresh 返回回刷标记（第七期，4.6）：流程等路由跳转离开列表前写入 sessionStorage（与
 // lowcodeTableThisPageJumpParams 传参风格一致），返回列表路由时消费并 loadFirst 重查
 const PENDING_REFRESH_KEY = "lowcodeTablePendingRefresh";
-// 流程 H5 摘要页路由（4.6 跳转目标，以 2026-09-18 样例 URL 为基准）；stdNew 发起为桌面 /examine-new 的同宿主等价入口
+// 流程 H5 摘要页路由（移动端流程统一入口，2026-09-20 确认：宿主 CommonDPh5 路由仅注册 /flowH5Summary
+// （iframeH5Flow.vue），桌面 stdNew 的 /examine-new 仅 PC 端注册、移动端不走；
+// 页面 query 契约：approveType=add|edit|view|draft|again，edit/view 必填 flowInstanceId，消费 isProject/enterpriseId）
 const FLOW_H5_SUMMARY_PATH = "/flowH5Summary";
-const FLOW_EXAMINE_NEW_PATH = "/examine-new";
 
 // 移动端列表：单列卡片列表 + 详情页覆盖层（第一期）；字段点击与按钮执行链（第二期）；
 // 卡片选择/对外事件全集/expose_*全集（第三期）；顶部筛选与排序工具条（第四期）；
@@ -866,28 +867,27 @@ export default {
           return this.showTip("未能获取流程定义！");
         }
         // 发起/审批：approveType 按桌面发起分支取 add；flowKey 定义返回值优先、按钮配置兜底；
-        // stdNew 桌面走新窗口 /examine-new，H5 为同宿主路由内跳转的等价入口
-        const targetPath = flowInfo.startMode === "stdNew" ? FLOW_EXAMINE_NEW_PATH : FLOW_H5_SUMMARY_PATH;
+        // stdNew 移动端不特判（/examine-new 仅 PC 端注册），统一走 flowH5Summary（approveType=add）
         this.jumpToFlowH5(
           {
             currentVersionId: flowInfo.currentVersionId,
             flowKey: flowInfo.flowKey ?? flowKey,
             approveType: "add"
           },
-          isRefresh,
-          targetPath
+          isRefresh
         );
       }
     },
 
-    // 流程跳转统一收口：补全 enterpriseId（宿主 inject）/isProject（项目路由判定）后经宿主 hash 路由跳转；
-    // 桌面专有的弹窗参数（dialogHeight/dialogWidth/sourceData/dataFromList/dlgFormConfig）不进入 URL
-    jumpToFlowH5(params, isRefresh, path = FLOW_H5_SUMMARY_PATH) {
+    // 流程跳转统一收口：补全 enterpriseId（宿主 inject）/isProject（项目路由判定）后经宿主 hash 路由跳转
+    // （移动端流程统一入口 flowH5Summary）；桌面专有的弹窗参数（dialogHeight/dialogWidth/sourceData/
+    // dataFromList/dlgFormConfig）不进入 URL
+    jumpToFlowH5(params, isRefresh) {
       const query = { ...params, enterpriseId: this.enterpriseId, isProject: this.isProjectRoute ? 1 : 0 };
       if (isRefresh) {
         this.markPendingRefresh();
       }
-      this.jumpToH5Route(path, query);
+      this.jumpToH5Route(FLOW_H5_SUMMARY_PATH, query);
     },
 
     // 同宿主 hash 路由内跳转（4.6）：目标路由注册于当前 router 时用 $router.push（组件不销毁、返回可 keep-alive），

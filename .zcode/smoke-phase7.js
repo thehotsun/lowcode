@@ -196,11 +196,11 @@ const flowInstance = ok => (ok ? { result: "0", data: { flowInstanceId: "fi1", c
     vm.$destroy();
   }
   {
-    // stdNew:桌面新窗口 /examine-new 的 H5 等价入口
+    // stdNew:移动端不特判(宿主H5路由仅注册flowH5Summary,/examine-new仅PC端),统一走flowH5Summary
     const vm = mount();
     const { mt, state } = prepare(vm, { queryFlowDef: () => Promise.resolve({ result: "0", data: { currentVersionId: "cv2", startMode: "stdNew" } }) });
     await mt.disposeFlowEvent({ flowKey: "k2", btnType: "custom" }, undefined);
-    assert("stdNew发起走 #/examine-new", state.pushes[0]?.path === "/examine-new" && state.pushes[0]?.query.flowKey === "k2", JSON.stringify(state.pushes[0]));
+    assert("stdNew发起同样走 #/flowH5Summary(approveType=add)", state.pushes[0]?.path === "/flowH5Summary" && state.pushes[0]?.query.approveType === "add" && state.pushes[0]?.query.flowKey === "k2", JSON.stringify(state.pushes[0]));
     vm.$destroy();
   }
   {
