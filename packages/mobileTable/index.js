@@ -31,10 +31,17 @@ const PENDING_REFRESH_KEY = "lowcodeTablePendingRefresh";
 // （iframeH5Flow.vue），桌面 stdNew 的 /examine-new 仅 PC 端注册、移动端不走；
 // 页面 query 契约：approveType=add|edit|view|draft|again，edit/view 必填 flowInstanceId，消费 isProject/enterpriseId）
 const FLOW_H5_SUMMARY_PATH = "/flowH5Summary";
+// 第八期表单/列表专用路由页（4.4）：query 驱动的静态路由（宿主注册，仿 commonRender/index.vue 公共入口），
+// renderType=pageList|form 分流渲染宿主既有组件；业务参数（externalParams）经 sessionStorage 传递
+// （query 只带轻量标识避免 URL 超长，传参风格与 lowcodeTableThisPageJumpParams 一致），
+// 路由页挂载时读取并删除；isRefresh 回查标记复用第七期 PENDING_REFRESH_KEY 契约
+const LOWCODE_MODAL_PATH = "/lowcodeModal";
+const LOWCODE_MODAL_PARAMS_KEY = "lowcodeTableModalPageParams";
 
 // 移动端列表：单列卡片列表 + 详情页覆盖层（第一期）；字段点击与按钮执行链（第二期）；
 // 卡片选择/对外事件全集/expose_*全集（第三期）；顶部筛选与排序工具条（第四期）；
-// 按钮入口与体系骨架（第六期）；流程跳转/isRefresh 返回回刷/批量删除闭环（第七期）。
+// 按钮入口与体系骨架（第六期）；流程跳转/isRefresh 返回回刷/批量删除闭环（第七期）；
+// 表单/列表专用路由页跳转（第八期）。
 // 仅依赖 lowcode 现有配置协议（tableOptions/tableAttrs/mobileAttrs）与宿主 inject 能力面，
 // 与桌面 complete-table 二选一挂载，传参一致。
 function InstanceData() {
@@ -247,6 +254,16 @@ export default {
     // 当前是否作为FreeLayout的一个组件（与桌面 tableItem.isFreeLayoutWidget 同来源）
     isFreeLayoutWidget() {
       return this.renderStrategy.source === "freeLayoutWidget";
+    },
+    // 当前是否作为Vform的一个组件（与桌面 tableItem.isVformWidget 同来源；移动端无 vform 从表宿主场景，
+    // 恒为 false，仅为 getExternalCompBaseAttrs 输出与桌面完全一致而移植）
+    isVformWidget() {
+      return this.renderStrategy.source === "vformWidget";
+    },
+    // 使用动态表单是否要使用网络请求处理提交数据（与桌面 tableItem.localProcessData 同来源；
+    // 移动端无 getWidget 从表宿主，恒为 false，同上仅为 attrs 输出一致而移植）
+    localProcessData() {
+      return this.getWidget?.()?.options?.renderMode === 0 || (this.getWidget?.()?.options?.renderMode === 1 && this.getDlgConfig?.()?.btnType === "add");
     },
     // 被字段片段clickEvent.relateBtnId引用的按钮id集合（历史JSON可能存为字符串，解析失败按无引用处理）
     relatedBtnIds() {
@@ -766,8 +783,11 @@ export default {
     // 提示语（main 合并新增，空则不提示）；isRefresh 后回到第一页重查）
     async disposeRequestEvent({ requestBeforeConfirmHint, requestBeforeConfirmText, requestBeforeConfirmTitle, requestBeforeConfirmType, requestSuccessMessage }, rowData) {
       if (requestBeforeConfirmHint) {
-        await this.$confirm(`${requestBeforeConfirmText}`, requestBeforeConfirmTitle || "提示", {
-          type: requestBeforeConfirmType
+        // 前置确认改用 vant Dialog（宿主 H5 确认框统一形态，取消同样 reject 中断执行，与桌面 $confirm 语义一致；
+        // requestBeforeConfirmType 为 Element 图标类型，vant 弹窗无对应形态故不消费）
+        await this.$dialog?.confirm({
+          title: requestBeforeConfirmTitle || "提示",
+          message: `${requestBeforeConfirmText}`
         });
       }
       const { finalUrl, finalType, finalData, headers: requestHeaders } = this.getRequestConfig(rowData);
@@ -942,10 +962,155 @@ export default {
       }
     },
 
+    /** ============ 表单/列表专用路由页（第八期，4.4：openType=0/6 跳转宿主路由页） ============ */
+
+    // openType=0 动态表单（与桌面 disposeDynamicFormEvent 同语义的分支/校验/标题/传参口径，桌面弹窗在
+    // 移动端为路由页承载）：add 直接跳转；check/edit 取行主键（行级入口 rowData 优先、否则勾选/当前行），
+    // 无数据提示与主键无值提示同桌面文案；桌面 localProcessData（本地数据免主键）为从表场景移动端无对应
+    // 不实施。跳转载荷包含两条与桌面完全一致的参数通道：formAttrs（=桌面 getExternalCompBaseAttrs，
+    // 经路由页 v-bind 到 VFRuntime 的 attrs 全集）与 externalParams（=桌面 externalParamsFormRow，
+    // 经路由页 addExtraData 注入的补充提交数据）；btnConfigs.formId/dialogTitle/editRow 与桌面同序写入，
+    // 保证 dlgFormConfig 展开内容一致。isRefresh 与 listPageId 供路由页在提交成功后写回刷标记
+    // （lowcodeTablePendingRefresh），消费走第七期 activated/init 链路——与桌面"提交成功才重查"
+    // （onSubmit）时机一致，取消不重查
+    disposeDynamicFormEvent({ btnType, relateFrom, dialogTitle, deliverySelectList, deliverySelectListFields }, rowData) {
+      const externalParams = this.formatSelectListParams({ deliverySelectList, deliverySelectListFields }, rowData);
+      const baseQuery = {
+        renderType: "form",
+        id: relateFrom,
+        btnType,
+        isRefresh: this.btnConfigs?.isRefresh ? 1 : 0,
+        listPageId: this.listPageId
+      };
+      switch (btnType) {
+        case "add":
+          this.btnConfigs.formId = relateFrom;
+          this.btnConfigs.dialogTitle = dialogTitle || "新增";
+          this.jumpToModalPage({ ...baseQuery, title: this.btnConfigs.dialogTitle, onlyRead: 0 }, externalParams, this.getExternalCompBaseAttrs());
+          break;
+        case "check":
+        case "edit": {
+          let primaryKeyValue;
+          if (rowData) {
+            primaryKeyValue = rowData[this.keyField];
+          } else if (this.getFirstSelectedData()) {
+            primaryKeyValue = this.getFirstSelectedData()[this.keyField];
+          } else {
+            return this.showTip("请至少勾选一条要处理的数据！");
+          }
+          if ([undefined, null].includes(primaryKeyValue)) {
+            return this.showTip("主键字段未取到值，请检查数据或在列表设计页面重新关联主键！");
+          }
+          this.editRow = rowData || this.getFirstSelectedData();
+          this.btnConfigs.formId = relateFrom;
+          this.btnConfigs.dialogTitle = dialogTitle || (btnType === "check" ? "查看" : "编辑");
+          // 桌面同款覆写（含原拼写 closeOnPressEscap 读取 undefined 的行为），保证 dlgFormConfig 展开一致
+          this.btnConfigs.closeOnPressEscape = btnType === "check" ? true : this.btnConfigs.closeOnPressEscap;
+          this.jumpToModalPage(
+            {
+              ...baseQuery,
+              title: this.btnConfigs.dialogTitle,
+              onlyRead: btnType === "check" ? 1 : 0,
+              primaryKeyValue
+            },
+            externalParams,
+            this.getExternalCompBaseAttrs()
+          );
+          break;
+        }
+        default:
+          break;
+      }
+    },
+
+    // 桌面 getExternalCompBaseAttrs 同语义（来源 tableItem.js:2401）：桌面弹窗经 attrs 传给 VFRuntime/
+    // vFRender_view 的外部参数全集，移动端经 sessionStorage 传给路由页后 v-bind，保证 vform 获得的参数
+    // 与桌面完全一致。桌面 btnRegularOptions[0].formItem 为 composeBtnRegularOptions 包装的按钮平铺数组，
+    // 移动端等价为 composeBtnList 产出的 btnList；mainDataId/mainFormId/mainRelateFieldName 来源于
+    // vform 从表宿主 inject（getPrimaryKeyValue/getDlgConfig/getWidget），移动端独立列表无该宿主，
+    // this 上不存在 → ?.() 取值 undefined，与桌面独立列表（inject 缺失仅告警、值为 undefined）一致
+    getExternalCompBaseAttrs() {
+      const {
+        selectList,
+        keyField,
+        btnConfigs: { btnDisposeParamsRule, requestBeforeConfirmHint, requestBeforeConfirmText, requestBeforeConfirmTitle, requestBeforeConfirmType, deliverySelectList },
+        dynamicExternalParams
+      } = this;
+      const { finalUrl, finalType, finalData, headers } = this.getRequestConfig();
+      const btnConfig = (this.btnList || []).find(item => item.btnId === this?.btnConfigs?.btnId) || {};
+      let config = {
+        dynamicExternalParams,
+        requestConfig: {
+          requestType: finalType,
+          requestUrl: finalUrl,
+          requestBodyData: finalData,
+          requestHeader: headers,
+          requestBeforeConfirmHint,
+          requestBeforeConfirmText,
+          requestBeforeConfirmTitle,
+          requestBeforeConfirmType
+        },
+        tableData: this.tableData,
+        externalParams: this.externalParams,
+        callingFrom: "dynatic-table",
+        dlgFormConfig: {
+          originInfo: btnConfig,
+          ...this.btnConfigs
+        },
+        // 作为vform组件时需要传递以下信息（独立列表场景与桌面同为 undefined）
+        isVformWidget: this.isVformWidget,
+        localProcessData: this.localProcessData,
+        mainDataId: this.getPrimaryKeyValue?.(),
+        mainFormId: this.getDlgConfig?.()?.formId,
+        mainRelateFieldName: this.getWidget?.()?.options?.name
+      };
+      if (deliverySelectList) {
+        config = Object.assign(config, {
+          keyFieldName: keyField,
+          selectList,
+          paramsRule: btnDisposeParamsRule
+        });
+      }
+      return config;
+    },
+
+    // openType=6 动态列表（与桌面 disposeDynamicTableEvent 同语义）：check/edit 校验行/勾选数据；
+    // externalParams 为 useArray 口径（对齐桌面嵌套列表 init 传参）；桌面 onlyRead=true 仅控制弹窗底栏
+    // （嵌套列表弹窗无提交），移动端路由页为完整列表页、无底栏不传；嵌套列表自身按钮与重查由其内部
+    // executeButton 处理（桌面同），不回刷外层列表
+    disposeDynamicTableEvent({ btnType, relateTable, dialogTitle, deliverySelectList, deliverySelectListFields }, rowData) {
+      if (["check", "edit"].includes(btnType) && !(rowData || this.getFirstSelectedData())) {
+        return this.showTip("请至少勾选一条要处理的数据！");
+      }
+      const externalParams = this.formatSelectListParams({ deliverySelectList, deliverySelectListFields }, rowData, "useArray");
+      this.jumpToModalPage(
+        {
+          renderType: "pageList",
+          id: relateTable,
+          title: dialogTitle || (btnType === "check" ? "查看" : "编辑")
+        },
+        externalParams
+      );
+    },
+
+    // 路由页统一跳转收口：业务参数写 sessionStorage（与 lowcodeTableThisPageJumpParams 传参风格一致，
+    // 路由页挂载时读取并删除）：externalParams = 桌面 externalParamsFormRow（addExtraData 载荷），
+    // formAttrs = 桌面 getExternalCompBaseAttrs（v-bind attrs 全集，仅表单跳转携带；桌面嵌套列表
+    // 不传 attrs，列表跳转不带该键）。复用第七期 jumpToH5Route 双通道（路由注册于当前 router 时
+    // $router.push 保持组件可 keep-alive、返回回刷链路最优，否则 location.href 拼 H5 基地址）
+    jumpToModalPage(query, externalParams, formAttrs) {
+      try {
+        sessionStorage.setItem(LOWCODE_MODAL_PARAMS_KEY, JSON.stringify({ externalParams: externalParams || {}, formAttrs }));
+      } catch (error) {
+        console.warn("[mobileTable] 写入路由页业务参数失败：", error);
+      }
+      this.jumpToH5Route(LOWCODE_MODAL_PATH, query);
+    },
+
     // 以下分派器依赖桌面端弹窗/下载体系（五期方案4.8 定性收口）：下载/导入/二维码族与 openType=4 关联组件
-    // 维持暂不实施；openType=0/6 动态表单/列表属第八期路由页——移动端仅保证执行链可达并告警
+    // 维持暂不实施，移动端仅保证执行链可达并告警
     fifthPhaseWarn(action) {
-      console.warn(`[mobileTable] 按钮动作（${action}）属暂不实施范围（下载/导入族、关联组件）或第八期路由页范围，移动端暂不执行`);
+      console.warn(`[mobileTable] 按钮动作（${action}）属暂不实施范围（下载/导入族、关联组件），移动端暂不执行`);
     },
     disposeDown() {
       this.fifthPhaseWarn("download");
@@ -970,12 +1135,6 @@ export default {
     },
     disposeRelateCompEvent() {
       this.fifthPhaseWarn("openType=4 关联组件");
-    },
-    disposeDynamicFormEvent() {
-      this.fifthPhaseWarn("openType=0 动态表单");
-    },
-    disposeDynamicTableEvent() {
-      this.fifthPhaseWarn("openType=6 动态列表");
     },
 
     /** ============ 按钮入口（第六期：四处入口与投放骨架） ============ */
@@ -1452,13 +1611,15 @@ export default {
       this.detailVisible = false;
     },
 
+    // 移动端提示统一走 vant Toast（宿主 CommonDPh5 全量 Vue.use(Vant)，组件继承 root 原型的 this.$toast，
+    // 用法与宿主 H5 页面一致）；无 vant 的挂载环境（如设计器独立预览）回退 console 不报错
     showTip(message) {
-      (this.$message?.warning || console.warn).call?.(this.$message || console, message);
+      this.$toast ? this.$toast(message) : console.warn(message);
     },
 
-    // 成功提示（桌面 $success 的移动端等价物，batchDel 删除成功等场景）
+    // 成功提示（vant Toast.success，宿主 integration-record-h5 同款用法；batchDel 删除成功等场景）
     showSuccess(message) {
-      (this.$message?.success || console.log).call?.(this.$message || console, message);
+      this.$toast?.success ? this.$toast.success(message) : console.log(message);
     },
 
     async handleDetailPrev() {
@@ -1987,15 +2148,16 @@ export default {
       );
     },
 
-    // 右下角FAB：add类全局按钮；单个直触发、多个点开半屏面板聚合；勾选态批量栏滑出时隐藏避免遮挡
+    // 右下角FAB：add类全局按钮；单个直触发、多个点开半屏面板聚合；勾选态批量栏滑出时上移避让（不隐藏，
+    // is-lifted 抬高到批量栏上方，保持新增入口常驻可达）
     renderFab() {
       const fabBtns = this.btnPlacement.fab;
-      if (!fabBtns.length || this.batchBarVisible) return null;
+      if (!fabBtns.length) return null;
       const multiple = fabBtns.length > 1;
       const allDisabled = fabBtns.every(btn => this.isBtnDisabled(btn));
       return (
         <div
-          class={{ "mt-fab": true, "is-disabled": allDisabled }}
+          class={{ "mt-fab": true, "is-disabled": allDisabled, "is-lifted": this.batchBarVisible }}
           onClick={() => {
             if (allDisabled) return;
             if (multiple) {

@@ -210,15 +210,16 @@ function prepare(mt, { formOptions, tableConfigJSON } = {}) {
     assert("卡片操作区渲染(编辑/查看直出)", html.includes("mt-card-actions") && html.includes("编辑") && html.includes("查看"));
     assert("行级≤3无···", !html.includes("mt-card-more"));
 
-    // 勾选态:批量栏滑出、FAB隐藏
+    // 勾选态:批量栏滑出、FAB上移避让(is-lifted)不隐藏
     assert("无勾选时批量栏不渲染", !html.includes("mt-batchbar"));
     mt.selectList = [mt.tableData[0]];
     await mt.$nextTick();
     assert("勾选态批量栏渲染", vm.$el.innerHTML.includes("mt-batchbar") && vm.$el.innerHTML.includes("已选 1 项"));
-    assert("勾选态FAB隐藏", !vm.$el.innerHTML.includes("mt-fab"));
+    assert("勾选态FAB上移避让不隐藏", vm.$el.querySelector(".mt-fab")?.className.includes("is-lifted"));
     mt.clearBatchSelection();
     await mt.$nextTick();
     assert("取消勾选批量栏收起", !vm.$el.innerHTML.includes("mt-batchbar"));
+    assert("取消勾选FAB回落原位", !!vm.$el.querySelector(".mt-fab") && !vm.$el.querySelector(".mt-fab").className.includes("is-lifted"));
 
     // 半屏面板:行级>3时出现···,点击打开面板(直出3个,面板收其余);
     // custom+openType=5按推导归顶部,行级用relateBtnId引用凑足4个(edit/check/777/778)

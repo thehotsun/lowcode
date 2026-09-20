@@ -443,7 +443,7 @@
     min-width: 0;
   }
 
-  // 右下角FAB（第六期）：add类全局按钮；层级低于第四期弹层（蒙层展开时被压暗不可点），勾选态隐藏
+  // 右下角FAB（第六期）：add类全局按钮；层级低于第四期弹层（蒙层展开时被压暗不可点），勾选态上移避让批量栏
   .mt-fab {
     position: absolute;
     right: 16px;
@@ -460,10 +460,18 @@
     font-size: 22px;
     box-shadow: 0 4px 12px rgba(64, 158, 255, 0.4);
     cursor: pointer;
+    transition: bottom 0.25s ease;
 
     &.is-disabled {
       background: #a0cfff;
       cursor: not-allowed;
+    }
+
+    // 勾选态批量栏滑出时抬高到栏上方（批量栏高约52px：上下padding10+small按钮32，留12px间隙），
+    // FAB 常驻不隐藏，新增入口在勾选态仍可达
+    &.is-lifted {
+      bottom: calc(64px + constant(safe-area-inset-bottom));
+      bottom: calc(64px + env(safe-area-inset-bottom));
     }
   }
 
