@@ -101,6 +101,32 @@
     }
   }
 
+  // 顶部全局按钮行（第六期，视觉统筹定稿）：第四期工具条下方第二行（工具条不渲染时独立成行），
+  // 横排、超出横向滚动；与工具条同处弹层蒙层覆盖范围之外（弹层展开时保持可点）
+  .mt-btnbar {
+    position: relative;
+    z-index: 7;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 12px;
+    background: #fff;
+    border-bottom: 1px solid #ebeef5;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+
+    &.is-disabled {
+      opacity: 0.6;
+      pointer-events: none;
+    }
+
+    .mt-entry-btn {
+      flex-shrink: 0;
+      margin: 0;
+    }
+  }
+
   // 排序/筛选下拉弹层（第四期）：锚定 mt-body 顶部（紧贴工具条下方）向下展开，
   // 蒙层压暗列表区（工具条保持可点），点蒙层收起；低于详情页
   .mt-sheet-mask {
@@ -299,6 +325,40 @@
       min-width: 0;
     }
 
+    // 卡片操作区（第六期）：行级按钮常用直出 + "···"更多入口，上边框与字段区分隔，靠右排布
+    .mt-card-actions {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 8px;
+      margin-top: 10px;
+      padding-top: 10px;
+      border-top: 1px solid #f2f3f7;
+
+      .mt-entry-btn {
+        margin: 0;
+      }
+
+      .mt-card-more {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 28px;
+        height: 28px;
+        padding: 0 8px;
+        border-radius: 14px;
+        background: #f5f6fa;
+        color: #606266;
+        font-size: 14px;
+        cursor: pointer;
+
+        &.is-disabled {
+          opacity: 0.6;
+          pointer-events: none;
+        }
+      }
+    }
+
     .mt-card-title {
       font-size: 15px;
       font-weight: 600;
@@ -381,6 +441,127 @@
     // 片段内部已带与桌面端一致的截断样式链（flex:1/nowrap/ellipsis），外层不再重复截断
     display: block;
     min-width: 0;
+  }
+
+  // 右下角FAB（第六期）：add类全局按钮；层级低于第四期弹层（蒙层展开时被压暗不可点），勾选态隐藏
+  .mt-fab {
+    position: absolute;
+    right: 16px;
+    bottom: 24px;
+    z-index: 4;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: #409eff;
+    color: #fff;
+    font-size: 22px;
+    box-shadow: 0 4px 12px rgba(64, 158, 255, 0.4);
+    cursor: pointer;
+
+    &.is-disabled {
+      background: #a0cfff;
+      cursor: not-allowed;
+    }
+  }
+
+  // 勾选态底部批量操作栏（第六期骨架）：进入勾选态自底部滑入，取消勾选/点「取消」收起
+  .mt-batchbar {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 8;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 10px 12px;
+    padding-bottom: calc(10px + constant(safe-area-inset-bottom));
+    padding-bottom: calc(10px + env(safe-area-inset-bottom));
+    background: #fff;
+    border-top: 1px solid #ebeef5;
+    box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.08);
+    animation: mt-sheet-up 0.25s ease;
+
+    .mt-batchbar-count {
+      flex-shrink: 0;
+      font-size: 13px;
+      color: #606266;
+    }
+
+    .mt-batchbar-btns {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+
+      .el-button {
+        flex-shrink: 0;
+        margin: 0;
+      }
+    }
+  }
+
+  // 底部半屏面板（第六期）：FAB多add聚合与卡片"···"更多共用形态（全屏蒙层+底部滑入），低于详情页
+  .mt-asheet-mask {
+    position: absolute;
+    inset: 0;
+    z-index: 9;
+    background: rgba(0, 0, 0, 0.5);
+    animation: mt-mask-fade 0.2s ease;
+  }
+
+  .mt-asheet {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 9;
+    background: #fff;
+    border-radius: 12px 12px 0 0;
+    box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.12);
+    padding-bottom: constant(safe-area-inset-bottom);
+    padding-bottom: env(safe-area-inset-bottom);
+    animation: mt-sheet-up 0.25s ease;
+
+    .mt-asheet-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 14px 16px;
+      font-size: 15px;
+      color: #303133;
+      cursor: pointer;
+
+      &:active {
+        background: #f5f6fa;
+      }
+
+      &.is-disabled {
+        color: #c0c4cc;
+        pointer-events: none;
+
+        i {
+          color: #c0c4cc;
+        }
+      }
+
+      i {
+        color: #409eff;
+      }
+
+      .mt-asheet-item-label {
+        flex: 1;
+        min-width: 0;
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+      }
+    }
   }
 
   .mt-footer {
@@ -513,6 +694,16 @@
 @keyframes mt-sheet-down {
   from {
     transform: translateY(-100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+// 底部滑入动画（第六期：批量操作栏与底部半屏面板）
+@keyframes mt-sheet-up {
+  from {
+    transform: translateY(100%);
   }
   to {
     transform: translateY(0);

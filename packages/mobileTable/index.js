@@ -19,6 +19,11 @@ const FILTER_SORT_KEY = "__sort__";
 const FILTER_SHEET_KEY = "__filter__";
 // 筛选弹层选项分组超过该数量折叠，由组标题"展开/收起"控制
 const FILTER_OPTION_COLLAPSE_COUNT = 8;
+// 暂不实施按钮族（渲染方案§4.2/五期方案4.8：下载/导入/二维码族与openType=4关联组件）不渲染入口，
+// 执行链（emitBtnClick）仍可达、触发时告警；不渲染入口的按钮同样不进入投放推导计算
+const UNPLACED_BTN_TYPES = ["download", "flowDocDownload", "flowResultDownload", "formDownload", "import", "importRefresh", "qrCode"];
+// 卡片操作区常用按钮直出上限，其余收"···"半屏面板（五期方案4.5）
+const CARD_ACTION_INLINE_COUNT = 3;
 
 // 移动端列表：单列卡片列表 + 详情页覆盖层（第一期）；字段点击与按钮执行链（第二期）；
 // 卡片选择/对外事件全集/expose_*全集（第三期）；顶部筛选与排序工具条（第四期）。
@@ -82,7 +87,9 @@ function InstanceData() {
     // 选择集合（第三期：isShowCheckbox开启时卡片渲染勾选框，经selectListHandler/selectionChange对外发布）
     selectList: [],
     editRow: null,
-    externalParamsFormRow: null
+    externalParamsFormRow: null,
+    // 按钮入口（第六期）：底部半屏面板（null=关闭；FAB多add聚合面板/卡片行级"···"更多面板共用形态）
+    activeActionSheet: null
   };
 }
 
@@ -228,6 +235,61 @@ export default {
     // 工具条渲染条件：模糊框、任一筛选入口、任一可排序字段均无则不渲染
     showFilterBar() {
       return this.fuzzySearchEnabled || this.filterEntries.length > 0 || this.sortableFields.length > 0;
+    },
+    // 当前是否作为FreeLayout的一个组件（与桌面 tableItem.isFreeLayoutWidget 同来源）
+    isFreeLayoutWidget() {
+      return this.renderStrategy.source === "freeLayoutWidget";
+    },
+    // 被字段片段clickEvent.relateBtnId引用的按钮id集合（历史JSON可能存为字符串，解析失败按无引用处理）
+    relatedBtnIds() {
+      const ids = new Set();
+      const traverse = items => {
+        (items || []).forEach(item => {
+          if (item.children && item.children.length) {
+            traverse(item.children);
+            return;
+          }
+          let segments = item.contentTextAttrArr;
+          if (typeof segments === "string") segments = str2obj(segments);
+          if (!Array.isArray(segments)) return;
+          segments.forEach(seg => {
+            const id = seg?.clickEvent?.relateBtnId;
+            if (id !== undefined && id !== null && id !== "") ids.add(String(id));
+          });
+        });
+      };
+      traverse(this.tableConfigJSON);
+      return ids;
+    },
+    // 按钮投放分组（第六期，渲染方案§4.4作用范围推导）：add/refresh全局、batchDel及deliverySelectList批量、
+    // edit/check及被relateBtnId引用为行级，其余按是否读取行字段分流。现有动作类型中读取行字段的仅
+    // edit/check与被relateBtnId引用者（其余动作的参数映射上下文为查询参数getParams或勾选集合
+    // deliverySelectList，均不直接读行），故参数映射分流的兜底统一归顶部全局；
+    // isHidden与暂不实施族不渲染入口（优先级：排除暂不实施 > add > refresh > 批量 > 行级 > 顶部）
+    btnPlacement() {
+      const placement = { fab: [], row: [], batch: [], top: [] };
+      const relatedBtnIds = this.relatedBtnIds;
+      this.btnList.forEach(btn => {
+        const extra = btn.extraOption || {};
+        if (extra.isHidden) return;
+        if (UNPLACED_BTN_TYPES.includes(extra.btnType) || extra.openType === 4) return;
+        if (extra.btnType === "add") {
+          placement.fab.push(btn);
+        } else if (extra.btnType === "refresh") {
+          placement.top.push(btn);
+        } else if (extra.btnType === "batchDel" || extra.deliverySelectList) {
+          placement.batch.push(btn);
+        } else if (extra.btnType === "edit" || extra.btnType === "check" || relatedBtnIds.has(String(btn.btnId))) {
+          placement.row.push(btn);
+        } else {
+          placement.top.push(btn);
+        }
+      });
+      return placement;
+    },
+    // 勾选态底部批量操作栏渲染条件：开启勾选、存在批量按钮且有勾选（进入勾选态自底部滑出，取消勾选收起）
+    batchBarVisible() {
+      return this.showCheckbox && this.btnPlacement.batch.length > 0 && this.selectList.length > 0;
     }
   },
 
@@ -484,10 +546,13 @@ export default {
 
     /** ============ 按钮执行（第二期：共享executeButton宿主能力） ============ */
 
-    // 权限过滤与桌面 filterBtnsByPermission 同语义（普通列表分支：rawRelateId 缺失/notVerify 或预览态不过滤）
+    // 权限过滤与桌面 filterBtnsByPermission 同语义（普通列表分支：rawRelateId 缺失/notVerify 或预览态不过滤）。
+    // 场景过滤与桌面 composeBtnRegularOptions 同口径：FreeLayout 仅 btnVerifyType 为 checkPermission 时过滤；
+    // VForm 子表场景移动端不实施（无 getWidget 宿主），不做其按钮显示筛选
     composeBtnList() {
       let config = cloneDeep(this.formOptions || []);
-      if (!this.previewMode && this.rawRelateId && this.rawRelateId !== "notVerify") {
+      const shouldFilter = !this.isFreeLayoutWidget || this.renderStrategy.btnVerifyType === "checkPermission";
+      if (shouldFilter && !this.previewMode && this.rawRelateId && this.rawRelateId !== "notVerify") {
         config = config.filter(item => {
           return this.checkPermission(`${this.rawRelateId}:${item.btnId}:${item.authorize}`) || item.authorize === "defaultShow";
         });
@@ -707,6 +772,48 @@ export default {
     },
     disposeDynamicTableEvent() {
       this.fifthPhaseWarn("openType=6 动态列表");
+    },
+
+    /** ============ 按钮入口（第六期：四处入口与投放骨架） ============ */
+
+    // 入口置灰态（五期方案4.5）：预览/禁用态渲染但置灰不可点；tagAttrs.disabled为按钮自身禁用（expose_enableAllBtn可恢复）
+    isBtnDisabled(btn) {
+      return !!(this.previewMode || this.tableDisbaled || btn?.tagAttrs?.disabled);
+    },
+
+    // 四处入口统一点击：置灰态不执行；半屏面板内按钮执行后关闭面板；
+    // 执行链与字段片段入口（emitBtnClick）一致，共享executeButton校验链与桌面完全相同
+    handleEntryBtnClick(btn, row) {
+      this.activeActionSheet = null;
+      if (this.isBtnDisabled(btn)) return;
+      this.executeButton({ ...(btn.extraOption || {}), btnId: btn.btnId, authorize: btn.authorize }, row);
+    },
+
+    // 卡片操作区直出按钮：常用前N个（edit/check排前，其后按formOptions顺序）
+    getCardInlineBtns() {
+      return this.btnPlacement.row.slice(0, CARD_ACTION_INLINE_COUNT);
+    },
+
+    // 底部半屏面板按钮列表：fab=FAB聚合的add类；rowMore=该行未直出的行级按钮
+    getActionSheetBtns() {
+      const sheet = this.activeActionSheet;
+      if (!sheet) return [];
+      if (sheet.type === "fab") return this.btnPlacement.fab;
+      if (sheet.type === "rowMore") return this.btnPlacement.row.slice(CARD_ACTION_INLINE_COUNT);
+      return [];
+    },
+
+    // 打开卡片行级"···"半屏面板（与第四期顶部下拉弹层同屏互斥）；预览/禁用态不开面板
+    openRowMoreSheet(row) {
+      if (this.previewMode || this.tableDisbaled) return;
+      this.activeFilterKey = "";
+      this.activeActionSheet = { type: "rowMore", row };
+    },
+
+    // 退出勾选态：清空选择收起底部批量操作栏（选择集合语义与第三期一致）
+    clearBatchSelection() {
+      this.selectList = [];
+      this.emitSelectionChange([]);
     },
 
     /** ============ 配置解析 ============ */
@@ -1342,13 +1449,15 @@ export default {
       return false;
     },
 
-    // 打开/关闭下拉弹层（排序/全部筛选，同屏互斥）；筛选弹层打开时从当前查询条件构建草稿并按需加载远程选项
+    // 打开/关闭下拉弹层（排序/全部筛选，同屏互斥）；筛选弹层打开时从当前查询条件构建草稿并按需加载远程选项；
+    // 与第六期底部半屏面板同屏互斥
     toggleSheet(key) {
       if (this.tableDisbaled) return;
       if (this.activeFilterKey === key) {
         this.activeFilterKey = "";
         return;
       }
+      this.activeActionSheet = null;
       this.activeFilterKey = key;
       if (key === FILTER_SHEET_KEY) {
         this.buildFilterDraft();
@@ -1643,6 +1752,109 @@ export default {
 
     /** ============ 渲染 ============ */
 
+    /** ---- 按钮入口渲染（第六期） ---- */
+
+    // 顶部全局按钮行（视觉统筹定稿：第四期工具条下方第二行，横排、超出横向滚动；工具条不渲染时独立成行）：
+    // refresh及其余无行数据依赖的全局按钮；预览/禁用态整行置灰不可点
+    renderTopBtnBar() {
+      const btns = this.btnPlacement.top;
+      if (!btns.length) return null;
+      return (
+        <div class={{ "mt-btnbar": true, "is-disabled": this.tableDisbaled }}>
+          {btns.map(btn => this.renderEntryBtn(btn, () => this.handleEntryBtnClick(btn)))}
+        </div>
+      );
+    },
+
+    // 入口按钮通用渲染（顶部行/卡片操作区/批量栏共用）：文字/图标/type/plain/round取tagAttrs，置灰态推导，尺寸固定small
+    renderEntryBtn(btn, onClick) {
+      const { value, type, plain, round, icon } = btn.tagAttrs || {};
+      return (
+        <el-button key={btn.btnId} class="mt-entry-btn" size="small" type={type} plain={plain} round={round} icon={icon} disabled={this.isBtnDisabled(btn)} onClick={onClick}>
+          {value || btn.extraOption?.btnType}
+        </el-button>
+      );
+    },
+
+    // 右下角FAB：add类全局按钮；单个直触发、多个点开半屏面板聚合；勾选态批量栏滑出时隐藏避免遮挡
+    renderFab() {
+      const fabBtns = this.btnPlacement.fab;
+      if (!fabBtns.length || this.batchBarVisible) return null;
+      const multiple = fabBtns.length > 1;
+      const allDisabled = fabBtns.every(btn => this.isBtnDisabled(btn));
+      return (
+        <div
+          class={{ "mt-fab": true, "is-disabled": allDisabled }}
+          onClick={() => {
+            if (allDisabled) return;
+            if (multiple) {
+              this.activeFilterKey = "";
+              this.activeActionSheet = { type: "fab" };
+            } else {
+              this.handleEntryBtnClick(fabBtns[0]);
+            }
+          }}
+        >
+          <i class="el-icon-plus"></i>
+        </div>
+      );
+    },
+
+    // 卡片操作区（行级按钮）：常用前N个直出，其余收"···"半屏面板；点击阻止冒泡不触发卡片点击（打开详情）
+    renderCardActions(row) {
+      const rowBtns = this.btnPlacement.row;
+      if (!rowBtns.length) return null;
+      const moreCount = rowBtns.length - this.getCardInlineBtns().length;
+      return (
+        <div class="mt-card-actions" onClick={e => e.stopPropagation()}>
+          {this.getCardInlineBtns().map(btn => this.renderEntryBtn(btn, () => this.handleEntryBtnClick(btn, row)))}
+          {moreCount > 0 ? (
+            <span class={{ "mt-card-more": true, "is-disabled": this.previewMode || this.tableDisbaled }} onClick={() => this.openRowMoreSheet(row)}>
+              <i class="el-icon-more"></i>
+            </span>
+          ) : null}
+        </div>
+      );
+    },
+
+    // 勾选态底部批量操作栏（第六期骨架）：显示已选数量与批量按钮（batchDel/deliverySelectList）；
+    // 选择数量校验复用共享executeButton（validateSelectList），批量动作闭环（batchDel同桌面补实现）属第七期
+    renderBatchBar() {
+      if (!this.batchBarVisible) return null;
+      return (
+        <div class="mt-batchbar">
+          <span class="mt-batchbar-count">已选 {this.selectList.length} 项</span>
+          <div class="mt-batchbar-btns">
+            {this.btnPlacement.batch.map(btn => this.renderEntryBtn(btn, () => this.handleEntryBtnClick(btn)))}
+            <el-button size="small" plain onClick={() => this.clearBatchSelection()}>
+              取消
+            </el-button>
+          </div>
+        </div>
+      );
+    },
+
+    // 底部半屏面板：FAB多add聚合与卡片行级"···"更多共用形态（全屏蒙层+底部滑入），层级低于详情页
+    renderActionSheet() {
+      const sheet = this.activeActionSheet;
+      if (!sheet) return null;
+      const btns = this.getActionSheetBtns();
+      const row = sheet.type === "rowMore" ? sheet.row : undefined;
+      return [
+        <div class="mt-asheet-mask" key="mask" onClick={() => (this.activeActionSheet = null)} />,
+        <div class="mt-asheet" key="sheet">
+          {btns.map(btn => (
+            <div key={btn.btnId} class={{ "mt-asheet-item": true, "is-disabled": this.isBtnDisabled(btn) }} onClick={() => this.handleEntryBtnClick(btn, row)}>
+              {btn.tagAttrs?.icon ? <i class={btn.tagAttrs.icon}></i> : null}
+              <span class="mt-asheet-item-label">{btn.tagAttrs?.value || btn.extraOption?.btnType}</span>
+            </div>
+          ))}
+        </div>
+      ];
+    },
+
+    /** ---- 筛选与排序渲染（第四期） ---- */
+
     // 顶部筛选与排序工具条（第四期）：模糊搜索框（有配置才渲染，右侧「搜索」按钮）+「排序/全部筛选」左右两按钮；
     // 常驻组件顶部不随卡片滚动；两按钮分别打开排序/筛选下拉弹层（自工具条下方顶部下探，蒙层压暗列表区、同屏互斥）
     renderFilterBar() {
@@ -1904,6 +2116,7 @@ export default {
           <div class="mt-card-main">
             {titleField ? <div class="mt-card-title">{this.renderMobileField(titleField, row, index, "card")}</div> : null}
             <div class={{ "mt-card-grid": true, "mt-grid-double": this.isDoubleLayout }}>{this.cardFields.map(field => this.renderCardField(field, row, index))}</div>
+            {this.renderCardActions(row)}
           </div>
         </div>
       );
@@ -2015,6 +2228,7 @@ export default {
     return (
       <div class="mobileTableWrap">
         {this.renderFilterBar()}
+        {this.renderTopBtnBar()}
         {/* 列表区容器：弹层锚定其顶部（紧贴工具条下方）向下展开，蒙层压暗列表区、工具条保持可点 */}
         <div class="mt-body">
           <div class="mt-scroll" ref="scrollWrap">
@@ -2024,6 +2238,10 @@ export default {
           </div>
           {this.renderActiveSheet()}
         </div>
+        {/* 第六期按钮入口：批量栏/FAB/半屏面板常驻组件层，半屏面板蒙层全屏压暗（含工具条）、低于详情页 */}
+        {this.renderBatchBar()}
+        {this.renderFab()}
+        {this.renderActionSheet()}
         {this.renderDetail()}
       </div>
     );
