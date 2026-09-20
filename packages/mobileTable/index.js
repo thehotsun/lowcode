@@ -24,9 +24,16 @@ const FILTER_OPTION_COLLAPSE_COUNT = 8;
 const UNPLACED_BTN_TYPES = ["download", "flowDocDownload", "flowResultDownload", "formDownload", "import", "importRefresh", "qrCode"];
 // 卡片操作区常用按钮直出上限，其余收"···"半屏面板（五期方案4.5）
 const CARD_ACTION_INLINE_COUNT = 3;
+// isRefresh 返回回刷标记（第七期，4.6）：流程等路由跳转离开列表前写入 sessionStorage（与
+// lowcodeTableThisPageJumpParams 传参风格一致），返回列表路由时消费并 loadFirst 重查
+const PENDING_REFRESH_KEY = "lowcodeTablePendingRefresh";
+// 流程 H5 摘要页路由（4.6 跳转目标，以 2026-09-18 样例 URL 为基准）；stdNew 发起为桌面 /examine-new 的同宿主等价入口
+const FLOW_H5_SUMMARY_PATH = "/flowH5Summary";
+const FLOW_EXAMINE_NEW_PATH = "/examine-new";
 
 // 移动端列表：单列卡片列表 + 详情页覆盖层（第一期）；字段点击与按钮执行链（第二期）；
-// 卡片选择/对外事件全集/expose_*全集（第三期）；顶部筛选与排序工具条（第四期）。
+// 卡片选择/对外事件全集/expose_*全集（第三期）；顶部筛选与排序工具条（第四期）；
+// 按钮入口与体系骨架（第六期）；流程跳转/isRefresh 返回回刷/批量删除闭环（第七期）。
 // 仅依赖 lowcode 现有配置协议（tableOptions/tableAttrs/mobileAttrs）与宿主 inject 能力面，
 // 与桌面 complete-table 二选一挂载，传参一致。
 function InstanceData() {
@@ -352,6 +359,18 @@ export default {
     enterpriseId: {
       default: () => ""
     },
+    // 流程定义查询与批量删除（第七期，4.7）：宿主 tableRender.vue provide 已含 queryFlowDef/requestBatchDel，
+    // 移动端补 inject 声明即可；流程跳转不走桌面 openFlow 弹窗（H5 为路由跳转），故不 inject openFlow
+    queryFlowDef: {
+      default: () => () => {
+        console.warn("inject缺失queryFlowDef!");
+      }
+    },
+    requestBatchDel: {
+      default: () => () => {
+        console.warn("inject缺失requestBatchDel!");
+      }
+    },
     renderStrategy: {
       default: () => ({ source: "" })
     },
@@ -373,6 +392,14 @@ export default {
 
   mounted() {
     this.ensureParentPosition();
+  },
+
+  activated() {
+    // isRefresh 返回回刷（第七期，4.6）：keep-alive 返回时组件不重建、init 不再执行，
+    // 按标记触发回第一页重查（非 keep-alive 场景重挂载由 init 首查覆盖，标记已在 init 内清理）
+    if (this.consumePendingRefresh()) {
+      this.loadFirst();
+    }
   },
 
   beforeDestroy() {
@@ -433,6 +460,10 @@ export default {
       if (jumpParams && Object.prototype.toString.call(jumpParams) === "[object Object]") {
         this.externalParams = { ...this.externalParams, ...jumpParams };
       }
+
+      // isRefresh 返回回刷（第七期）：非 keep-alive 场景返回即重挂载，下方 init 首查就是回刷本身，
+      // 此处仅消费清理标记，避免组件后续被 keep-alive 激活时重复刷新；keep-alive 场景经 activated 消费
+      this.consumePendingRefresh();
 
       if (!externalTriggerQueryTableData) {
         this.loadFirst();
@@ -733,9 +764,168 @@ export default {
       this.btnConfigs.isRefresh && this.loadFirst();
     },
 
-    // 以下分派器依赖桌面端下载/流程/表单弹窗体系（第五期按钮体系），移动端第二期仅保证执行链可达并告警
+    /** ============ 批量删除（第七期：与桌面 disposeDel/batchDel 同语义） ============ */
+
+    // 与桌面 getFirstSelectedData 同语义：勾选集合优先，无勾选回退当前行（卡片点击维护的 currentSelectedRow）
+    getFirstSelectedData() {
+      return this.selectList[0] || this.currentSelectedRow;
+    },
+
+    // openType=-1 batchDel（与桌面 disposeDel 非本地数据/非VForm子表分支同语义——移动端无 localProcessData/
+    // isVformWidget 场景）：行级入口传 row 按该行删除；否则按勾选集合（无勾选回退当前行的语义在
+    // getSelectedData/getFirstSelectedData 内）；主键取不到值时提示不执行
+    disposeDel(row) {
+      if (row) {
+        this.batchDel([row[this.keyField]], [row]);
+        return;
+      }
+      const selectList = this.getSelectedData();
+      if (selectList.length === 0) {
+        return this.showTip("请至少勾选一条要处理的数据");
+      }
+      if ([undefined, null].includes(this.tableData[0]?.[this.keyField])) {
+        return this.showTip("主键字段未取到值，请检查数据或重新在列表设计页面重新关联主键！");
+      }
+      this.batchDel(
+        selectList.map(item => item[this.keyField]),
+        selectList
+      );
+    },
+
+    // 批量删除（与桌面 batchDel 同语义）：requestBatchDel（宿主 inject）成功后提示并重查。
+    // 桌面"末页删空回退页码"保护在移动端由回第一页替换式查询天然覆盖（移动端为多页累计卡片列表、
+    // 无"当前页"视图，loadFirst 恒从第一页查起不会落在空页），故重查统一走 loadFirst；
+    // 删除失败给出提示可重试（沿用移动端加载失败的提示口径；宿主全局报错拦截可能叠加提示，可接受）
+    async batchDel(idList = [], listData) {
+      try {
+        const res = await this.requestBatchDel(idList, this.listPageId);
+        if (res?.result !== "0") {
+          throw new Error(res?.message || "删除失败");
+        }
+        this.showSuccess("删除成功");
+        this.loadFirst();
+      } catch (error) {
+        console.error(`[mobileTable] batchDel error: ${error}`);
+        this.showTip("删除失败，请重试");
+      }
+    },
+
+    /** ============ 流程跳转（第七期，4.6：与桌面 disposeFlowEvent 同数据来源） ============ */
+
+    // openType=2 流程（与桌面 disposeFlowEvent 同数据来源，跳转目标为流程 H5 摘要页）：
+    // check 先查流程实例（/flow/business/{主键值}，草稿态无 flowInstanceId 提示不跳转，对齐 tableItem.js:1636）；
+    // 发起/审批经 queryFlowDef 查流程定义。桌面 openFlow 弹窗在移动端为路由跳转，跳转前按 isRefresh 记回刷标记
+    // （桌面 isRefresh && queryTableData() 的弹窗关闭时机等价为返回列表路由时）
+    async disposeFlowEvent({ flowKey, btnType, isRefresh, deliverySelectList }, row) {
+      const mainFieldValue = (row || this.getFirstSelectedData())?.[this.keyField];
+      if (btnType === "check") {
+        if (!mainFieldValue) {
+          return this.showTip("请至少勾选一条要处理的数据！");
+        }
+        const res = await this.generalRequest(`/flow/business/${mainFieldValue}`, "get");
+        if (!res?.data) {
+          return this.showTip("未能获取流程详情！");
+        }
+        if (!res?.data?.flowInstanceId) {
+          return this.showTip("草稿状态的流程不能查看！");
+        }
+        // 跳转参数白名单取自 4.6 样例 URL；approveType 按桌面 check 分支取 view
+        this.jumpToFlowH5(
+          {
+            currentVersionId: res.data.currentVersionId,
+            flowInstanceId: res.data.flowInstanceId,
+            businessId: res.data.businessId,
+            approveType: "view"
+          },
+          isRefresh
+        );
+      } else {
+        const res = await this.queryFlowDef("", "", flowKey);
+        const flowInfo = res?.data;
+        if (!flowInfo) {
+          return this.showTip("未能获取流程定义！");
+        }
+        // 发起/审批：approveType 按桌面发起分支取 add；flowKey 定义返回值优先、按钮配置兜底；
+        // stdNew 桌面走新窗口 /examine-new（tableItem.js:1675-1680），H5 为同宿主路由内跳转的等价入口
+        const targetPath = flowInfo.startMode === "stdNew" ? FLOW_EXAMINE_NEW_PATH : FLOW_H5_SUMMARY_PATH;
+        this.jumpToFlowH5(
+          {
+            currentVersionId: flowInfo.currentVersionId,
+            flowKey: flowInfo.flowKey ?? flowKey,
+            approveType: "add"
+          },
+          isRefresh,
+          targetPath
+        );
+      }
+    },
+
+    // 流程跳转统一收口：补全 enterpriseId（宿主 inject）/isProject（项目路由判定）后经宿主 hash 路由跳转；
+    // 桌面专有的弹窗参数（dialogHeight/dialogWidth/sourceData/dataFromList/dlgFormConfig）不进入 URL
+    jumpToFlowH5(params, isRefresh, path = FLOW_H5_SUMMARY_PATH) {
+      const query = { ...params, enterpriseId: this.enterpriseId, isProject: this.isProjectRoute ? 1 : 0 };
+      if (isRefresh) {
+        this.markPendingRefresh();
+      }
+      this.jumpToH5Route(path, query);
+    },
+
+    // 同宿主 hash 路由内跳转（4.6）：目标路由注册于当前 router 时用 $router.push（组件不销毁、返回可 keep-alive），
+    // 否则回退 location.href 拼接 H5 基地址（commonDph5.html）；仅序列化原始类型参数
+    jumpToH5Route(path, query = {}) {
+      const params = {};
+      Object.entries(query).forEach(([key, value]) => {
+        if (["string", "number", "boolean"].includes(typeof value) && value !== "") {
+          params[key] = value;
+        }
+      });
+      let resolved = null;
+      try {
+        resolved = this.$router?.resolve?.({ path, query: params });
+      } catch (error) {
+        console.warn("[mobileTable] 解析跳转路由失败：", error);
+      }
+      if (resolved?.route?.matched?.length) {
+        this.$router.push({ path, query: params });
+        return;
+      }
+      const base = window.location.pathname?.endsWith?.(".html") ? `${window.location.origin}${window.location.pathname}` : `${window.location.origin}/commonDph5.html`;
+      const queryString = Object.entries(params)
+        .map(([key, value]) => `${encodeURIComponent(key)}=${encodeURIComponent(value)}`)
+        .join("&");
+      window.location.href = `${base}#${path}${queryString ? `?${queryString}` : ""}`;
+    },
+
+    /** ============ isRefresh 返回回刷（第七期，4.6） ============ */
+
+    // 跳转离开列表前记录回刷标记（按 listPageId 匹配，跨列表不误刷；存储风格同 lowcodeTableThisPageJumpParams）
+    markPendingRefresh() {
+      try {
+        sessionStorage.setItem(PENDING_REFRESH_KEY, JSON.stringify({ listPageId: this.listPageId }));
+      } catch (error) {
+        console.warn("[mobileTable] 记录返回回刷标记失败：", error);
+      }
+    },
+
+    // 消费回刷标记：listPageId 匹配才命中并清理（第八期表单/列表路由页返回时复用同一机制）
+    consumePendingRefresh() {
+      try {
+        const raw = sessionStorage.getItem(PENDING_REFRESH_KEY);
+        if (!raw) return false;
+        const marker = JSON.parse(raw);
+        const matched = !!marker && marker.listPageId === this.listPageId;
+        if (matched) sessionStorage.removeItem(PENDING_REFRESH_KEY);
+        return matched;
+      } catch (error) {
+        console.warn("[mobileTable] 消费返回回刷标记失败：", error);
+        return false;
+      }
+    },
+
+    // 以下分派器依赖桌面端弹窗/下载体系（五期方案4.8 定性收口）：下载/导入/二维码族与 openType=4 关联组件
+    // 维持暂不实施；openType=0/6 动态表单/列表属第八期路由页——移动端仅保证执行链可达并告警
     fifthPhaseWarn(action) {
-      console.warn(`[mobileTable] 按钮动作（${action}）依赖桌面端弹窗/下载/流程体系，属第五期范围，移动端暂不执行`);
+      console.warn(`[mobileTable] 按钮动作（${action}）属暂不实施范围（下载/导入族、关联组件）或第八期路由页范围，移动端暂不执行`);
     },
     disposeDown() {
       this.fifthPhaseWarn("download");
@@ -749,9 +939,6 @@ export default {
     disposeFormDown() {
       this.fifthPhaseWarn("formDownload");
     },
-    disposeDel() {
-      this.fifthPhaseWarn("batchDel");
-    },
     dealImport() {
       this.fifthPhaseWarn("import");
     },
@@ -763,9 +950,6 @@ export default {
     },
     disposeRelateCompEvent() {
       this.fifthPhaseWarn("openType=4 关联组件");
-    },
-    disposeFlowEvent() {
-      this.fifthPhaseWarn("openType=2 流程");
     },
     disposeDynamicFormEvent() {
       this.fifthPhaseWarn("openType=0 动态表单");
@@ -1248,6 +1432,11 @@ export default {
 
     showTip(message) {
       (this.$message?.warning || console.warn).call?.(this.$message || console, message);
+    },
+
+    // 成功提示（桌面 $success 的移动端等价物，batchDel 删除成功等场景）
+    showSuccess(message) {
+      (this.$message?.success || console.log).call?.(this.$message || console, message);
     },
 
     async handleDetailPrev() {
@@ -1817,8 +2006,8 @@ export default {
       );
     },
 
-    // 勾选态底部批量操作栏（第六期骨架）：显示已选数量与批量按钮（batchDel/deliverySelectList）；
-    // 选择数量校验复用共享executeButton（validateSelectList），批量动作闭环（batchDel同桌面补实现）属第七期
+    // 勾选态底部批量操作栏（第六期骨架 + 第七期闭环）：显示已选数量与批量按钮（batchDel/deliverySelectList）；
+    // 选择数量校验复用共享executeButton（validateSelectList），batchDel 动作经 disposeDel/batchDel 闭环（第七期）
     renderBatchBar() {
       if (!this.batchBarVisible) return null;
       return (
