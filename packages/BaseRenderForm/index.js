@@ -319,6 +319,9 @@ export default {
       props.value = props.key;
       attrs.options = options;
       attrs["show-all-levels"] = false;
+      if (isEmpty(attrs.props)) {
+        attrs.props = {};
+      }
       Object.assign(attrs.props, props);
       let model = getter(formData, formField);
       return (

@@ -408,10 +408,18 @@ export default {
         console.warn("inject缺失queryFlowDef!");
       }
     },
+    isCurrentApprover: {
+      default: () => () => {
+        console.warn("inject缺失isCurrentApprover!");
+      }
+    },
     componentList: {
       default: () => []
     },
     enterpriseId: {
+      default: () => ""
+    },
+    stageId: {
       default: () => ""
     },
     getPrjInfo: {
@@ -991,7 +999,28 @@ export default {
     composeData(emptyData) {
       this.formOptions = this.composeFromOptions(this.tableConfigJSON);
       this.filterField = [];
-      this.tableOptions = this.tableConfigJSON
+      // 外部渲染策略强制指定显示列：匹配到的列 show 强制为 true 且 fieldName 同步为传入的 fieldDisplayName，其余强制为 false，列顺序按传入顺序排列
+      const forceShowFields = this.renderStrategy?.forceShowFields;
+      let tableConfig = this.tableConfigJSON;
+      if (forceShowFields?.length) {
+        const fieldNames = forceShowFields.map(field => field.fieldName);
+        tableConfig = tableConfig
+          .map(item => {
+            const matched = forceShowFields.find(field => field.fieldName === item.fieldCode);
+            return {
+              ...item,
+              fieldName: matched ? matched.fieldDisplayName : item.label,
+              show: !!matched
+            };
+          })
+          .sort((a, b) => {
+            const indexA = fieldNames.indexOf(a.fieldCode);
+            const indexB = fieldNames.indexOf(b.fieldCode);
+            // 未匹配的列排在后面
+            return (indexA === -1 ? fieldNames.length : indexA) - (indexB === -1 ? fieldNames.length : indexB);
+          });
+      }
+      this.tableOptions = tableConfig
         .filter(item => item.show)
         .map(item => {
           const obj = this.setSingleTableOptions(item, emptyData);
@@ -1342,6 +1371,7 @@ export default {
         ...extraParams,
         multiFieldSearch: this.multiFieldSearch,
         enterpriseId: this.enterpriseId,
+        stageId: this.stageId,
         advSearchExpr: this.exprGroupList,
         advSearchExprJoinOp: this.exprJoinOp,
         ...this.externalParams,
@@ -1595,9 +1625,353 @@ export default {
       return config;
     },
 
-    // 处理按钮点击事件（执行逻辑已抽取为共享 executeButton.js，与移动端 mobileTable 复用，行为不变）
-    async handleBtnClick(btnConfig, rowData) {
-      return executeButton(btnConfig, rowData, this);
+    validateSelectList({ paramName, paramType, deliverySelectList, deliverySelectListFields, validate }, row) {
+      this.btnConfigs.deliverySelectList = deliverySelectList;
+      if (deliverySelectList) {
+        this.btnConfigs.btnDisposeParamsRule = {
+          paramName,
+          paramType,
+          deliverySelectListFields
+        };
+        if (validate.includes(0) && this.checkNoSelection() && !row) {
+          this.$warn("请至少勾选一条要处理的数据");
+          return false;
+        }
+        if (validate.includes(1) && !this.checkOnlyOneSelected() && !row) {
+          this.$warn("当前操作只允许勾选一条数据");
+          return false;
+        }
+      }
+      return true;
+    },
+
+    // 处理按钮点击事件
+    async handleBtnClick(
+      {
+        relateFrom = "",
+        relateMeta = "",
+        relateComponent = "",
+        relateTable = "",
+        openType = "",
+        openUrl = "",
+        fn = "",
+        isRefresh = false,
+        btnType = "",
+        dialogTitle = "",
+        dialogHeight = "",
+        closeOnPressEscape = false,
+        dialogWidth = "",
+        flowKey = "",
+        paramName = "",
+        paramType = 0,
+        deliverySelectList = false,
+        deliverySelectListFields = [],
+        validate = [],
+        requestUrl = "",
+        requestType = "post",
+        requestBeforeConfirmHint = false,
+        requestBeforeConfirmText = "",
+        requestBeforeConfirmTitle = "",
+        requestBeforeConfirmType = "",
+        requestSuccessMessage = "",
+        requestParamsConfig = {},
+        useDialog = true,
+        showFooter = false,
+        validateFn = "",
+        briefPageFields = [],
+        btnValidationOptions = {},
+        command = "",
+        btnId,
+        authorize
+      },
+      rowData
+    ) {
+      const {
+        validateSelectList,
+        disposeFlowEvent,
+        disposeRelateCompEvent,
+        disposeDynamicFormEvent,
+        disposeDynamicTableEvent,
+        disposeRequestEvent,
+        disposeThisPageJump,
+        disposeDown,
+        disposeFlowDocDown,
+        disposeFlowResultDown,
+        disposeFormDown,
+        disposeDel,
+        previewMode,
+        tableDisbaled
+      } = this;
+      if (previewMode || tableDisbaled) return;
+      this.editRow = null;
+      this.externalParamsFormRow = null;
+      // 只btnConfigs.要执行点击按钮操作，先置空formid
+      this.btnConfigs = new BtnConfigs();
+      this.btnConfigs.requestUrl = requestUrl;
+      this.btnConfigs.requestType = requestType;
+      this.btnConfigs.requestFixedParams = requestParamsConfig;
+      this.btnConfigs.requestBeforeConfirmHint = requestBeforeConfirmHint;
+      this.btnConfigs.requestBeforeConfirmText = requestBeforeConfirmText;
+      this.btnConfigs.requestBeforeConfirmTitle = requestBeforeConfirmTitle;
+      this.btnConfigs.requestBeforeConfirmType = requestBeforeConfirmType;
+      this.btnConfigs.requestSuccessMessage = requestSuccessMessage;
+      this.btnConfigs.isRefresh = isRefresh;
+      this.btnConfigs.btnType = btnType;
+      this.btnConfigs.btnId = btnId;
+      this.btnConfigs.authorize = authorize;
+      this.btnConfigs.briefPageFields = briefPageFields;
+      this.btnConfigs.openType = openType;
+      this.btnConfigs.dialogHeight = dialogHeight;
+      this.btnConfigs.dialogWidth = dialogWidth;
+      this.btnConfigs.closeOnPressEscape = closeOnPressEscape;
+      await this.$nextTick();
+      // 执行任何操作之前都先进行校验
+      if (await this.autoValidate(validateFn, btnValidationOptions, this.getSelectedData())) {
+        // 如果有自定义事件，则执行自定义事件
+        if (fn) {
+          str2Fn(fn).call(this, rowData);
+        } else {
+          if (openType === -1) {
+            // openType为-1是固定行为，如下载 批量删除等
+            switch (btnType) {
+              case "download":
+                disposeDown(
+                  {
+                    command
+                  },
+                  rowData
+                );
+                break;
+              case "flowDocDownload":
+                disposeFlowDocDown(
+                  {
+                    command
+                  },
+                  rowData
+                );
+                break;
+              case "flowResultDownload":
+                disposeFlowResultDown(rowData);
+                break;
+              case "formDownload":
+                disposeFormDown(
+                  {
+                    command
+                  },
+                  rowData
+                );
+                break;
+              case "batchDel":
+                disposeDel(rowData);
+                break;
+              case "import":
+                // 处理导入
+                this.dealImport(relateMeta);
+                break;
+              case "importRefresh":
+                // 处理导入
+                this.dealImportRefresh({ requestBeforeConfirmHint, requestBeforeConfirmText, requestBeforeConfirmTitle, requestBeforeConfirmType });
+                break;
+              case "refresh":
+                // 处理刷新
+                this.refresh();
+                break;
+              case "qrCode":
+                // 处理二维码下载
+                this.dealQrDownload(
+                  {
+                    command
+                  },
+                  rowData
+                );
+                break;
+              default:
+                break;
+            }
+          } else if (openType === 1) {
+            // openType为1是当前页面跳转
+            if (
+              validateSelectList(
+                {
+                  paramName,
+                  paramType,
+                  deliverySelectListFields,
+                  deliverySelectList,
+                  validate
+                },
+                rowData
+              )
+            ) {
+              disposeThisPageJump({ openUrl, deliverySelectList, deliverySelectListFields }, rowData);
+            }
+          } else if (openType === 3) {
+            if (
+              validateSelectList(
+                {
+                  paramName,
+                  paramType,
+                  deliverySelectList,
+                  deliverySelectListFields,
+                  validate
+                },
+                rowData
+              )
+            ) {
+              // openType为3是新窗口打开;
+              const isAbsoluteUrl = url => {
+                try {
+                  new URL(url);
+                  return true;
+                } catch {
+                  return false;
+                }
+              };
+              const externalParams = this.formatSelectListParams({ deliverySelectList, deliverySelectListFields }, rowData, "useJoin");
+              // 构造目标URL（保持原有逻辑）
+              let targetUrl = isAbsoluteUrl(openUrl) ? openUrl : `${window.location.origin}${openUrl.startsWith("/") ? "" : "/"}${openUrl}`;
+              // 附加参数到所有场景的URL
+              targetUrl = appendParamsToUrl(targetUrl, externalParams);
+              window.open(targetUrl, "_blank");
+            }
+          } else if (openType === 4) {
+            // openType为4是打开本地关联代码
+            if (
+              validateSelectList(
+                {
+                  paramName,
+                  paramType,
+                  deliverySelectList,
+                  deliverySelectListFields,
+                  validate
+                },
+                rowData
+              )
+            ) {
+              disposeRelateCompEvent(
+                {
+                  relateComponent,
+                  useDialog,
+                  showFooter,
+                  dialogTitle
+                },
+                rowData
+              );
+            }
+          } else if (openType === 5) {
+            // openType为5是直接调用接口
+            if (
+              validateSelectList(
+                {
+                  paramName,
+                  paramType,
+                  deliverySelectList,
+                  deliverySelectListFields,
+                  validate
+                },
+                rowData
+              )
+            ) {
+              disposeRequestEvent(
+                {
+                  requestBeforeConfirmHint,
+                  requestBeforeConfirmText,
+                  requestBeforeConfirmTitle,
+                  requestBeforeConfirmType,
+                  requestSuccessMessage
+                },
+                rowData
+              );
+            }
+          } else if (openType === 2) {
+            // openType为2是打开流程
+            if (
+              validateSelectList(
+                {
+                  paramName,
+                  paramType,
+                  deliverySelectList,
+                  deliverySelectListFields,
+                  validate
+                },
+                rowData
+              )
+            ) {
+              disposeFlowEvent({ flowKey, btnType, isRefresh, deliverySelectList }, rowData);
+            }
+          } else if (openType === 0) {
+            // openType为0是打开表单
+            if (
+              validateSelectList(
+                {
+                  paramName,
+                  paramType,
+                  deliverySelectList,
+                  deliverySelectListFields,
+                  validate
+                },
+                rowData
+              )
+            ) {
+              disposeDynamicFormEvent(
+                {
+                  btnType,
+                  relateFrom,
+                  dialogTitle,
+                  deliverySelectList,
+                  deliverySelectListFields
+                },
+                rowData
+              );
+            }
+          } else if (openType === 6) {
+            // openType为0是打开列表
+            if (
+              validateSelectList(
+                {
+                  paramName,
+                  paramType,
+                  deliverySelectList,
+                  deliverySelectListFields,
+                  validate
+                },
+                rowData
+              )
+            ) {
+              disposeDynamicTableEvent(
+                {
+                  btnType,
+                  relateTable,
+                  dialogTitle,
+                  deliverySelectList,
+                  deliverySelectListFields
+                },
+                rowData
+              );
+            }
+          }
+        }
+      }
+    },
+
+    async autoValidate(validateFn, btnValidationOptions, rowDataList) {
+      let result = true;
+      if (validateFn) {
+        // 明确返回false才会中断
+        let result1 = await Promise.resolve(str2Fn(validateFn).call(this, rowDataList));
+        result = result1 === false ? false : true;
+      }
+      if (result && rowDataList.length && Object.prototype.hasOwnProperty.call(rowDataList[0], btnValidationOptions?.field)) {
+        const { fieldAllowedValue, field, failMessage } = btnValidationOptions;
+        result = rowDataList.every(item => {
+          return fieldAllowedValue.some(value => {
+            return value == item[field];
+          });
+        });
+        if (!result) {
+          this.$warn(failMessage || "当前数据状态不允许执行此操作");
+        }
+      }
+      return result;
     },
 
     disposeRelateCompEvent({ relateComponent, useDialog, showFooter, dialogTitle }, row) {
@@ -1625,7 +1999,7 @@ export default {
       if (dialogHeight && !String(dialogHeight).endsWith("px")) dialogHeight += "px";
       if (dialogWidth && !String(dialogWidth).endsWith("px")) dialogWidth += "px";
       const mainFieldValue = (row || this.getFirstSelectedData())?.[this.keyField];
-      if (btnType === "check") {
+      if (btnType === "check" || btnType === "edit") {
         if (!mainFieldValue) {
           return this.$warn("请至少勾选一条要处理的数据！");
         }
@@ -1634,7 +2008,7 @@ export default {
           return this.$warn("未能获取流程详情！");
         }
         if (!res?.data?.flowInstanceId) {
-          return this.$warn("草稿状态的流程不能查看！");
+          return this.$warn(`草稿状态的流程不能${btnType === "edit" ? "编辑" : "查看"}！`);
         }
         const params = {
           ...res.data,
@@ -1645,6 +2019,14 @@ export default {
         };
         if (deliverySelectList) {
           params.sourceData = { mainFieldValue };
+        }
+        // 编辑按钮且流程处于审批中，调接口查询是否是当前节点审批人
+        if (btnType === "edit" && (row || this.getFirstSelectedData())["flowStatus"] == "2") {
+          // 当前人是流程当前节点审批人时，以审批（编辑）模式打开
+          const canEditRes = await this.isCurrentApprover(res.data.flowInstanceId);
+          if (canEditRes?.data) {
+            params.approveType = "edit";
+          }
         }
         await this.openFlow(params);
         isRefresh && this.queryTableData();
@@ -1880,7 +2262,7 @@ export default {
       };
     },
 
-    async disposeRequestEvent({ requestBeforeConfirmHint, requestBeforeConfirmText, requestBeforeConfirmTitle, requestBeforeConfirmType }, rowData) {
+    async disposeRequestEvent({ requestBeforeConfirmHint, requestBeforeConfirmText, requestBeforeConfirmTitle, requestBeforeConfirmType, requestSuccessMessage }, rowData) {
       if (requestBeforeConfirmHint) {
         await this.$confirm(`${requestBeforeConfirmText}`, requestBeforeConfirmTitle || "提示", {
           type: requestBeforeConfirmType
@@ -1889,6 +2271,7 @@ export default {
       const { finalUrl, finalType, finalData, headers: requestHeaders } = this.getRequestConfig(rowData);
 
       await this.generalRequest(finalUrl, finalType, finalData, requestHeaders);
+      requestSuccessMessage && this.$success(requestSuccessMessage);
       this.btnConfigs.isRefresh && this.queryTableData();
     },
     iconDisposeDown(command) {
@@ -2788,13 +3171,13 @@ export default {
           {!isVformWidget && (
             <div class="flex">
               {/* tableDisbaled 时禁用点击 */}
-              <img src={refreshSvg} class="i pointer" {...this.getIconProps("refresh")} onClick={iconRefresh} />
-              {!hiddenFilter && <img src={advSearch} class="i pointer" {...this.getIconProps("advSearch")} onClick={handleAdvancedFilter} />}
-              {!hiddenReset && <img src={resetSvg} class="i pointer" {...this.getIconProps("reset")} onClick={handleFilterReset} />}
+              <img src={refreshSvg} title="刷新" class="i pointer" {...this.getIconProps("refresh")} onClick={iconRefresh} />
+              {!hiddenFilter && <img src={advSearch} title="高级搜索" class="i pointer" {...this.getIconProps("advSearch")} onClick={handleAdvancedFilter} />}
+              {!hiddenReset && <img src={resetSvg} title="重置" class="i pointer" {...this.getIconProps("reset")} onClick={handleFilterReset} />}
               {!hiddenDownload && (
                 <el-dropdown onCommand={iconDisposeDown}>
                   <span class="el-dropdown-link">
-                    <img src={downloadSvg} class="i pointer" {...this.getIconProps("download", "hover", { marginTop: "5px" })} />
+                    <img src={downloadSvg} title="下载" class="i pointer" {...this.getIconProps("download", "hover", { marginTop: "5px" })} />
                   </span>
                   <el-dropdown-menu slot="dropdown">
                     <el-dropdown-item command="curSelect">当前选中</el-dropdown-item>
@@ -2803,7 +3186,7 @@ export default {
                   </el-dropdown-menu>
                 </el-dropdown>
               )}
-              <img src={settingSvg} class="i pointer" {...this.getIconProps("setting")} onClick={handleSetting} />
+              <img src={settingSvg} title="显示字段设置" class="i pointer" {...this.getIconProps("setting")} onClick={handleSetting} />
             </div>
           )}
 
@@ -2822,7 +3205,7 @@ export default {
     },
     renderSqlConditionDlg() {
       const { showSqlConditionDlg, handleAdvancedFilterCb, SqlConditionDlg } = this;
-      return showSqlConditionDlg ? <SqlConditionDlg ref="SqlConditionDlg" on={{ resolve: handleAdvancedFilterCb }}></SqlConditionDlg> : "";
+      return showSqlConditionDlg ? <SqlConditionDlg ref="SqlConditionDlg" props={{ onlyShowLabel: true }} on={{ resolve: handleAdvancedFilterCb }}></SqlConditionDlg> : "";
     },
 
     renderHeader() {

@@ -219,7 +219,16 @@ export default {
               }
             };
             const style = mergeStyle(null, contentTextAttr);
-            cellOptions.contentText = contentTextAttr.textVal || cellValue;
+            // textVal支持{}占位符：{}取当前单元格的值，{fieldName}取行数据中对应字段的值
+            cellOptions.contentText = contentTextAttr.textVal
+              ? contentTextAttr.textVal.replace(/\{([^{}]*)\}/g, (match, name) => {
+                  const key = name.trim();
+                  if (key === "") {
+                    return cellValue ?? "";
+                  }
+                  return row[key] ?? "";
+                })
+              : cellValue;
             if (contentTextAttr.iconName) {
               cellOptions[`${contentTextAttr.iconPosition}TextClass`] = contentTextAttr.iconName;
               cellOptions[`${contentTextAttr.iconPosition}TextStyle`] = `${style};${contentTextAttr.iconStyle}`;

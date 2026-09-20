@@ -60,6 +60,8 @@ export default {
         title: "代码编写",
         width: "900px",
         appendToBody: true,
+        closeOnClickModal: false,
+        closeOnPressEscape: false,
         beforeClose: this.handleDialogClose
       },
       // 编辑器固定配置

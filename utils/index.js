@@ -839,6 +839,7 @@ export function BtnConfigs() {
     requestBeforeConfirmText: "",
     requestBeforeConfirmTitle: "",
     requestBeforeConfirmType: "",
+    requestSuccessMessage: "",
     requestFixedParams: {},
     requestUrl: "",
     requestType: "",

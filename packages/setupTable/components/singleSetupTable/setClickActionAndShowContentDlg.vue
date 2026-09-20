@@ -56,7 +56,7 @@
                 slot="label"
                 class="fontSize14"
                 effect="dark"
-                content="新增操作列输入什么展示什么，如果不输入则不展示。非新增操作列如果输入显示文本，则会覆盖原本prop的值, 如果不想展示任何文本，请输入一个空格"
+                content="新增操作列输入什么展示什么，如果不输入则不展示。非新增操作列如果输入显示文本，则会覆盖原本prop的值, 如果不想展示任何文本，请输入一个空格。支持{}占位符：{}取当前单元格的值，{字段名}取行数据中对应字段的值，如：第 {} 次变更、最后修改人：{updateUserName}"
                 placement="top-start"
               >
                 <span>显示文本<i style="width: 20px" class="el-icon-question"></i>：</span>
