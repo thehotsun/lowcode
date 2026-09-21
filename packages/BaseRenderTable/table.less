@@ -49,6 +49,13 @@
         margin-right: 3px;
         flex-shrink: 0;
       }
+      .signature-cell-img {
+        // 与单元格行高40px对齐，保持签名图原始宽高比
+        max-height: 32px;
+        max-width: 100%;
+        vertical-align: middle;
+        object-fit: contain;
+      }
     }
     th > .cell:has(.hb-search-header) {
       height: 100%;
