@@ -76,7 +76,8 @@ export const searchWidget = [
 
 export const CELL_REBDER_TYPE = {
   DICT: "dict",
-  PERSON: "person"
+  PERSON: "person",
+  SIGNATURE: "signature"
 };
 
 export const cellRenderType = [
@@ -89,6 +90,11 @@ export const cellRenderType = [
     id: CELL_REBDER_TYPE.PERSON,
     cnName: "人员",
     value: CELL_REBDER_TYPE.PERSON
+  },
+  {
+    id: CELL_REBDER_TYPE.SIGNATURE,
+    cnName: "个人签名",
+    value: CELL_REBDER_TYPE.SIGNATURE
   }
 ];
 

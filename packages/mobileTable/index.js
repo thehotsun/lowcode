@@ -407,6 +407,17 @@ export default {
     },
     eventBus: {
       default: () => ({})
+    },
+    // 个人签名（与桌面 BaseRenderTable 同来源）：宿主 tableRender provide 的 getToken 用于图片直链
+    // 过JWT鉴权，axios 实例 request 的 baseURL 用于拼接口地址；移动端经 complete-table 挂载，
+    // provide 沿宿主 tableRender 透传，能力面与桌面一致
+    getToken: {
+      default() {
+        return () => "";
+      }
+    },
+    request: {
+      default: null
     }
   },
 
@@ -416,6 +427,11 @@ export default {
       getTableRenderInstance: () => this.expose_CompleteTableInstance(),
       emitBtnClick: this.emitBtnClick
     };
+  },
+
+  created() {
+    // 个人签名图片加载失败标记（userId -> true），失败的不再重复发起img请求（与桌面 BaseRenderTable 一致）
+    this._signatureFailedIds = {};
   },
 
   mounted() {
@@ -1966,7 +1982,7 @@ export default {
 
     /*
      * 格式化渲染，卡片字段区/标题行/详情页共用。
-     * 优先级固定：formatter > contentTextAttrArr > PERSON > DICT > 原始值（契约§6）
+     * 优先级固定：formatter > contentTextAttrArr > PERSON > SIGNATURE > DICT > 原始值（契约§6）
      * 移动端字段渲染上下文：renderMobileField({ row, column, index, mode, mobileMode: true })
      */
     renderMobileField(field, row, index, mode = "card") {
@@ -2004,7 +2020,12 @@ export default {
         );
       }
 
-      // 4. 字典：dicList匹配；仅dicCode时使用运行时缓存
+      // 4. 个人签名：图片直链渲染（与桌面 BaseRenderTable.renderSignatureCell 同语义，样式按移动端卡片/详情行适配）
+      if (field.cellRenderType === CELL_REBDER_TYPE.SIGNATURE) {
+        return this.renderSignatureField(cellValue);
+      }
+
+      // 5. 字典：dicList匹配；仅dicCode时使用运行时缓存
       if (field.cellRenderType === CELL_REBDER_TYPE.DICT && field.enumDisplayConfig && cellValue !== undefined && cellValue !== null && cellValue !== "") {
         let dicList = field.enumDisplayConfig.dicList;
         if (!dicList?.length && field.enumDisplayConfig.dicCode) {
@@ -2030,8 +2051,43 @@ export default {
         return <span>{cellValue}</span>;
       }
 
-      // 5. 原始值
+      // 6. 原始值
       return <span>{cellValue === undefined || cellValue === null ? "" : `${cellValue}`}</span>;
+    },
+
+    // 个人签名：直接按约定拼 /common/preview 直链（服务端inline返回图片，dwg自动出缩略图），不调批量接口换url；
+    // 预览态不发图请求；已失败的（无权限/无签名/token过期等）不再重复加载，避免裂图和反复重试（与桌面一致）
+    renderSignatureField(cellValue) {
+      const userId = cellValue === undefined || cellValue === null ? "" : `${cellValue}`.trim();
+      if (!userId) {
+        return cellValue ?? "";
+      }
+      if (this.previewMode || this._signatureFailedIds[userId]) {
+        return <span></span>;
+      }
+      return (
+        <img
+          class="mt-signature-img"
+          src={this.makeSignatureImageUrl(userId)}
+          alt={userId}
+          onError={() => this.onSignatureImgError(userId)}
+        />
+      );
+    },
+
+    // 图片加载失败（无下载权限/未上传签名/token过期等）时降级为空展示
+    onSignatureImgError(userId) {
+      this._signatureFailedIds[userId] = true;
+      this.$forceUpdate();
+    },
+
+    // 与后端 /getSignatureByUserIds 返回的downloadUrl同构（与桌面 BaseRenderTable 同实现）：
+    // 基座取宿主inject的axios实例，token用于img直链过JWT鉴权
+    makeSignatureImageUrl(userId) {
+      const base = this.request?.defaults?.baseURL || "";
+      const url = `${base}/common/preview?fileID=${encodeURIComponent(userId)}`;
+      const token = this.getToken();
+      return token ? `${url}&token=${encodeURIComponent(token)}` : url;
     },
 
     renderFormatterComponent(field, def, row, index) {

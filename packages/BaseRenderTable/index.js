@@ -24,6 +24,8 @@ export default {
   created() {
     this._rangeSearchDrafts = {};
     this._popoverInstances = {};
+    // 个人签名图片加载失败标记（userId -> true），失败的不再重复发起img请求
+    this._signatureFailedIds = {};
   },
   props: {
     tableData: {
@@ -69,7 +71,7 @@ export default {
     previewMode: Boolean
     // page: {
     //   type: Object,
-    //   default() {
+    //   default: () => {
     //     return {
     //       pageNum: 1,
     //       pageSize: 10,
@@ -77,6 +79,19 @@ export default {
     //     };
     //   },
     // },
+  },
+
+  inject: {
+    // 宿主（commondp-web的tableRender）provide了getToken和axios实例request：
+    // token用于个人签名图片直链过JWT鉴权，request的baseURL用于拼接口地址
+    getToken: {
+      default() {
+        return () => "";
+      }
+    },
+    request: {
+      default: null
+    }
   },
 
   methods: {
@@ -243,6 +258,8 @@ export default {
             {cellValue}
           </div>
         );
+      } else if (options.cellRenderType === CELL_REBDER_TYPE.SIGNATURE) {
+        return this.renderSignatureCell(cellValue);
       } else if (
         options.cellRenderType === CELL_REBDER_TYPE.DICT &&
         options.enumDisplayConfig?.dicList?.length &&
@@ -270,6 +287,40 @@ export default {
       } else {
         return cellValue;
       }
+    },
+
+    // 个人签名：直接按约定拼 /common/preview 直链（服务端inline返回图片，dwg自动出缩略图），不调批量接口换url
+    renderSignatureCell(cellValue) {
+      const userId = cellValue === undefined || cellValue === null ? "" : `${cellValue}`.trim();
+      if (!userId) {
+        return cellValue ?? "";
+      }
+      // 设计器预览态不发图请求；已失败的（无权限/无签名/token过期等）不再重复加载，避免裂图和反复重试
+      if (this.previewMode || this._signatureFailedIds[userId]) {
+        return <span></span>;
+      }
+      return (
+        <img
+          class="signature-cell-img"
+          src={this.makeSignatureImageUrl(userId)}
+          alt={userId}
+          onError={() => this.onSignatureImgError(userId)}
+        />
+      );
+    },
+
+    // 图片加载失败（无下载权限/未上传签名/token过期等）时降级为空展示
+    onSignatureImgError(userId) {
+      this._signatureFailedIds[userId] = true;
+      this.$forceUpdate();
+    },
+
+    // 与后端 /getSignatureByUserIds 返回的downloadUrl同构：基座取宿主inject的axios实例，token用于img直链过JWT鉴权
+    makeSignatureImageUrl(userId) {
+      const base = this.request?.defaults?.baseURL || "";
+      const url = `${base}/common/preview?fileID=${encodeURIComponent(userId)}`;
+      const token = this.getToken();
+      return token ? `${url}&token=${encodeURIComponent(token)}` : url;
     },
 
     cellRender(row, options) {

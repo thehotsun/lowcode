@@ -437,6 +437,15 @@
     }
   }
 
+  // 个人签名（与桌面 .signature-cell-img 同语义）：卡片字段区/标题行/详情页字段行共用，
+  // 高度按移动端行高约束（桌面表格单元格为32px，移动端卡片行高更宽松取40px），保持签名图原始宽高比
+  .mt-signature-img {
+    max-height: 40px;
+    max-width: 100%;
+    vertical-align: middle;
+    object-fit: contain;
+  }
+
   .mt-ctn-wrap {
     // 片段内部已带与桌面端一致的截断样式链（flex:1/nowrap/ellipsis），外层不再重复截断
     display: block;
