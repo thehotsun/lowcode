@@ -386,10 +386,14 @@
       display: flex;
       flex-direction: column;
 
+      // label 超出字段格宽度时单行省略（不折行），与 .mt-field-value 截断口径一致
       .mt-field-label {
         font-size: 12px;
         color: #909399;
         line-height: 18px;
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
       }
 
       .mt-field-value {
@@ -406,8 +410,10 @@
       flex-direction: row;
       align-items: center;
 
+      // 横向布局：label 与值同行，超长时可收缩省略且最多占半行，保证值至少保留半行可展示
       .mt-field-label {
-        flex-shrink: 0;
+        flex: 0 1 auto;
+        max-width: 50%;
         margin-right: 8px;
       }
 
@@ -422,6 +428,8 @@
     display: inline-flex;
     align-items: center;
     min-width: 0;
+    // 受限于所在行宽度（卡片字段/标题行），名称超长由 mt-user-tag-name 省略号截断
+    max-width: 100%;
 
     .mt-user-tag-av {
       flex-shrink: 0;
@@ -434,6 +442,14 @@
       text-align: center;
       line-height: 20px;
       margin-right: 4px;
+    }
+
+    .mt-user-tag-name {
+      flex: 1;
+      min-width: 0;
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
     }
   }
 

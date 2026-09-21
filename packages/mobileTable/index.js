@@ -2010,12 +2010,12 @@ export default {
         return <div class="mt-ctn-wrap">{this.renderContentTextAttrArr(field, row, cellValue)}</div>;
       }
 
-      // 3. 人员：首字母头像 + 名称（与桌面端一致，字符串即命中，含空串）
+      // 3. 人员：首字母头像 + 名称（与桌面端一致，字符串即命中，含空串）；名称span承载截断链（mt-user-tag-name）
       if (field.cellRenderType === CELL_REBDER_TYPE.PERSON && typeof cellValue === "string") {
         return (
           <div class="mt-user-tag">
             <span class="mt-user-tag-av">{cellValue.at(0)}</span>
-            {cellValue}
+            <span class="mt-user-tag-name">{cellValue}</span>
           </div>
         );
       }
